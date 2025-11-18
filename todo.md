@@ -35,3 +35,35 @@
 - [x] Test assessment workflow
 - [ ] Test report generation - Pending implementation
 - [x] Create checkpoint
+
+## New Enhancements (Phase 2)
+
+### Photo Management
+- [x] Photo upload API with S3 storage
+- [x] Photo gallery component with viewer
+- [x] Photo tagging by component/deficiency
+- [x] Thumbnail generation
+- [x] Photo deletion functionality
+
+### PDF Report Generation
+- [x] Report template following Maben sample structure
+- [x] Executive summary section
+- [x] Building information section
+- [x] Assessment findings by UNIFORMAT II
+- [x] Deficiency tables with priorities
+- [x] Cost summary and breakdown
+- [x] Photo documentation section
+- [x] PDF generation endpoint
+
+### Export Functionality
+- [x] CSV export for deficiencies
+- [x] CSV export for assessments
+- [x] Excel export with multiple sheets
+- [x] Cost estimates export
+- [x] Export buttons in UI
+
+### Testing
+- [x] Test photo upload and retrieval
+- [x] Test PDF report generation
+- [x] Test export functionality
+- [x] Create final checkpoint

@@ -5,6 +5,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
+import { generateBCAReport } from "./reportGenerator";
+import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
 
 export const appRouter = router({
   system: systemRouter,
@@ -166,7 +168,7 @@ export const appRouter = router({
     create: protectedProcedure
       .input(z.object({
         projectId: z.number(),
-        assessmentId: z.number(),
+        assessmentId: z.number().optional(),
         componentCode: z.string(),
         title: z.string().min(1),
         description: z.string().optional(),
@@ -233,6 +235,7 @@ export const appRouter = router({
         projectId: z.number(),
         assessmentId: z.number().optional(),
         deficiencyId: z.number().optional(),
+        componentCode: z.string().optional(),
         fileData: z.string(), // base64 encoded
         fileName: z.string(),
         mimeType: z.string(),
@@ -251,6 +254,7 @@ export const appRouter = router({
           projectId: input.projectId,
           assessmentId: input.assessmentId,
           deficiencyId: input.deficiencyId,
+          componentCode: input.componentCode,
           fileKey,
           url,
           caption: input.caption,
@@ -327,6 +331,72 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deleteCostEstimate(input.id);
         return { success: true };
+      }),
+  }),
+
+  reports: router({
+    generate: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        const assessments = await db.getProjectAssessments(input.projectId);
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const photos = await db.getProjectPhotos(input.projectId);
+        const stats = await db.getProjectStats(input.projectId);
+
+        const pdfBuffer = generateBCAReport({
+          project,
+          assessments,
+          deficiencies,
+          photos,
+          totalEstimatedCost: stats?.totalEstimatedCost || 0,
+        });
+
+        // Upload to S3
+        const fileKey = `projects/${input.projectId}/reports/BCA-Report-${Date.now()}.pdf`;
+        const { url } = await storagePut(fileKey, pdfBuffer, "application/pdf");
+
+        return { url, fileKey };
+      }),
+  }),
+
+  exports: router({
+    deficiencies: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const csv = generateDeficienciesCSV(deficiencies);
+        
+        return { csv, filename: `deficiencies-${input.projectId}-${Date.now()}.csv` };
+      }),
+
+    assessments: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        const assessments = await db.getProjectAssessments(input.projectId);
+        const csv = generateAssessmentsCSV(assessments);
+        
+        return { csv, filename: `assessments-${input.projectId}-${Date.now()}.csv` };
+      }),
+
+    costs: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const csv = generateCostEstimatesCSV(deficiencies);
+        
+        return { csv, filename: `cost-estimates-${input.projectId}-${Date.now()}.csv` };
       }),
   }),
 });

@@ -309,8 +309,8 @@ export async function createPhoto(data: InsertPhoto) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(photos).values(data);
-  return result[0].insertId;
+  const [result] = await db.insert(photos).values(data);
+  return Number(result.insertId);
 }
 
 export async function deletePhoto(photoId: number) {
@@ -400,3 +400,5 @@ export async function getProjectStats(projectId: number) {
     totalEstimatedCost: totalCost?.total || 0,
   };
 }
+
+

@@ -83,7 +83,7 @@ export type InsertAssessment = typeof assessments.$inferInsert;
  */
 export const deficiencies = mysqlTable("deficiencies", {
   id: int("id").autoincrement().primaryKey(),
-  assessmentId: int("assessmentId").notNull(),
+  assessmentId: int("assessmentId"),
   projectId: int("projectId").notNull(),
   componentCode: varchar("componentCode", { length: 20 }).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
@@ -109,11 +109,13 @@ export const photos = mysqlTable("photos", {
   projectId: int("projectId").notNull(),
   assessmentId: int("assessmentId"),
   deficiencyId: int("deficiencyId"),
+  componentCode: varchar("componentCode", { length: 20 }),
   fileKey: varchar("fileKey", { length: 500 }).notNull(),
   url: text("url").notNull(),
   caption: text("caption"),
   mimeType: varchar("mimeType", { length: 100 }),
   fileSize: int("fileSize"),
+  takenAt: timestamp("takenAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

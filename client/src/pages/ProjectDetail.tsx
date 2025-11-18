@@ -10,10 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2 } from "lucide-react";
+import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
+import PhotoGallery from "@/components/PhotoGallery";
+import ReportTab from "@/components/ReportTab";
+import ExportButton from "@/components/ExportButton";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -155,6 +158,21 @@ export default function ProjectDetail() {
           </div>
         </div>
 
+        {/* Export Buttons */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Export Data</CardTitle>
+            <CardDescription>Download project data in CSV format</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <ExportButton projectId={projectId} type="deficiencies" label="Deficiencies" />
+              <ExportButton projectId={projectId} type="assessments" label="Assessments" />
+              <ExportButton projectId={projectId} type="costs" label="Cost Estimates" />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
@@ -207,6 +225,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="assessments">Assessments</TabsTrigger>
             <TabsTrigger value="deficiencies">Deficiencies</TabsTrigger>
+            <TabsTrigger value="photos">Photos</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
 
@@ -479,27 +498,12 @@ export default function ProjectDetail() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="photos">
+            <PhotoGallery projectId={projectId} />
+          </TabsContent>
+
           <TabsContent value="report">
-            <Card>
-              <CardHeader>
-                <CardTitle>Generate Report</CardTitle>
-                <CardDescription>
-                  Create a comprehensive BCA report following ASTM E2018-15 standards
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-4">
-                    Report generation feature coming soon
-                  </p>
-                  <Button onClick={() => toast.info("Report generation feature coming soon")}>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generate Report
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ReportTab projectId={projectId} />
           </TabsContent>
         </Tabs>
       </div>
