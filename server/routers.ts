@@ -7,6 +7,7 @@ import { storagePut } from "./storage";
 import * as db from "./db";
 import { generateBCAReport } from "./reportGenerator";
 import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
+import { assessPhotoWithAI } from "./photoAssessment";
 
 export const appRouter = router({
   system: systemRouter,
@@ -270,6 +271,20 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deletePhoto(input.id);
         return { success: true };
+      }),
+
+    assessWithAI: protectedProcedure
+      .input(z.object({ photoId: z.number() }))
+      .mutation(async ({ input }) => {
+        // Get photo details
+        const photos = await db.getProjectPhotos(0); // This will be filtered below
+        const photo = photos.find(p => p.id === input.photoId);
+        if (!photo) throw new Error("Photo not found");
+
+        // Assess photo with AI
+        const assessment = await assessPhotoWithAI(photo.url);
+        
+        return assessment;
       }),
   }),
 

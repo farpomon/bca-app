@@ -123,6 +123,27 @@ export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = typeof photos.$inferInsert;
 
 /**
+ * Report schedules - automated report generation
+ */
+export const reportSchedules = mysqlTable("report_schedules", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  frequency: mysqlEnum("frequency", ["daily", "weekly", "monthly"]).notNull(),
+  dayOfWeek: int("dayOfWeek"), // 0-6 for weekly
+  dayOfMonth: int("dayOfMonth"), // 1-31 for monthly
+  recipientEmails: text("recipientEmails").notNull(), // JSON array of emails
+  active: int("active").default(1).notNull(), // 1 = active, 0 = inactive
+  lastRun: timestamp("lastRun"),
+  nextRun: timestamp("nextRun"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ReportSchedule = typeof reportSchedules.$inferSelect;
+export type InsertReportSchedule = typeof reportSchedules.$inferInsert;
+
+/**
  * Cost estimates - detailed cost breakdown for repairs/replacements
  */
 export const costEstimates = mysqlTable("cost_estimates", {

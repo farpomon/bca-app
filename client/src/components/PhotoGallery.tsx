@@ -1,4 +1,6 @@
 import { useState } from "react";
+import AIAssessmentDialog from "@/components/AIAssessmentDialog";
+import PhotoAnnotator from "@/components/PhotoAnnotator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -22,6 +24,10 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerImage, setViewerImage] = useState<string>("");
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [selectedPhotoForAI, setSelectedPhotoForAI] = useState<{ id: number; url: string } | null>(null);
+  const [annotatorOpen, setAnnotatorOpen] = useState(false);
+  const [selectedPhotoForAnnotation, setSelectedPhotoForAnnotation] = useState<{ id: number; url: string } | null>(null);
 
   const { data: photos, refetch } = trpc.photos.list.useQuery(
     { projectId },
@@ -236,6 +242,38 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
                 >
                   <ZoomIn className="h-3 w-3" />
                 </Button>
+                <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="default"
+                    size="icon"
+                    className="h-7 w-7 bg-blue-600 hover:bg-blue-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPhotoForAnnotation({ id: photo.id, url: photo.url });
+                      setAnnotatorOpen(true);
+                    }}
+                    title="Annotate photo"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="icon"
+                    className="h-7 w-7 bg-purple-600 hover:bg-purple-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPhotoForAI({ id: photo.id, url: photo.url });
+                      setAiDialogOpen(true);
+                    }}
+                    title="Assess with AI"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -266,6 +304,34 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* AI Assessment Dialog */}
+      {selectedPhotoForAI && (
+        <AIAssessmentDialog
+          photoId={selectedPhotoForAI.id}
+          photoUrl={selectedPhotoForAI.url}
+          projectId={projectId}
+          open={aiDialogOpen}
+          onOpenChange={setAiDialogOpen}
+          onDeficienciesCreated={() => {
+            refetch();
+          }}
+        />
+      )}
+
+      {/* Photo Annotator Dialog */}
+      {selectedPhotoForAnnotation && (
+        <PhotoAnnotator
+          photoId={selectedPhotoForAnnotation.id}
+          photoUrl={selectedPhotoForAnnotation.url}
+          projectId={projectId}
+          open={annotatorOpen}
+          onOpenChange={setAnnotatorOpen}
+          onSaved={() => {
+            refetch();
+          }}
+        />
+      )}
     </Card>
   );
 }

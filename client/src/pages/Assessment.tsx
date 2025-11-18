@@ -138,24 +138,24 @@ export default function Assessment() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-start justify-between">
+      <div className="space-y-4 md:space-y-6 px-3 md:px-0">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
           <div className="space-y-1">
             <Button variant="ghost" size="sm" onClick={() => setLocation(`/projects/${projectId}`)}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Project
             </Button>
-            <h1 className="text-3xl font-bold tracking-tight">Building Component Assessment</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Building Component Assessment</h1>
             <p className="text-muted-foreground">{project.name}</p>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
           {/* Left: Component Selection */}
           <Card>
-            <CardHeader>
-              <CardTitle>UNIFORMAT II Components</CardTitle>
-              <CardDescription>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="text-lg md:text-xl">UNIFORMAT II Components</CardTitle>
+              <CardDescription className="text-sm">
                 Select a component to assess. Components are organized by Major Group, Group, and Individual Element.
               </CardDescription>
             </CardHeader>
@@ -218,15 +218,15 @@ export default function Assessment() {
 
           {/* Right: Assessment Form */}
           <Card>
-            <CardHeader>
-              <CardTitle>Component Assessment</CardTitle>
-              <CardDescription>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="text-lg md:text-xl">Component Assessment</CardTitle>
+              <CardDescription className="text-sm">
                 {selectedComponent 
                   ? `Assessing component: ${selectedComponent}`
                   : "Select a component from the left to begin assessment"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4 px-3 md:px-6">
               {selectedComponent ? (
                 <>
                   <div className="space-y-2">
@@ -255,7 +255,7 @@ export default function Assessment() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="remainingUsefulLife">Remaining Useful Life (years)</Label>
                       <Input
@@ -278,7 +278,7 @@ export default function Assessment() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-4">
                     <Button 
                       onClick={handleSaveAssessment} 
                       disabled={upsertAssessment.isPending}
@@ -313,16 +313,16 @@ export default function Assessment() {
 
         {/* Assessment Progress */}
         <Card>
-          <CardHeader>
-            <CardTitle>Assessment Progress</CardTitle>
-            <CardDescription>
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="text-lg md:text-xl">Assessment Progress</CardTitle>
+            <CardDescription className="text-sm">
               {existingAssessments?.length || 0} components assessed
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-2 md:grid-cols-4">
+            <div className="grid gap-2 grid-cols-2 md:grid-cols-4">
               <div className="p-3 border rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-xl md:text-2xl font-bold text-green-600">
                   {existingAssessments?.filter(a => a.condition === "good").length || 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Good Condition</div>
