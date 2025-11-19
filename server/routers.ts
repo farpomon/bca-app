@@ -135,9 +135,12 @@ export const appRouter = router({
         projectId: z.number(),
         componentCode: z.string(),
         condition: z.enum(["good", "fair", "poor", "not_assessed"]),
+        conditionPercentage: z.string().optional(),
         observations: z.string().optional(),
         remainingUsefulLife: z.number().optional(),
         expectedUsefulLife: z.number().optional(),
+        reviewYear: z.number().optional(),
+        lastTimeAction: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const project = await db.getProjectById(input.projectId, ctx.user.id);

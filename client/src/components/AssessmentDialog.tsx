@@ -17,12 +17,23 @@ interface AssessmentDialogProps {
   componentName: string;
   existingAssessment?: {
     condition: string;
+    conditionPercentage?: string | null;
     observations?: string | null;
     remainingUsefulLife?: number | null;
     expectedUsefulLife?: number | null;
+    reviewYear?: number | null;
+    lastTimeAction?: number | null;
   };
   onSuccess: () => void;
 }
+
+// Condition percentage mappings based on Maben report
+const CONDITION_PERCENTAGES: Record<string, string> = {
+  "good": "90-75% of ESL",
+  "fair": "75-50% of ESL",
+  "poor": "50-25% of ESL",
+  "not_assessed": "",
+};
 
 export function AssessmentDialog({
   open,
@@ -38,8 +49,14 @@ export function AssessmentDialog({
   const [remainingUsefulLife, setRemainingUsefulLife] = useState(
     existingAssessment?.remainingUsefulLife?.toString() || ""
   );
-  const [expectedUsefulLife, setExpectedUsefulLife] = useState(
+  const [estimatedServiceLife, setEstimatedServiceLife] = useState(
     existingAssessment?.expectedUsefulLife?.toString() || ""
+  );
+  const [reviewYear, setReviewYear] = useState(
+    existingAssessment?.reviewYear?.toString() || new Date().getFullYear().toString()
+  );
+  const [lastTimeAction, setLastTimeAction] = useState(
+    existingAssessment?.lastTimeAction?.toString() || ""
   );
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -115,9 +132,12 @@ export function AssessmentDialog({
       projectId,
       componentCode,
       condition: condition as "good" | "fair" | "poor" | "not_assessed",
+      conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
       observations: observations || undefined,
       remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
-      expectedUsefulLife: expectedUsefulLife ? parseInt(expectedUsefulLife) : undefined,
+      expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
+      reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
+      lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
     });
   };
 
@@ -125,7 +145,9 @@ export function AssessmentDialog({
     setCondition("not_assessed");
     setObservations("");
     setRemainingUsefulLife("");
-    setExpectedUsefulLife("");
+    setEstimatedServiceLife("");
+    setReviewYear(new Date().getFullYear().toString());
+    setLastTimeAction("");
     setPhotoFile(null);
     setPhotoPreview(null);
     onOpenChange(false);
@@ -133,7 +155,7 @@ export function AssessmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Assess Component</DialogTitle>
           <DialogDescription>
@@ -143,19 +165,57 @@ export function AssessmentDialog({
 
         <div className="space-y-4 py-4">
           {/* Condition Rating */}
-          <div className="space-y-2">
-            <Label htmlFor="condition">Condition Rating *</Label>
-            <Select value={condition} onValueChange={setCondition}>
-              <SelectTrigger id="condition">
-                <SelectValue placeholder="Select condition" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="good">Good</SelectItem>
-                <SelectItem value="fair">Fair</SelectItem>
-                <SelectItem value="poor">Poor</SelectItem>
-                <SelectItem value="not_assessed">Not Assessed</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="condition">Condition *</Label>
+              <Select value={condition} onValueChange={setCondition}>
+                <SelectTrigger id="condition">
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="good">Good (90-75% of ESL)</SelectItem>
+                  <SelectItem value="fair">Fair (75-50% of ESL)</SelectItem>
+                  <SelectItem value="poor">Poor (50-25% of ESL)</SelectItem>
+                  <SelectItem value="not_assessed">Not Assessed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="esl">Estimated Service Life (years) *</Label>
+              <Input
+                id="esl"
+                type="number"
+                placeholder="e.g., 50"
+                value={estimatedServiceLife}
+                onChange={(e) => setEstimatedServiceLife(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Review Year and Last Action */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="reviewYear">Review Year</Label>
+              <Input
+                id="reviewYear"
+                type="number"
+                placeholder="e.g., 2025"
+                value={reviewYear}
+                onChange={(e) => setReviewYear(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastAction">Last Time Action</Label>
+              <Input
+                id="lastAction"
+                type="number"
+                placeholder="e.g., 2009"
+                value={lastTimeAction}
+                onChange={(e) => setLastTimeAction(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Observations */}
@@ -168,31 +228,6 @@ export function AssessmentDialog({
               onChange={(e) => setObservations(e.target.value)}
               rows={4}
             />
-          </div>
-
-          {/* Remaining Useful Life */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="remainingLife">Remaining Useful Life (years)</Label>
-              <Input
-                id="remainingLife"
-                type="number"
-                placeholder="e.g., 15"
-                value={remainingUsefulLife}
-                onChange={(e) => setRemainingUsefulLife(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expectedLife">Expected Useful Life (years)</Label>
-              <Input
-                id="expectedLife"
-                type="number"
-                placeholder="e.g., 25"
-                value={expectedUsefulLife}
-                onChange={(e) => setExpectedUsefulLife(e.target.value)}
-              />
-            </div>
           </div>
 
           {/* Photo Upload */}

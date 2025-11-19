@@ -120,3 +120,13 @@
 - [x] Add condition rating selector in dialog
 - [x] Add observations field in dialog
 - [x] Add remaining useful life input in dialog
+
+## Assessment Format Updates (Maben Report Alignment)
+
+- [x] Update condition rating to percentage-based format (e.g., Fair = 75-50% of ESL)
+- [x] Change Expected Useful Life to Estimated Service Life (ESL)
+- [x] Add Review Year field
+- [x] Add Last Time Action field
+- [x] Update database schema with new fields
+- [x] Update assessment dialog UI
+- [x] Update condition badge display
