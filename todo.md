@@ -130,3 +130,10 @@
 - [x] Update database schema with new fields
 - [x] Update assessment dialog UI
 - [x] Update condition badge display
+
+## Bug Fixes (Project Not Found)
+
+- [x] Check database for existing projects
+- [x] Fix error handling in project queries to return null instead of throwing
+- [x] Add proper error boundaries in UI for missing projects
+- [x] Redirect to projects list when project not found

@@ -21,9 +21,9 @@ export default function Assessment() {
   const projectId = parseInt(id!);
 
   const { user, loading: authLoading } = useAuth();
-  const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
+  const { data: project, isLoading: projectLoading, error: projectError } = trpc.projects.get.useQuery(
     { id: projectId },
-    { enabled: !!user && !isNaN(projectId) }
+    { enabled: !!user && !isNaN(projectId), retry: false }
   );
   const { data: components, isLoading: componentsLoading } = trpc.components.list.useQuery(undefined, {
     enabled: !!user,
