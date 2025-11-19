@@ -137,3 +137,9 @@
 - [x] Fix error handling in project queries to return null instead of throwing
 - [x] Add proper error boundaries in UI for missing projects
 - [x] Redirect to projects list when project not found
+
+## Bug Fixes (tRPC Undefined Error)
+
+- [x] Update projects.get to throw TRPCError instead of returning undefined
+- [x] Update frontend to catch and handle TRPCError
+- [x] Test error handling with non-existent project IDs

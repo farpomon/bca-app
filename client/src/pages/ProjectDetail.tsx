@@ -110,11 +110,14 @@ export default function ProjectDetail() {
     );
   }
 
-  if (!project) {
+  if (projectError || !project) {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">Project not found</h2>
+          <p className="text-muted-foreground mb-4">
+            {projectError?.message || "The project you're looking for doesn't exist or you don't have access to it."}
+          </p>
           <Button onClick={() => setLocation("/projects")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Projects
