@@ -4,10 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { Building2, ClipboardCheck, FileText, TrendingUp, CheckCircle2, Shield, Clock } from "lucide-react";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+
+  // All hooks must be called before any conditional returns
+  useEffect(() => {
+    if (user && !loading) {
+      setLocation("/projects");
+    }
+  }, [user, loading, setLocation]);
 
   if (loading) {
     return (
@@ -18,7 +26,6 @@ export default function Home() {
   }
 
   if (user) {
-    setLocation("/projects");
     return null;
   }
 

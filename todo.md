@@ -108,3 +108,7 @@
 - [ ] Test scheduled report generation
 - [x] Test mobile responsiveness
 - [x] Create final checkpoint
+
+## Bug Fixes
+
+- [x] Fix React setState-in-render error in Home component
