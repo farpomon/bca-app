@@ -13,6 +13,7 @@ import { Loader2, ArrowLeft, Save, Plus } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
+import { AssessmentDialog } from "@/components/AssessmentDialog";
 
 export default function Assessment() {
   const { id } = useParams();
@@ -33,6 +34,8 @@ export default function Assessment() {
   );
 
   const [selectedComponent, setSelectedComponent] = useState<string>("");
+  const [selectedComponentName, setSelectedComponentName] = useState<string>("");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [condition, setCondition] = useState<string>("not_assessed");
   const [observations, setObservations] = useState("");
   const [remainingUsefulLife, setRemainingUsefulLife] = useState("");
@@ -86,20 +89,10 @@ export default function Assessment() {
     });
   };
 
-  const loadAssessment = (componentCode: string) => {
+  const loadAssessment = (componentCode: string, componentName: string) => {
     setSelectedComponent(componentCode);
-    const existing = assessmentMap.get(componentCode);
-    if (existing) {
-      setCondition(existing.condition);
-      setObservations(existing.observations || "");
-      setRemainingUsefulLife(existing.remainingUsefulLife?.toString() || "");
-      setExpectedUsefulLife(existing.expectedUsefulLife?.toString() || "");
-    } else {
-      setCondition("not_assessed");
-      setObservations("");
-      setRemainingUsefulLife("");
-      setExpectedUsefulLife("");
-    }
+    setSelectedComponentName(componentName);
+    setDialogOpen(true);
   };
 
   const getConditionBadge = (componentCode: string) => {
@@ -193,7 +186,7 @@ export default function Assessment() {
                                         key={element.code}
                                         variant={selectedComponent === element.code ? "default" : "outline"}
                                         className="w-full justify-start text-left h-auto py-2"
-                                        onClick={() => loadAssessment(element.code)}
+                                        onClick={() => loadAssessment(element.code, element.name)}
                                       >
                                         <div className="flex items-center justify-between w-full">
                                           <div className="text-xs">
@@ -349,6 +342,17 @@ export default function Assessment() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Assessment Dialog */}
+      <AssessmentDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        projectId={projectId}
+        componentCode={selectedComponent}
+        componentName={selectedComponentName}
+        existingAssessment={assessmentMap.get(selectedComponent)}
+        onSuccess={refetchAssessments}
+      />
     </DashboardLayout>
   );
 }

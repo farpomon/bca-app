@@ -112,3 +112,11 @@
 ## Bug Fixes
 
 - [x] Fix React setState-in-render error in Home component
+
+## UI Improvements
+
+- [x] Add assessment dialog when clicking on building components
+- [x] Include photo upload in assessment dialog
+- [x] Add condition rating selector in dialog
+- [x] Add observations field in dialog
+- [x] Add remaining useful life input in dialog
