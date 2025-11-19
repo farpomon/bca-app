@@ -143,3 +143,8 @@
 - [x] Update projects.get to throw TRPCError instead of returning undefined
 - [x] Update frontend to catch and handle TRPCError
 - [x] Test error handling with non-existent project IDs
+
+## Bug Fixes (Console Error Suppression)
+
+- [x] Add onError handler to suppress NOT_FOUND errors in console
+- [x] Test that UI still shows error page correctly

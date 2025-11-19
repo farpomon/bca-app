@@ -23,7 +23,12 @@ export default function Assessment() {
   const { user, loading: authLoading } = useAuth();
   const { data: project, isLoading: projectLoading, error: projectError } = trpc.projects.get.useQuery(
     { id: projectId },
-    { enabled: !!user && !isNaN(projectId), retry: false }
+    { 
+      enabled: !!user && !isNaN(projectId), 
+      retry: false,
+      // Suppress React Query default error logging for NOT_FOUND
+      meta: { suppressErrorLogging: true }
+    }
   );
   const { data: components, isLoading: componentsLoading } = trpc.components.list.useQuery(undefined, {
     enabled: !!user,

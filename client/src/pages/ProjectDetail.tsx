@@ -39,7 +39,11 @@ export default function ProjectDetail() {
   const { user, loading: authLoading } = useAuth();
   const { data: project, isLoading: projectLoading, error: projectError } = trpc.projects.get.useQuery(
     { id: projectId },
-    { enabled: !!user && !isNaN(projectId), retry: false }
+    { 
+      enabled: !!user && !isNaN(projectId), 
+      retry: false,
+      meta: { suppressErrorLogging: true }
+    }
   );
   const { data: stats } = trpc.projects.stats.useQuery(
     { projectId },
