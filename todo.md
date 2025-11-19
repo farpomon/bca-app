@@ -148,3 +148,10 @@
 
 - [x] Add onError handler to suppress NOT_FOUND errors in console
 - [x] Test that UI still shows error page correctly
+
+## Bug Fixes (Components Not Loading)
+
+- [x] Check if building_components table has data
+- [x] Fix component loading query
+- [x] Reseed UNIFORMAT II data if missing
+- [x] Test complete assessment workflow end-to-end
