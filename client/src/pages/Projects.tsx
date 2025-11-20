@@ -8,15 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Calendar, MapPin, Loader2 } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function Projects() {
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -31,6 +36,30 @@ export default function Projects() {
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
+  });
+
+  const updateProject = trpc.projects.update.useMutation({
+    onSuccess: () => {
+      toast.success("Project updated successfully");
+      setEditDialogOpen(false);
+      setSelectedProject(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update project");
+    },
+  });
+
+  const deleteProject = trpc.projects.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Project deleted successfully");
+      setDeleteDialogOpen(false);
+      setSelectedProject(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete project");
+    },
   });
 
   const createProject = trpc.projects.create.useMutation({
@@ -237,15 +266,57 @@ export default function Projects() {
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setLocation(`/projects/${project.id}`)}
+                className="hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <Building2 className="h-8 w-8 text-primary" />
-                    <Badge className={getStatusColor(project.status)}>
-                      {getStatusLabel(project.status)}
-                    </Badge>
+                    <Building2 className="h-8 w-8 text-primary cursor-pointer" onClick={() => setLocation(`/projects/${project.id}`)} />
+                    <div className="flex items-center gap-2">
+                      <Badge className={getStatusColor(project.status)}>
+                        {getStatusLabel(project.status)}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProject(project);
+                              setFormData({
+                                name: project.name,
+                                address: project.address || "",
+                                clientName: project.clientName || "",
+                                propertyType: project.propertyType || "",
+                                constructionType: project.constructionType || "",
+                                yearBuilt: project.yearBuilt?.toString() || "",
+                                numberOfUnits: project.numberOfUnits?.toString() || "",
+                                numberOfStories: project.numberOfStories?.toString() || "",
+                                buildingCode: project.buildingCode || "",
+                              });
+                              setEditDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProject(project);
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   <CardTitle className="mt-4">{project.name}</CardTitle>
                   <CardDescription>
@@ -288,6 +359,166 @@ export default function Projects() {
           </Card>
         )}
       </div>
+
+      {/* Edit Project Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>
+              Update the project information below.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!selectedProject) return;
+              updateProject.mutate({
+                id: selectedProject.id,
+                name: formData.name,
+                address: formData.address || undefined,
+                clientName: formData.clientName || undefined,
+                propertyType: formData.propertyType || undefined,
+                constructionType: formData.constructionType || undefined,
+                yearBuilt: formData.yearBuilt ? parseInt(formData.yearBuilt) : undefined,
+                numberOfUnits: formData.numberOfUnits ? parseInt(formData.numberOfUnits) : undefined,
+                numberOfStories: formData.numberOfStories ? parseInt(formData.numberOfStories) : undefined,
+                buildingCode: formData.buildingCode || undefined,
+              });
+            }}
+          >
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-name">Project Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-address">Address</Label>
+                <Input
+                  id="edit-address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-clientName">Client Name</Label>
+                <Input
+                  id="edit-clientName"
+                  value={formData.clientName}
+                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-propertyType">Property Type</Label>
+                  <Select value={formData.propertyType} onValueChange={(value) => setFormData({ ...formData, propertyType: value })}>
+                    <SelectTrigger id="edit-propertyType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="residential">Residential</SelectItem>
+                      <SelectItem value="commercial">Commercial</SelectItem>
+                      <SelectItem value="industrial">Industrial</SelectItem>
+                      <SelectItem value="mixed-use">Mixed Use</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-constructionType">Construction Type</Label>
+                  <Select value={formData.constructionType} onValueChange={(value) => setFormData({ ...formData, constructionType: value })}>
+                    <SelectTrigger id="edit-constructionType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="wood-frame">Wood Frame</SelectItem>
+                      <SelectItem value="concrete">Concrete</SelectItem>
+                      <SelectItem value="steel">Steel</SelectItem>
+                      <SelectItem value="masonry">Masonry</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-yearBuilt">Year Built</Label>
+                  <Input
+                    id="edit-yearBuilt"
+                    type="number"
+                    value={formData.yearBuilt}
+                    onChange={(e) => setFormData({ ...formData, yearBuilt: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-numberOfUnits">Number of Units</Label>
+                  <Input
+                    id="edit-numberOfUnits"
+                    type="number"
+                    value={formData.numberOfUnits}
+                    onChange={(e) => setFormData({ ...formData, numberOfUnits: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-numberOfStories">Number of Stories</Label>
+                  <Input
+                    id="edit-numberOfStories"
+                    type="number"
+                    value={formData.numberOfStories}
+                    onChange={(e) => setFormData({ ...formData, numberOfStories: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-buildingCode">Building Code</Label>
+                <Input
+                  id="edit-buildingCode"
+                  value={formData.buildingCode}
+                  onChange={(e) => setFormData({ ...formData, buildingCode: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateProject.isPending}>
+                {updateProject.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Update Project
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the project "{selectedProject?.name}" and all associated assessments, deficiencies, and photos. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (selectedProject) {
+                  deleteProject.mutate({ id: selectedProject.id });
+                }
+              }}
+            >
+              {deleteProject.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

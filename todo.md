@@ -155,3 +155,13 @@
 - [x] Fix component loading query
 - [x] Reseed UNIFORMAT II data if missing
 - [x] Test complete assessment workflow end-to-end
+
+## Project Edit and Delete Features
+
+- [x] Add update project endpoint in backend
+- [x] Add delete project endpoint in backend
+- [x] Add edit button to project cards
+- [x] Add delete button with confirmation dialog
+- [x] Create edit project dialog/form
+- [x] Handle cascade delete for related data (assessments, deficiencies, photos)
+- [x] Test edit and delete functionality
