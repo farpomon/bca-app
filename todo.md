@@ -165,3 +165,7 @@
 - [x] Create edit project dialog/form
 - [x] Handle cascade delete for related data (assessments, deficiencies, photos)
 - [x] Test edit and delete functionality
+
+## Bug Fixes (Navigation)
+
+- [x] Remove placeholder "Page 2" navigation item from sidebar
