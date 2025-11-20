@@ -401,4 +401,44 @@ export async function getProjectStats(projectId: number) {
   };
 }
 
+// FCI (Facility Condition Index) calculation
+export async function getProjectFCI(projectId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Get total repair costs and replacement values from assessments
+  const [costSums] = await db
+    .select({
+      totalRepairCost: sql<number>`COALESCE(SUM(estimatedRepairCost), 0)`,
+      totalReplacementValue: sql<number>`COALESCE(SUM(replacementValue), 0)`,
+    })
+    .from(assessments)
+    .where(eq(assessments.projectId, projectId));
+  
+  const totalRepairCost = Number(costSums?.totalRepairCost) || 0;
+  const totalReplacementValue = Number(costSums?.totalReplacementValue) || 0;
+  
+  // FCI = Total Repair Cost / Total Replacement Value
+  // FCI ranges: Good (0-5%), Fair (5-10%), Poor (10-30%), Critical (>30%)
+  const fci = totalReplacementValue > 0 ? (totalRepairCost / totalReplacementValue) * 100 : 0;
+  
+  let rating: 'good' | 'fair' | 'poor' | 'critical';
+  if (fci <= 5) {
+    rating = 'good';
+  } else if (fci <= 10) {
+    rating = 'fair';
+  } else if (fci <= 30) {
+    rating = 'poor';
+  } else {
+    rating = 'critical';
+  }
+  
+  return {
+    totalRepairCost,
+    totalReplacementValue,
+    fci: Number(fci.toFixed(2)),
+    rating,
+  };
+}
+
 

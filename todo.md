@@ -179,3 +179,21 @@
 
 - [x] Fix project card click not navigating to project details
 - [x] Ensure dropdown menu doesn't interfere with card click
+
+## Assessment Enhancements
+
+- [x] Add estimatedRepairCost field to assessments
+- [x] Add replacementValue field to assessments
+- [x] Add actionYear field to assessments
+- [x] Update assessment dialog UI with new fields
+- [x] Update backend to handle new assessment fields
+
+## FCI and Dashboard Features
+
+- [x] Add FCI (Facility Condition Index) calculation to projects
+- [x] Create dashboard page with project summary
+- [x] Display total replacement value
+- [x] Display total repair costs
+- [x] Show FCI percentage and rating
+- [ ] Add condition distribution charts
+- [x] Test FCI calculations and dashboard

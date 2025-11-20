@@ -257,6 +257,40 @@ export default function Projects() {
           </Dialog>
         </div>
 
+        {/* FCI Dashboard Summary */}
+        {projects && projects.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{projects.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Active Assessments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">
+                  {projects.filter(p => p.status === 'in_progress').length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">
+                  {projects.filter(p => p.status === 'completed').length}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

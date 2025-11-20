@@ -73,6 +73,9 @@ export const assessments = mysqlTable("assessments", {
   expectedUsefulLife: int("expectedUsefulLife"), // in years (ESL - Estimated Service Life)
   reviewYear: int("reviewYear"), // Year when review is recommended
   lastTimeAction: int("lastTimeAction"), // Year of last action/repair
+  estimatedRepairCost: int("estimatedRepairCost").default(0), // Estimated cost to repair/maintain
+  replacementValue: int("replacementValue").default(0), // Full replacement cost
+  actionYear: int("actionYear"), // Year when action is recommended
   assessedAt: timestamp("assessedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

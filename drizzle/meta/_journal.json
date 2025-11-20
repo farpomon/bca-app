@@ -43,6 +43,13 @@
       "when": 1763519192477,
       "tag": "0005_silky_luckman",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1763676031866,
+      "tag": "0006_windy_microchip",
+      "breakpoints": true
     }
   ]
 }

@@ -23,6 +23,9 @@ interface AssessmentDialogProps {
     expectedUsefulLife?: number | null;
     reviewYear?: number | null;
     lastTimeAction?: number | null;
+    estimatedRepairCost?: number | null;
+    replacementValue?: number | null;
+    actionYear?: number | null;
   };
   onSuccess: () => void;
 }
@@ -57,6 +60,15 @@ export function AssessmentDialog({
   );
   const [lastTimeAction, setLastTimeAction] = useState(
     existingAssessment?.lastTimeAction?.toString() || ""
+  );
+  const [estimatedRepairCost, setEstimatedRepairCost] = useState(
+    existingAssessment?.estimatedRepairCost?.toString() || ""
+  );
+  const [replacementValue, setReplacementValue] = useState(
+    existingAssessment?.replacementValue?.toString() || ""
+  );
+  const [actionYear, setActionYear] = useState(
+    existingAssessment?.actionYear?.toString() || ""
   );
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -138,6 +150,9 @@ export function AssessmentDialog({
       expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
       reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
       lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
+      estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
+      replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
+      actionYear: actionYear ? parseInt(actionYear) : undefined,
     });
   };
 
@@ -148,6 +163,9 @@ export function AssessmentDialog({
     setEstimatedServiceLife("");
     setReviewYear(new Date().getFullYear().toString());
     setLastTimeAction("");
+    setEstimatedRepairCost("");
+    setReplacementValue("");
+    setActionYear("");
     setPhotoFile(null);
     setPhotoPreview(null);
     onOpenChange(false);
@@ -216,6 +234,43 @@ export function AssessmentDialog({
                 onChange={(e) => setLastTimeAction(e.target.value)}
               />
             </div>
+          </div>
+
+          {/* Cost Fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="repairCost">Estimated Repair Cost ($)</Label>
+              <Input
+                id="repairCost"
+                type="number"
+                placeholder="e.g., 5000"
+                value={estimatedRepairCost}
+                onChange={(e) => setEstimatedRepairCost(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="replacementValue">Replacement Value ($)</Label>
+              <Input
+                id="replacementValue"
+                type="number"
+                placeholder="e.g., 25000"
+                value={replacementValue}
+                onChange={(e) => setReplacementValue(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Action Year */}
+          <div className="space-y-2">
+            <Label htmlFor="actionYear">Action Year (Recommended)</Label>
+            <Input
+              id="actionYear"
+              type="number"
+              placeholder="e.g., 2026"
+              value={actionYear}
+              onChange={(e) => setActionYear(e.target.value)}
+            />
           </div>
 
           {/* Observations */}

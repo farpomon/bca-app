@@ -98,6 +98,14 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
         return await db.getProjectStats(input.projectId);
       }),
+
+    fci: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getProjectFCI(input.projectId);
+      }),
   }),
 
   components: router({
@@ -149,6 +157,9 @@ export const appRouter = router({
         expectedUsefulLife: z.number().optional(),
         reviewYear: z.number().optional(),
         lastTimeAction: z.number().optional(),
+        estimatedRepairCost: z.number().optional(),
+        replacementValue: z.number().optional(),
+        actionYear: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const project = await db.getProjectById(input.projectId, ctx.user.id);
