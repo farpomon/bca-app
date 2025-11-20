@@ -266,11 +266,12 @@ export default function Projects() {
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="hover:shadow-lg transition-shadow"
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setLocation(`/projects/${project.id}`)}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <Building2 className="h-8 w-8 text-primary cursor-pointer" onClick={() => setLocation(`/projects/${project.id}`)} />
+                    <Building2 className="h-8 w-8 text-primary" />
                     <div className="flex items-center gap-2">
                       <Badge className={getStatusColor(project.status)}>
                         {getStatusLabel(project.status)}

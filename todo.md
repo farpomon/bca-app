@@ -169,3 +169,13 @@
 ## Bug Fixes (Navigation)
 
 - [x] Remove placeholder "Page 2" navigation item from sidebar
+
+## Bug Fixes (Project Card Navigation)
+
+- [x] Fix project card click not navigating to project details
+- [x] Ensure dropdown menu doesn't interfere with card click
+
+## Bug Fixes (Project Card Navigation)
+
+- [x] Fix project card click not navigating to project details
+- [x] Ensure dropdown menu doesn't interfere with card click
