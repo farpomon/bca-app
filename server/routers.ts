@@ -308,6 +308,26 @@ export const appRouter = router({
         
         return assessment;
       }),
+
+    analyzeWithGemini: protectedProcedure
+      .input(z.object({
+        fileData: z.string(), // base64 encoded image
+        componentCode: z.string(),
+        componentName: z.string(),
+        userNotes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { analyzeComponentImage } = await import("./geminiService");
+        
+        const analysis = await analyzeComponentImage(
+          input.fileData,
+          input.componentCode,
+          input.componentName,
+          input.userNotes
+        );
+        
+        return analysis;
+      }),
   }),
 
   costEstimates: router({

@@ -197,3 +197,14 @@
 - [x] Show FCI percentage and rating
 - [ ] Add condition distribution charts
 - [x] Test FCI calculations and dashboard
+
+## Gemini AI Image Interpretation Integration
+
+- [x] Install @google/genai package
+- [x] Create geminiService.ts with image analysis function
+- [x] Add GEMINI_API_KEY to environment variables
+- [x] Update photo upload endpoint to support AI analysis
+- [x] Add AI analysis button to photo upload UI
+- [x] Display AI-generated description, condition, and recommendations
+- [x] Test AI image interpretation with sample photos
+- [ ] Create checkpoint with AI integration

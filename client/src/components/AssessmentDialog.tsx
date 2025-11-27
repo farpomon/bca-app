@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Sparkles } from "lucide-react";
 
 interface AssessmentDialogProps {
   open: boolean;
@@ -73,6 +73,7 @@ export function AssessmentDialog({
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
 
   const upsertAssessment = trpc.assessments.upsert.useMutation({
     onSuccess: async () => {
@@ -103,6 +104,26 @@ export function AssessmentDialog({
     },
   });
 
+  const analyzeWithGemini = trpc.photos.analyzeWithGemini.useMutation({
+    onSuccess: (result) => {
+      // Populate form fields with AI analysis results
+      setCondition(result.condition);
+      setObservations(result.description);
+      // Parse recommendations to extract useful data if possible
+      const recommendations = result.recommendation;
+      // Append AI recommendation to observations
+      setObservations(prev => 
+        prev ? `${prev}\n\nAI Recommendation: ${recommendations}` : `AI Analysis: ${result.description}\n\nRecommendation: ${recommendations}`
+      );
+      setAnalyzingWithAI(false);
+      toast.success("AI analysis complete! Review and adjust the assessment as needed.");
+    },
+    onError: (error) => {
+      toast.error("AI analysis failed: " + error.message);
+      setAnalyzingWithAI(false);
+    },
+  });
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -118,6 +139,24 @@ export function AssessmentDialog({
   const handleRemovePhoto = () => {
     setPhotoFile(null);
     setPhotoPreview(null);
+  };
+
+  const handleAIAnalysis = () => {
+    if (!photoFile || !photoPreview) {
+      toast.error("Please upload a photo first");
+      return;
+    }
+
+    setAnalyzingWithAI(true);
+    // Extract base64 data from preview (remove data:image/...;base64, prefix)
+    const base64Data = photoPreview.split(",")[1];
+    
+    analyzeWithGemini.mutate({
+      fileData: base64Data,
+      componentCode,
+      componentName,
+      userNotes: observations || undefined,
+    });
   };
 
   const handlePhotoUpload = async () => {
@@ -308,19 +347,39 @@ export function AssessmentDialog({
                 </label>
               </div>
             ) : (
-              <div className="relative border rounded-lg overflow-hidden">
-                <img
-                  src={photoPreview}
-                  alt="Preview"
-                  className="w-full h-48 object-cover"
-                />
+              <div className="space-y-2">
+                <div className="relative border rounded-lg overflow-hidden">
+                  <img
+                    src={photoPreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={handleRemovePhoto}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
                 <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={handleRemovePhoto}
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleAIAnalysis}
+                  disabled={analyzingWithAI || upsertAssessment.isPending}
                 >
-                  <X className="h-4 w-4" />
+                  {analyzingWithAI ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing with AI...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Analyze with AI
+                    </>
+                  )}
                 </Button>
               </div>
             )}
