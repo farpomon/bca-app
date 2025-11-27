@@ -19,6 +19,7 @@ interface AssessmentDialogProps {
     condition: string;
     conditionPercentage?: string | null;
     observations?: string | null;
+    recommendations?: string | null;
     remainingUsefulLife?: number | null;
     expectedUsefulLife?: number | null;
     reviewYear?: number | null;
@@ -49,6 +50,7 @@ export function AssessmentDialog({
 }: AssessmentDialogProps) {
   const [condition, setCondition] = useState(existingAssessment?.condition || "not_assessed");
   const [observations, setObservations] = useState(existingAssessment?.observations || "");
+  const [recommendations, setRecommendations] = useState(existingAssessment?.recommendations || "");
   const [remainingUsefulLife, setRemainingUsefulLife] = useState(
     existingAssessment?.remainingUsefulLife?.toString() || ""
   );
@@ -106,15 +108,10 @@ export function AssessmentDialog({
 
   const analyzeWithGemini = trpc.photos.analyzeWithGemini.useMutation({
     onSuccess: (result) => {
-      // Populate form fields with AI analysis results
+      // Populate form fields with AI analysis results cleanly
       setCondition(result.condition);
       setObservations(result.description);
-      // Parse recommendations to extract useful data if possible
-      const recommendations = result.recommendation;
-      // Append AI recommendation to observations
-      setObservations(prev => 
-        prev ? `${prev}\n\nAI Recommendation: ${recommendations}` : `AI Analysis: ${result.description}\n\nRecommendation: ${recommendations}`
-      );
+      setRecommendations(result.recommendation);
       setAnalyzingWithAI(false);
       toast.success("AI analysis complete! Review and adjust the assessment as needed.");
     },
@@ -185,6 +182,7 @@ export function AssessmentDialog({
       condition: condition as "good" | "fair" | "poor" | "not_assessed",
       conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
       observations: observations || undefined,
+      recommendations: recommendations || undefined,
       remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
       expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
       reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
@@ -198,6 +196,7 @@ export function AssessmentDialog({
   const handleClose = () => {
     setCondition("not_assessed");
     setObservations("");
+    setRecommendations("");
     setRemainingUsefulLife("");
     setEstimatedServiceLife("");
     setReviewYear(new Date().getFullYear().toString());
@@ -320,6 +319,18 @@ export function AssessmentDialog({
               placeholder="Enter detailed observations about the component condition..."
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
+              rows={4}
+            />
+          </div>
+
+          {/* Recommendations */}
+          <div className="space-y-2">
+            <Label htmlFor="recommendations">Recommendations</Label>
+            <Textarea
+              id="recommendations"
+              placeholder="Enter maintenance or repair recommendations..."
+              value={recommendations}
+              onChange={(e) => setRecommendations(e.target.value)}
               rows={4}
             />
           </div>

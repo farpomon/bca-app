@@ -69,6 +69,7 @@ export const assessments = mysqlTable("assessments", {
   condition: mysqlEnum("condition", ["good", "fair", "poor", "not_assessed"]).default("not_assessed").notNull(),
   conditionPercentage: varchar("conditionPercentage", { length: 50 }), // e.g., "75-50% of ESL" for Fair condition
   observations: text("observations"),
+  recommendations: text("recommendations"),
   remainingUsefulLife: int("remainingUsefulLife"), // in years
   expectedUsefulLife: int("expectedUsefulLife"), // in years (ESL - Estimated Service Life)
   reviewYear: int("reviewYear"), // Year when review is recommended

@@ -83,12 +83,13 @@ describe("Gemini AI Integration in Assessment Workflow", () => {
       userNotes: "Testing HVAC system condition",
     });
 
-    // 3. Create assessment using AI results
+    // 3. Create assessment using AI results with separate fields
     const assessment = await caller.assessments.upsert({
       projectId: project.id,
       componentCode: "D30",
       condition: aiAnalysis.condition,
-      observations: `${aiAnalysis.description}\n\nAI Recommendation: ${aiAnalysis.recommendation}`,
+      observations: aiAnalysis.description,
+      recommendations: aiAnalysis.recommendation,
       reviewYear: new Date().getFullYear(),
     });
 
@@ -96,11 +97,12 @@ describe("Gemini AI Integration in Assessment Workflow", () => {
     expect(assessment).toBeDefined();
     expect(assessment.id).toBeTypeOf("number");
 
-    // 5. Retrieve and verify the assessment
+    // 5. Retrieve and verify the assessment has separate observations and recommendations
     const projectAssessments = await caller.assessments.list({ projectId: project.id });
     expect(projectAssessments.length).toBe(1);
     expect(projectAssessments[0]?.condition).toBe(aiAnalysis.condition);
-    expect(projectAssessments[0]?.observations).toContain(aiAnalysis.description);
+    expect(projectAssessments[0]?.observations).toBe(aiAnalysis.description);
+    expect(projectAssessments[0]?.recommendations).toBe(aiAnalysis.recommendation);
 
     console.log("Complete workflow test passed!");
     console.log("AI-generated condition:", aiAnalysis.condition);

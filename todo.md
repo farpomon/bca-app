@@ -207,4 +207,14 @@
 - [x] Add AI analysis button to photo upload UI
 - [x] Display AI-generated description, condition, and recommendations
 - [x] Test AI image interpretation with sample photos
-- [ ] Create checkpoint with AI integration
+- [x] Create checkpoint with AI integration
+
+## Separate Observations and Recommendations Fields
+
+- [x] Add recommendations field to assessments table schema
+- [x] Update backend to handle recommendations field
+- [x] Split AssessmentDialog UI into separate Observations and Recommendations textareas
+- [x] Update AI integration to populate observations and recommendations separately
+- [x] Remove "AI Recommendation" and "AI Analysis" labels from output
+- [x] Test the updated assessment workflow
+- [ ] Create checkpoint with separated fields
