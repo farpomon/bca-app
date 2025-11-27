@@ -154,6 +154,10 @@ export default function ProjectDetail() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/dashboard`)}>
+              <Building2 className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
             <Button variant="outline" onClick={() => toast.info("Edit feature coming soon")}>
               <Edit className="mr-2 h-4 w-4" />
               Edit

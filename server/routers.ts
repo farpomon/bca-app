@@ -106,6 +106,33 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
         return await db.getProjectFCI(input.projectId);
       }),
+
+    financialPlanning: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        const { getFinancialPlanningData } = await import("./dashboardData");
+        return await getFinancialPlanningData(input.projectId);
+      }),
+
+    conditionMatrix: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        const { getConditionMatrixData } = await import("./dashboardData");
+        return await getConditionMatrixData(input.projectId);
+      }),
+
+    annualCostBreakdown: protectedProcedure
+      .input(z.object({ projectId: z.number(), years: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        const { getAnnualCostBreakdown } = await import("./dashboardData");
+        return await getAnnualCostBreakdown(input.projectId, input.years);
+      }),
   }),
 
   components: router({
