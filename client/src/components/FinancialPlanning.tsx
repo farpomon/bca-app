@@ -75,7 +75,11 @@ export function FinancialPlanning({ data, isLoading }: FinancialPlanningProps) {
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+              tickFormatter={(val) => {
+                if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+                if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+                return `$${val}`;
+              }}
             />
             <Tooltip 
               formatter={(val: number) => [`$${val.toLocaleString()}`, '']}
