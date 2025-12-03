@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Loader2, Calculator } from "lucide-react";
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface FCIGaugeProps {
@@ -74,6 +75,16 @@ export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
 
   const config = fciConfig[data.rating];
   const gaugeRotation = Math.min(data.fci, 100);
+  
+  // Smooth animation for gauge
+  const [animatedRotation, setAnimatedRotation] = React.useState(0);
+  
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedRotation(gaugeRotation);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [gaugeRotation]);
 
   return (
     <Card className="p-6">
@@ -94,7 +105,8 @@ export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
                 config.color
               )}
               style={{
-                transform: `rotate(${(gaugeRotation / 100) * 180 - 180}deg)`,
+                transform: `rotate(${(animatedRotation / 100) * 180 - 180}deg)`,
+                transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             />
           </div>

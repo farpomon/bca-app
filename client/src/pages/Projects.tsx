@@ -139,7 +139,7 @@ export default function Projects() {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="btn-gradient shadow-md hover:shadow-lg">
                 <Plus className="mr-2 h-4 w-4" />
                 New Project
               </Button>
@@ -259,33 +259,36 @@ export default function Projects() {
 
         {/* FCI Dashboard Summary */}
         {projects && projects.length > 0 && (
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="stat-card stat-card-primary">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Total Projects</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{projects.length}</div>
+                <div className="text-4xl font-bold tracking-tight">{projects.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">Across all statuses</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Assessments</CardTitle>
+            <Card className="stat-card stat-card-warning">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Active Assessments</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
+                <div className="text-4xl font-bold tracking-tight">
                   {projects.filter(p => p.status === 'in_progress').length}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">Currently in progress</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+            <Card className="stat-card stat-card-success">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Completed</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
+                <div className="text-4xl font-bold tracking-tight">
                   {projects.filter(p => p.status === 'completed').length}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">Finished assessments</p>
               </CardContent>
             </Card>
           </div>
@@ -296,16 +299,18 @@ export default function Projects() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : projects && projects.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="project-card cursor-pointer group"
                 onClick={() => setLocation(`/projects/${project.id}`)}
               >
-                <CardHeader>
+                <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
-                    <Building2 className="h-8 w-8 text-primary" />
+                    <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <Building2 className="h-6 w-6 text-primary" />
+                    </div>
                     <div className="flex items-center gap-2">
                       <Badge className={getStatusColor(project.status)}>
                         {getStatusLabel(project.status)}
@@ -353,13 +358,13 @@ export default function Projects() {
                       </DropdownMenu>
                     </div>
                   </div>
-                  <CardTitle className="mt-4">{project.name}</CardTitle>
+                  <CardTitle className="mt-4 text-lg group-hover:text-primary transition-colors">{project.name}</CardTitle>
                   <CardDescription>
                     {project.clientName && <div>Client: {project.clientName}</div>}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm text-muted-foreground">
+                <CardContent className="pt-0">
+                  <div className="space-y-2.5 text-sm text-muted-foreground">
                     {project.address && (
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
@@ -379,16 +384,18 @@ export default function Projects() {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                Get started by creating your first building condition assessment project
+          <Card className="border-dashed border-2">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="p-4 rounded-full bg-primary/10 mb-4">
+                <Building2 className="h-12 w-12 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
+              <p className="text-muted-foreground text-center mb-6 max-w-md">
+                Get started by creating your first building condition assessment project and begin tracking facility conditions
               </p>
-              <Button onClick={() => setDialogOpen(true)}>
+              <Button onClick={() => setDialogOpen(true)} className="btn-gradient shadow-md hover:shadow-lg">
                 <Plus className="mr-2 h-4 w-4" />
-                Create Project
+                Create Your First Project
               </Button>
             </CardContent>
           </Card>
