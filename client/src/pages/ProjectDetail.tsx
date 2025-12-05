@@ -17,6 +17,7 @@ import { useState } from "react";
 import PhotoGallery from "@/components/PhotoGallery";
 import ReportTab from "@/components/ReportTab";
 import ExportButton from "@/components/ExportButton";
+import { AssessmentDialog } from "@/components/AssessmentDialog";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -24,6 +25,8 @@ export default function ProjectDetail() {
   const projectId = parseInt(id!);
   
   const [deficiencyDialogOpen, setDeficiencyDialogOpen] = useState(false);
+  const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false);
+  const [editingAssessment, setEditingAssessment] = useState<any>(null);
   const [deficiencyForm, setDeficiencyForm] = useState({
     assessmentId: 0,
     componentCode: "",
@@ -294,18 +297,30 @@ export default function ProjectDetail() {
                 {assessments && assessments.length > 0 ? (
                   <div className="space-y-2">
                     {assessments.map((assessment) => (
-                      <div key={assessment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
+                      <div key={assessment.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                        <div className="flex-1">
                           <div className="font-medium">{assessment.componentCode}</div>
-                          <div className="text-sm text-muted-foreground">{assessment.observations}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{assessment.observations}</div>
                         </div>
-                        <Badge variant={
-                          assessment.condition === "good" ? "default" :
-                          assessment.condition === "fair" ? "secondary" :
-                          assessment.condition === "poor" ? "destructive" : "outline"
-                        }>
-                          {assessment.condition}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={
+                            assessment.condition === "good" ? "default" :
+                            assessment.condition === "fair" ? "secondary" :
+                            assessment.condition === "poor" ? "destructive" : "outline"
+                          }>
+                            {assessment.condition}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingAssessment(assessment);
+                              setAssessmentDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -518,6 +533,38 @@ export default function ProjectDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Assessment Edit Dialog */}
+      <AssessmentDialog
+        open={assessmentDialogOpen}
+        onOpenChange={(open) => {
+          setAssessmentDialogOpen(open);
+          if (!open) {
+            setEditingAssessment(null);
+          }
+        }}
+        projectId={projectId}
+        componentCode={editingAssessment?.componentCode || ""}
+        componentName={editingAssessment?.componentCode || ""}
+        existingAssessment={editingAssessment ? {
+          condition: editingAssessment.condition,
+          conditionPercentage: editingAssessment.conditionPercentage,
+          observations: editingAssessment.observations,
+          recommendations: editingAssessment.recommendations,
+          remainingUsefulLife: editingAssessment.remainingUsefulLife,
+          expectedUsefulLife: editingAssessment.expectedUsefulLife,
+          reviewYear: editingAssessment.reviewYear,
+          lastTimeAction: editingAssessment.lastTimeAction,
+          estimatedRepairCost: editingAssessment.estimatedRepairCost,
+          replacementValue: editingAssessment.replacementValue,
+          actionYear: editingAssessment.actionYear,
+        } : undefined}
+        onSuccess={() => {
+          setAssessmentDialogOpen(false);
+          setEditingAssessment(null);
+          toast.success("Assessment updated successfully");
+        }}
+      />
     </DashboardLayout>
   );
 }

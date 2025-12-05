@@ -264,4 +264,10 @@
 - [x] Add all required report sections (dashboard, components, photos)
 - [x] Test report generation with sample project
 - [x] Test edit functionality with existing assessments
-- [ ] Create checkpoint with fixes
+- [x] Create checkpoint with fixes
+
+## Fix Dashboard Edit Feature
+- [x] Investigate edit button on dashboard/project detail page
+- [x] Fix edit button to properly pass existing assessment data
+- [x] Test edit from dashboard UI
+- [ ] Create checkpoint with fix
