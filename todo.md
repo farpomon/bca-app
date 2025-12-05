@@ -247,4 +247,21 @@
 - [x] Improve empty states and loading states
 - [x] Add visual feedback for user actions
 - [x] Test across different screen sizes
-- [ ] Create checkpoint with UI improvements
+- [x] Create checkpoint with UI improvements
+
+## Populate Test Project from Maben Report
+- [x] Extract project details from PDF
+- [x] Extract assessment data from PDF
+- [x] Create seed script to populate database
+- [x] Run seed script and verify data
+
+## Fix Report and Edit Features
+- [x] Investigate current report generation implementation
+- [x] Investigate edit assessment functionality issues
+- [x] Fix edit assessment dialog to load existing data
+- [x] Fix edit assessment save functionality
+- [x] Implement proper report generation matching Maben format
+- [x] Add all required report sections (dashboard, components, photos)
+- [x] Test report generation with sample project
+- [x] Test edit functionality with existing assessments
+- [ ] Create checkpoint with fixes

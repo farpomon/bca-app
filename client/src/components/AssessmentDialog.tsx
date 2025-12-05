@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -49,29 +49,44 @@ export function AssessmentDialog({
   onSuccess,
 }: AssessmentDialogProps) {
   const [condition, setCondition] = useState(existingAssessment?.condition || "not_assessed");
-  const [observations, setObservations] = useState(existingAssessment?.observations || "");
-  const [recommendations, setRecommendations] = useState(existingAssessment?.recommendations || "");
-  const [remainingUsefulLife, setRemainingUsefulLife] = useState(
-    existingAssessment?.remainingUsefulLife?.toString() || ""
-  );
-  const [estimatedServiceLife, setEstimatedServiceLife] = useState(
-    existingAssessment?.expectedUsefulLife?.toString() || ""
-  );
-  const [reviewYear, setReviewYear] = useState(
-    existingAssessment?.reviewYear?.toString() || new Date().getFullYear().toString()
-  );
-  const [lastTimeAction, setLastTimeAction] = useState(
-    existingAssessment?.lastTimeAction?.toString() || ""
-  );
-  const [estimatedRepairCost, setEstimatedRepairCost] = useState(
-    existingAssessment?.estimatedRepairCost?.toString() || ""
-  );
-  const [replacementValue, setReplacementValue] = useState(
-    existingAssessment?.replacementValue?.toString() || ""
-  );
-  const [actionYear, setActionYear] = useState(
-    existingAssessment?.actionYear?.toString() || ""
-  );
+
+  // Sync state when existingAssessment changes (for edit mode)
+  useEffect(() => {
+    if (existingAssessment) {
+      setCondition(existingAssessment.condition || "not_assessed");
+      setObservations(existingAssessment.observations || "");
+      setRecommendations(existingAssessment.recommendations || "");
+      setRemainingUsefulLife(existingAssessment.remainingUsefulLife?.toString() || "");
+      setEstimatedServiceLife(existingAssessment.expectedUsefulLife?.toString() || "");
+      setReviewYear(existingAssessment.reviewYear?.toString() || new Date().getFullYear().toString());
+      setLastTimeAction(existingAssessment.lastTimeAction?.toString() || "");
+      setEstimatedRepairCost(existingAssessment.estimatedRepairCost?.toString() || "");
+      setReplacementValue(existingAssessment.replacementValue?.toString() || "");
+      setActionYear(existingAssessment.actionYear?.toString() || "");
+    } else {
+      // Reset to defaults for new assessment
+      setCondition("not_assessed");
+      setObservations("");
+      setRecommendations("");
+      setRemainingUsefulLife("");
+      setEstimatedServiceLife("");
+      setReviewYear(new Date().getFullYear().toString());
+      setLastTimeAction("");
+      setEstimatedRepairCost("");
+      setReplacementValue("");
+      setActionYear("");
+    }
+  }, [existingAssessment, open]);
+
+  const [observations, setObservations] = useState("");
+  const [recommendations, setRecommendations] = useState("");
+  const [remainingUsefulLife, setRemainingUsefulLife] = useState("");
+  const [estimatedServiceLife, setEstimatedServiceLife] = useState("");
+  const [reviewYear, setReviewYear] = useState(new Date().getFullYear().toString());
+  const [lastTimeAction, setLastTimeAction] = useState("");
+  const [estimatedRepairCost, setEstimatedRepairCost] = useState("");
+  const [replacementValue, setReplacementValue] = useState("");
+  const [actionYear, setActionYear] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);

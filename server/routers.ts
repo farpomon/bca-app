@@ -6,6 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
+import * as dashboardData from "./dashboardData";
 import { generateBCAReport } from "./reportGenerator";
 import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
 import { assessPhotoWithAI } from "./photoAssessment";
@@ -427,16 +428,31 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
 
         const assessments = await db.getProjectAssessments(input.projectId);
-        const deficiencies = await db.getProjectDeficiencies(input.projectId);
-        const photos = await db.getProjectPhotos(input.projectId);
-        const stats = await db.getProjectStats(input.projectId);
+        const fciData = await db.getProjectFCI(input.projectId);
+        const financialData = await dashboardData.getFinancialPlanningData(input.projectId);
+        const conditionData = await dashboardData.getConditionMatrixData(input.projectId);
+
+        // Transform data for report format
+        const financialPlanning = financialData.periods.map((period, idx) => ({
+          period: period.label,
+          structure: financialData.groups.find((g: any) => g.code === 'A')?.periods[idx] || 0,
+          enclosure: financialData.groups.find((g: any) => g.code === 'B')?.periods[idx] || 0,
+          interior: financialData.groups.find((g: any) => g.code === 'C')?.periods[idx] || 0,
+          mep: financialData.groups.find((g: any) => g.code === 'D')?.periods[idx] || 0,
+          site: financialData.groups.find((g: any) => g.code === 'G')?.periods[idx] || 0,
+        }));
+
+        const conditionMatrix = conditionData.systems.map((s: any) => ({
+          system: s.name,
+          condition: s.condition.charAt(0).toUpperCase() + s.condition.slice(1),
+        }));
 
         const pdfBuffer = generateBCAReport({
           project,
           assessments,
-          deficiencies,
-          photos,
-          totalEstimatedCost: stats?.totalEstimatedCost || 0,
+          fciData: fciData || { fci: 0, rating: 'N/A', totalRepairCost: 0, totalReplacementValue: 0 },
+          financialPlanning,
+          conditionMatrix,
         });
 
         // Upload to S3
