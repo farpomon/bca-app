@@ -270,4 +270,11 @@
 - [x] Investigate edit button on dashboard/project detail page
 - [x] Fix edit button to properly pass existing assessment data
 - [x] Test edit from dashboard UI
-- [ ] Create checkpoint with fix
+- [x] Create checkpoint with fix
+
+## Fix Project Edit Button
+- [x] Implement project edit dialog with form
+- [x] Wire up Edit button to open dialog
+- [x] Test project editing functionality
+- [x] Verify assessment edit buttons are visible in Assessments tab
+- [ ] Create checkpoint with complete edit functionality

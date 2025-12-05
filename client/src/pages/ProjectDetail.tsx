@@ -27,6 +27,18 @@ export default function ProjectDetail() {
   const [deficiencyDialogOpen, setDeficiencyDialogOpen] = useState(false);
   const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<any>(null);
+  const [projectEditDialogOpen, setProjectEditDialogOpen] = useState(false);
+  const [projectForm, setProjectForm] = useState({
+    name: "",
+    address: "",
+    clientName: "",
+    propertyType: "",
+    constructionType: "",
+    yearBuilt: "",
+    numberOfUnits: "",
+    numberOfStories: "",
+    buildingCode: "",
+  });
   const [deficiencyForm, setDeficiencyForm] = useState({
     assessmentId: 0,
     componentCode: "",
@@ -92,6 +104,49 @@ export default function ProjectDetail() {
       toast.error("Failed to delete deficiency: " + error.message);
     },
   });
+
+  const updateProject = trpc.projects.update.useMutation({
+    onSuccess: () => {
+      toast.success("Project updated successfully");
+      setProjectEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Failed to update project: " + error.message);
+    },
+  });
+
+  const handleEditProject = () => {
+    if (project) {
+      setProjectForm({
+        name: project.name,
+        address: project.address || "",
+        clientName: project.clientName || "",
+        propertyType: project.propertyType || "",
+        constructionType: project.constructionType || "",
+        yearBuilt: project.yearBuilt?.toString() || "",
+        numberOfUnits: project.numberOfUnits?.toString() || "",
+        numberOfStories: project.numberOfStories?.toString() || "",
+        buildingCode: project.buildingCode || "",
+      });
+      setProjectEditDialogOpen(true);
+    }
+  };
+
+  const handleSaveProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProject.mutate({
+      id: projectId,
+      name: projectForm.name,
+      address: projectForm.address || undefined,
+      clientName: projectForm.clientName || undefined,
+      propertyType: projectForm.propertyType || undefined,
+      constructionType: projectForm.constructionType || undefined,
+      yearBuilt: projectForm.yearBuilt ? parseInt(projectForm.yearBuilt) : undefined,
+      numberOfUnits: projectForm.numberOfUnits ? parseInt(projectForm.numberOfUnits) : undefined,
+      numberOfStories: projectForm.numberOfStories ? parseInt(projectForm.numberOfStories) : undefined,
+      buildingCode: projectForm.buildingCode || undefined,
+    });
+  };
 
   const handleCreateDeficiency = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,7 +216,7 @@ export default function ProjectDetail() {
               <Building2 className="mr-2 h-4 w-4" />
               Dashboard
             </Button>
-            <Button variant="outline" onClick={() => toast.info("Edit feature coming soon")}>
+            <Button variant="outline" onClick={handleEditProject}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
@@ -533,6 +588,113 @@ export default function ProjectDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Project Edit Dialog */}
+      <Dialog open={projectEditDialogOpen} onOpenChange={setProjectEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <form onSubmit={handleSaveProject}>
+            <DialogHeader>
+              <DialogTitle>Edit Project</DialogTitle>
+              <DialogDescription>
+                Update project information and details
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Project Name *</Label>
+                <Input
+                  id="name"
+                  value={projectForm.name}
+                  onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  value={projectForm.address}
+                  onChange={(e) => setProjectForm({ ...projectForm, address: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="clientName">Client Name</Label>
+                <Input
+                  id="clientName"
+                  value={projectForm.clientName}
+                  onChange={(e) => setProjectForm({ ...projectForm, clientName: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="propertyType">Property Type</Label>
+                  <Input
+                    id="propertyType"
+                    value={projectForm.propertyType}
+                    onChange={(e) => setProjectForm({ ...projectForm, propertyType: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="constructionType">Construction Type</Label>
+                  <Input
+                    id="constructionType"
+                    value={projectForm.constructionType}
+                    onChange={(e) => setProjectForm({ ...projectForm, constructionType: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="yearBuilt">Year Built</Label>
+                  <Input
+                    id="yearBuilt"
+                    type="number"
+                    value={projectForm.yearBuilt}
+                    onChange={(e) => setProjectForm({ ...projectForm, yearBuilt: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="buildingCode">Building Code</Label>
+                  <Input
+                    id="buildingCode"
+                    value={projectForm.buildingCode}
+                    onChange={(e) => setProjectForm({ ...projectForm, buildingCode: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="numberOfUnits">Number of Units</Label>
+                  <Input
+                    id="numberOfUnits"
+                    type="number"
+                    value={projectForm.numberOfUnits}
+                    onChange={(e) => setProjectForm({ ...projectForm, numberOfUnits: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="numberOfStories">Number of Stories</Label>
+                  <Input
+                    id="numberOfStories"
+                    type="number"
+                    value={projectForm.numberOfStories}
+                    onChange={(e) => setProjectForm({ ...projectForm, numberOfStories: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setProjectEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateProject.isPending}>
+                {updateProject.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Assessment Edit Dialog */}
       <AssessmentDialog
