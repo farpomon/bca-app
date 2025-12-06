@@ -121,6 +121,76 @@ export function AssessmentDialog({
     },
   });
 
+  const handleSaveWithPhoto = async () => {
+    // First save the assessment to get the assessment ID
+    try {
+      const result = await upsertAssessment.mutateAsync({
+        projectId,
+        componentCode,
+        condition: condition as "good" | "fair" | "poor" | "not_assessed",
+        conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
+        observations: observations || undefined,
+        recommendations: recommendations || undefined,
+        remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
+        expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
+        reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
+        lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
+        estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
+        replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
+        actionYear: actionYear ? parseInt(actionYear) : undefined,
+      });
+
+      // Then upload photo with the assessment ID
+      if (photoFile) {
+        setUploadingPhoto(true);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(",")[1];
+          uploadPhoto.mutate({
+            projectId,
+            assessmentId: result.id, // Link photo to assessment
+            fileData: base64,
+            fileName: photoFile.name,
+            mimeType: photoFile.type,
+            componentCode,
+            caption: `${componentCode} - ${componentName}`,
+          });
+        };
+        reader.readAsDataURL(photoFile);
+      } else {
+        toast.success("Assessment saved successfully");
+        onSuccess();
+        handleClose();
+      }
+    } catch (error: any) {
+      toast.error("Failed to save assessment: " + error.message);
+    }
+  };
+
+  const handleSave = () => {
+    if (photoFile) {
+      // If there's a photo, use the async handler to link it to the assessment
+      handleSaveWithPhoto();
+    } else {
+      // No photo, just save the assessment
+      upsertAssessment.mutate({
+        projectId,
+        componentCode,
+        condition: condition as "good" | "fair" | "poor" | "not_assessed",
+        conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
+        observations: observations || undefined,
+        recommendations: recommendations || undefined,
+        remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
+        expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
+        reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
+        lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
+        estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
+        replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
+        actionYear: actionYear ? parseInt(actionYear) : undefined,
+      });
+    }
+  };
+
   const analyzeWithGemini = trpc.photos.analyzeWithGemini.useMutation({
     onSuccess: (result) => {
       // Populate form fields with AI analysis results cleanly
@@ -188,24 +258,6 @@ export function AssessmentDialog({
       });
     };
     reader.readAsDataURL(photoFile);
-  };
-
-  const handleSave = () => {
-    upsertAssessment.mutate({
-      projectId,
-      componentCode,
-      condition: condition as "good" | "fair" | "poor" | "not_assessed",
-      conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
-      observations: observations || undefined,
-      recommendations: recommendations || undefined,
-      remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
-      expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
-      reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
-      lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
-      estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
-      replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
-      actionYear: actionYear ? parseInt(actionYear) : undefined,
-    });
   };
 
   const handleClose = () => {

@@ -283,4 +283,12 @@
 - [x] Update report generator to fetch assessment photos
 - [x] Display photos in each assessment section of the report
 - [x] Test report generation with photos
-- [ ] Create checkpoint with photo-enabled reports
+- [x] Create checkpoint with photo-enabled reports
+
+## Debug Photos Not Showing in PDF Reports
+- [x] Check if photos are being fetched from database
+- [x] Check if photo data is being passed to report generator
+- [x] Debug jsPDF image rendering
+- [x] Fix photo rendering in PDF
+- [x] Test with real project data
+- [ ] Create checkpoint with working photos
