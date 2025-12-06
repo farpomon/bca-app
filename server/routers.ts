@@ -428,6 +428,15 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
 
         const assessments = await db.getProjectAssessments(input.projectId);
+        
+        // Fetch photos for each assessment
+        const assessmentsWithPhotos = await Promise.all(
+          assessments.map(async (assessment) => {
+            const photos = await db.getAssessmentPhotos(assessment.id);
+            return { ...assessment, photos };
+          })
+        );
+        
         const fciData = await db.getProjectFCI(input.projectId);
         const financialData = await dashboardData.getFinancialPlanningData(input.projectId);
         const conditionData = await dashboardData.getConditionMatrixData(input.projectId);
@@ -449,7 +458,7 @@ export const appRouter = router({
 
         const pdfBuffer = generateBCAReport({
           project,
-          assessments,
+          assessments: assessmentsWithPhotos,
           fciData: fciData || { fci: 0, rating: 'N/A', totalRepairCost: 0, totalReplacementValue: 0 },
           financialPlanning,
           conditionMatrix,

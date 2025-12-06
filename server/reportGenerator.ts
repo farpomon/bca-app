@@ -1,10 +1,10 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { Project, Assessment } from "../drizzle/schema";
+import type { Project, Assessment, Photo } from "../drizzle/schema";
 
 interface ReportData {
   project: Project;
-  assessments: Assessment[];
+  assessments: (Assessment & { photos: Photo[] })[];
   fciData: {
     fci: number;
     rating: string;
@@ -326,7 +326,7 @@ export function generateBCAReport(data: ReportData): Buffer {
   yPos += 20;
 
   // Group assessments by UNIFORMAT Level 1 (first letter of component code)
-  const groupedAssessments: Record<string, Assessment[]> = {};
+  const groupedAssessments: Record<string, (Assessment & { photos: Photo[] })[]> = {};
   data.assessments.forEach(assessment => {
     const level1 = assessment.componentCode.charAt(0) || "Other";
     if (!groupedAssessments[level1]) {
@@ -434,6 +434,64 @@ export function generateBCAReport(data: ReportData): Buffer {
         });
 
         yPos = (doc as any).lastAutoTable.finalY + 10;
+      }
+
+      // Add photos if available
+      if (assessment.photos && assessment.photos.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("Photos:", 10, yPos);
+        yPos += 7;
+
+        // Display photos in a grid (2 per row)
+        const photoWidth = 85;
+        const photoHeight = 60;
+        let xPos = 10;
+        let photosInRow = 0;
+
+        for (const photo of assessment.photos.slice(0, 4)) { // Limit to 4 photos
+          // Check if we need a new page
+          if (yPos + photoHeight > 270) {
+            doc.addPage();
+            addMabenHeader();
+            yPos = 25;
+            xPos = 10;
+            photosInRow = 0;
+          }
+
+          try {
+            // Add photo to PDF
+            doc.addImage(photo.url, 'JPEG', xPos, yPos, photoWidth, photoHeight);
+            
+            // Add caption if available
+            if (photo.caption) {
+              doc.setFontSize(8);
+              doc.setFont("helvetica", "italic");
+              doc.text(photo.caption, xPos, yPos + photoHeight + 4, { maxWidth: photoWidth });
+            }
+          } catch (error) {
+            // If image fails to load, show placeholder text
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text("[Photo unavailable]", xPos + 20, yPos + 30);
+          }
+
+          photosInRow++;
+          if (photosInRow === 2) {
+            // Move to next row
+            yPos += photoHeight + 10;
+            xPos = 10;
+            photosInRow = 0;
+          } else {
+            // Move to next column
+            xPos += photoWidth + 10;
+          }
+        }
+
+        // Adjust yPos if we ended mid-row
+        if (photosInRow > 0) {
+          yPos += photoHeight + 10;
+        }
       }
 
       yPos += 5;

@@ -277,4 +277,10 @@
 - [x] Wire up Edit button to open dialog
 - [x] Test project editing functionality
 - [x] Verify assessment edit buttons are visible in Assessments tab
-- [ ] Create checkpoint with complete edit functionality
+- [x] Create checkpoint with complete edit functionality
+
+## Add Photos to Report
+- [x] Update report generator to fetch assessment photos
+- [x] Display photos in each assessment section of the report
+- [x] Test report generation with photos
+- [ ] Create checkpoint with photo-enabled reports
