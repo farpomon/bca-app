@@ -92,21 +92,7 @@ export function AssessmentDialog({
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
 
-  const upsertAssessment = trpc.assessments.upsert.useMutation({
-    onSuccess: async () => {
-      // If there's a photo, upload it
-      if (photoFile) {
-        await handlePhotoUpload();
-      } else {
-        toast.success("Assessment saved successfully");
-        onSuccess();
-        handleClose();
-      }
-    },
-    onError: (error) => {
-      toast.error("Failed to save assessment: " + error.message);
-    },
-  });
+  const upsertAssessment = trpc.assessments.upsert.useMutation();
 
   const uploadPhoto = trpc.photos.upload.useMutation({
     onSuccess: () => {
@@ -241,24 +227,7 @@ export function AssessmentDialog({
     });
   };
 
-  const handlePhotoUpload = async () => {
-    if (!photoFile) return;
 
-    setUploadingPhoto(true);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = (reader.result as string).split(",")[1];
-      uploadPhoto.mutate({
-        projectId,
-        fileData: base64,
-        fileName: photoFile.name,
-        mimeType: photoFile.type,
-        componentCode,
-        caption: `${componentCode} - ${componentName}`,
-      });
-    };
-    reader.readAsDataURL(photoFile);
-  };
 
   const handleClose = () => {
     setCondition("not_assessed");

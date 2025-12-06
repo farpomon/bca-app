@@ -291,4 +291,6 @@
 - [x] Debug jsPDF image rendering
 - [x] Fix photo rendering in PDF
 - [x] Test with real project data
-- [ ] Create checkpoint with working photos
+- [x] Create checkpoint with working photos
+- [x] Fix duplicate handleSave function definition causing server errors
+- [x] Clean up AssessmentDialog to use only async photo linking approach
