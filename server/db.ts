@@ -9,6 +9,8 @@ import {
   deficiencies,
   photos,
   costEstimates,
+  hierarchyTemplates,
+  projectHierarchyConfig,
   InsertProject,
   InsertAssessment,
   InsertDeficiency,
@@ -453,3 +455,109 @@ export async function getProjectFCI(projectId: number) {
 }
 
 
+
+// ==================== Hierarchy Management ====================
+
+export async function createHierarchyTemplate(template: {
+  name: string;
+  description?: string;
+  isDefault?: boolean;
+  config: string;
+  createdBy: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(hierarchyTemplates).values(template);
+  return result;
+}
+
+export async function getHierarchyTemplates() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(hierarchyTemplates);
+}
+
+export async function getDefaultHierarchyTemplate() {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(hierarchyTemplates)
+    .where(eq(hierarchyTemplates.isDefault, true))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+export async function updateHierarchyTemplate(
+  id: number,
+  updates: Partial<{
+    name: string;
+    description: string;
+    isDefault: boolean;
+    config: string;
+  }>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(hierarchyTemplates)
+    .set(updates)
+    .where(eq(hierarchyTemplates.id, id));
+}
+
+export async function deleteHierarchyTemplate(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(hierarchyTemplates).where(eq(hierarchyTemplates.id, id));
+}
+
+export async function getProjectHierarchyConfig(projectId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(projectHierarchyConfig)
+    .where(eq(projectHierarchyConfig.projectId, projectId))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+export async function upsertProjectHierarchyConfig(config: {
+  projectId: number;
+  templateId?: number;
+  maxDepth?: number;
+  componentWeights?: string;
+  componentPriorities?: string;
+  enabledComponents?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getProjectHierarchyConfig(config.projectId);
+
+  if (existing) {
+    await db
+      .update(projectHierarchyConfig)
+      .set(config)
+      .where(eq(projectHierarchyConfig.projectId, config.projectId));
+  } else {
+    await db.insert(projectHierarchyConfig).values(config);
+  }
+}
+
+export async function deleteProjectHierarchyConfig(projectId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .delete(projectHierarchyConfig)
+    .where(eq(projectHierarchyConfig.projectId, projectId));
+}

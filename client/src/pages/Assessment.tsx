@@ -30,9 +30,10 @@ export default function Assessment() {
       meta: { suppressErrorLogging: true }
     }
   );
-  const { data: components, isLoading: componentsLoading } = trpc.components.list.useQuery(undefined, {
-    enabled: !!user,
-  });
+  const { data: components, isLoading: componentsLoading } = trpc.components.list.useQuery(
+    { projectId },
+    { enabled: !!user && !isNaN(projectId) }
+  );
   const { data: existingAssessments, refetch: refetchAssessments } = trpc.assessments.list.useQuery(
     { projectId },
     { enabled: !!user && !isNaN(projectId) }

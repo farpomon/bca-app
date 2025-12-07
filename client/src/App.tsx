@@ -9,6 +9,7 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProjectDashboard from "./pages/ProjectDashboard";
 import Assessment from "./pages/Assessment";
+import HierarchySettings from "./pages/HierarchySettings";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path={"/projects/:id/dashboard"} component={ProjectDashboard} />
       <Route path={"/projects/:id"} component={ProjectDetail} />
       <Route path={"/projects/:id/assess"} component={Assessment} />
+      <Route path={"/settings/hierarchy"} component={HierarchySettings} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -303,3 +303,17 @@
 - [x] Fix photo rendering in PDF - converted to fetch images and use base64 data URLs
 - [x] Verify photos appear in generated report - confirmed working!
 - [x] Create checkpoint with working photo reports
+
+## Flexible UNIFORMAT II Asset Hierarchy System
+- [x] Design database schema for hierarchy templates and configurations
+- [x] Create hierarchyTemplates table with UNIFORMAT II structure
+- [x] Create projectHierarchyConfig table for per-project overrides
+- [x] Add component weighting and priority fields
+- [x] Implement backend tRPC procedures for hierarchy CRUD operations
+- [x] Build global hierarchy settings page (admin only)
+- [x] Build per-project hierarchy customization UI
+- [x] Add hierarchy depth configuration (Level 1-4)
+- [x] Add component weighting/priority controls
+- [x] Integrate hierarchy into assessment component selection
+- [x] Write tests for hierarchy system - 8 tests passing
+- [x] Create checkpoint with hierarchy feature

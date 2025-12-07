@@ -137,16 +137,66 @@ export const appRouter = router({
   }),
 
   components: router({
-    list: protectedProcedure.query(async () => {
-      return await db.getAllBuildingComponents();
-    }),
-
-    byLevel: protectedProcedure
-      .input(z.object({ level: z.number().min(1).max(3) }))
+    list: publicProcedure
+      .input(z.object({ projectId: z.number().optional() }))
       .query(async ({ input }) => {
-        return await db.getBuildingComponentsByLevel(input.level);
+        const components = await db.getAllBuildingComponents();
+        
+        // If projectId provided, filter by hierarchy config
+        if (input.projectId) {
+          const config = await db.getProjectHierarchyConfig(input.projectId);
+          
+          if (config) {
+            // Filter by max depth
+            const maxDepth = config.maxDepth || 3;
+            let filtered = components.filter((c: any) => c.level <= maxDepth);
+            
+            // Filter by enabled components
+            if (config.enabledComponents) {
+              const enabled = JSON.parse(config.enabledComponents);
+              filtered = filtered.filter((c: any) => {
+                const majorGroup = (c as any).code.charAt(0);
+                return enabled.includes(majorGroup);
+              });
+            }
+            
+            return filtered;
+          }
+        }
+        
+        return components;
       }),
 
+    byLevel: publicProcedure
+      .input(z.object({ 
+        level: z.number(),
+        projectId: z.number().optional()
+      }))
+      .query(async ({ input }) => {
+        const components = await db.getBuildingComponentsByLevel(input.level);
+        
+        // If projectId provided, filter by hierarchy config
+        if (input.projectId) {
+          const config = await db.getProjectHierarchyConfig(input.projectId);
+          
+          if (config) {
+            // Filter by max depth
+            const maxDepth = config.maxDepth || 3;
+            if (input.level > maxDepth) return [];
+            
+            // Filter by enabled components
+            if (config.enabledComponents) {
+              const enabled = JSON.parse(config.enabledComponents);
+              return components.filter(c => {
+                const majorGroup = (c as any).code.charAt(0);
+                return enabled.includes(majorGroup);
+              });
+            }
+          }
+        }
+        
+        return components;
+      }),
     get: protectedProcedure
       .input(z.object({ code: z.string() }))
       .query(async ({ input }) => {
@@ -470,6 +520,135 @@ export const appRouter = router({
 
         return { url, fileKey };
       }),
+  }),
+
+  hierarchy: router({
+    // Global templates (admin only)
+    templates: router({
+      list: protectedProcedure.query(async () => {
+        return await db.getHierarchyTemplates();
+      }),
+
+      create: protectedProcedure
+        .input(z.object({
+          name: z.string().min(1),
+          description: z.string().optional(),
+          isDefault: z.boolean().optional(),
+          config: z.object({
+            maxDepth: z.number().min(1).max(4),
+            componentWeights: z.record(z.string(), z.number()).optional(),
+            componentPriorities: z.record(z.string(), z.enum(["low", "medium", "high", "critical"])).optional(),
+          }),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+
+          return await db.createHierarchyTemplate({
+            name: input.name,
+            description: input.description,
+            isDefault: input.isDefault || false,
+            config: JSON.stringify(input.config),
+            createdBy: ctx.user.id,
+          });
+        }),
+
+      update: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          name: z.string().min(1).optional(),
+          description: z.string().optional(),
+          isDefault: z.boolean().optional(),
+          config: z.object({
+            maxDepth: z.number().min(1).max(4),
+            componentWeights: z.record(z.string(), z.number()).optional(),
+            componentPriorities: z.record(z.string(), z.enum(["low", "medium", "high", "critical"])).optional(),
+          }).optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+
+          const updates: any = {};
+          if (input.name) updates.name = input.name;
+          if (input.description !== undefined) updates.description = input.description;
+          if (input.isDefault !== undefined) updates.isDefault = input.isDefault;
+          if (input.config) updates.config = JSON.stringify(input.config);
+
+          await db.updateHierarchyTemplate(input.id, updates);
+          return { success: true };
+        }),
+
+      delete: protectedProcedure
+        .input(z.object({ id: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+
+          await db.deleteHierarchyTemplate(input.id);
+          return { success: true };
+        }),
+
+      getDefault: publicProcedure.query(async () => {
+        return await db.getDefaultHierarchyTemplate();
+      }),
+    }),
+
+    // Per-project configuration
+    project: router({
+      get: protectedProcedure
+        .input(z.object({ projectId: z.number() }))
+        .query(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+          }
+
+          return await db.getProjectHierarchyConfig(input.projectId);
+        }),
+
+      upsert: protectedProcedure
+        .input(z.object({
+          projectId: z.number(),
+          templateId: z.number().optional(),
+          maxDepth: z.number().min(1).max(4).optional(),
+          componentWeights: z.record(z.string(), z.number()).optional(),
+          componentPriorities: z.record(z.string(), z.enum(["low", "medium", "high", "critical"])).optional(),
+          enabledComponents: z.array(z.string()).optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+          }
+
+          await db.upsertProjectHierarchyConfig({
+            projectId: input.projectId,
+            templateId: input.templateId,
+            maxDepth: input.maxDepth,
+            componentWeights: input.componentWeights ? JSON.stringify(input.componentWeights) : undefined,
+            componentPriorities: input.componentPriorities ? JSON.stringify(input.componentPriorities) : undefined,
+            enabledComponents: input.enabledComponents ? JSON.stringify(input.enabledComponents) : undefined,
+          });
+
+          return { success: true };
+        }),
+
+      delete: protectedProcedure
+        .input(z.object({ projectId: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+          }
+
+          await db.deleteProjectHierarchyConfig(input.projectId);
+          return { success: true };
+        }),
+    }),
   }),
 
   exports: router({

@@ -83,7 +83,7 @@ describe("components", () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
-    const components = await caller.components.list();
+    const components = await caller.components.list({});
 
     expect(Array.isArray(components)).toBe(true);
     expect(components.length).toBeGreaterThan(0);

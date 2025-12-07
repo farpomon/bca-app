@@ -171,3 +171,40 @@ export const costEstimates = mysqlTable("cost_estimates", {
 
 export type CostEstimate = typeof costEstimates.$inferSelect;
 export type InsertCostEstimate = typeof costEstimates.$inferInsert;
+
+/**
+ * Hierarchy templates - global UNIFORMAT II configuration templates
+ * Defines the default structure, weightings, and priorities
+ */
+export const hierarchyTemplates = mysqlTable("hierarchy_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isDefault: boolean("isDefault").default(false).notNull(),
+  config: text("config").notNull(), // JSON: { maxDepth, componentWeights, priorities }
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HierarchyTemplate = typeof hierarchyTemplates.$inferSelect;
+export type InsertHierarchyTemplate = typeof hierarchyTemplates.$inferInsert;
+
+/**
+ * Project hierarchy configuration - per-project overrides
+ * Allows customization of hierarchy depth, weightings, and priorities per project
+ */
+export const projectHierarchyConfig = mysqlTable("project_hierarchy_config", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull().unique(),
+  templateId: int("templateId"), // Reference to hierarchy template, null means custom
+  maxDepth: int("maxDepth").default(3).notNull(), // 1-4 (UNIFORMAT levels)
+  componentWeights: text("componentWeights"), // JSON: { "A": 1.2, "B": 1.0, ... }
+  componentPriorities: text("componentPriorities"), // JSON: { "A": "high", "B": "medium", ... }
+  enabledComponents: text("enabledComponents"), // JSON: ["A", "B", "C", ...] or null for all
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProjectHierarchyConfig = typeof projectHierarchyConfig.$inferSelect;
+export type InsertProjectHierarchyConfig = typeof projectHierarchyConfig.$inferInsert;

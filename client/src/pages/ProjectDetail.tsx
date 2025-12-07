@@ -18,6 +18,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import ReportTab from "@/components/ReportTab";
 import ExportButton from "@/components/ExportButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
+import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -295,6 +296,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="assessments">Assessments</TabsTrigger>
             <TabsTrigger value="deficiencies">Deficiencies</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
+            <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
 
@@ -581,6 +583,10 @@ export default function ProjectDetail() {
 
           <TabsContent value="photos">
             <PhotoGallery projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="hierarchy">
+            <ProjectHierarchyConfig projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="report">
