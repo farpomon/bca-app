@@ -107,6 +107,8 @@ export const assessments = mysqlTable("assessments", {
   conditionScore: int("conditionScore"), // Numerical condition score (based on configured rating scale)
   ciScore: int("ciScore"), // Condition Index score
   fciScore: int("fciScore"), // Facility Condition Index score (0-100)
+  hasValidationOverrides: int("hasValidationOverrides").default(0), // 1 if user overrode any warnings
+  validationWarnings: text("validationWarnings"), // JSON: Array of warnings that were shown
   assessedAt: timestamp("assessedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -395,3 +397,51 @@ export const floorPlans = mysqlTable("floor_plans", {
 
 export type FloorPlan = typeof floorPlans.$inferSelect;
 export type InsertFloorPlan = typeof floorPlans.$inferInsert;
+
+/**
+ * Validation rules - Configurable business rules for data validation
+ */
+export const validationRules = mysqlTable("validation_rules", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  ruleType: mysqlEnum("ruleType", [
+    "date_range",
+    "numeric_range",
+    "required_field",
+    "custom_logic",
+    "same_year_inspection"
+  ]).notNull(),
+  severity: mysqlEnum("severity", ["error", "warning", "info"]).default("warning").notNull(),
+  field: varchar("field", { length: 100 }).notNull(), // Field name being validated
+  condition: text("condition").notNull(), // JSON: validation condition parameters
+  message: text("message").notNull(), // Message to display when rule is triggered
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  projectId: int("projectId"), // null = global rule, otherwise project-specific
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ValidationRule = typeof validationRules.$inferSelect;
+export type InsertValidationRule = typeof validationRules.$inferInsert;
+
+/**
+ * Validation overrides - Log when users override validation warnings
+ */
+export const validationOverrides = mysqlTable("validation_overrides", {
+  id: int("id").autoincrement().primaryKey(),
+  ruleId: int("ruleId").notNull(),
+  assessmentId: int("assessmentId"),
+  deficiencyId: int("deficiencyId"),
+  projectId: int("projectId").notNull(),
+  fieldName: varchar("fieldName", { length: 100 }).notNull(),
+  originalValue: text("originalValue"),
+  overriddenValue: text("overriddenValue"),
+  justification: text("justification"), // User's reason for overriding
+  overriddenBy: int("overriddenBy").notNull(),
+  overriddenAt: timestamp("overriddenAt").defaultNow().notNull(),
+});
+
+export type ValidationOverride = typeof validationOverrides.$inferSelect;
+export type InsertValidationOverride = typeof validationOverrides.$inferInsert;

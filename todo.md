@@ -462,3 +462,51 @@
 - [ ] Display OCR extracted text in photo details
 - [ ] Add geolocation and OCR data to PDF reports
 - [ ] (Future) Implement interactive floor plan pinning with drag-and-drop
+
+## Flexible Data Input with Intelligent Validation
+
+### Database Schema
+- [x] Create validation_rules table for configurable business rules
+- [x] Add rule types: date_range, numeric_range, required_field, custom_logic, same_year_inspection
+- [x] Add severity levels: error (blocking), warning (guidance), info (suggestion)
+- [x] Add override tracking fields to assessments table (hasValidationOverrides, validationWarnings)
+- [x] Create validation_overrides table to log when users override warnings
+- [x] Push database schema changes
+
+### Backend Implementation
+- [x] Create validation rules engine service (validationService.ts)
+- [x] Implement date validation logic (allow same-year inspections with warning)
+- [x] Implement numeric range validation (ESL, costs, etc.)
+- [x] Create validation.check tRPC endpoint
+- [x] Create validation rules CRUD endpoints (list, create, update, delete, toggle)
+- [x] Add override logging to assessment mutations
+- [x] Return validation results with severity levels
+- [x] Seed default validation rules (5 rules including same-year inspection)
+
+### Frontend Implementation
+- [x] Create ValidationWarning component for displaying guidance
+- [x] Update AssessmentDialog to check validation before save
+- [x] Add "Proceed Anyway" button for overridable warnings
+- [x] Display override justification field when proceeding with warnings
+- [x] Show validation warnings in dialog before save
+- [x] Track validation overrides in assessment save
+- [ ] Show validation feedback in real-time as user types (future enhancement)
+- [ ] Add validation status indicators to form fields (future enhancement)
+
+### Admin Interface
+- [ ] Create ValidationRulesManager component at /admin/validation-rules
+- [ ] Build rule creation/edit form
+- [ ] Add rule enable/disable toggle UI
+- [ ] Show validation rule usage statistics
+- [ ] Add rule testing interface
+
+### Testing
+- [x] Test date validation with same-year inspections
+- [x] Test numeric range validation (negative useful life, zero ESL)
+- [x] Test override workflow with justification logging
+- [x] Test validation rule CRUD operations (create, list, toggle, delete)
+- [x] Verify warnings don't block data entry (canOverride flag)
+- [x] Test admin-only access to rule management
+- [x] Test saving assessments with validation overrides
+- [x] All 87 tests passing (11 new validation tests)
+- [x] Create checkpoint

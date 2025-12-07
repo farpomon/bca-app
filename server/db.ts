@@ -23,7 +23,9 @@ import {
   InsertPhoto,
   InsertCostEstimate,
   InsertRatingScale,
-  InsertProjectRatingConfig
+  InsertProjectRatingConfig,
+  validationRules,
+  validationOverrides
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1061,4 +1063,189 @@ export async function getSectionFCI(sectionId: number) {
     fci: Number(fci.toFixed(2)),
     rating,
   };
+}
+
+// ============================================================================
+// Validation Rules
+// ============================================================================
+
+export async function getValidationRules(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results = await db
+    .select()
+    .from(validationRules)
+    .where(
+      sql`(projectId = ${projectId} OR projectId IS NULL) AND isActive = 1`
+    )
+    .orderBy(desc(sql`severity`), sql`createdAt ASC`);
+  
+  return results;
+}
+
+export async function getAllValidationRules() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results = await db
+    .select()
+    .from(validationRules)
+    .orderBy(desc(validationRules.createdAt));
+  
+  return results;
+}
+
+export async function getValidationRuleById(ruleId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const results = await db
+    .select()
+    .from(validationRules)
+    .where(eq(validationRules.id, ruleId))
+    .limit(1);
+  
+  return results[0] || null;
+}
+
+export async function createValidationRule(rule: {
+  name: string;
+  description?: string;
+  ruleType: string;
+  severity: string;
+  field: string;
+  condition: string;
+  message: string;
+  isActive?: number;
+  projectId?: number;
+  createdBy: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.execute(sql`
+    INSERT INTO validation_rules 
+    (name, description, ruleType, severity, field, \`condition\`, message, isActive, projectId, createdBy)
+    VALUES (${rule.name}, ${rule.description || null}, ${rule.ruleType}, ${rule.severity}, 
+            ${rule.field}, ${rule.condition}, ${rule.message}, ${rule.isActive !== undefined ? rule.isActive : 1}, 
+            ${rule.projectId || null}, ${rule.createdBy})
+  `);
+  
+  return result[0].insertId;
+}
+
+export async function updateValidationRule(
+  ruleId: number,
+  updates: {
+    name?: string;
+    description?: string;
+    ruleType?: string;
+    severity?: string;
+    field?: string;
+    condition?: string;
+    message?: string;
+    isActive?: number;
+    projectId?: number;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const setParts: any[] = [];
+
+  if (updates.name !== undefined) {
+    setParts.push(sql`name = ${updates.name}`);
+  }
+  if (updates.description !== undefined) {
+    setParts.push(sql`description = ${updates.description}`);
+  }
+  if (updates.ruleType !== undefined) {
+    setParts.push(sql`ruleType = ${updates.ruleType}`);
+  }
+  if (updates.severity !== undefined) {
+    setParts.push(sql`severity = ${updates.severity}`);
+  }
+  if (updates.field !== undefined) {
+    setParts.push(sql`field = ${updates.field}`);
+  }
+  if (updates.condition !== undefined) {
+    setParts.push(sql`\`condition\` = ${updates.condition}`);
+  }
+  if (updates.message !== undefined) {
+    setParts.push(sql`message = ${updates.message}`);
+  }
+  if (updates.isActive !== undefined) {
+    setParts.push(sql`isActive = ${updates.isActive}`);
+  }
+  if (updates.projectId !== undefined) {
+    setParts.push(sql`projectId = ${updates.projectId}`);
+  }
+
+  if (setParts.length === 0) return;
+
+  await db.execute(sql`UPDATE validation_rules SET ${sql.join(setParts, sql`, `)} WHERE id = ${ruleId}`);
+}
+
+export async function deleteValidationRule(ruleId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.execute(sql`DELETE FROM validation_rules WHERE id = ${ruleId}`);
+}
+
+// Validation Overrides
+export async function createValidationOverride(override: {
+  ruleId: number;
+  assessmentId?: number;
+  deficiencyId?: number;
+  projectId: number;
+  fieldName: string;
+  originalValue: string;
+  overriddenValue: string;
+  justification?: string;
+  overriddenBy: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.execute(sql`
+    INSERT INTO validation_overrides 
+    (ruleId, assessmentId, deficiencyId, projectId, fieldName, originalValue, overriddenValue, justification, overriddenBy)
+    VALUES (${override.ruleId}, ${override.assessmentId || null}, ${override.deficiencyId || null}, 
+            ${override.projectId}, ${override.fieldName}, ${override.originalValue}, 
+            ${override.overriddenValue}, ${override.justification || null}, ${override.overriddenBy})
+  `);
+  
+  return result[0].insertId;
+}
+
+export async function getValidationOverrides(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results = await db.execute(sql`
+    SELECT vo.*, vr.name as ruleName, vr.message as ruleMessage
+    FROM validation_overrides vo
+    LEFT JOIN validation_rules vr ON vo.ruleId = vr.id
+    WHERE vo.projectId = ${projectId}
+    ORDER BY vo.overriddenAt DESC
+  `);
+  
+  return (Array.isArray(results[0]) ? results[0] : []) as any[];
+}
+
+export async function getAssessmentValidationOverrides(assessmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results = await db.execute(sql`
+    SELECT vo.*, vr.name as ruleName, vr.message as ruleMessage
+    FROM validation_overrides vo
+    LEFT JOIN validation_rules vr ON vo.ruleId = vr.id
+    WHERE vo.assessmentId = ${assessmentId}
+    ORDER BY vo.overriddenAt DESC
+  `);
+  
+  return (Array.isArray(results[0]) ? results[0] : []) as any[];
 }

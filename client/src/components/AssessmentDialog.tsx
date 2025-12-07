@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, Upload, X, Sparkles } from "lucide-react";
+import { ValidationWarning } from "@/components/ValidationWarning";
 
 interface AssessmentDialogProps {
   open: boolean;
@@ -98,8 +99,13 @@ export function AssessmentDialog({
     altitude?: number;
     accuracy: number;
   } | null>(null);
+  const [validationResults, setValidationResults] = useState<any[]>([]);
+  const [showValidation, setShowValidation] = useState(false);
+  const [validationOverrides, setValidationOverrides] = useState<Map<number, string>>(new Map());
 
   const upsertAssessment = trpc.assessments.upsert.useMutation();
+  const checkValidation = trpc.validation.check.useMutation();
+  const logOverride = trpc.validation.logOverride.useMutation();
 
   const uploadPhoto = trpc.photos.upload.useMutation({
     onSuccess: () => {
@@ -166,7 +172,48 @@ export function AssessmentDialog({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Build assessment data
+    const assessmentData = {
+      componentCode,
+      condition,
+      assessedAt: new Date(),
+      lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
+      remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
+      expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
+      estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
+      replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
+      actionYear: actionYear ? parseInt(actionYear) : undefined,
+    };
+
+    // Check validation rules
+    try {
+      const results = await checkValidation.mutateAsync({
+        projectId,
+        assessmentData,
+      });
+
+      // Filter out already overridden warnings
+      const activeResults = results.filter(
+        (r: any) => !r.ruleId || !validationOverrides.has(r.ruleId)
+      );
+
+      if (activeResults.length > 0) {
+        // Show validation warnings
+        setValidationResults(activeResults);
+        setShowValidation(true);
+        return;
+      }
+    } catch (error) {
+      console.error("Validation check failed:", error);
+      // Continue with save even if validation fails
+    }
+
+    // No validation issues or all overridden, proceed with save
+    proceedWithSave();
+  };
+
+  const proceedWithSave = () => {
     if (photoFile) {
       // If there's a photo, use the async handler to link it to the assessment
       handleSaveWithPhoto();
@@ -186,7 +233,37 @@ export function AssessmentDialog({
         estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
         replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
         actionYear: actionYear ? parseInt(actionYear) : undefined,
+        hasValidationOverrides: validationOverrides.size > 0 ? 1 : 0,
+        validationWarnings: validationOverrides.size > 0 ? JSON.stringify(Array.from(validationOverrides.keys())) : undefined,
       });
+    }
+  };
+
+  const handleValidationOverride = async (ruleId: number, justification: string) => {
+    // Log the override
+    try {
+      await logOverride.mutateAsync({
+        ruleId,
+        projectId,
+        fieldName: validationResults.find((r: any) => r.ruleId === ruleId)?.field || "unknown",
+        originalValue: "",
+        overriddenValue: "",
+        justification,
+      });
+
+      // Mark as overridden
+      setValidationOverrides((prev) => {
+        const next = new Map(prev);
+        next.set(ruleId, justification);
+        return next;
+      });
+
+      // Remove from active results
+      setValidationResults((prev) => prev.filter((r: any) => r.ruleId !== ruleId));
+
+      toast.success("Warning acknowledged");
+    } catch (error) {
+      toast.error("Failed to log override");
     }
   };
 
@@ -487,6 +564,26 @@ export function AssessmentDialog({
             )}
           </div>
         </div>
+
+        {showValidation && validationResults.length > 0 && (
+          <div className="mt-4">
+            <ValidationWarning
+              results={validationResults}
+              onOverride={handleValidationOverride}
+              onCancel={() => setShowValidation(false)}
+            />
+            {validationResults.every((r: any) => r.severity !== "error") && (
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowValidation(false)}>
+                  Go Back
+                </Button>
+                <Button onClick={proceedWithSave}>
+                  Save Anyway
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={upsertAssessment.isPending || uploadingPhoto}>

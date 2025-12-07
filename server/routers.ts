@@ -271,6 +271,8 @@ export const appRouter = router({
         estimatedRepairCost: z.number().optional(),
         replacementValue: z.number().optional(),
         actionYear: z.number().optional(),
+        hasValidationOverrides: z.number().optional(),
+        validationWarnings: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const project = await db.getProjectById(input.projectId, ctx.user.id);
@@ -999,6 +1001,150 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         return await db.getSectionFCI(input.sectionId);
       }),
+  }),
+
+  validation: router({
+    // Check validation rules for assessment data
+    check: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        assessmentData: z.object({
+          componentCode: z.string(),
+          condition: z.string().optional(),
+          assessedAt: z.date().optional(),
+          lastTimeAction: z.number().optional(),
+          remainingUsefulLife: z.number().optional(),
+          expectedUsefulLife: z.number().optional(),
+          estimatedRepairCost: z.number().optional(),
+          replacementValue: z.number().optional(),
+          actionYear: z.number().optional(),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { validateAssessment } = await import("./validationService");
+        const results = await validateAssessment({
+          projectId: input.projectId,
+          assessmentData: input.assessmentData,
+          userId: ctx.user.id,
+        });
+        return results;
+      }),
+
+    // Log validation override
+    logOverride: protectedProcedure
+      .input(z.object({
+        ruleId: z.number(),
+        assessmentId: z.number().optional(),
+        deficiencyId: z.number().optional(),
+        projectId: z.number(),
+        fieldName: z.string(),
+        originalValue: z.string(),
+        overriddenValue: z.string(),
+        justification: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { logValidationOverride } = await import("./validationService");
+        const overrideId = await logValidationOverride({
+          ...input,
+          overriddenBy: ctx.user.id,
+        });
+        return { id: overrideId };
+      }),
+
+    // Get validation overrides for a project
+    overrides: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getValidationOverrides(input.projectId);
+      }),
+
+    // Validation rules management (admin only)
+    rules: router({
+      list: protectedProcedure.query(async () => {
+        return await db.getAllValidationRules();
+      }),
+
+      byProject: protectedProcedure
+        .input(z.object({ projectId: z.number() }))
+        .query(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) throw new Error("Project not found");
+          return await db.getValidationRules(input.projectId);
+        }),
+
+      create: protectedProcedure
+        .input(z.object({
+          name: z.string(),
+          description: z.string().optional(),
+          ruleType: z.enum(["date_range", "numeric_range", "required_field", "custom_logic", "same_year_inspection"]),
+          severity: z.enum(["error", "warning", "info"]),
+          field: z.string(),
+          condition: z.string(), // JSON string
+          message: z.string(),
+          isActive: z.boolean().optional(),
+          projectId: z.number().optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+          const ruleId = await db.createValidationRule({
+            ...input,
+            isActive: input.isActive !== false ? 1 : 0,
+            createdBy: ctx.user.id,
+          });
+          return { id: ruleId };
+        }),
+
+      update: protectedProcedure
+        .input(z.object({
+          ruleId: z.number(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          ruleType: z.enum(["date_range", "numeric_range", "required_field", "custom_logic", "same_year_inspection"]).optional(),
+          severity: z.enum(["error", "warning", "info"]).optional(),
+          field: z.string().optional(),
+          condition: z.string().optional(),
+          message: z.string().optional(),
+          isActive: z.boolean().optional(),
+          projectId: z.number().optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+          const { ruleId, ...updates } = input;
+          await db.updateValidationRule(ruleId, {
+            ...updates,
+            isActive: updates.isActive !== undefined ? (updates.isActive ? 1 : 0) : undefined,
+          });
+          return { success: true };
+        }),
+
+      delete: protectedProcedure
+        .input(z.object({ ruleId: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+          await db.deleteValidationRule(input.ruleId);
+          return { success: true };
+        }),
+
+      toggle: protectedProcedure
+        .input(z.object({ ruleId: z.number(), isActive: z.boolean() }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+          await db.updateValidationRule(input.ruleId, {
+            isActive: input.isActive ? 1 : 0,
+          });
+          return { success: true };
+        }),
+    }),
   }),
 
   exports: router({
