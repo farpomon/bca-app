@@ -439,6 +439,24 @@ export default function ProjectDetail() {
                           <div className="text-sm text-muted-foreground line-clamp-1">{assessment.observations}</div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {/* Status Badge */}
+                          <Badge 
+                            variant="outline"
+                            className={
+                              assessment.status === "initial" ? "border-blue-500 text-blue-700 bg-blue-50" :
+                              assessment.status === "active" ? "border-orange-500 text-orange-700 bg-orange-50" :
+                              "border-green-500 text-green-700 bg-green-50"
+                            }
+                          >
+                            <span className={
+                              assessment.status === "initial" ? "inline-block w-2 h-2 rounded-full bg-blue-500 mr-1.5" :
+                              assessment.status === "active" ? "inline-block w-2 h-2 rounded-full bg-orange-500 mr-1.5" :
+                              "inline-block w-2 h-2 rounded-full bg-green-500 mr-1.5"
+                            } />
+                            {assessment.status === "initial" ? "Initial" :
+                             assessment.status === "active" ? "Active" : "Completed"}
+                          </Badge>
+                          {/* Condition Badge */}
                           <Badge variant={
                             assessment.condition === "good" ? "default" :
                             assessment.condition === "fair" ? "secondary" :

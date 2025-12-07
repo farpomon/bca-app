@@ -361,3 +361,10 @@
 - [x] Update assessment form to allow status changes
 - [x] Write tests for status filtering - 3 tests passing
 - [x] Create checkpoint with status filter feature
+
+## Status Badges in Assessment List
+- [x] Add colored status badges to assessment list items
+- [x] Use blue for initial, orange for active, green for completed
+- [x] Position badges next to condition badges
+- [x] Test visual appearance
+- [x] Create checkpoint
