@@ -12,6 +12,7 @@ import {
   projectHierarchyConfig,
   ratingScales,
   projectRatingConfig,
+  buildingSections,
   auditLog, InsertAuditLog,
   assessmentVersions, InsertAssessmentVersion,
   deficiencyVersions, InsertDeficiencyVersion,
@@ -964,4 +965,100 @@ export async function bulkUpdateAssessmentStatus(
     .where(sql`${assessments.id} IN (${sql.join(assessmentIds.map(id => sql`${id}`), sql`, `)})`);
 
   return { success: true };
+}
+
+
+// ============================================================================
+// Building Sections
+// ============================================================================
+
+export async function getBuildingSections(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { buildingSections } = await import("../drizzle/schema");
+  return await db.select().from(buildingSections).where(eq(buildingSections.projectId, projectId));
+}
+
+export async function getBuildingSectionById(sectionId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const { buildingSections } = await import("../drizzle/schema");
+  const result = await db.select().from(buildingSections).where(eq(buildingSections.id, sectionId)).limit(1);
+  return result[0];
+}
+
+export async function createBuildingSection(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { buildingSections } = await import("../drizzle/schema");
+  const values = {
+    ...data,
+    installDate: data.installDate ? new Date(data.installDate) : undefined,
+  };
+  const result = await db.insert(buildingSections).values(values);
+  return result[0].insertId;
+}
+
+export async function updateBuildingSection(sectionId: number, data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { buildingSections } = await import("../drizzle/schema");
+  await db.update(buildingSections).set({ ...data, updatedAt: new Date() }).where(eq(buildingSections.id, sectionId));
+}
+
+export async function deleteBuildingSection(sectionId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { buildingSections } = await import("../drizzle/schema");
+  await db.delete(buildingSections).where(eq(buildingSections.id, sectionId));
+}
+
+export async function getSectionAssessmentStats(sectionId: number) {
+  const db = await getDb();
+  if (!db) return { total: 0, good: 0, fair: 0, poor: 0 };
+  
+  const results = await db.select().from(assessments).where(eq(assessments.sectionId, sectionId));
+  
+  return {
+    total: results.length,
+    good: results.filter(a => a.condition === "good").length,
+    fair: results.filter(a => a.condition === "fair").length,
+    poor: results.filter(a => a.condition === "poor").length,
+  };
+}
+
+export async function getSectionFCI(sectionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [costSums] = await db
+    .select({
+      totalRepairCost: sql<number>`COALESCE(SUM(estimatedRepairCost), 0)`,
+      totalReplacementValue: sql<number>`COALESCE(SUM(replacementValue), 0)`,
+    })
+    .from(assessments)
+    .where(eq(assessments.sectionId, sectionId));
+  
+  const totalRepairCost = Number(costSums?.totalRepairCost) || 0;
+  const totalReplacementValue = Number(costSums?.totalReplacementValue) || 0;
+  
+  const fci = totalReplacementValue > 0 ? (totalRepairCost / totalReplacementValue) * 100 : 0;
+  
+  let rating: 'good' | 'fair' | 'poor' | 'critical';
+  if (fci <= 5) rating = 'good';
+  else if (fci <= 10) rating = 'fair';
+  else if (fci <= 30) rating = 'poor';
+  else rating = 'critical';
+  
+  return {
+    totalRepairCost,
+    totalReplacementValue,
+    fci: Number(fci.toFixed(2)),
+    rating,
+  };
 }

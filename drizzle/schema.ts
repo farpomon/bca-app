@@ -46,6 +46,28 @@ export type Project = typeof projects.$inferSelect;
 export type InsertProject = typeof projects.$inferInsert;
 
 /**
+ * Building sections - represents extensions, additions, or distinct areas within a project
+ */
+export const buildingSections = mysqlTable("building_sections", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  sectionType: mysqlEnum("sectionType", ["original", "extension", "addition", "renovation"]).default("original").notNull(),
+  installDate: timestamp("installDate"),
+  expectedLifespan: int("expectedLifespan"), // in years
+  grossFloorArea: int("grossFloorArea"), // in square feet
+  numberOfStories: int("numberOfStories"),
+  constructionType: varchar("constructionType", { length: 100 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BuildingSection = typeof buildingSections.$inferSelect;
+export type InsertBuildingSection = typeof buildingSections.$inferInsert;
+
+/**
  * Building components based on UNIFORMAT II classification
  * Stores the hierarchical structure: Major Group > Group > Individual Element
  */
@@ -68,6 +90,7 @@ export type InsertBuildingComponent = typeof buildingComponents.$inferInsert;
 export const assessments = mysqlTable("assessments", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("projectId").notNull(),
+  sectionId: int("sectionId"),
   componentCode: varchar("componentCode", { length: 20 }).notNull(),
   condition: mysqlEnum("condition", ["good", "fair", "poor", "not_assessed"]).default("not_assessed").notNull(),
   status: mysqlEnum("status", ["initial", "active", "completed"]).default("initial").notNull(),

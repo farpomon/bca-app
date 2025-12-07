@@ -21,6 +21,7 @@ import ExportButton from "@/components/ExportButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
+import BuildingSectionsManager from "@/components/BuildingSectionsManager";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -328,6 +329,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="assessments">Assessments</TabsTrigger>
             <TabsTrigger value="deficiencies">Deficiencies</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
+            <TabsTrigger value="sections">Sections</TabsTrigger>
             <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
             <TabsTrigger value="ratings">Ratings</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
@@ -511,10 +513,10 @@ export default function ProjectDetail() {
                             }}
                           />
                           <div className="flex-1">
-                          <div className="font-medium">{assessment.componentCode}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-1">{assessment.observations}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
+                            <div className="font-medium">{assessment.componentCode}</div>
+                            <div className="text-sm text-muted-foreground line-clamp-1">{assessment.observations}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
                           {/* Status Badge */}
                           <Badge 
                             variant="outline"
@@ -550,8 +552,8 @@ export default function ProjectDetail() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
+                          </div>
                         </div>
-                      </div>
                     ))}
                     </div>
                   </div>
@@ -757,6 +759,10 @@ export default function ProjectDetail() {
 
           <TabsContent value="photos">
             <PhotoGallery projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="sections">
+            <BuildingSectionsManager projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="hierarchy">

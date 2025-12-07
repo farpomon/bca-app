@@ -391,3 +391,18 @@
 ## Final Testing and Delivery
 - [x] Run all tests - 68 tests passing
 - [x] Create checkpoint with all three features
+
+## Building Extensions and Additions Management
+- [x] Design database schema for building sections/extensions
+- [x] Create buildingSections table with install dates and lifecycle info
+- [x] Add sectionId foreign key to assessments table
+- [x] Implement backend CRUD APIs for building sections
+- [x] Add section-specific stats and FCI calculation APIs
+- [x] Build UI for creating/editing building sections
+- [x] Add sections tab to project detail page
+- [ ] Add section selector to assessment workflow (deferred)
+- [x] Implement section-specific FCI calculations
+- [ ] Add section lifecycle tracking and reporting (deferred)
+- [ ] Update PDF reports to show section breakdown (deferred)
+- [x] Write tests for building sections feature - 5 tests passing
+- [x] Create checkpoint with building sections feature

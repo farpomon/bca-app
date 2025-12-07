@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE assessments ADD COLUMN sectionId INT DEFAULT NULL AFTER projectId, ADD FOREIGN KEY (sectionId) REFERENCES building_sections(id) ON DELETE SET NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE assessments ADD COLUMN sectionId INT DEFAULT NULL AFTER projectId, ADD FOREIGN KEY (sectionId) REFERENCES building_sections(id) ON DELETE SET NULL;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1072 (42000) at line 1: Key column 'sectionId' doesn't exist in table"
+  ]
+}

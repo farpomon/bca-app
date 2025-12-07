@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS building_sections (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  projectId INT NOT NULL,\n  name VARCHAR(255) NOT NULL,\n  description TEXT,\n  sectionType ENUM('original', 'extension', 'addition', 'renovation') DEFAULT 'original' NOT NULL,\n  installDate DATE,\n  expectedLifespan INT COMMENT 'Expected lifespan in years',\n  grossFloorArea DECIMAL(10,2) COMMENT 'Gross floor area in square feet',\n  numberOfStories INT,\n  constructionType VARCHAR(100),\n  notes TEXT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,\n  FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,\n  INDEX idx_project_id (projectId)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS building_sections (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  projectId INT NOT NULL,\n  name VARCHAR(255) NOT NULL,\n  description TEXT,\n  sectionType ENUM('original', 'extension', 'addition', 'renovation') DEFAULT 'original' NOT NULL,\n  installDate DATE,\n  expectedLifespan INT COMMENT 'Expected lifespan in years',\n  grossFloorArea DECIMAL(10,2) COMMENT 'Gross floor area in square feet',\n  numberOfStories INT,\n  constructionType VARCHAR(100),\n  notes TEXT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,\n  FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,\n  INDEX idx_project_id (projectId)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 754
+}

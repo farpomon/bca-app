@@ -902,6 +902,84 @@ export const appRouter = router({
       }),
   }),
 
+  buildingSections: router({
+    list: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getBuildingSections(input.projectId);
+      }),
+
+    byId: protectedProcedure
+      .input(z.object({ sectionId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getBuildingSectionById(input.sectionId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        sectionType: z.enum(["original", "extension", "addition", "renovation"]),
+        installDate: z.string().optional(),
+        expectedLifespan: z.number().optional(),
+        grossFloorArea: z.number().optional(),
+        numberOfStories: z.number().optional(),
+        constructionType: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        const sectionId = await db.createBuildingSection(input);
+        const section = await db.getBuildingSectionById(sectionId);
+        if (!section) throw new Error("Failed to create section");
+        return section;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        sectionId: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        sectionType: z.enum(["original", "extension", "addition", "renovation"]).optional(),
+        installDate: z.string().optional(),
+        expectedLifespan: z.number().optional(),
+        grossFloorArea: z.number().optional(),
+        numberOfStories: z.number().optional(),
+        constructionType: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { sectionId, ...data } = input;
+        await db.updateBuildingSection(sectionId, data);
+        const section = await db.getBuildingSectionById(sectionId);
+        if (!section) throw new Error("Section not found");
+        return section;
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ sectionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteBuildingSection(input.sectionId);
+        return { success: true };
+      }),
+
+    stats: protectedProcedure
+      .input(z.object({ sectionId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getSectionAssessmentStats(input.sectionId);
+      }),
+
+    fci: protectedProcedure
+      .input(z.object({ sectionId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getSectionFCI(input.sectionId);
+      }),
+  }),
+
   exports: router({
     deficiencies: protectedProcedure
       .input(z.object({ projectId: z.number() }))
