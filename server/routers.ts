@@ -1188,6 +1188,271 @@ export const appRouter = router({
     }),
   }),
 
+  consultant: router({
+    // Download assessment template
+    downloadAssessmentTemplate: protectedProcedure.query(async () => {
+      const { generateAssessmentTemplate } = await import("./spreadsheetTemplates");
+      const buffer = generateAssessmentTemplate();
+      return {
+        data: buffer.toString("base64"),
+        filename: "Assessment_Upload_Template.xlsx",
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      };
+    }),
+
+    // Download deficiency template
+    downloadDeficiencyTemplate: protectedProcedure.query(async () => {
+      const { generateDeficiencyTemplate } = await import("./spreadsheetTemplates");
+      const buffer = generateDeficiencyTemplate();
+      return {
+        data: buffer.toString("base64"),
+        filename: "Deficiency_Upload_Template.xlsx",
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      };
+    }),
+
+    // Upload and parse spreadsheet
+    uploadSpreadsheet: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        dataType: z.enum(["assessments", "deficiencies"]),
+        fileData: z.string(), // base64 encoded file
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        // Decode base64 file data
+        const buffer = Buffer.from(input.fileData, "base64");
+
+        // Parse spreadsheet
+        const { parseAssessmentSpreadsheet, parseDeficiencySpreadsheet } = await import("./spreadsheetTemplates");
+        
+        let parseResult;
+        if (input.dataType === "assessments") {
+          parseResult = parseAssessmentSpreadsheet(buffer);
+        } else {
+          parseResult = parseDeficiencySpreadsheet(buffer);
+        }
+
+        // Generate unique submission ID
+        const submissionId = `SUB-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+        // Create submission record
+        const dbSubmissionId = await db.createConsultantSubmission({
+          projectId: input.projectId,
+          submissionId,
+          submittedBy: ctx.user.id,
+          consultantName: ctx.user.name || undefined,
+          consultantEmail: ctx.user.email || undefined,
+          dataType: input.dataType,
+          fileName: input.fileName,
+          totalItems: parseResult.data.length + parseResult.errors.length,
+          validItems: parseResult.data.length,
+          invalidItems: parseResult.errors.length,
+        });
+
+        // Create submission items
+        for (let i = 0; i < parseResult.data.length; i++) {
+          const item = parseResult.data[i];
+          const rowWarnings = parseResult.warnings.filter(w => w.row === i + 2);
+          
+          await db.createSubmissionItem({
+            submissionId: dbSubmissionId,
+            projectId: input.projectId,
+            itemType: input.dataType === "assessments" ? "assessment" : "deficiency",
+            rowNumber: i + 2,
+            data: JSON.stringify(item),
+            validationStatus: rowWarnings.length > 0 ? "warning" : "valid",
+            validationErrors: rowWarnings.length > 0 ? JSON.stringify(rowWarnings) : undefined,
+          });
+        }
+
+        // Store parse errors as items with error status
+        for (const error of parseResult.errors) {
+          await db.createSubmissionItem({
+            submissionId: dbSubmissionId,
+            projectId: input.projectId,
+            itemType: input.dataType === "assessments" ? "assessment" : "deficiency",
+            rowNumber: error.row,
+            data: JSON.stringify({ error: error.message }),
+            validationStatus: "error",
+            validationErrors: JSON.stringify([error]),
+          });
+        }
+
+        return {
+          submissionId: dbSubmissionId,
+          trackingId: submissionId,
+          totalItems: parseResult.data.length + parseResult.errors.length,
+          validItems: parseResult.data.length,
+          invalidItems: parseResult.errors.length,
+          warnings: parseResult.warnings.length,
+        };
+      }),
+
+    // Get my submissions
+    mySubmissions: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getConsultantSubmissionsByUser(ctx.user.id);
+    }),
+
+    // Get submission details
+    getSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const submission = await db.getConsultantSubmission(input.submissionId);
+        if (!submission) throw new Error("Submission not found");
+
+        // Check access: owner or admin
+        if (submission.submittedBy !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new Error("Access denied");
+        }
+
+        const items = await db.getSubmissionItems(input.submissionId);
+        const photos = await db.getSubmissionPhotos(input.submissionId);
+
+        return {
+          submission,
+          items,
+          photos,
+        };
+      }),
+
+    // Get pending submissions (admin only)
+    pendingSubmissions: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("Access denied");
+      }
+      return await db.getPendingSubmissions();
+    }),
+
+    // Get submissions by project (admin only)
+    projectSubmissions: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        
+        return await db.getConsultantSubmissionsByProject(input.projectId);
+      }),
+
+    // Review submission item (admin only)
+    reviewItem: protectedProcedure
+      .input(z.object({
+        itemId: z.number(),
+        itemStatus: z.enum(["approved", "rejected"]),
+        reviewNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Access denied");
+        }
+
+        await db.updateSubmissionItemStatus(
+          input.itemId,
+          input.itemStatus,
+          input.reviewNotes
+        );
+
+        return { success: true };
+      }),
+
+    // Approve submission (admin only)
+    approveSubmission: protectedProcedure
+      .input(z.object({
+        submissionId: z.number(),
+        reviewNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Access denied");
+        }
+
+        const submission = await db.getConsultantSubmission(input.submissionId);
+        if (!submission) throw new Error("Submission not found");
+
+        const items = await db.getSubmissionItems(input.submissionId);
+
+        // Finalize approved items by creating actual assessment/deficiency records
+        for (const item of items) {
+          // Process all valid items (not errors)
+          if (item.validationStatus !== "error") {
+            const data = JSON.parse(item.data);
+
+            if (item.itemType === "assessment") {
+              const assessmentId = await db.upsertAssessment({
+                projectId: submission.projectId,
+                componentCode: data.componentCode,
+                condition: data.condition,
+                status: data.status || "initial",
+                conditionPercentage: data.conditionPercentage,
+                observations: data.observations,
+                recommendations: data.recommendations,
+                remainingUsefulLife: data.remainingUsefulLife,
+                expectedUsefulLife: data.expectedUsefulLife,
+                reviewYear: data.reviewYear,
+                lastTimeAction: data.lastTimeAction,
+                estimatedRepairCost: data.estimatedRepairCost,
+                replacementValue: data.replacementValue,
+                actionYear: data.actionYear,
+                assessedAt: new Date(),
+              });
+
+              await db.linkSubmissionItemToFinalizedRecord(item.id, "assessment", assessmentId);
+            } else if (item.itemType === "deficiency") {
+              const deficiencyId = await db.createDeficiency({
+                projectId: submission.projectId,
+                componentCode: data.componentCode,
+                title: data.title,
+                description: data.description,
+                priority: data.priority === "critical" ? "immediate" : data.priority === "high" ? "short_term" : data.priority === "medium" ? "medium_term" : "long_term",
+                status: data.status || "open",
+                location: data.location,
+                estimatedCost: data.estimatedCost ? data.estimatedCost * 100 : undefined, // Convert to cents
+                recommendedAction: data.recommendedAction,
+              });
+
+              await db.linkSubmissionItemToFinalizedRecord(item.id, "deficiency", deficiencyId);
+            }
+          }
+        }
+
+        // Update submission status
+        await db.updateSubmissionStatus(
+          input.submissionId,
+          "approved",
+          ctx.user.id,
+          input.reviewNotes
+        );
+
+        await db.finalizeSubmission(input.submissionId, ctx.user.id);
+
+        return { success: true };
+      }),
+
+    // Reject submission (admin only)
+    rejectSubmission: protectedProcedure
+      .input(z.object({
+        submissionId: z.number(),
+        reviewNotes: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("Access denied");
+        }
+
+        await db.updateSubmissionStatus(
+          input.submissionId,
+          "rejected",
+          ctx.user.id,
+          input.reviewNotes
+        );
+
+        return { success: true };
+      }),
+  }),
+
   history: router({
     // Get component history timeline
     component: protectedProcedure

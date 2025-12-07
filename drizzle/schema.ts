@@ -508,3 +508,122 @@ export const componentHistory = mysqlTable("component_history", {
 
 export type ComponentHistory = typeof componentHistory.$inferSelect;
 export type InsertComponentHistory = typeof componentHistory.$inferInsert;
+
+
+/**
+ * Consultant submissions - Track bulk data upload batches from 3rd party consultants
+ */
+export const consultantSubmissions = mysqlTable("consultant_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  
+  // Submission metadata
+  submissionId: varchar("submissionId", { length: 50 }).notNull().unique(), // Unique tracking ID
+  submittedBy: int("submittedBy").notNull(), // User ID of consultant
+  consultantName: varchar("consultantName", { length: 255 }),
+  consultantEmail: varchar("consultantEmail", { length: 320 }),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  
+  // Submission content
+  dataType: mysqlEnum("dataType", ["assessments", "deficiencies", "mixed"]).notNull(),
+  fileName: varchar("fileName", { length: 255 }), // Original uploaded file name
+  totalItems: int("totalItems").default(0).notNull(),
+  validItems: int("validItems").default(0).notNull(),
+  invalidItems: int("invalidItems").default(0).notNull(),
+  
+  // Review workflow
+  status: mysqlEnum("status", [
+    "pending_review",
+    "under_review",
+    "approved",
+    "rejected",
+    "partially_approved",
+    "finalized"
+  ]).default("pending_review").notNull(),
+  
+  reviewedBy: int("reviewedBy"), // User ID of city staff reviewer
+  reviewedAt: timestamp("reviewedAt"),
+  reviewNotes: text("reviewNotes"), // Feedback from reviewer
+  
+  // Finalization
+  finalizedAt: timestamp("finalizedAt"),
+  finalizedBy: int("finalizedBy"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ConsultantSubmission = typeof consultantSubmissions.$inferSelect;
+export type InsertConsultantSubmission = typeof consultantSubmissions.$inferInsert;
+
+/**
+ * Submission items - Staging area for individual records before approval
+ */
+export const submissionItems = mysqlTable("submission_items", {
+  id: int("id").autoincrement().primaryKey(),
+  submissionId: int("submissionId").notNull(), // FK to consultant_submissions
+  projectId: int("projectId").notNull(),
+  
+  // Item type and data
+  itemType: mysqlEnum("itemType", ["assessment", "deficiency"]).notNull(),
+  rowNumber: int("rowNumber"), // Row in spreadsheet for error reporting
+  
+  // Staged data (JSON blob containing the parsed row data)
+  data: text("data").notNull(), // JSON string of the item data
+  
+  // Validation
+  validationStatus: mysqlEnum("validationStatus", ["valid", "warning", "error"]).notNull(),
+  validationErrors: text("validationErrors"), // JSON array of error messages
+  
+  // Review status for this specific item
+  itemStatus: mysqlEnum("itemStatus", [
+    "pending",
+    "approved",
+    "rejected"
+  ]).default("pending").notNull(),
+  
+  reviewNotes: text("reviewNotes"), // Item-specific feedback
+  
+  // Link to finalized record (after approval)
+  finalizedAssessmentId: int("finalizedAssessmentId"),
+  finalizedDeficiencyId: int("finalizedDeficiencyId"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SubmissionItem = typeof submissionItems.$inferSelect;
+export type InsertSubmissionItem = typeof submissionItems.$inferInsert;
+
+/**
+ * Submission photos - Staging area for photos uploaded with consultant submissions
+ */
+export const submissionPhotos = mysqlTable("submission_photos", {
+  id: int("id").autoincrement().primaryKey(),
+  submissionId: int("submissionId").notNull(),
+  submissionItemId: int("submissionItemId"), // Link to specific item if applicable
+  
+  // Photo metadata
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileSize: int("fileSize"), // Bytes
+  mimeType: varchar("mimeType", { length: 100 }),
+  
+  // Storage
+  fileKey: varchar("fileKey", { length: 500 }).notNull(), // S3 key
+  url: varchar("url", { length: 1000 }).notNull(), // S3 URL
+  thumbnailUrl: varchar("thumbnailUrl", { length: 1000 }),
+  
+  // Component linkage (from spreadsheet)
+  componentCode: varchar("componentCode", { length: 50 }),
+  
+  // Status
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  
+  // Link to finalized photo (after approval)
+  finalizedPhotoId: int("finalizedPhotoId"),
+  
+  uploadedAt: timestamp("uploadedAt").defaultNow().notNull(),
+});
+
+export type SubmissionPhoto = typeof submissionPhotos.$inferSelect;
+export type InsertSubmissionPhoto = typeof submissionPhotos.$inferInsert;

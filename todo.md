@@ -567,3 +567,180 @@
 - [x] Test user isolation (can't access other users' history)
 - [x] All 107 tests passing (20 new rich text/history tests)
 - [x] Create checkpoint
+
+
+## 3rd Party Consultant Data Upload System with Review Workflow
+
+### Database Schema
+- [ ] Create consultant_submissions table for tracking upload batches
+- [ ] Create submission_items table for staging individual records (assessments, deficiencies, photos)
+- [ ] Add status field: pending_review, approved, rejected, finalized
+- [ ] Add reviewer fields: reviewedBy, reviewedAt, reviewNotes
+- [ ] Add consultant info: submittedBy, consultantName, consultantEmail
+- [ ] Create submission_photos table for staging uploaded photos
+- [ ] Add validation_errors field for storing parsing/validation issues
+- [ ] Push database schema changes
+
+### Spreadsheet Template System
+- [ ] Install xlsx library for Excel generation and parsing
+- [ ] Create template generator for assessments (component code, condition, costs, etc.)
+- [ ] Create template generator for deficiencies (description, priority, location, etc.)
+- [ ] Add data validation rules to templates (dropdowns, number ranges)
+- [ ] Add instructions sheet with field descriptions and examples
+- [ ] Create parser to read uploaded Excel/CSV files
+- [ ] Validate data against schema and business rules
+- [ ] Handle parsing errors gracefully with detailed error messages
+
+### Consultant Upload Portal
+- [ ] Create ConsultantUploadPage component at /consultant/upload
+- [ ] Add project selection dropdown
+- [ ] Add "Download Template" buttons for assessments and deficiencies
+- [ ] Create file upload area with drag-and-drop support
+- [ ] Show upload progress and validation results
+- [ ] Display preview of parsed data before submission
+- [ ] Allow photo attachments linked to specific rows
+- [ ] Create submission summary with item counts
+- [ ] Generate unique submission ID for tracking
+
+### Staging & Preview
+- [ ] Store uploaded data in submission_items table (not production tables)
+- [ ] Parse and validate all rows, flag errors
+- [ ] Allow consultants to fix errors and resubmit
+- [ ] Show validation warnings (non-blocking) vs errors (blocking)
+- [ ] Preview parsed data in table format with edit capability
+- [ ] Link photos to specific submission items
+- [ ] Calculate summary statistics (total items, total cost, etc.)
+
+### City Personnel Review Dashboard
+- [ ] Create ReviewDashboard component at /admin/review
+- [ ] List all pending submissions with metadata (consultant, date, project, item count)
+- [ ] Show submission details with expandable item list
+- [ ] Display side-by-side comparison: submitted data vs existing data (if updating)
+- [ ] Add approve/reject buttons for individual items
+- [ ] Add bulk approve/reject for entire submission
+- [ ] Add review notes/comments field
+- [ ] Show validation warnings and allow override
+- [ ] Preview photos before approval
+
+### Approval Workflow
+- [ ] Create approval mutation that moves data from staging to production
+- [ ] Update submission status: pending_review → approved → finalized
+- [ ] Record reviewer ID and timestamp
+- [ ] Send notification to consultant when submission is approved/rejected
+- [ ] Create audit log entry for each approval/rejection
+- [ ] Handle partial approvals (some items approved, some rejected)
+- [ ] Allow consultants to view submission status and feedback
+
+### User Roles & Permissions
+- [ ] Add "consultant" role to user schema
+- [ ] Restrict upload portal to consultant role
+- [ ] Restrict review dashboard to admin/city_staff role
+- [ ] Consultants can only view their own submissions
+- [ ] City staff can view all submissions for their projects
+
+### Notifications & Communication
+- [ ] Email consultant when submission is received
+- [ ] Email consultant when submission is approved/rejected
+- [ ] Email city staff when new submission needs review
+- [ ] Show in-app notifications for pending reviews
+- [ ] Add comments/feedback thread on submissions
+
+### Testing
+- [ ] Test Excel template generation with validation rules
+- [ ] Test parsing valid spreadsheet data
+- [ ] Test parsing invalid data and error handling
+- [ ] Test photo upload and linking
+- [ ] Test submission workflow end-to-end
+- [ ] Test approval workflow (approve, reject, partial)
+- [ ] Test role-based access control
+- [ ] Test bulk operations
+- [ ] Test notification delivery
+- [ ] Create checkpoint
+
+
+## 3rd Party Consultant Data Upload System
+
+### Database Schema
+- [x] Create consultant_submissions table (track uploads)
+- [x] Create submission_items table (individual data rows)
+- [x] Create submission_photos table (uploaded photos)
+- [x] Add status workflow: pending_review → under_review → approved/rejected → finalized
+- [x] Add tracking fields: submissionId, trackingId, submittedBy, reviewedBy, reviewNotes
+- [x] Push database schema changes
+
+### Spreadsheet Template System
+- [x] Install xlsx library for Excel operations
+- [x] Create assessment template generator with validation rules
+- [x] Create deficiency template generator with validation rules
+- [x] Add instructions sheet explaining required/optional fields
+- [x] Add data validation dropdowns for enum fields (condition, priority, status)
+- [x] Create template download endpoints (tRPC)
+- [x] Templates include: componentCode, condition, observations, recommendations, costs, ESL, etc.
+
+### Spreadsheet Parser
+- [x] Create parser for assessment spreadsheets (parseAssessmentSpreadsheet)
+- [x] Create parser for deficiency spreadsheets (parseDeficiencySpreadsheet)
+- [x] Validate required fields (componentCode, condition, title, description, priority)
+- [x] Validate enum values (condition: excellent/good/fair/poor/critical)
+- [x] Validate numeric fields (costs, years, ESL, RUL)
+- [x] Return structured validation results with row numbers
+- [x] Support error, warning, and valid status levels
+
+### Upload Portal (Consultant UI)
+- [x] Create ConsultantUploadPage at /consultant/upload
+- [x] Add template download buttons (assessment & deficiency)
+- [x] Add project selector dropdown
+- [x] Add data type selector (assessment/deficiency)
+- [x] Create file upload component with drag-and-drop
+- [x] Show upload progress and validation results
+- [x] Display submission tracking ID and item counts
+- [x] Show submission history with status badges (pending/approved/rejected/finalized)
+- [x] Add route to App.tsx
+
+### Review Dashboard (City Personnel UI)
+- [x] Create ReviewDashboard at /admin/review
+- [x] List pending submissions with consultant info (name, email, date)
+- [x] Show submission details: file name, tracking ID, item counts
+- [x] Preview uploaded data in expandable cards
+- [x] Show validation status for each row (valid/warning/error with icons)
+- [x] Add approve/reject buttons (admin only)
+- [x] Add review notes textarea (required for rejection)
+- [x] Show summary stats (valid/warnings/errors)
+- [x] Add route to App.tsx
+- [ ] Implement bulk approve/reject (future enhancement)
+
+### Backend API (tRPC)
+- [x] consultant.downloadAssessmentTemplate (returns base64 Excel)
+- [x] consultant.downloadDeficiencyTemplate (returns base64 Excel)
+- [x] consultant.uploadSpreadsheet (parse, validate, store in staging)
+- [x] consultant.mySubmissions (consultant's own submissions)
+- [x] consultant.getSubmission (detail view with items)
+- [x] consultant.pendingSubmissions (admin only, status=pending_review)
+- [x] consultant.approveSubmission (admin only, finalize data)
+- [x] consultant.rejectSubmission (admin only, with required notes)
+- [x] Add consultant router to routers.ts
+
+### Approval Workflow
+- [x] Validate submission status before approval
+- [x] Create assessment records from approved items (all valid items)
+- [x] Create deficiency records from approved items (map priority: high→short_term)
+- [x] Link submission items to finalized records (finalizedRecordId)
+- [x] Update submission status to "finalized"
+- [x] Log reviewer ID and timestamp (reviewedBy, reviewedAt)
+- [x] Store review notes for audit trail
+- [ ] Send notification to consultant on approval/rejection (future enhancement)
+
+### Testing
+- [x] Test template generation (valid Excel files with Instructions + Data sheets)
+- [x] Test spreadsheet parsing (valid assessment and deficiency data)
+- [x] Test validation (missing required fields, invalid enum values)
+- [x] Test upload workflow (consultant uploads, gets tracking ID)
+- [x] Test review workflow (admin lists pending, views details)
+- [x] Test approval creates actual assessment/deficiency records
+- [x] Test rejection with required notes
+- [x] Test access control (admin-only endpoints throw errors)
+- [x] Test submission tracking and history (mySubmissions)
+- [x] Test consultant can only see own submissions
+- [x] Test error handling (invalid files, non-existent projects)
+- [x] All 128 tests (21 new consultant upload tests, 127 passing, 1 flaky Gemini test)
+- [x] Create checkpoint

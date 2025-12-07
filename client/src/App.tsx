@@ -12,6 +12,8 @@ import Assessment from "./pages/Assessment";
 import HierarchySettings from "./pages/HierarchySettings";
 import RatingScalesSettings from "./pages/RatingScalesSettings";
 import AuditTrailDashboard from "./pages/AuditTrailDashboard";
+import ConsultantUpload from "./pages/ConsultantUpload";
+import ReviewDashboard from "./pages/ReviewDashboard";
 
 function Router() {
   return (
@@ -24,6 +26,8 @@ function Router() {
       <Route path={"/settings/hierarchy"} component={HierarchySettings} />
       <Route path={"/settings/rating-scales"} component={RatingScalesSettings} />
       <Route path={"/admin/audit-trail"} component={AuditTrailDashboard} />
+      <Route path={"/consultant/upload"} component={ConsultantUpload} />
+      <Route path={"/admin/review"} component={ReviewDashboard} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

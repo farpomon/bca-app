@@ -26,7 +26,10 @@ import {
   InsertProjectRatingConfig,
   validationRules,
   validationOverrides,
-  componentHistory
+  componentHistory,
+  consultantSubmissions,
+  submissionItems,
+  submissionPhotos
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1371,4 +1374,246 @@ export async function getHistoryByDeficiency(deficiencyId: number) {
     .from(componentHistory)
     .where(eq(componentHistory.deficiencyId, deficiencyId))
     .orderBy(desc(componentHistory.timestamp));
+}
+
+
+// ============================================================================
+// Consultant Submissions
+// ============================================================================
+
+export async function createConsultantSubmission(submission: {
+  projectId: number;
+  submissionId: string;
+  submittedBy: number;
+  consultantName?: string;
+  consultantEmail?: string;
+  dataType: string;
+  fileName?: string;
+  totalItems: number;
+  validItems: number;
+  invalidItems: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(consultantSubmissions).values(submission as any);
+  return Number(result[0].insertId);
+}
+
+export async function getConsultantSubmission(submissionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(consultantSubmissions)
+    .where(eq(consultantSubmissions.id, submissionId))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+export async function getConsultantSubmissionsByProject(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(consultantSubmissions)
+    .where(eq(consultantSubmissions.projectId, projectId))
+    .orderBy(desc(consultantSubmissions.submittedAt));
+}
+
+export async function getConsultantSubmissionsByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(consultantSubmissions)
+    .where(eq(consultantSubmissions.submittedBy, userId))
+    .orderBy(desc(consultantSubmissions.submittedAt));
+}
+
+export async function getPendingSubmissions() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(consultantSubmissions)
+    .where(eq(consultantSubmissions.status, "pending_review"))
+    .orderBy(desc(consultantSubmissions.submittedAt));
+}
+
+export async function updateSubmissionStatus(submissionId: number, status: string, reviewedBy?: number, reviewNotes?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const updates: any = {
+    status,
+    reviewedAt: new Date(),
+  };
+
+  if (reviewedBy) {
+    updates.reviewedBy = reviewedBy;
+  }
+
+  if (reviewNotes) {
+    updates.reviewNotes = reviewNotes;
+  }
+
+  await db
+    .update(consultantSubmissions)
+    .set(updates)
+    .where(eq(consultantSubmissions.id, submissionId));
+}
+
+export async function finalizeSubmission(submissionId: number, finalizedBy: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(consultantSubmissions)
+    .set({
+      status: "finalized",
+      finalizedAt: new Date(),
+      finalizedBy,
+    })
+    .where(eq(consultantSubmissions.id, submissionId));
+}
+
+// ============================================================================
+// Submission Items
+// ============================================================================
+
+export async function createSubmissionItem(item: {
+  submissionId: number;
+  projectId: number;
+  itemType: string;
+  rowNumber?: number;
+  data: string;
+  validationStatus: string;
+  validationErrors?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(submissionItems).values(item as any);
+  return Number(result[0].insertId);
+}
+
+export async function getSubmissionItems(submissionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(submissionItems)
+    .where(eq(submissionItems.submissionId, submissionId))
+    .orderBy(submissionItems.rowNumber);
+}
+
+export async function updateSubmissionItemStatus(
+  itemId: number,
+  itemStatus: string,
+  reviewNotes?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const updates: any = { itemStatus };
+  if (reviewNotes) {
+    updates.reviewNotes = reviewNotes;
+  }
+
+  await db
+    .update(submissionItems)
+    .set(updates)
+    .where(eq(submissionItems.id, itemId));
+}
+
+export async function linkSubmissionItemToFinalizedRecord(
+  itemId: number,
+  itemType: "assessment" | "deficiency",
+  finalizedId: number
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const updates: any = {};
+  if (itemType === "assessment") {
+    updates.finalizedAssessmentId = finalizedId;
+  } else {
+    updates.finalizedDeficiencyId = finalizedId;
+  }
+
+  await db
+    .update(submissionItems)
+    .set(updates)
+    .where(eq(submissionItems.id, itemId));
+}
+
+// ============================================================================
+// Submission Photos
+// ============================================================================
+
+export async function createSubmissionPhoto(photo: {
+  submissionId: number;
+  submissionItemId?: number;
+  fileName: string;
+  fileSize?: number;
+  mimeType?: string;
+  fileKey: string;
+  url: string;
+  thumbnailUrl?: string;
+  componentCode?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(submissionPhotos).values(photo as any);
+  return Number(result[0].insertId);
+}
+
+export async function getSubmissionPhotos(submissionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(submissionPhotos)
+    .where(eq(submissionPhotos.submissionId, submissionId));
+}
+
+export async function updateSubmissionPhotoStatus(photoId: number, status: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(submissionPhotos)
+    .set({ status: status as any })
+    .where(eq(submissionPhotos.id, photoId));
+}
+
+export async function linkSubmissionPhotoToFinalizedRecord(photoId: number, finalizedPhotoId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(submissionPhotos)
+    .set({ finalizedPhotoId })
+    .where(eq(submissionPhotos.id, photoId));
+}
+
+export async function getAssessmentsByProject(projectId: number) {
+  const database = await getDb();
+  if (!database) return [];
+  return database.select().from(assessments).where(eq(assessments.projectId, projectId));
+}
+
+export async function getDeficienciesByProject(projectId: number) {
+  const database = await getDb();
+  if (!database) return [];
+  return database.select().from(deficiencies).where(eq(deficiencies.projectId, projectId));
 }
