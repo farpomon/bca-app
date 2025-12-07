@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `database_backups` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `backupType` enum('manual', 'automatic', 'scheduled') NOT NULL,\n  `status` enum('pending', 'in_progress', 'completed', 'failed') NOT NULL DEFAULT 'pending',\n  `fileSize` int,\n  `recordCount` int,\n  `backupPath` text,\n  `metadata` text,\n  `createdBy` int,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `completedAt` timestamp,\n  CONSTRAINT `database_backups_id` PRIMARY KEY(`id`),\n  INDEX `idx_status` (`status`),\n  INDEX `idx_created` (`createdAt`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `database_backups` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `backupType` enum('manual', 'automatic', 'scheduled') NOT NULL,\n  `status` enum('pending', 'in_progress', 'completed', 'failed') NOT NULL DEFAULT 'pending',\n  `fileSize` int,\n  `recordCount` int,\n  `backupPath` text,\n  `metadata` text,\n  `createdBy` int,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `completedAt` timestamp,\n  CONSTRAINT `database_backups_id` PRIMARY KEY(`id`),\n  INDEX `idx_status` (`status`),\n  INDEX `idx_created` (`createdAt`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 171
+}

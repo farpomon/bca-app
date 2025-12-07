@@ -791,6 +791,74 @@ export const appRouter = router({
     }),
   }),
 
+  audit: router({
+    // Get audit logs for an entity
+    logs: protectedProcedure
+      .input(z.object({ entityType: z.string(), entityId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAuditLogs(input.entityType, input.entityId);
+      }),
+
+    // Get all recent audit logs (admin only)
+    allLogs: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await db.getAllAuditLogs(input.limit);
+      }),
+
+    // Get version history for an assessment
+    assessmentVersions: protectedProcedure
+      .input(z.object({ assessmentId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAssessmentVersions(input.assessmentId);
+      }),
+
+    // Get version history for a deficiency
+    deficiencyVersions: protectedProcedure
+      .input(z.object({ deficiencyId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getDeficiencyVersions(input.deficiencyId);
+      }),
+
+    // Get version history for a project
+    projectVersions: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        return await db.getProjectVersions(input.projectId);
+      }),
+
+    // Create manual audit log entry
+    createLog: protectedProcedure
+      .input(z.object({
+        entityType: z.string(),
+        entityId: z.number(),
+        action: z.enum(["create", "update", "delete"]),
+        changes: z.string(), // JSON string
+        changeDescription: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.createAuditLog({
+          userId: ctx.user.id,
+          entityType: input.entityType,
+          entityId: input.entityId,
+          action: input.action,
+          changes: input.changes,
+          metadata: JSON.stringify({
+            timestamp: new Date().toISOString(),
+            changeDescription: input.changeDescription,
+          }),
+        });
+        return { success: true };
+      }),
+  }),
+
   exports: router({
     deficiencies: protectedProcedure
       .input(z.object({ projectId: z.number() }))

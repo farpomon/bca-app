@@ -252,3 +252,87 @@ export const projectRatingConfig = mysqlTable("project_rating_config", {
 
 export type ProjectRatingConfig = typeof projectRatingConfig.$inferSelect;
 export type InsertProjectRatingConfig = typeof projectRatingConfig.$inferInsert;
+
+/**
+ * Audit log - Tracks all changes to data
+ */
+export const auditLog = mysqlTable("audit_log", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Who made the change
+  entityType: varchar("entityType", { length: 50 }).notNull(), // e.g., "assessment", "deficiency", "project"
+  entityId: int("entityId").notNull(), // ID of the entity that changed
+  action: mysqlEnum("action", ["create", "update", "delete"]).notNull(),
+  changes: text("changes").notNull(), // JSON: { before: {...}, after: {...} }
+  metadata: text("metadata"), // JSON: Additional context (IP, user agent, etc.)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLog.$inferSelect;
+export type InsertAuditLog = typeof auditLog.$inferInsert;
+
+/**
+ * Assessment versions - Snapshots of assessment state over time
+ */
+export const assessmentVersions = mysqlTable("assessment_versions", {
+  id: int("id").autoincrement().primaryKey(),
+  assessmentId: int("assessmentId").notNull(),
+  versionNumber: int("versionNumber").notNull(),
+  data: text("data").notNull(), // JSON snapshot of entire assessment
+  changedBy: int("changedBy").notNull(),
+  changeDescription: text("changeDescription"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AssessmentVersion = typeof assessmentVersions.$inferSelect;
+export type InsertAssessmentVersion = typeof assessmentVersions.$inferInsert;
+
+/**
+ * Deficiency versions - Snapshots of deficiency state over time
+ */
+export const deficiencyVersions = mysqlTable("deficiency_versions", {
+  id: int("id").autoincrement().primaryKey(),
+  deficiencyId: int("deficiencyId").notNull(),
+  versionNumber: int("versionNumber").notNull(),
+  data: text("data").notNull(), // JSON snapshot of entire deficiency
+  changedBy: int("changedBy").notNull(),
+  changeDescription: text("changeDescription"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DeficiencyVersion = typeof deficiencyVersions.$inferSelect;
+export type InsertDeficiencyVersion = typeof deficiencyVersions.$inferInsert;
+
+/**
+ * Project versions - Snapshots of project state over time
+ */
+export const projectVersions = mysqlTable("project_versions", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  versionNumber: int("versionNumber").notNull(),
+  data: text("data").notNull(), // JSON snapshot of entire project
+  changedBy: int("changedBy").notNull(),
+  changeDescription: text("changeDescription"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProjectVersion = typeof projectVersions.$inferSelect;
+export type InsertProjectVersion = typeof projectVersions.$inferInsert;
+
+/**
+ * Database backups - Periodic snapshots for disaster recovery
+ */
+export const databaseBackups = mysqlTable("database_backups", {
+  id: int("id").autoincrement().primaryKey(),
+  backupType: mysqlEnum("backupType", ["manual", "automatic", "scheduled"]).notNull(),
+  status: mysqlEnum("status", ["pending", "in_progress", "completed", "failed"]).default("pending").notNull(),
+  fileSize: int("fileSize"), // Size in bytes
+  recordCount: int("recordCount"), // Total records backed up
+  backupPath: text("backupPath"), // S3 path or file location
+  metadata: text("metadata"), // JSON: Additional backup info
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type DatabaseBackup = typeof databaseBackups.$inferSelect;
+export type InsertDatabaseBackup = typeof databaseBackups.$inferInsert;

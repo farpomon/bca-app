@@ -1,9 +1,8 @@
-import { eq, and, desc, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
-  InsertUser, 
-  users, 
-  projects, 
+  InsertUser, users,
+  projects,
   buildingComponents,
   assessments,
   deficiencies,
@@ -13,6 +12,10 @@ import {
   projectHierarchyConfig,
   ratingScales,
   projectRatingConfig,
+  auditLog, InsertAuditLog,
+  assessmentVersions, InsertAssessmentVersion,
+  deficiencyVersions, InsertDeficiencyVersion,
+  projectVersions, InsertProjectVersion,
   InsertProject,
   InsertAssessment,
   InsertDeficiency,
@@ -738,4 +741,171 @@ export async function calculateOverallBuildingCondition(projectId: number) {
     overallConditionRating: overallRating,
     assessmentCount: assessedComponents.length,
   };
+}
+
+// ============================================================================
+// Audit Trail and Version Control
+// ============================================================================
+
+export async function createAuditLog(log: InsertAuditLog) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(auditLog).values(log);
+}
+
+export async function getAuditLogs(entityType: string, entityId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(auditLog)
+    .where(and(eq(auditLog.entityType, entityType), eq(auditLog.entityId, entityId)))
+    .orderBy(desc(auditLog.createdAt));
+}
+
+export async function getAllAuditLogs(limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(auditLog)
+    .orderBy(desc(auditLog.createdAt))
+    .limit(limit);
+}
+
+// Assessment Versions
+export async function createAssessmentVersion(version: InsertAssessmentVersion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(assessmentVersions).values(version);
+}
+
+export async function getAssessmentVersions(assessmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(assessmentVersions)
+    .where(eq(assessmentVersions.assessmentId, assessmentId))
+    .orderBy(desc(assessmentVersions.versionNumber));
+}
+
+export async function getLatestAssessmentVersion(assessmentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(assessmentVersions)
+    .where(eq(assessmentVersions.assessmentId, assessmentId))
+    .orderBy(desc(assessmentVersions.versionNumber))
+    .limit(1);
+  
+  return result[0] || null;
+}
+
+// Deficiency Versions
+export async function createDeficiencyVersion(version: InsertDeficiencyVersion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(deficiencyVersions).values(version);
+}
+
+export async function getDeficiencyVersions(deficiencyId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(deficiencyVersions)
+    .where(eq(deficiencyVersions.deficiencyId, deficiencyId))
+    .orderBy(desc(deficiencyVersions.versionNumber));
+}
+
+// Project Versions
+export async function createProjectVersion(version: InsertProjectVersion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(projectVersions).values(version);
+}
+
+export async function getProjectVersions(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(projectVersions)
+    .where(eq(projectVersions.projectId, projectId))
+    .orderBy(desc(projectVersions.versionNumber));
+}
+
+// Helper function to create audit log and version snapshot
+export async function auditChange<T extends Record<string, any>>(
+  userId: number,
+  entityType: string,
+  entityId: number,
+  action: "create" | "update" | "delete",
+  before: T | null,
+  after: T | null,
+  changeDescription?: string
+) {
+  const db = await getDb();
+  if (!db) return;
+
+  // Create audit log entry
+  await createAuditLog({
+    userId,
+    entityType,
+    entityId,
+    action,
+    changes: JSON.stringify({ before, after }),
+    metadata: JSON.stringify({
+      timestamp: new Date().toISOString(),
+      changeDescription,
+    }),
+  });
+
+  // Create version snapshot based on entity type
+  if (action !== "delete" && after) {
+    const versions = 
+      entityType === "assessment" ? await getAssessmentVersions(entityId) :
+      entityType === "deficiency" ? await getDeficiencyVersions(entityId) :
+      entityType === "project" ? await getProjectVersions(entityId) : [];
+
+    const nextVersion = versions.length > 0 ? versions[0].versionNumber + 1 : 1;
+
+    if (entityType === "assessment") {
+      await createAssessmentVersion({
+        assessmentId: entityId,
+        versionNumber: nextVersion,
+        data: JSON.stringify(after),
+        changedBy: userId,
+        changeDescription,
+      });
+    } else if (entityType === "deficiency") {
+      await createDeficiencyVersion({
+        deficiencyId: entityId,
+        versionNumber: nextVersion,
+        data: JSON.stringify(after),
+        changedBy: userId,
+        changeDescription,
+      });
+    } else if (entityType === "project") {
+      await createProjectVersion({
+        projectId: entityId,
+        versionNumber: nextVersion,
+        data: JSON.stringify(after),
+        changedBy: userId,
+        changeDescription,
+      });
+    }
+  }
 }
