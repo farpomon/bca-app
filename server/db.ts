@@ -11,11 +11,15 @@ import {
   costEstimates,
   hierarchyTemplates,
   projectHierarchyConfig,
+  ratingScales,
+  projectRatingConfig,
   InsertProject,
   InsertAssessment,
   InsertDeficiency,
   InsertPhoto,
-  InsertCostEstimate
+  InsertCostEstimate,
+  InsertRatingScale,
+  InsertProjectRatingConfig
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -560,4 +564,178 @@ export async function deleteProjectHierarchyConfig(projectId: number) {
   await db
     .delete(projectHierarchyConfig)
     .where(eq(projectHierarchyConfig.projectId, projectId));
+}
+
+// ============================================================================
+// Rating Scales
+// ============================================================================
+
+export async function createRatingScale(scale: InsertRatingScale) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(ratingScales).values(scale);
+  return result[0].insertId;
+}
+
+export async function getAllRatingScales() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(ratingScales);
+}
+
+export async function getRatingScaleById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(ratingScales).where(eq(ratingScales.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getRatingScalesByType(type: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(ratingScales).where(eq(ratingScales.type, type as any));
+}
+
+export async function getDefaultRatingScale(type: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(ratingScales)
+    .where(and(eq(ratingScales.type, type as any), eq(ratingScales.isDefault, true)))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateRatingScale(id: number, updates: Partial<InsertRatingScale>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(ratingScales).set(updates).where(eq(ratingScales.id, id));
+}
+
+export async function deleteRatingScale(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(ratingScales).where(eq(ratingScales.id, id));
+}
+
+// ============================================================================
+// Project Rating Configuration
+// ============================================================================
+
+export async function getProjectRatingConfig(projectId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(projectRatingConfig)
+    .where(eq(projectRatingConfig.projectId, projectId))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function upsertProjectRatingConfig(config: InsertProjectRatingConfig) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await getProjectRatingConfig(config.projectId);
+  
+  if (existing) {
+    await db
+      .update(projectRatingConfig)
+      .set(config)
+      .where(eq(projectRatingConfig.projectId, config.projectId));
+  } else {
+    await db.insert(projectRatingConfig).values(config);
+  }
+}
+
+export async function deleteProjectRatingConfig(projectId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(projectRatingConfig).where(eq(projectRatingConfig.projectId, projectId));
+}
+
+// ============================================================================
+// Overall Building Condition Calculation
+// ============================================================================
+
+export async function calculateOverallBuildingCondition(projectId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  // Get all assessments for the project
+  const projectAssessments = await getProjectAssessments(projectId);
+  
+  if (projectAssessments.length === 0) {
+    return {
+      overallConditionScore: null,
+      overallFciScore: null,
+      overallConditionRating: "Not Assessed",
+      assessmentCount: 0,
+    };
+  }
+
+  // Calculate average condition score
+  // Map condition to numerical values: good=3, fair=2, poor=1, not_assessed=0
+  const conditionValues = {
+    good: 3,
+    fair: 2,
+    poor: 1,
+    not_assessed: 0,
+  };
+
+  const assessedComponents = projectAssessments.filter(a => a.condition !== "not_assessed");
+  
+  if (assessedComponents.length === 0) {
+    return {
+      overallConditionScore: null,
+      overallFciScore: null,
+      overallConditionRating: "Not Assessed",
+      assessmentCount: 0,
+    };
+  }
+
+  const totalScore = assessedComponents.reduce((sum, assessment) => {
+    return sum + conditionValues[assessment.condition];
+  }, 0);
+
+  const avgScore = totalScore / assessedComponents.length;
+
+  // Determine overall rating based on average score
+  let overallRating: string;
+  if (avgScore >= 2.5) {
+    overallRating = "Good";
+  } else if (avgScore >= 1.5) {
+    overallRating = "Fair";
+  } else {
+    overallRating = "Poor";
+  }
+
+  // Calculate FCI (Facility Condition Index)
+  const fciData = await getProjectFCI(projectId);
+  const fciScore = fciData?.fci || null;
+
+  // Update project with calculated values
+  await db
+    .update(projects)
+    .set({
+      overallConditionScore: Math.round(avgScore * 100) / 100,
+      overallFciScore: fciScore ? Math.round(fciScore) : null,
+      overallConditionRating: overallRating,
+      updatedAt: new Date(),
+    })
+    .where(eq(projects.id, projectId));
+
+  return {
+    overallConditionScore: Math.round(avgScore * 100) / 100,
+    overallFciScore: fciScore ? Math.round(fciScore) : null,
+    overallConditionRating: overallRating,
+    assessmentCount: assessedComponents.length,
+  };
 }

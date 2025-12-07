@@ -7,6 +7,7 @@ import { useParams, useLocation } from "wouter";
 import { FCIGauge } from "@/components/FCIGauge";
 import { ConditionMatrix } from "@/components/ConditionMatrix";
 import { FinancialPlanning } from "@/components/FinancialPlanning";
+import OverallConditionWidget from "@/components/OverallConditionWidget";
 
 export default function ProjectDashboard() {
   const { id } = useParams();
@@ -78,6 +79,9 @@ export default function ProjectDashboard() {
             <p className="text-muted-foreground">{project.address}</p>
           </div>
         </div>
+
+        {/* Overall Building Condition */}
+        <OverallConditionWidget projectId={projectId} />
 
         {/* FCI Gauge - Full Width */}
         <FCIGauge data={fciData} isLoading={fciLoading} />

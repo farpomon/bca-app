@@ -317,3 +317,21 @@
 - [x] Integrate hierarchy into assessment component selection
 - [x] Write tests for hierarchy system - 8 tests passing
 - [x] Create checkpoint with hierarchy feature
+
+## Industry-Standard Condition Rating Scales
+- [x] Design database schema for rating scales (FCI, CI, custom)
+- [x] Create ratingScales table for global rating configurations
+- [x] Create projectRatingConfig table for per-project overrides
+- [x] Add numerical scoring fields to assessments table
+- [x] Add overall building condition rating to projects table
+- [x] Implement backend tRPC procedures for rating scale CRUD
+- [x] Build rating scale configuration UI (admin)
+- [x] Create predefined rating scales (10-point FCI, numerical CI) via seed script
+- [x] Add project rating configuration tab
+- [ ] Update assessment form to use configured rating scales
+- [ ] Implement deficiency priority rating system (deferred - use priority scale in deficiency form)
+- [x] Build overall building condition calculation logic
+- [x] Add building condition dashboard widget
+- [x] Write tests for rating system - 5 tests passing
+- [x] Add OverallConditionWidget to ProjectDashboard
+- [x] Create checkpoint with rating system

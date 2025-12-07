@@ -134,6 +134,14 @@ export const appRouter = router({
         const { getAnnualCostBreakdown } = await import("./dashboardData");
         return await getAnnualCostBreakdown(input.projectId, input.years);
       }),
+
+    overallCondition: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.calculateOverallBuildingCondition(input.projectId);
+      }),
   }),
 
   components: router({
@@ -646,6 +654,138 @@ export const appRouter = router({
           }
 
           await db.deleteProjectHierarchyConfig(input.projectId);
+          return { success: true };
+        }),
+    }),
+  }),
+
+  ratings: router({
+    // Rating scales management (admin only)
+    scales: router({
+      list: protectedProcedure.query(async () => {
+        return await db.getAllRatingScales();
+      }),
+
+      byType: protectedProcedure
+        .input(z.object({ type: z.enum(["fci", "ci", "condition", "priority", "custom"]) }))
+        .query(async ({ input }) => {
+          return await db.getRatingScalesByType(input.type);
+        }),
+
+      getDefault: protectedProcedure
+        .input(z.object({ type: z.enum(["fci", "ci", "condition", "priority", "custom"]) }))
+        .query(async ({ input }) => {
+          return await db.getDefaultRatingScale(input.type);
+        }),
+
+      create: protectedProcedure
+        .input(z.object({
+          name: z.string(),
+          description: z.string().optional(),
+          type: z.enum(["fci", "ci", "condition", "priority", "custom"]),
+          isDefault: z.boolean().optional(),
+          minValue: z.number(),
+          maxValue: z.number(),
+          scaleItems: z.array(z.object({
+            value: z.number(),
+            label: z.string(),
+            description: z.string().optional(),
+            color: z.string().optional(),
+          })),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+
+          const scaleId = await db.createRatingScale({
+            ...input,
+            scaleItems: JSON.stringify(input.scaleItems),
+            createdBy: ctx.user.id,
+          });
+
+          return { id: scaleId };
+        }),
+
+      update: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          isDefault: z.boolean().optional(),
+          scaleItems: z.array(z.object({
+            value: z.number(),
+            label: z.string(),
+            description: z.string().optional(),
+            color: z.string().optional(),
+          })).optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+
+          const { id, ...updates } = input;
+          await db.updateRatingScale(id, {
+            ...updates,
+            scaleItems: updates.scaleItems ? JSON.stringify(updates.scaleItems) : undefined,
+          });
+
+          return { success: true };
+        }),
+
+      delete: protectedProcedure
+        .input(z.object({ id: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+          }
+
+          await db.deleteRatingScale(input.id);
+          return { success: true };
+        }),
+    }),
+
+    // Project rating configuration
+    project: router({
+      get: protectedProcedure
+        .input(z.object({ projectId: z.number() }))
+        .query(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+          }
+
+          return await db.getProjectRatingConfig(input.projectId);
+        }),
+
+      upsert: protectedProcedure
+        .input(z.object({
+          projectId: z.number(),
+          conditionScaleId: z.number().optional(),
+          priorityScaleId: z.number().optional(),
+          fciScaleId: z.number().optional(),
+          useWeightedAverage: z.boolean().optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+          }
+
+          await db.upsertProjectRatingConfig(input);
+          return { success: true };
+        }),
+
+      delete: protectedProcedure
+        .input(z.object({ projectId: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
+          if (!project) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+          }
+
+          await db.deleteProjectRatingConfig(input.projectId);
           return { success: true };
         }),
     }),

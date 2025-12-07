@@ -35,6 +35,9 @@ export const projects = mysqlTable("projects", {
   buildingCode: varchar("buildingCode", { length: 100 }),
   assessmentDate: timestamp("assessmentDate"),
   status: mysqlEnum("status", ["draft", "in_progress", "completed", "archived"]).default("draft").notNull(),
+  overallConditionScore: int("overallConditionScore"), // Calculated overall building condition score
+  overallFciScore: int("overallFciScore"), // Overall Facility Condition Index (0-100)
+  overallConditionRating: varchar("overallConditionRating", { length: 50 }), // e.g., "Good", "Fair", "Poor"
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -77,6 +80,9 @@ export const assessments = mysqlTable("assessments", {
   estimatedRepairCost: int("estimatedRepairCost").default(0), // Estimated cost to repair/maintain
   replacementValue: int("replacementValue").default(0), // Full replacement cost
   actionYear: int("actionYear"), // Year when action is recommended
+  conditionScore: int("conditionScore"), // Numerical condition score (based on configured rating scale)
+  ciScore: int("ciScore"), // Condition Index score
+  fciScore: int("fciScore"), // Facility Condition Index score (0-100)
   assessedAt: timestamp("assessedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -208,3 +214,41 @@ export const projectHierarchyConfig = mysqlTable("project_hierarchy_config", {
 
 export type ProjectHierarchyConfig = typeof projectHierarchyConfig.$inferSelect;
 export type InsertProjectHierarchyConfig = typeof projectHierarchyConfig.$inferInsert;
+
+/**
+ * Rating scales - Define different condition rating systems
+ * Supports FCI, CI, and custom rating scales
+ */
+export const ratingScales = mysqlTable("rating_scales", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  type: mysqlEnum("type", ["fci", "ci", "condition", "priority", "custom"]).notNull(),
+  isDefault: boolean("isDefault").default(false).notNull(),
+  minValue: int("minValue").notNull(), // e.g., 0 for FCI, 1 for 1-10 scale
+  maxValue: int("maxValue").notNull(), // e.g., 100 for FCI, 10 for 1-10 scale
+  scaleItems: text("scaleItems").notNull(), // JSON: [{ value, label, description, color }]
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RatingScale = typeof ratingScales.$inferSelect;
+export type InsertRatingScale = typeof ratingScales.$inferInsert;
+
+/**
+ * Project rating configuration - Per-project rating scale selection
+ */
+export const projectRatingConfig = mysqlTable("project_rating_config", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull().unique(),
+  conditionScaleId: int("conditionScaleId"), // Rating scale for component conditions
+  priorityScaleId: int("priorityScaleId"), // Rating scale for deficiency priorities
+  fciScaleId: int("fciScaleId"), // Rating scale for FCI calculations
+  useWeightedAverage: boolean("useWeightedAverage").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProjectRatingConfig = typeof projectRatingConfig.$inferSelect;
+export type InsertProjectRatingConfig = typeof projectRatingConfig.$inferInsert;
