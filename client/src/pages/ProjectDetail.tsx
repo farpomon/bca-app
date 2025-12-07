@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download } from "lucide-react";
 import { useParams, useLocation } from "wouter";
@@ -30,6 +31,9 @@ export default function ProjectDetail() {
   const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<"initial" | "active" | "completed" | undefined>(undefined);
+  const [selectedAssessments, setSelectedAssessments] = useState<number[]>([]);
+  const [bulkStatus, setBulkStatus] = useState<string>("");
+  const utils = trpc.useUtils();
   const [projectEditDialogOpen, setProjectEditDialogOpen] = useState(false);
   const [projectForm, setProjectForm] = useState({
     name: "",
@@ -112,15 +116,37 @@ export default function ProjectDetail() {
     },
   });
 
+  const bulkUpdateStatus = trpc.assessments.bulkUpdateStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Assessment statuses updated successfully");
+      utils.assessments.list.invalidate();
+      utils.assessments.statusCounts.invalidate();
+      setSelectedAssessments([]);
+      setBulkStatus("");
+    },
+    onError: (error) => {
+      toast.error("Failed to update assessment statuses");
+    },
+  });
+
   const updateProject = trpc.projects.update.useMutation({
     onSuccess: () => {
       toast.success("Project updated successfully");
       setProjectEditDialogOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error("Failed to update project: " + error.message);
     },
   });
+
+  const handleBulkStatusChange = () => {
+    if (!bulkStatus || selectedAssessments.length === 0) return;
+    bulkUpdateStatus.mutate({
+      projectId,
+      assessmentIds: selectedAssessments,
+      status: bulkStatus as "initial" | "active" | "completed"
+    });
+  };
 
   const handleEditProject = () => {
     if (project) {
@@ -431,10 +457,60 @@ export default function ProjectDetail() {
               </CardHeader>
               <CardContent>
                 {assessments && assessments.length > 0 ? (
-                  <div className="space-y-2">
-                    {assessments.map((assessment) => (
-                      <div key={assessment.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                        <div className="flex-1">
+                  <div className="space-y-4">
+                    {/* Bulk Action Toolbar */}
+                    {selectedAssessments.length > 0 && (
+                      <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <span className="text-sm font-medium">
+                          {selectedAssessments.length} assessment{selectedAssessments.length > 1 ? 's' : ''} selected
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={bulkStatus}
+                            onValueChange={setBulkStatus}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Change status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="initial">Initial</SelectItem>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            onClick={handleBulkStatusChange}
+                            disabled={!bulkStatus}
+                          >
+                            Apply
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedAssessments([])}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      {assessments.map((assessment) => (
+                        <div key={assessment.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                          {/* Checkbox */}
+                          <Checkbox
+                            checked={selectedAssessments.includes(assessment.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedAssessments([...selectedAssessments, assessment.id]);
+                              } else {
+                                setSelectedAssessments(selectedAssessments.filter(id => id !== assessment.id));
+                              }
+                            }}
+                          />
+                          <div className="flex-1">
                           <div className="font-medium">{assessment.componentCode}</div>
                           <div className="text-sm text-muted-foreground line-clamp-1">{assessment.observations}</div>
                         </div>
@@ -477,6 +553,7 @@ export default function ProjectDetail() {
                         </div>
                       </div>
                     ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">

@@ -8,6 +8,7 @@ import { FCIGauge } from "@/components/FCIGauge";
 import { ConditionMatrix } from "@/components/ConditionMatrix";
 import { FinancialPlanning } from "@/components/FinancialPlanning";
 import OverallConditionWidget from "@/components/OverallConditionWidget";
+import AssessmentProgressWidget from "@/components/AssessmentProgressWidget";
 
 export default function ProjectDashboard() {
   const { id } = useParams();
@@ -82,6 +83,9 @@ export default function ProjectDashboard() {
 
         {/* Overall Building Condition */}
         <OverallConditionWidget projectId={projectId} />
+
+        {/* Assessment Progress */}
+        <AssessmentProgressWidget projectId={projectId} />
 
         {/* FCI Gauge - Full Width */}
         <FCIGauge data={fciData} isLoading={fciLoading} />

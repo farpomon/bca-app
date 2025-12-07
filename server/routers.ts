@@ -232,6 +232,18 @@ export const appRouter = router({
         return await db.getAssessmentStatusCounts(input.projectId);
       }),
 
+    bulkUpdateStatus: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        assessmentIds: z.array(z.number()),
+        status: z.enum(["initial", "active", "completed"])
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.bulkUpdateAssessmentStatus(input.assessmentIds, input.status);
+      }),
+
     get: protectedProcedure
       .input(z.object({ 
         projectId: z.number(),
@@ -264,10 +276,29 @@ export const appRouter = router({
         const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
+        // Get existing assessment to detect status changes
+        const existing = await db.getAssessmentByComponent(input.projectId, input.componentCode);
+        
         const assessmentId = await db.upsertAssessment({
           ...input,
           assessedAt: new Date(),
         });
+        
+        // Log status change if it occurred
+        if (existing && input.status && existing.status !== input.status) {
+          await db.createAuditLog({
+            entityType: "assessment",
+            entityId: existing.id,
+            action: "update",
+            userId: ctx.user.id,
+            changes: JSON.stringify({
+              field: "status",
+              oldValue: existing.status,
+              newValue: input.status
+            })
+          });
+        }
+        
         return { id: assessmentId };
       }),
   }),

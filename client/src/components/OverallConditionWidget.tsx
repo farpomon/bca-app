@@ -8,7 +8,7 @@ interface OverallConditionWidgetProps {
 }
 
 export default function OverallConditionWidget({ projectId }: OverallConditionWidgetProps) {
-  const { data, isLoading } = trpc.dashboard.overallCondition.useQuery({ projectId });
+  const { data, isLoading } = trpc.projects.overallCondition.useQuery({ projectId });
 
   if (isLoading) {
     return (

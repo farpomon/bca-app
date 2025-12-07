@@ -368,3 +368,26 @@
 - [x] Position badges next to condition badges
 - [x] Test visual appearance
 - [x] Create checkpoint
+
+## Bulk Status Updates
+- [x] Add checkbox selection to assessment list
+- [x] Add bulk action toolbar when items selected
+- [x] Implement bulk status change mutation
+- [x] Test bulk status updates
+
+## Automatic Status Change Audit Logging
+- [x] Integrate audit logging into assessment upsert
+- [x] Detect status changes and log them
+- [x] Include old and new status in audit log
+- [x] Test audit logging for status changes
+
+## Assessment Progress Dashboard Widget
+- [x] Create progress chart component
+- [x] Calculate status distribution percentages
+- [x] Add visual progress bar with percentages
+- [x] Integrate into project dashboard
+- [x] Test progress widget display
+
+## Final Testing and Delivery
+- [x] Run all tests - 68 tests passing
+- [x] Create checkpoint with all three features

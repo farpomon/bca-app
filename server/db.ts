@@ -950,3 +950,18 @@ export async function getAssessmentStatusCounts(projectId: number) {
 
   return counts;
 }
+
+export async function bulkUpdateAssessmentStatus(
+  assessmentIds: number[],
+  status: "initial" | "active" | "completed"
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  await db
+    .update(assessments)
+    .set({ status })
+    .where(sql`${assessments.id} IN (${sql.join(assessmentIds.map(id => sql`${id}`), sql`, `)})`);
+
+  return { success: true };
+}
