@@ -153,6 +153,18 @@ export const photos = mysqlTable("photos", {
   mimeType: varchar("mimeType", { length: 100 }),
   fileSize: int("fileSize"),
   takenAt: timestamp("takenAt"),
+  // Geolocation fields
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  altitude: decimal("altitude", { precision: 10, scale: 2 }),
+  locationAccuracy: decimal("locationAccuracy", { precision: 10, scale: 2 }),
+  // OCR fields
+  ocrText: text("ocrText"),
+  ocrConfidence: decimal("ocrConfidence", { precision: 5, scale: 2 }),
+  // Floor plan fields
+  floorPlanId: int("floorPlanId"),
+  floorPlanX: decimal("floorPlanX", { precision: 10, scale: 4 }),
+  floorPlanY: decimal("floorPlanY", { precision: 10, scale: 4 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -360,3 +372,26 @@ export const databaseBackups = mysqlTable("database_backups", {
 
 export type DatabaseBackup = typeof databaseBackups.$inferSelect;
 export type InsertDatabaseBackup = typeof databaseBackups.$inferInsert;
+
+/**
+ * Floor plans - Digital floor plan images for projects
+ */
+export const floorPlans = mysqlTable("floor_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  floorNumber: int("floorNumber"),
+  buildingSectionId: int("buildingSectionId"),
+  fileKey: varchar("fileKey", { length: 500 }).notNull(),
+  url: text("url").notNull(),
+  imageWidth: int("imageWidth"),
+  imageHeight: int("imageHeight"),
+  scale: varchar("scale", { length: 100 }), // e.g., "1:100"
+  uploadedBy: int("uploadedBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FloorPlan = typeof floorPlans.$inferSelect;
+export type InsertFloorPlan = typeof floorPlans.$inferInsert;

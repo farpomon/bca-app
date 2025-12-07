@@ -393,6 +393,11 @@ export const appRouter = router({
         fileName: z.string(),
         mimeType: z.string(),
         caption: z.string().optional(),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
+        altitude: z.number().optional(),
+        locationAccuracy: z.number().optional(),
+        performOCR: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const project = await db.getProjectById(input.projectId, ctx.user.id);
@@ -402,6 +407,16 @@ export const appRouter = router({
         const buffer = Buffer.from(input.fileData, 'base64');
         const fileKey = `projects/${input.projectId}/photos/${Date.now()}-${input.fileName}`;
         const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        // Perform OCR if requested
+        let ocrText: string | undefined;
+        let ocrConfidence: number | undefined;
+        if (input.performOCR && input.mimeType.startsWith('image/')) {
+          const { extractTextFromImage } = await import("./_core/ocr");
+          const ocrResult = await extractTextFromImage(url);
+          ocrText = ocrResult.text || undefined;
+          ocrConfidence = ocrResult.confidence || undefined;
+        }
         
         const photoId = await db.createPhoto({
           projectId: input.projectId,
@@ -413,9 +428,15 @@ export const appRouter = router({
           caption: input.caption,
           mimeType: input.mimeType,
           fileSize: buffer.length,
+          latitude: input.latitude?.toString(),
+          longitude: input.longitude?.toString(),
+          altitude: input.altitude?.toString(),
+          locationAccuracy: input.locationAccuracy?.toString(),
+          ocrText,
+          ocrConfidence: ocrConfidence?.toString(),
         });
         
-        return { id: photoId, url };
+        return { id: photoId, url, ocrText, ocrConfidence };
       }),
 
     delete: protectedProcedure

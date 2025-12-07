@@ -92,6 +92,12 @@ export function AssessmentDialog({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
+  const [photoGeolocation, setPhotoGeolocation] = useState<{
+    latitude: number;
+    longitude: number;
+    altitude?: number;
+    accuracy: number;
+  } | null>(null);
 
   const upsertAssessment = trpc.assessments.upsert.useMutation();
 
@@ -142,6 +148,11 @@ export function AssessmentDialog({
             mimeType: photoFile.type,
             componentCode,
             caption: `${componentCode} - ${componentName}`,
+            latitude: photoGeolocation?.latitude,
+            longitude: photoGeolocation?.longitude,
+            altitude: photoGeolocation?.altitude,
+            locationAccuracy: photoGeolocation?.accuracy,
+            performOCR: true, // Enable OCR for all uploaded photos
           });
         };
         reader.readAsDataURL(photoFile);
@@ -203,12 +214,37 @@ export function AssessmentDialog({
         setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Capture geolocation when photo is selected
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setPhotoGeolocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              altitude: position.coords.altitude || undefined,
+              accuracy: position.coords.accuracy,
+            });
+            toast.success("Location captured");
+          },
+          (error) => {
+            console.warn("Geolocation error:", error);
+            toast.info("Location not available");
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          }
+        );
+      }
     }
   };
 
   const handleRemovePhoto = () => {
     setPhotoFile(null);
     setPhotoPreview(null);
+    setPhotoGeolocation(null);
   };
 
   const handleAIAnalysis = () => {

@@ -406,3 +406,59 @@
 - [ ] Update PDF reports to show section breakdown (deferred)
 - [x] Write tests for building sections feature - 5 tests passing
 - [x] Create checkpoint with building sections feature
+## Integrated Media Capture with Geolocation and Floor Plans
+- [x] Design database schema for enhanced media metadata
+- [x] Add geolocation fields (latitude, longitude, altitude, accuracy) to photos table
+- [x] Add OCR text recognition fields to photos table
+- [x] Create floorPlans table for digital floor plan management
+- [x] Add floor plan coordinates (x, y) to photos for pinning
+- [ ] Implement geolocation capture from device GPS
+- [ ] Integrate OCR text recognition for captured photos
+- [ ] Build floor plan upload and management UI
+- [ ] Create interactive floor plan viewer with photo/video pins
+- [ ] Add drag-and-drop photo positioning on floor plans
+- [ ] Integrate enhanced media capture into assessment workflow
+- [ ] Add geolocation map view for photos
+- [ ] Write tests for media capture features
+- [ ] Create checkpoint with integrated media capture system
+
+## Integrated Media Capture with Geolocation and OCR
+
+### Database Schema
+- [x] Add geolocation fields to photos table (latitude, longitude, altitude, locationAccuracy)
+- [x] Add OCR fields to photos table (ocrText, ocrConfidence)
+- [x] Add floor plan fields to photos table (floorPlanId, floorPlanX, floorPlanY)
+- [x] Create floor_plans table with project association
+- [x] Push database schema changes
+
+### Backend Implementation
+- [x] Update photos.upload tRPC endpoint to accept geolocation parameters
+- [x] Update photos.upload to accept performOCR flag
+- [x] Create OCR service using Gemini Vision API
+- [x] Integrate OCR processing into photo upload workflow
+- [x] Convert numeric geolocation values to decimal strings for database storage
+- [x] Return OCR results in photo upload response
+
+### Frontend Implementation
+- [x] Add photoGeolocation state to AssessmentDialog
+- [x] Capture GPS coordinates using browser Geolocation API when photo is selected
+- [x] Request location permissions from user
+- [x] Display toast notifications for location capture status
+- [x] Pass geolocation data to photo upload mutation
+- [x] Enable OCR processing for all uploaded photos
+- [x] Reset geolocation state when photo is removed
+
+### Testing
+- [x] Create comprehensive test suite for geolocation and OCR
+- [x] Test geolocation data capture and storage
+- [x] Test OCR text extraction from images
+- [x] Test combined geolocation and OCR workflow
+- [x] Verify all 76 tests passing
+
+### Next Steps
+- [ ] Build floor plan management UI (upload, view, list)
+- [ ] Create floor plan viewer component
+- [ ] Display geolocation data in photo galleries
+- [ ] Display OCR extracted text in photo details
+- [ ] Add geolocation and OCR data to PDF reports
+- [ ] (Future) Implement interactive floor plan pinning with drag-and-drop
