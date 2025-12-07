@@ -49,6 +49,7 @@ export function AssessmentDialog({
   onSuccess,
 }: AssessmentDialogProps) {
   const [condition, setCondition] = useState(existingAssessment?.condition || "not_assessed");
+  const [status, setStatus] = useState<"initial" | "active" | "completed">("initial");
 
   // Sync state when existingAssessment changes (for edit mode)
   useEffect(() => {
@@ -114,6 +115,7 @@ export function AssessmentDialog({
         projectId,
         componentCode,
         condition: condition as "good" | "fair" | "poor" | "not_assessed",
+        status: status,
         conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
         observations: observations || undefined,
         recommendations: recommendations || undefined,
@@ -272,6 +274,23 @@ export function AssessmentDialog({
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Assessment Status *</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as "initial" | "active" | "completed")}>
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="initial">Initial (Not Started)</SelectItem>
+                  <SelectItem value="active">Active (In Progress)</SelectItem>
+                  <SelectItem value="completed">Completed (Finished)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
 
             <div className="space-y-2">
               <Label htmlFor="esl">Estimated Service Life (years) *</Label>

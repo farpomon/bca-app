@@ -70,6 +70,7 @@ export const assessments = mysqlTable("assessments", {
   projectId: int("projectId").notNull(),
   componentCode: varchar("componentCode", { length: 20 }).notNull(),
   condition: mysqlEnum("condition", ["good", "fair", "poor", "not_assessed"]).default("not_assessed").notNull(),
+  status: mysqlEnum("status", ["initial", "active", "completed"]).default("initial").notNull(),
   conditionPercentage: varchar("conditionPercentage", { length: 50 }), // e.g., "75-50% of ESL" for Fair condition
   observations: text("observations"),
   recommendations: text("recommendations"),

@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
@@ -908,4 +908,45 @@ export async function auditChange<T extends Record<string, any>>(
       });
     }
   }
+}
+
+// Assessment status filtering
+export async function getProjectAssessmentsByStatus(projectId: number, status?: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  if (status && ["initial", "active", "completed"].includes(status)) {
+    return await db
+      .select()
+      .from(assessments)
+      .where(and(
+        eq(assessments.projectId, projectId),
+        eq(assessments.status, status as "initial" | "active" | "completed")
+      ))
+      .orderBy(desc(assessments.updatedAt));
+  }
+
+  return await db
+    .select()
+    .from(assessments)
+    .where(eq(assessments.projectId, projectId))
+    .orderBy(desc(assessments.updatedAt));
+}
+
+export async function getAssessmentStatusCounts(projectId: number) {
+  const db = await getDb();
+  if (!db) return { initial: 0, active: 0, completed: 0 };
+
+  const allAssessments = await db
+    .select()
+    .from(assessments)
+    .where(eq(assessments.projectId, projectId));
+
+  const counts = {
+    initial: allAssessments.filter(a => a.status === "initial").length,
+    active: allAssessments.filter(a => a.status === "active").length,
+    completed: allAssessments.filter(a => a.status === "completed").length,
+  };
+
+  return counts;
 }

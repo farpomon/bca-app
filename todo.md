@@ -349,3 +349,15 @@
 - [ ] Add periodic database backup system (deferred)
 - [x] Write tests for audit trail system - 6 tests passing
 - [x] Create checkpoint with audit trail feature
+
+## Assessment Status Filter
+- [x] Add status field to assessments table (initial, active, completed)
+- [x] Update assessment schema in drizzle/schema.ts
+- [x] Add status filter to backend queries
+- [x] Add statusCounts procedure to get assessment counts by status
+- [x] Build status filter UI component
+- [x] Add status cards showing counts (Active, Completed, Initial)
+- [x] Integrate filter into ProjectDetail assessments tab
+- [x] Update assessment form to allow status changes
+- [x] Write tests for status filtering - 3 tests passing
+- [x] Create checkpoint with status filter feature

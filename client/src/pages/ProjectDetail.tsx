@@ -29,6 +29,7 @@ export default function ProjectDetail() {
   const [deficiencyDialogOpen, setDeficiencyDialogOpen] = useState(false);
   const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<any>(null);
+  const [statusFilter, setStatusFilter] = useState<"initial" | "active" | "completed" | undefined>(undefined);
   const [projectEditDialogOpen, setProjectEditDialogOpen] = useState(false);
   const [projectForm, setProjectForm] = useState({
     name: "",
@@ -67,6 +68,10 @@ export default function ProjectDetail() {
     { enabled: !!user && !isNaN(projectId) }
   );
   const { data: assessments } = trpc.assessments.list.useQuery(
+    { projectId, status: statusFilter },
+    { enabled: !!user && !isNaN(projectId) }
+  );
+  const { data: statusCounts } = trpc.assessments.statusCounts.useQuery(
     { projectId },
     { enabled: !!user && !isNaN(projectId) }
   );
@@ -345,12 +350,84 @@ export default function ProjectDetail() {
           </TabsContent>
 
           <TabsContent value="assessments">
+            {/* Status Filter Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  statusFilter === "active" ? "ring-2 ring-orange-500 border-orange-500" : ""
+                }`}
+                onClick={() => setStatusFilter(statusFilter === "active" ? undefined : "active")}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    Active Assessments
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold">{statusCounts?.active || 0}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Currently in progress</p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  statusFilter === "completed" ? "ring-2 ring-green-500 border-green-500" : ""
+                }`}
+                onClick={() => setStatusFilter(statusFilter === "completed" ? undefined : "completed")}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    Completed
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold">{statusCounts?.completed || 0}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Finished assessments</p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  statusFilter === "initial" ? "ring-2 ring-blue-500 border-blue-500" : ""
+                }`}
+                onClick={() => setStatusFilter(statusFilter === "initial" ? undefined : "initial")}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    Initial
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold">{statusCounts?.initial || 0}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Not started yet</p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card>
               <CardHeader>
-                <CardTitle>Component Assessments</CardTitle>
-                <CardDescription>
-                  Building components assessed following UNIFORMAT II classification
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Component Assessments</CardTitle>
+                    <CardDescription>
+                      Building components assessed following UNIFORMAT II classification
+                      {statusFilter && (
+                        <span className="ml-2">
+                          • Filtered by: <strong className="capitalize">{statusFilter}</strong>
+                        </span>
+                      )}
+                    </CardDescription>
+                  </div>
+                  {statusFilter && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setStatusFilter(undefined)}
+                    >
+                      Clear Filter
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {assessments && assessments.length > 0 ? (

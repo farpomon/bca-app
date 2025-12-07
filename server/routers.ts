@@ -214,11 +214,22 @@ export const appRouter = router({
 
   assessments: router({
     list: protectedProcedure
+      .input(z.object({ 
+        projectId: z.number(),
+        status: z.enum(["initial", "active", "completed"]).optional()
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getProjectAssessmentsByStatus(input.projectId, input.status);
+      }),
+
+    statusCounts: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
         const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
-        return await db.getProjectAssessments(input.projectId);
+        return await db.getAssessmentStatusCounts(input.projectId);
       }),
 
     get: protectedProcedure
@@ -237,6 +248,7 @@ export const appRouter = router({
         projectId: z.number(),
         componentCode: z.string(),
         condition: z.enum(["good", "fair", "poor", "not_assessed"]),
+        status: z.enum(["initial", "active", "completed"]).optional(),
         conditionPercentage: z.string().optional(),
         observations: z.string().optional(),
         recommendations: z.string().optional(),
