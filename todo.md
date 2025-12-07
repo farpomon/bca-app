@@ -294,3 +294,12 @@
 - [x] Create checkpoint with working photos
 - [x] Fix duplicate handleSave function definition causing server errors
 - [x] Clean up AssessmentDialog to use only async photo linking approach
+
+## Fix Photos Not Appearing in Generated Reports
+- [x] Investigate report generation code
+- [x] Check if getAssessmentPhotos is being called
+- [x] Verify photo URLs are valid in database
+- [x] Test report generation with project that has photos
+- [x] Fix photo rendering in PDF - converted to fetch images and use base64 data URLs
+- [x] Verify photos appear in generated report - confirmed working!
+- [x] Create checkpoint with working photo reports

@@ -456,7 +456,7 @@ export const appRouter = router({
           condition: s.condition.charAt(0).toUpperCase() + s.condition.slice(1),
         }));
 
-        const pdfBuffer = generateBCAReport({
+        const pdfBuffer = await generateBCAReport({
           project,
           assessments: assessmentsWithPhotos,
           fciData: fciData || { fci: 0, rating: 'N/A', totalRepairCost: 0, totalReplacementValue: 0 },

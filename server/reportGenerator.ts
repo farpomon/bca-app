@@ -39,7 +39,7 @@ const CONDITION_COLORS: Record<string, [number, number, number]> = {
   critical: [244, 67, 54],      // Red
 };
 
-export function generateBCAReport(data: ReportData): Buffer {
+export async function generateBCAReport(data: ReportData): Promise<Buffer> {
   const doc = new jsPDF();
   
   // Helper to add Maben header to each page
@@ -346,7 +346,9 @@ export function generateBCAReport(data: ReportData): Buffer {
   };
 
   // Generate component sections
-  Object.keys(groupedAssessments).sort().forEach((level1, sectionIndex) => {
+  const sortedKeys = Object.keys(groupedAssessments).sort();
+  for (let sectionIndex = 0; sectionIndex < sortedKeys.length; sectionIndex++) {
+    const level1 = sortedKeys[sectionIndex];
     if (sectionIndex > 0) {
       doc.addPage();
       addMabenHeader();
@@ -359,7 +361,7 @@ export function generateBCAReport(data: ReportData): Buffer {
     doc.text(`${sectionNumber}) ${uniformatNames[level1] || level1}`, 10, yPos);
     yPos += 10;
 
-    groupedAssessments[level1].forEach((assessment, idx) => {
+    for (const assessment of groupedAssessments[level1]) {
       // Check if we need a new page
       if (yPos > 240) {
         doc.addPage();
@@ -460,8 +462,26 @@ export function generateBCAReport(data: ReportData): Buffer {
           }
 
           try {
-            // Add photo to PDF
-            doc.addImage(photo.url, 'JPEG', xPos, yPos, photoWidth, photoHeight);
+            // Fetch image from S3 and convert to base64
+            const response = await fetch(photo.url);
+            if (!response.ok) throw new Error('Failed to fetch image');
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64 = buffer.toString('base64');
+            
+            // Determine image format from mime type or URL
+            let format = 'JPEG';
+            if (photo.url.toLowerCase().includes('.png')) {
+              format = 'PNG';
+            } else if (photo.url.toLowerCase().includes('.jpg') || photo.url.toLowerCase().includes('.jpeg')) {
+              format = 'JPEG';
+            }
+            
+            const dataUrl = `data:image/${format.toLowerCase()};base64,${base64}`;
+            
+            // Add photo to PDF using data URL
+            doc.addImage(dataUrl, format, xPos, yPos, photoWidth, photoHeight);
             
             // Add caption if available
             if (photo.caption) {
@@ -471,6 +491,7 @@ export function generateBCAReport(data: ReportData): Buffer {
             }
           } catch (error) {
             // If image fails to load, show placeholder text
+            console.error('Failed to load photo:', photo.url, error);
             doc.setFontSize(9);
             doc.setFont("helvetica", "normal");
             doc.text("[Photo unavailable]", xPos + 20, yPos + 30);
@@ -495,8 +516,8 @@ export function generateBCAReport(data: ReportData): Buffer {
       }
 
       yPos += 5;
-    });
-  });
+    }
+  }
 
   // Add footers to all pages
   const totalPages = doc.getNumberOfPages();
