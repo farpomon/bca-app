@@ -278,15 +278,56 @@ export const appRouter = router({
         const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
-        // Get existing assessment to detect status changes
+        // Get existing assessment to detect changes
         const existing = await db.getAssessmentByComponent(input.projectId, input.componentCode);
+        const isNew = !existing;
         
         const assessmentId = await db.upsertAssessment({
           ...input,
           assessedAt: new Date(),
         });
         
-        // Log status change if it occurred
+        // Log to component history
+        const { logAssessmentChange, detectChanges } = await import("./componentHistoryService");
+        
+        const changes = isNew ? undefined : detectChanges(
+          {
+            condition: existing.condition,
+            observations: existing.observations,
+            recommendations: existing.recommendations,
+            remainingUsefulLife: existing.remainingUsefulLife,
+            expectedUsefulLife: existing.expectedUsefulLife,
+            estimatedRepairCost: existing.estimatedRepairCost,
+            replacementValue: existing.replacementValue,
+            status: existing.status,
+          },
+          {
+            condition: input.condition,
+            observations: input.observations,
+            recommendations: input.recommendations,
+            remainingUsefulLife: input.remainingUsefulLife,
+            expectedUsefulLife: input.expectedUsefulLife,
+            estimatedRepairCost: input.estimatedRepairCost,
+            replacementValue: input.replacementValue,
+            status: input.status,
+          }
+        );
+        
+        await logAssessmentChange({
+          projectId: input.projectId,
+          componentCode: input.componentCode,
+          assessmentId,
+          userId: ctx.user.id,
+          userName: ctx.user.name || undefined,
+          isNew,
+          changes,
+          richTextFields: {
+            ...(input.observations && { observations: input.observations }),
+            ...(input.recommendations && { recommendations: input.recommendations }),
+          },
+        });
+        
+        // Log status change to audit log if it occurred
         if (existing && input.status && existing.status !== input.status) {
           await db.createAuditLog({
             entityType: "assessment",
@@ -1145,6 +1186,63 @@ export const appRouter = router({
           return { success: true };
         }),
     }),
+  }),
+
+  history: router({
+    // Get component history timeline
+    component: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        componentCode: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getComponentHistory(input.projectId, input.componentCode);
+      }),
+
+    // Get project-wide history
+    project: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getProjectHistory(input.projectId, input.limit);
+      }),
+
+    // Search history with filters
+    search: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        searchTerm: z.string().optional(),
+        changeType: z.string().optional(),
+        userId: z.number().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.searchComponentHistory(input);
+      }),
+
+    // Get history for specific assessment
+    assessment: protectedProcedure
+      .input(z.object({ assessmentId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getHistoryByAssessment(input.assessmentId);
+      }),
+
+    // Get history for specific deficiency
+    deficiency: protectedProcedure
+      .input(z.object({ deficiencyId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getHistoryByDeficiency(input.deficiencyId);
+      }),
   }),
 
   exports: router({

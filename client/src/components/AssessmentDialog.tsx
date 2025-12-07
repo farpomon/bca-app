@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, Upload, X, Sparkles } from "lucide-react";
 import { ValidationWarning } from "@/components/ValidationWarning";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 interface AssessmentDialogProps {
   open: boolean;
@@ -482,24 +483,20 @@ export function AssessmentDialog({
           {/* Observations */}
           <div className="space-y-2">
             <Label htmlFor="observations">Observations</Label>
-            <Textarea
-              id="observations"
+            <RichTextEditor
+              content={observations}
+              onChange={setObservations}
               placeholder="Enter detailed observations about the component condition..."
-              value={observations}
-              onChange={(e) => setObservations(e.target.value)}
-              rows={4}
             />
           </div>
 
           {/* Recommendations */}
           <div className="space-y-2">
             <Label htmlFor="recommendations">Recommendations</Label>
-            <Textarea
-              id="recommendations"
+            <RichTextEditor
+              content={recommendations}
+              onChange={setRecommendations}
               placeholder="Enter maintenance or repair recommendations..."
-              value={recommendations}
-              onChange={(e) => setRecommendations(e.target.value)}
-              rows={4}
             />
           </div>
 

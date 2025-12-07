@@ -445,3 +445,66 @@ export const validationOverrides = mysqlTable("validation_overrides", {
 
 export type ValidationOverride = typeof validationOverrides.$inferSelect;
 export type InsertValidationOverride = typeof validationOverrides.$inferInsert;
+
+/**
+ * Component history - Permanent lifecycle log for all changes to component-related data
+ * Tracks notes, specifications, deficiencies, recommendations, and assessments over time
+ */
+export const componentHistory = mysqlTable("component_history", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  componentCode: varchar("componentCode", { length: 50 }).notNull(),
+  componentName: varchar("componentName", { length: 255 }),
+  
+  // Change tracking
+  changeType: mysqlEnum("changeType", [
+    "assessment_created",
+    "assessment_updated",
+    "deficiency_created",
+    "deficiency_updated",
+    "note_added",
+    "specification_updated",
+    "recommendation_added",
+    "recommendation_updated",
+    "status_changed",
+    "cost_updated"
+  ]).notNull(),
+  
+  // Field-level tracking
+  fieldName: varchar("fieldName", { length: 100 }), // e.g., "observations", "recommendations", "condition"
+  oldValue: text("oldValue"), // Previous value (plain text or JSON)
+  newValue: text("newValue"), // New value (plain text or JSON)
+  
+  // Rich text content
+  richTextContent: text("richTextContent"), // HTML formatted content for display
+  
+  // Related entity IDs
+  assessmentId: int("assessmentId"),
+  deficiencyId: int("deficiencyId"),
+  
+  // Metadata
+  userId: int("userId").notNull(), // Who made the change
+  userName: varchar("userName", { length: 255 }), // Denormalized for historical accuracy
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  
+  // Additional context
+  summary: varchar("summary", { length: 500 }), // Brief description of the change
+  tags: text("tags"), // JSON array of tags for categorization
+}, (table) => ({
+  // Indexes for efficient querying
+  componentIdx: {
+    name: "component_idx",
+    columns: [table.projectId, table.componentCode, table.timestamp],
+  },
+  timestampIdx: {
+    name: "timestamp_idx",
+    columns: [table.timestamp],
+  },
+  userIdx: {
+    name: "user_idx",
+    columns: [table.userId],
+  },
+}));
+
+export type ComponentHistory = typeof componentHistory.$inferSelect;
+export type InsertComponentHistory = typeof componentHistory.$inferInsert;

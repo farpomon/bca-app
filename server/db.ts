@@ -25,7 +25,8 @@ import {
   InsertRatingScale,
   InsertProjectRatingConfig,
   validationRules,
-  validationOverrides
+  validationOverrides,
+  componentHistory
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1248,4 +1249,126 @@ export async function getAssessmentValidationOverrides(assessmentId: number) {
   `);
   
   return (Array.isArray(results[0]) ? results[0] : []) as any[];
+}
+
+
+// ============================================================================
+// Component History
+// ============================================================================
+
+export async function createComponentHistory(history: {
+  projectId: number;
+  componentCode: string;
+  componentName?: string;
+  changeType: string;
+  fieldName?: string;
+  oldValue?: string;
+  newValue?: string;
+  richTextContent?: string;
+  assessmentId?: number;
+  deficiencyId?: number;
+  userId: number;
+  userName?: string;
+  summary?: string;
+  tags?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(componentHistory).values(history as any);
+  return Number(result[0].insertId);
+}
+
+export async function getComponentHistory(projectId: number, componentCode: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(componentHistory)
+    .where(
+      and(
+        eq(componentHistory.projectId, projectId),
+        eq(componentHistory.componentCode, componentCode)
+      )
+    )
+    .orderBy(desc(componentHistory.timestamp));
+}
+
+export async function getProjectHistory(projectId: number, limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(componentHistory)
+    .where(eq(componentHistory.projectId, projectId))
+    .orderBy(desc(componentHistory.timestamp))
+    .limit(limit);
+}
+
+export async function searchComponentHistory(params: {
+  projectId: number;
+  searchTerm?: string;
+  changeType?: string;
+  userId?: number;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [eq(componentHistory.projectId, params.projectId)];
+
+  if (params.changeType) {
+    conditions.push(sql`changeType = ${params.changeType}`);
+  }
+
+  if (params.userId) {
+    conditions.push(eq(componentHistory.userId, params.userId));
+  }
+
+  if (params.startDate) {
+    conditions.push(sql`timestamp >= ${params.startDate.toISOString()}`);
+  }
+
+  if (params.endDate) {
+    conditions.push(sql`timestamp <= ${params.endDate.toISOString()}`);
+  }
+
+  if (params.searchTerm) {
+    conditions.push(
+      sql`(summary LIKE ${`%${params.searchTerm}%`} OR richTextContent LIKE ${`%${params.searchTerm}%`} OR newValue LIKE ${`%${params.searchTerm}%`})`
+    );
+  }
+
+  return await db
+    .select()
+    .from(componentHistory)
+    .where(and(...conditions))
+    .orderBy(desc(componentHistory.timestamp))
+    .limit(params.limit || 100);
+}
+
+export async function getHistoryByAssessment(assessmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(componentHistory)
+    .where(eq(componentHistory.assessmentId, assessmentId))
+    .orderBy(desc(componentHistory.timestamp));
+}
+
+export async function getHistoryByDeficiency(deficiencyId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(componentHistory)
+    .where(eq(componentHistory.deficiencyId, deficiencyId))
+    .orderBy(desc(componentHistory.timestamp));
 }

@@ -510,3 +510,60 @@
 - [x] Test saving assessments with validation overrides
 - [x] All 87 tests passing (11 new validation tests)
 - [x] Create checkpoint
+
+## Extended Text Fields with Rich Text Formatting & Historical Log
+
+### Database Schema
+- [x] Create component_history table for permanent lifecycle log
+- [x] Add fields: timestamp, userId, changeType, fieldName, oldValue, newValue, richTextContent
+- [x] Add indexes for efficient querying by componentCode and timestamp
+- [x] Text fields in assessments support rich text HTML (observations, recommendations)
+- [x] Push database schema changes
+
+### Rich Text Editor Integration
+- [x] Install TipTap rich text editor library
+- [x] Create RichTextEditor component with formatting toolbar
+- [x] Support: bold, italic, headings, lists (bullet/numbered), links, undo/redo
+- [x] Replace textarea fields in AssessmentDialog with RichTextEditor (observations, recommendations)
+- [x] Create RichTextDisplay component for read-only rendering
+- [x] Backend accepts and stores HTML content
+- [x] Sanitize HTML on backend to prevent XSS attacks (sanitize-html library)
+- [ ] Replace textarea fields in DeficiencyDialog with RichTextEditor (future enhancement)
+
+### Historical Log System
+- [x] Create componentHistoryService to track all text field changes
+- [x] Log changes when assessments are created/updated
+- [x] Detect field-level changes with detectChanges utility
+- [x] Store user ID, userName, and timestamp with each log entry
+- [x] Create tRPC endpoints to retrieve historical logs (component, project, search)
+- [x] Support filtering by change type, user, date range
+- [x] Support search across summary, content, and values
+- [ ] Log changes when deficiencies are created/updated (future enhancement)
+- [ ] Implement visual diff algorithm to highlight changes (future enhancement)
+
+### Asset Lifecycle Timeline UI
+- [x] Create ComponentHistoryTimeline component
+- [x] Display chronological list of all changes to a component
+- [x] Show formatted rich text content in collapsible timeline entries
+- [x] Add filters: by change type
+- [x] Add search functionality across historical content
+- [x] Show timestamps and user names for each entry
+- [x] Color-coded badges for different change types
+- [x] Expandable entries to show old/new values and rich text
+- [ ] Add "View History" button to component detail pages (future integration)
+- [ ] Add history panel to AssessmentDialog (future enhancement)
+- [ ] Export historical log to PDF reports (future enhancement)
+
+### Testing
+- [x] Test rich text editor saves formatted content
+- [x] Test HTML sanitization prevents XSS (script tags, onclick, javascript: links)
+- [x] Test historical log captures assessment creation
+- [x] Test historical log captures assessment updates with field changes
+- [x] Test sanitization of rich text in history entries
+- [x] Test component-specific history retrieval
+- [x] Test project-wide history retrieval
+- [x] Test search and filter functionality
+- [x] Test authentication requirements for history access
+- [x] Test user isolation (can't access other users' history)
+- [x] All 107 tests passing (20 new rich text/history tests)
+- [x] Create checkpoint
