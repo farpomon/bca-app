@@ -1473,3 +1473,110 @@
 - [x] Test lifecycle calculations
 - [x] Test UI rendering with real data
 - [x] Create checkpoint
+
+
+## Customizable Report Outputs
+
+### Database Schema
+- [x] Create report_templates table
+- [x] Create report_configurations table
+- [x] Create report_sections table
+- [ ] Add template metadata (name, description, type, stakeholder)
+- [ ] Add section configuration (content type, layout, options)
+- [ ] Add branding options (logo, colors, headers, footers)
+- [x] Push database schema changes
+
+### Report Templates
+- [ ] Define Executive Summary template
+- [ ] Define Detailed Assessment template
+- [ ] Define Financial Analysis template
+- [ ] Define Compliance Report template
+- [ ] Define Risk Assessment Report template
+- [ ] Define Optimization Results Report template
+- [ ] Support custom templates
+
+### Content Sections
+- [ ] Condition Summary section
+- [ ] Cost Tables section (identified, planned, executed)
+- [ ] Deficiencies List section
+- [ ] Photo Gallery section
+- [ ] Risk Assessment section
+- [ ] Optimization Results section
+- [ ] Prioritization Rankings section
+- [ ] Component Details section
+- [ ] CI/FCI Trends section
+- [ ] Cash Flow Projections section
+
+### Summary Report Builder
+- [ ] Generate executive summary with key metrics
+- [ ] Add trend indicators and highlights
+- [ ] Include recommendations section
+- [ ] Support custom summary text
+- [ ] Add charts and visualizations to summaries
+
+### Export Formats
+- [ ] PDF export with print-ready formatting
+- [ ] Excel export with data tables
+- [ ] Word export with editable content
+- [ ] HTML export for web viewing
+- [ ] Support page breaks and pagination
+- [ ] Add table of contents
+- [ ] Include cover page
+
+### Layout Customization
+- [ ] Configure table formats (simple, detailed, grouped)
+- [ ] Choose chart types (bar, line, pie, scatter)
+- [ ] Set grouping and sorting options
+- [ ] Control column visibility
+- [ ] Adjust page orientation (portrait, landscape)
+- [ ] Set font sizes and styles
+
+### Branding Options
+- [ ] Upload custom logo
+- [ ] Set header text and formatting
+- [ ] Set footer text and formatting
+- [ ] Choose color scheme
+- [ ] Add cover page with project info
+- [ ] Include disclaimer/notes section
+
+### Backend Implementation
+- [x] Create reportTemplates.db.ts
+- [x] Create reportGenerator.service.ts
+- [x] Implement PDF generation
+- [x] Implement Excel generation
+- [x] Implement Word generation
+- [x] Implement HTML generation
+- [ ] Add report caching
+- [ ] Support async report generation
+
+### tRPC API
+- [ ] reports.getTemplates
+- [ ] reports.getTemplate
+- [ ] reports.createTemplate
+- [ ] reports.updateTemplate
+- [ ] reports.deleteTemplate
+- [ ] reports.generateReport
+- [ ] reports.exportReport
+- [ ] reports.getReportHistory
+- [ ] Add reports router to routers.ts
+
+### Frontend UI
+- [ ] Create ReportBuilder component
+- [ ] Create TemplateSelector component
+- [ ] Create SectionConfigurator component
+- [ ] Create BrandingEditor component
+- [ ] Create ReportPreview component
+- [ ] Add drag-and-drop section ordering
+- [ ] Add real-time preview
+- [ ] Create ReportsLibrary page
+- [ ] Add route to App.tsx
+
+### Testing
+- [ ] Test report template CRUD
+- [ ] Test PDF generation
+- [ ] Test Excel generation
+- [ ] Test Word generation
+- [ ] Test HTML generation
+- [ ] Test custom templates
+- [ ] Test branding options
+- [ ] Create checkpoint
