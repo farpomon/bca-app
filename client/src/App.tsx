@@ -14,6 +14,7 @@ import RatingScalesSettings from "./pages/RatingScalesSettings";
 import AuditTrailDashboard from "./pages/AuditTrailDashboard";
 import ConsultantUpload from "./pages/ConsultantUpload";
 import ReviewDashboard from "./pages/ReviewDashboard";
+import PredictionsDashboard from "./pages/PredictionsDashboard";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
       <Route path={"/admin/audit-trail"} component={AuditTrailDashboard} />
       <Route path={"/consultant/upload"} component={ConsultantUpload} />
       <Route path={"/admin/review"} component={ReviewDashboard} />
+      <Route path={"/predictions"} component={PredictionsDashboard} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

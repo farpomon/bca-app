@@ -175,7 +175,7 @@ function calculateMLConfidence(
 /**
  * Determine risk level based on remaining life and condition
  */
-function determineRiskLevel(
+export function determineRiskLevel(
   remainingLife: number,
   currentCondition: number
 ): "low" | "medium" | "high" | "critical" {

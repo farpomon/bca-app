@@ -1605,23 +1605,48 @@ export const appRouter = router({
     project: protectedProcedure
       .input(z.object({
         projectId: z.number(),
+        method: z.enum(["curve", "ml", "hybrid"]).default("hybrid"),
       }))
       .query(async ({ ctx, input }) => {
         const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
+        const { predictDeteriorationML, determineRiskLevel } = await import("./mlPredictionService");
         const components = await db.getProjectComponents(input.projectId);
         const predictions = [];
 
         for (const component of components) {
           const assessments = await db.getAssessmentsByComponent(input.projectId, component.componentCode);
           if (assessments.length > 0) {
-            const latest = assessments[0];
+            const historicalData = assessments.map((a: any) => ({
+              assessmentDate: a.assessedAt,
+              condition: a.conditionPercentage ? parseInt(a.conditionPercentage) : 70,
+              age: new Date().getFullYear() - (a.reviewYear || new Date().getFullYear()),
+              observations: a.observations || undefined,
+            }));
+
+            const installYear = project.yearBuilt || new Date().getFullYear() - 20;
+            const mlPrediction = await predictDeteriorationML(
+              component.componentCode,
+              installYear,
+              historicalData
+            );
+
+            const riskLevel = determineRiskLevel(
+              mlPrediction.predictedRemainingLife,
+              mlPrediction.currentConditionEstimate
+            );
+
             predictions.push({
               componentCode: component.componentCode,
               componentName: component.name,
-              lastAssessment: latest.assessedAt,
-              condition: latest.conditionPercentage,
+              lastAssessment: assessments[0].assessedAt,
+              condition: assessments[0].conditionPercentage,
+              predictedFailureYear: mlPrediction.predictedFailureYear,
+              remainingLife: mlPrediction.predictedRemainingLife,
+              confidenceScore: mlPrediction.confidenceScore,
+              riskLevel,
+              aiInsights: mlPrediction.insights,
             });
           }
         }
