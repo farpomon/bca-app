@@ -134,6 +134,13 @@
       "when": 1765156736074,
       "tag": "0018_broad_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1765157958683,
+      "tag": "0019_awesome_shocker",
+      "breakpoints": true
     }
   ]
 }

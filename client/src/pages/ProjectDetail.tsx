@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
-import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download } from "lucide-react";
+import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -249,6 +249,10 @@ export default function ProjectDetail() {
             <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/dashboard`)}>
               <Building2 className="mr-2 h-4 w-4" />
               Dashboard
+            </Button>
+            <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/optimization`)}>
+              <Target className="mr-2 h-4 w-4" />
+              Optimization
             </Button>
             <Button variant="outline" onClick={handleEditProject}>
               <Edit className="mr-2 h-4 w-4" />

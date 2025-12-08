@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { optimizationRouter } from "./routers/optimization.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1835,6 +1836,9 @@ export const appRouter = router({
         return { ci: ciResult.ci, fci: fciResult.fci };
       }),
   }),
+
+  // Optimization and scenario modeling
+  optimization: optimizationRouter,
 });
 
 export type AppRouter = typeof appRouter;

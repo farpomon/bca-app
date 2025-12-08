@@ -420,7 +420,7 @@
 - [ ] Integrate enhanced media capture into assessment workflow
 - [ ] Add geolocation map view for photos
 - [ ] Write tests for media capture features
-- [ ] Create checkpoint with integrated media capture system
+- [x] Create checkpoint with integrated media capture system
 
 ## Integrated Media Capture with Geolocation and OCR
 
@@ -579,7 +579,7 @@
 - [ ] Add consultant info: submittedBy, consultantName, consultantEmail
 - [ ] Create submission_photos table for staging uploaded photos
 - [ ] Add validation_errors field for storing parsing/validation issues
-- [ ] Push database schema changes
+- [x] Push database schema changes
 
 ### Spreadsheet Template System
 - [ ] Install xlsx library for Excel generation and parsing
@@ -655,7 +655,7 @@
 - [ ] Test role-based access control
 - [ ] Test bulk operations
 - [ ] Test notification delivery
-- [ ] Create checkpoint
+- [x] Create checkpoint
 
 
 ## 3rd Party Consultant Data Upload System
@@ -856,7 +856,7 @@
 - [ ] Create ci_fci_snapshots table for historical tracking
 - [ ] Add fields: projectId, level, entityId, ci, fci, calculatedAt
 - [ ] Add ci, fci, lastCalculatedAt to projects table
-- [ ] Push database schema changes
+- [x] Push database schema changes
 
 ### Calculation Engine
 - [ ] Create ciCalculationService.ts with weighted aggregation
@@ -883,14 +883,14 @@
 - [ ] Show component-level CI table
 - [ ] Add CI/FCI gauges with color coding
 - [ ] Display deferred maintenance and replacement value totals
-- [ ] Add route to App.tsx
+- [x] Add route to App.tsx
 
 ### Testing
 - [ ] Test CI calculation and weighted aggregation
 - [ ] Test FCI calculation with deferred maintenance
 - [ ] Test real-time updates after assessment entry
 - [ ] Test cascade updates across hierarchy
-- [ ] Create checkpoint
+- [x] Create checkpoint
 
 
 ## Automated Roll-Up Calculations (CI & FCI)
@@ -948,4 +948,113 @@
 - [x] Test deferred maintenance cost calculation
 - [x] Test replacement value calculation
 - [x] 135/149 tests passing (4/9 CI/FCI tests passing, calculation logic needs refinement)
+- [x] Create checkpoint
+
+
+## Advanced Optimization & Scenario Modeling
+
+### Database Schema
+- [x] Create optimization_scenarios table (name, description, budget, timeHorizon, strategy)
+- [x] Create scenario_strategies table (componentCode, strategy: replace/rehabilitate/defer/none, cost, timing)
+- [x] Create optimization_results table (totalCost, totalBenefit, roi, riskScore, ciImprovement, fciImprovement)
+- [x] Add strategy types: replace, rehabilitate, defer, do_nothing
+- [x] Add time horizons: 5yr, 10yr, 20yr, 30yr
+- [x] Push database schema changes
+
+### Strategy Comparison Engine
+- [x] Create optimizationService.ts with strategy comparison algorithms
+- [x] Implement calculateReplaceCost (full replacement with new component)
+- [x] Implement calculateRehabilitateCost (partial repair extending life)
+- [x] Implement calculateDeferCost (delay action, account for deterioration)
+- [x] Implement calculateDoNothingCost (failure risk + consequence cost)
+- [x] Calculate life extension for each strategy
+- [x] Calculate risk reduction for each strategy
+- [x] Implement cost-benefit analysis (NPV, ROI, payback period)
+- [x] Factor in discount rate for multi-year analysis
+
+### Budget Constraint Optimizer
+- [x] Implement budget-constrained optimization algorithm
+- [x] Use greedy algorithm: prioritize by ROI or CI improvement per dollar
+- [x] Implement knapsack optimization for component selection
+- [x] Support hard budget constraints (cannot exceed)
+- [x] Support soft budget constraints (prefer but can exceed)
+- [x] Calculate optimal component prioritization
+- [x] Generate recommended action plan within budget
+
+### Portfolio Optimization
+- [x] Implement portfolio-wide optimization
+- [x] Prioritize components by criticality score
+- [x] Factor in component interdependencies
+- [x] Balance risk across portfolio
+- [x] Maximize CI/FCI improvement per dollar
+- [x] Generate multi-year capital plan
+- [x] Support phased implementation strategies
+
+### Multi-Year Planning
+- [x] Create cash flow projection models
+- [x] Calculate year-by-year costs and benefits
+- [x] Model deterioration over time without intervention
+- [x] Model condition improvement with interventions
+- [x] Calculate cumulative costs and savings
+- [x] Generate funding requirement schedules
+- [x] Support inflation adjustments
+
+### Risk-Adjusted Analysis
+- [x] Calculate failure probability for each component
+- [x] Estimate consequence costs (safety, operational, financial)
+- [x] Compute expected loss (probability × consequence)
+- [x] Factor risk into strategy comparison
+- [x] Calculate risk reduction value
+- [x] Generate risk heat maps
+
+### Backend API (tRPC)
+- [x] optimization.createScenario (save scenario configuration)
+- [x] optimization.compareStrategies (compare replace vs rehabilitate vs defer)
+- [x] optimization.optimizeBudget (find optimal plan within budget)
+- [x] optimization.optimizePortfolio (prioritize across all components)
+- [x] optimization.getScenarios (list saved scenarios)
+- [x] optimization.getScenario (get scenario details with results)
+- [x] optimization.deleteScenario (remove scenario)
+- [x] Add optimization router to routers.ts
+
+### Interactive Scenario Builder UI
+- [x] Create OptimizationScenarioBuilder component
+- [x] Add scenario name and description inputs
+- [x] Add budget constraint input (with hard/soft toggle)
+- [x] Add time horizon selector (5/10/20/30 years)
+- [x] Add discount rate input (for NPV calculations)
+- [x] Add component selection (select which components to analyze)
+- [x] Add strategy selector per component (replace/rehabilitate/defer/none)
+- [x] Show real-time cost calculations as user adjusts
+- [x] Add "Optimize" button to run optimization algorithm
+- [x] Display optimization results (recommended plan, costs, benefits)
+
+### Results Visualization
+- [x] Create OptimizationResults component
+- [x] Show strategy comparison table (cost, benefit, ROI, risk)
+- [x] Display cash flow chart (year-by-year costs)
+- [x] Show CI/FCI improvement projections
+- [x] Display component prioritization list
+- [x] Show risk reduction metrics
+- [x] Add export to Excel/PDF buttons
+- [x] Support side-by-side scenario comparison
+
+### Optimization Dashboard
+- [x] Create OptimizationDashboard page at /optimization
+- [x] List saved scenarios with summary stats
+- [x] Show recommended vs current strategy comparison
+- [x] Display portfolio optimization results
+- [x] Add filters (by budget range, time horizon, strategy type)
+- [x] Add "Create New Scenario" button
+- [x] Add "Run Optimization" button for quick analysis
+- [x] Add route to App.tsx
+
+### Testing
+- [x] Test strategy cost calculations (replace, rehabilitate, defer)
+- [x] Test budget-constrained optimization
+- [x] Test portfolio prioritization algorithms
+- [x] Test multi-year cash flow projections
+- [x] Test risk-adjusted analysis
+- [x] Test scenario CRUD operations
+- [x] Test optimization with various budget levels
 - [x] Create checkpoint

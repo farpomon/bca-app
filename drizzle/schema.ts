@@ -777,3 +777,140 @@ export const ciFciSnapshots = mysqlTable("ci_fci_snapshots", {
 
 export type CiFciSnapshot = typeof ciFciSnapshots.$inferSelect;
 export type InsertCiFciSnapshot = typeof ciFciSnapshots.$inferInsert;
+
+/**
+ * Optimization Scenarios - Store different maintenance strategy scenarios for comparison
+ */
+export const optimizationScenarios = mysqlTable("optimization_scenarios", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  projectId: int("projectId").notNull(),
+  userId: int("userId").notNull(), // Creator
+  
+  // Scenario details
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // Constraints
+  budgetConstraint: decimal("budgetConstraint", { precision: 15, scale: 2 }), // Total budget available
+  budgetType: mysqlEnum("budgetType", ["hard", "soft"]).default("hard"), // hard = cannot exceed, soft = prefer but can exceed
+  timeHorizon: int("timeHorizon").notNull(), // Years (5, 10, 20, 30)
+  discountRate: decimal("discountRate", { precision: 5, scale: 4 }).default("0.0300"), // 3% default
+  
+  // Optimization parameters
+  optimizationGoal: mysqlEnum("optimizationGoal", [
+    "minimize_cost",
+    "maximize_ci",
+    "maximize_roi",
+    "minimize_risk"
+  ]).default("maximize_roi"),
+  
+  // Results (populated after optimization)
+  totalCost: decimal("totalCost", { precision: 15, scale: 2 }),
+  totalBenefit: decimal("totalBenefit", { precision: 15, scale: 2 }),
+  netPresentValue: decimal("netPresentValue", { precision: 15, scale: 2 }),
+  returnOnInvestment: decimal("returnOnInvestment", { precision: 5, scale: 2 }), // Percentage
+  paybackPeriod: decimal("paybackPeriod", { precision: 5, scale: 1 }), // Years
+  
+  // Condition improvements
+  currentCI: decimal("currentCI", { precision: 5, scale: 2 }),
+  projectedCI: decimal("projectedCI", { precision: 5, scale: 2 }),
+  ciImprovement: decimal("ciImprovement", { precision: 5, scale: 2 }),
+  
+  currentFCI: decimal("currentFCI", { precision: 5, scale: 4 }),
+  projectedFCI: decimal("projectedFCI", { precision: 5, scale: 4 }),
+  fciImprovement: decimal("fciImprovement", { precision: 5, scale: 4 }),
+  
+  // Risk metrics
+  currentRiskScore: decimal("currentRiskScore", { precision: 5, scale: 2 }),
+  projectedRiskScore: decimal("projectedRiskScore", { precision: 5, scale: 2 }),
+  riskReduction: decimal("riskReduction", { precision: 5, scale: 2 }),
+  
+  // Status
+  status: mysqlEnum("status", ["draft", "optimized", "approved", "implemented"]).default("draft"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type OptimizationScenario = typeof optimizationScenarios.$inferSelect;
+export type InsertOptimizationScenario = typeof optimizationScenarios.$inferInsert;
+
+/**
+ * Scenario Strategies - Individual component strategies within a scenario
+ */
+export const scenarioStrategies = mysqlTable("scenario_strategies", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  scenarioId: int("scenarioId").notNull(),
+  componentCode: varchar("componentCode", { length: 50 }).notNull(),
+  
+  // Strategy selection
+  strategy: mysqlEnum("strategy", [
+    "replace",
+    "rehabilitate",
+    "defer",
+    "do_nothing"
+  ]).notNull(),
+  
+  // Timing
+  actionYear: int("actionYear").notNull(), // Year to execute strategy
+  deferralYears: int("deferralYears").default(0), // Years deferred from immediate need
+  
+  // Costs
+  strategyCost: decimal("strategyCost", { precision: 15, scale: 2 }).notNull(),
+  presentValueCost: decimal("presentValueCost", { precision: 15, scale: 2 }), // Discounted to present
+  
+  // Benefits
+  lifeExtension: int("lifeExtension"), // Years of additional life gained
+  conditionImprovement: int("conditionImprovement"), // Condition percentage improvement
+  riskReduction: decimal("riskReduction", { precision: 5, scale: 2 }), // Risk score reduction
+  
+  // Cost avoidance
+  failureCostAvoided: decimal("failureCostAvoided", { precision: 15, scale: 2 }),
+  maintenanceSavings: decimal("maintenanceSavings", { precision: 15, scale: 2 }),
+  
+  // Priority (for budget-constrained optimization)
+  priorityScore: decimal("priorityScore", { precision: 10, scale: 4 }), // Higher = more important
+  selected: int("selected").default(0), // 1 if included in optimized plan, 0 if not
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ScenarioStrategy = typeof scenarioStrategies.$inferSelect;
+export type InsertScenarioStrategy = typeof scenarioStrategies.$inferInsert;
+
+/**
+ * Cash Flow Projections - Year-by-year financial projections for scenarios
+ */
+export const cashFlowProjections = mysqlTable("cash_flow_projections", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  scenarioId: int("scenarioId").notNull(),
+  year: int("year").notNull(), // Projection year (0 = current year)
+  
+  // Costs
+  capitalExpenditure: decimal("capitalExpenditure", { precision: 15, scale: 2 }).default("0"),
+  maintenanceCost: decimal("maintenanceCost", { precision: 15, scale: 2 }).default("0"),
+  operatingCost: decimal("operatingCost", { precision: 15, scale: 2 }).default("0"),
+  totalCost: decimal("totalCost", { precision: 15, scale: 2 }).default("0"),
+  
+  // Benefits
+  costAvoidance: decimal("costAvoidance", { precision: 15, scale: 2 }).default("0"),
+  efficiencyGains: decimal("efficiencyGains", { precision: 15, scale: 2 }).default("0"),
+  totalBenefit: decimal("totalBenefit", { precision: 15, scale: 2 }).default("0"),
+  
+  // Net cash flow
+  netCashFlow: decimal("netCashFlow", { precision: 15, scale: 2 }).default("0"),
+  cumulativeCashFlow: decimal("cumulativeCashFlow", { precision: 15, scale: 2 }).default("0"),
+  
+  // Condition metrics
+  projectedCI: decimal("projectedCI", { precision: 5, scale: 2 }),
+  projectedFCI: decimal("projectedFCI", { precision: 5, scale: 4 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CashFlowProjection = typeof cashFlowProjections.$inferSelect;
+export type InsertCashFlowProjection = typeof cashFlowProjections.$inferInsert;
