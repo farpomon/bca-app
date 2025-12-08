@@ -1,16 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mic, Square, Loader2, Check, X, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import { Mic, Square, Loader2, Check, X, AlertCircle, CheckCircle2, RefreshCw, History } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { saveRecording } from "@/lib/voiceRecordingHistory";
+import { RecordingHistory } from "./RecordingHistory";
 
 interface VoiceRecorderProps {
   onTranscriptionComplete: (text: string) => void;
   onCancel?: () => void;
+  context?: string; // e.g., "Assessment", "Project Notes"
 }
 
-export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecorderProps) {
+export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "Assessment" }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -19,6 +22,8 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
   const [permissionState, setPermissionState] = useState<"idle" | "requesting" | "granted" | "denied">("idle");
   const [micTested, setMicTested] = useState(false);
   const [browserType, setBrowserType] = useState<"chrome" | "firefox" | "safari" | "edge" | "other">("other");
+  const [showHistory, setShowHistory] = useState(false);
+  const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -111,6 +116,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
+      setRecordingStartTime(Date.now());
       
       // Start timer
       timerRef.current = setInterval(() => {
@@ -177,7 +183,12 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
       const result = await transcribeMutation.mutateAsync({ audioUrl: url });
       
       setTranscribedText(result.text);
-      toast.success("Transcription complete!");
+      
+      // Save to history
+      const duration = recordingStartTime ? (Date.now() - recordingStartTime) / 1000 : undefined;
+      saveRecording(result.text, duration, context);
+      
+      toast.success("Transcription complete and saved to history!");
       
     } catch (error) {
       console.error("Transcription error:", error);
@@ -248,16 +259,32 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
     );
   };
 
+  const handleSelectFromHistory = (text: string) => {
+    setTranscribedText(text);
+    setShowHistory(false);
+  };
+
   return (
     <div className="space-y-4 p-4 border rounded-lg">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Voice Recording</h3>
-        {isRecording && (
-          <div className="flex items-center gap-2 text-sm text-red-600">
-            <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
-            Recording: {formatTime(recordingTime)}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {isRecording && (
+            <div className="flex items-center gap-2 text-sm text-red-600">
+              <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
+              Recording: {formatTime(recordingTime)}
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHistory(!showHistory)}
+            className="gap-2"
+          >
+            <History className="w-4 h-4" />
+            {showHistory ? "Hide" : "Show"} History
+          </Button>
+        </div>
       </div>
 
       {/* Microphone Status Badge */}
@@ -380,6 +407,16 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
               </Button>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Recording History Panel */}
+      {showHistory && (
+        <div className="border-t pt-4">
+          <RecordingHistory
+            onSelectRecording={handleSelectFromHistory}
+            context={context}
+          />
         </div>
       )}
     </div>
