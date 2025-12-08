@@ -8,6 +8,7 @@ import { prioritizationRouter } from "./routers/prioritization.router";
 import { riskRouter } from "./routers/risk.router";
 import { facilityRouter } from "./routers/facility.router";
 import { maintenanceRouter } from "./routers/maintenance.router";
+import { modelsRouter } from "./routers/models.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1855,6 +1856,9 @@ export const appRouter = router({
 
   // Multiple maintenance entries tracking
   maintenance: maintenanceRouter,
+
+  // 3D digital twin models and annotations
+  models: modelsRouter,
 });
 
 export type AppRouter = typeof appRouter;

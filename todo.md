@@ -1703,3 +1703,97 @@
 - [ ] Test chart responsiveness on mobile
 - [ ] Test chart export functionality
 - [ ] Create checkpoint
+
+
+## 3D Digital Twin System
+
+### Database Schema
+- [x] Create facility_models table
+- [x] Add model file URL and metadata fields
+- [x] Add model format field (GLB, GLTF, FBX, OBJ)
+- [x] Add model version tracking
+- [x] Create model_annotations table
+- [x] Link annotations to components
+- [x] Add annotation position (x, y, z coordinates)
+- [x] Add annotation type (deficiency, assessment, note)
+- [x] Push database schema changes
+
+### File Upload Infrastructure
+- [x] Install Three.js and related libraries
+- [x] Install GLTFLoader for model loading
+- [x] Create model upload endpoint
+- [x] Implement S3 upload with progress tracking
+- [x] Add file size validation (max 500MB)
+- [x] Add format validation
+- [x] Create model metadata extraction
+
+### 3D Model Viewer
+- [x] Create ThreeJS scene setup
+- [x] Implement camera controls (orbit, pan, zoom)
+- [x] Add lighting setup (ambient, directional)
+- [x] Implement model loading with progress indicator
+- [x] Add grid helper and axes helper
+- [x] Implement raycasting for object selection
+- [x] Add measurement tools
+- [x] Add first-person walkthrough mode
+- [x] Implement layer visibility controls
+- [x] Add fullscreen mode
+- [x] Optimize rendering performance
+
+### Component Annotation
+- [x] Implement click-to-annotate
+- [x] Create annotation markers (3D sprites)
+- [x] Link annotations to assessment data
+- [x] Link annotations to deficiencies
+- [x] Link annotations to maintenance entries
+- [x] Add annotation editing/deletion
+- [x] Implement annotation filtering
+- [x] Add annotation search
+
+### Collaboration Features
+- [x] Save/load camera viewpoints
+- [x] Share viewpoint URLs
+- [x] Add annotation comments
+- [x] Implement issue tracking on model
+- [x] Add screenshot capture
+- [x] Add model section clipping
+
+### API Endpoints
+- [x] models.upload
+- [x] models.get
+- [x] models.list
+- [x] models.delete
+- [x] models.updateMetadata
+- [x] annotations.create
+- [x] annotations.get
+- [x] annotations.update
+- [x] annotations.delete
+- [x] annotations.list
+- [x] viewpoints.save
+- [x] viewpoints.load
+
+### Frontend UI
+- [x] Create ModelViewer component
+- [x] Create ModelUploadDialog
+- [x] Create AnnotationPanel
+- [x] Create LayerControlPanel
+- [x] Create MeasurementTools
+- [x] Create ViewpointManager
+- [x] Add model viewer to Project Detail page
+- [x] Add model management page
+- [x] Implement mobile touch controls
+- [x] Add loading states and error handling
+
+### Integration
+- [x] Link 3D components to assessment records
+- [x] Display deficiency markers on model
+- [x] Show maintenance history on components
+- [x] Integrate with condition ratings
+- [x] Add visual indicators for component health
+
+### Testing
+- [x] Test model upload with various formats
+- [x] Test viewer performance with large models
+- [x] Test annotation CRUD operations
+- [x] Test mobile responsiveness
+- [x] Create checkpoint

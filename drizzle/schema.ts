@@ -1479,3 +1479,67 @@ export const maintenanceEntries = mysqlTable("maintenance_entries", {
 
 export type MaintenanceEntry = typeof maintenanceEntries.$inferSelect;
 export type InsertMaintenanceEntry = typeof maintenanceEntries.$inferInsert;
+
+
+// 3D Digital Twin Models
+export const facilityModels = mysqlTable("facility_models", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  fileSize: int("fileSize"),
+  format: mysqlEnum("format", ["glb", "gltf", "fbx", "obj"]).notNull(),
+  version: int("version").default(1).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  metadata: json("metadata"), // { bounds, vertexCount, materialCount, etc. }
+  uploadedBy: int("uploadedBy").notNull(),
+  uploadedAt: timestamp("uploadedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const modelAnnotations = mysqlTable("model_annotations", {
+  id: int("id").autoincrement().primaryKey(),
+  modelId: int("modelId").notNull(),
+  projectId: int("projectId").notNull(),
+  componentName: varchar("componentName", { length: 255 }),
+  assessmentId: int("assessmentId"),
+  deficiencyId: int("deficiencyId"),
+  maintenanceEntryId: int("maintenanceEntryId"),
+  annotationType: mysqlEnum("annotationType", ["deficiency", "assessment", "maintenance", "note", "issue"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  positionX: decimal("positionX", { precision: 10, scale: 6 }).notNull(),
+  positionY: decimal("positionY", { precision: 10, scale: 6 }).notNull(),
+  positionZ: decimal("positionZ", { precision: 10, scale: 6 }).notNull(),
+  cameraPosition: json("cameraPosition"), // { x, y, z }
+  cameraTarget: json("cameraTarget"), // { x, y, z }
+  priority: mysqlEnum("priority", ["immediate", "high", "medium", "low"]),
+  status: mysqlEnum("status", ["open", "in_progress", "resolved", "closed"]).default("open").notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const modelViewpoints = mysqlTable("model_viewpoints", {
+  id: int("id").autoincrement().primaryKey(),
+  modelId: int("modelId").notNull(),
+  projectId: int("projectId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  cameraPosition: json("cameraPosition").notNull(), // { x, y, z }
+  cameraTarget: json("cameraTarget").notNull(), // { x, y, z }
+  cameraZoom: decimal("cameraZoom", { precision: 10, scale: 6 }),
+  visibleLayers: json("visibleLayers"), // Array of layer names
+  isShared: boolean("isShared").default(false).notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FacilityModel = typeof facilityModels.$inferSelect;
+export type InsertFacilityModel = typeof facilityModels.$inferInsert;
+export type ModelAnnotation = typeof modelAnnotations.$inferSelect;
+export type InsertModelAnnotation = typeof modelAnnotations.$inferInsert;
+export type ModelViewpoint = typeof modelViewpoints.$inferSelect;
+export type InsertModelViewpoint = typeof modelViewpoints.$inferInsert;
