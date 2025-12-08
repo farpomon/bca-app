@@ -1580,3 +1580,106 @@ export type DashboardConfig = typeof dashboardConfigs.$inferSelect;
 export type InsertDashboardConfig = typeof dashboardConfigs.$inferInsert;
 export type KPISnapshot = typeof kpiSnapshots.$inferSelect;
 export type InsertKPISnapshot = typeof kpiSnapshots.$inferInsert;
+
+
+// Sustainability and ESG Tracking
+export const utilityConsumption = mysqlTable("utility_consumption", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  recordDate: timestamp("recordDate").notNull(),
+  utilityType: mysqlEnum("utilityType", ["electricity", "natural_gas", "water", "steam", "chilled_water"]).notNull(),
+  consumption: decimal("consumption", { precision: 15, scale: 4 }).notNull(), // kWh, therms, gallons, etc.
+  unit: varchar("unit", { length: 50 }).notNull(), // kWh, therms, gallons, etc.
+  cost: decimal("cost", { precision: 15, scale: 2 }),
+  source: varchar("source", { length: 100 }), // Utility provider
+  isRenewable: boolean("isRenewable").default(false),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const wasteTracking = mysqlTable("waste_tracking", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  recordDate: timestamp("recordDate").notNull(),
+  wasteType: mysqlEnum("wasteType", ["general", "recycling", "compost", "hazardous", "construction"]).notNull(),
+  weight: decimal("weight", { precision: 15, scale: 4 }).notNull(), // kg or lbs
+  unit: varchar("unit", { length: 20 }).notNull(),
+  disposalMethod: varchar("disposalMethod", { length: 100 }), // Landfill, recycling center, etc.
+  cost: decimal("cost", { precision: 15, scale: 2 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const emissionsData = mysqlTable("emissions_data", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  recordDate: timestamp("recordDate").notNull(),
+  scope: mysqlEnum("scope", ["scope1", "scope2", "scope3"]).notNull(),
+  emissionSource: varchar("emissionSource", { length: 255 }).notNull(), // e.g., "Natural Gas Combustion", "Purchased Electricity"
+  co2Equivalent: decimal("co2Equivalent", { precision: 15, scale: 4 }).notNull(), // metric tons CO2e
+  calculationMethod: varchar("calculationMethod", { length: 255 }), // e.g., "EPA emission factors"
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const sustainabilityGoals = mysqlTable("sustainability_goals", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId"), // null for portfolio-wide goals
+  goalType: mysqlEnum("goalType", ["energy_reduction", "water_reduction", "waste_reduction", "carbon_reduction", "renewable_energy"]).notNull(),
+  baselineValue: decimal("baselineValue", { precision: 15, scale: 4 }).notNull(),
+  baselineYear: int("baselineYear").notNull(),
+  targetValue: decimal("targetValue", { precision: 15, scale: 4 }).notNull(),
+  targetYear: int("targetYear").notNull(),
+  unit: varchar("unit", { length: 50 }).notNull(),
+  status: mysqlEnum("status", ["active", "achieved", "missed", "cancelled"]).default("active").notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const greenUpgrades = mysqlTable("green_upgrades", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  upgradeName: varchar("upgradeName", { length: 255 }).notNull(),
+  upgradeType: mysqlEnum("upgradeType", ["hvac", "lighting", "insulation", "windows", "solar", "geothermal", "water_fixtures", "building_automation"]).notNull(),
+  installDate: timestamp("installDate"),
+  cost: decimal("cost", { precision: 15, scale: 2 }).notNull(),
+  estimatedAnnualSavings: decimal("estimatedAnnualSavings", { precision: 15, scale: 2 }),
+  actualAnnualSavings: decimal("actualAnnualSavings", { precision: 15, scale: 2 }),
+  paybackPeriod: decimal("paybackPeriod", { precision: 10, scale: 2 }), // years
+  energySavingsKWh: decimal("energySavingsKWh", { precision: 15, scale: 2 }),
+  waterSavingsGallons: decimal("waterSavingsGallons", { precision: 15, scale: 2 }),
+  co2ReductionMT: decimal("co2ReductionMT", { precision: 15, scale: 4 }), // metric tons
+  status: mysqlEnum("status", ["planned", "in_progress", "completed", "cancelled"]).default("planned").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const esgScores = mysqlTable("esg_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  scoreDate: timestamp("scoreDate").notNull(),
+  energyScore: decimal("energyScore", { precision: 5, scale: 2 }), // 0-100
+  waterScore: decimal("waterScore", { precision: 5, scale: 2 }), // 0-100
+  wasteScore: decimal("wasteScore", { precision: 5, scale: 2 }), // 0-100
+  emissionsScore: decimal("emissionsScore", { precision: 5, scale: 2 }), // 0-100
+  compositeScore: decimal("compositeScore", { precision: 5, scale: 2 }), // 0-100
+  benchmarkPercentile: int("benchmarkPercentile"), // 0-100, percentile rank vs peers
+  certifications: json("certifications"), // LEED, ENERGY STAR, etc.
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UtilityConsumption = typeof utilityConsumption.$inferSelect;
+export type InsertUtilityConsumption = typeof utilityConsumption.$inferInsert;
+export type WasteTracking = typeof wasteTracking.$inferSelect;
+export type InsertWasteTracking = typeof wasteTracking.$inferInsert;
+export type EmissionsData = typeof emissionsData.$inferSelect;
+export type InsertEmissionsData = typeof emissionsData.$inferInsert;
+export type SustainabilityGoal = typeof sustainabilityGoals.$inferSelect;
+export type InsertSustainabilityGoal = typeof sustainabilityGoals.$inferInsert;
+export type GreenUpgrade = typeof greenUpgrades.$inferSelect;
+export type InsertGreenUpgrade = typeof greenUpgrades.$inferInsert;
+export type ESGScore = typeof esgScores.$inferSelect;
+export type InsertESGScore = typeof esgScores.$inferInsert;

@@ -10,6 +10,7 @@ import { facilityRouter } from "./routers/facility.router";
 import { maintenanceRouter } from "./routers/maintenance.router";
 import { modelsRouter } from "./routers/models.router";
 import { dashboardsRouter } from "./routers/dashboards.router";
+import { esgRouter } from "./routers/esg.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1863,6 +1864,7 @@ export const appRouter = router({
 
   // Advanced BI dashboards and portfolio analytics
   dashboards: dashboardsRouter,
+  esg: esgRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1880,3 +1880,86 @@
 - [x] Test dashboard save/load
 - [x] Test export functionality
 - [x] Create checkpoint
+
+
+## Sustainability and ESG Tracking
+
+### Database Schema
+- [ ] Create utility_consumption table (energy, water, gas)
+- [ ] Create waste_tracking table (waste generation, recycling)
+- [ ] Create emissions_data table (Scope 1, 2, 3 GHG emissions)
+- [ ] Create sustainability_goals table (reduction targets, deadlines)
+- [ ] Create green_upgrades table (energy-efficient projects)
+- [ ] Create esg_scores table (ESG performance metrics)
+- [ ] Push database schema changes
+
+### Carbon Footprint Calculator
+- [ ] Build emissionsCalculator service
+- [ ] Calculate Scope 1 emissions (direct, on-site)
+- [ ] Calculate Scope 2 emissions (purchased electricity)
+- [ ] Calculate Scope 3 emissions (indirect, supply chain)
+- [ ] Convert energy consumption to CO2 equivalent
+- [ ] Apply emission factors by region/fuel type
+- [ ] Calculate facility-level carbon footprint
+- [ ] Calculate portfolio-wide carbon footprint
+
+### Sustainability Scoring Engine
+- [ ] Build esgScoring service
+- [ ] Calculate energy efficiency score
+- [ ] Calculate water efficiency score
+- [ ] Calculate waste diversion rate
+- [ ] Calculate renewable energy percentage
+- [ ] Generate composite ESG score
+- [ ] Benchmark against industry standards
+- [ ] Track year-over-year improvements
+
+### Green Upgrade Tracking
+- [ ] Link green upgrades to capital projects
+- [ ] Track energy savings from upgrades
+- [ ] Calculate ROI of sustainability investments
+- [ ] Track payback periods
+- [ ] Monitor lifecycle cost savings
+
+### tRPC API
+- [ ] Create esg router
+- [ ] esg.recordUtilityData
+- [ ] esg.getConsumptionTrends
+- [ ] esg.calculateCarbonFootprint
+- [ ] esg.getESGScores
+- [ ] esg.setGoals
+- [ ] esg.getGoalProgress
+- [ ] esg.recordGreenUpgrade
+- [ ] esg.getGreenUpgradeROI
+- [ ] esg.generateComplianceReport
+- [ ] Add esg router to routers.ts
+
+### ESG Dashboard UI
+- [ ] Create ESGDashboard page
+- [ ] Create UtilityConsumptionChart widget
+- [ ] Create CarbonFootprintCard widget
+- [ ] Create ESGScoreCard widget
+- [ ] Create GoalProgressWidget
+- [ ] Create GreenUpgradesTable
+- [ ] Create WasteTrackingChart
+- [ ] Create EnergyMixChart (renewable vs non-renewable)
+
+### Goal Tracking
+- [ ] Create GoalSettingDialog
+- [ ] Set reduction targets (%, absolute values)
+- [ ] Set target deadlines
+- [ ] Track progress toward goals
+- [ ] Visual progress indicators
+- [ ] Alert when off-track
+
+### Compliance Reporting
+- [ ] Generate sustainability reports
+- [ ] LEED certification tracking
+- [ ] Regulatory compliance reports
+- [ ] Export to PDF/Excel
+
+### Testing
+- [ ] Test carbon footprint calculations
+- [ ] Test ESG scoring algorithm
+- [ ] Test goal tracking logic
+- [ ] Test green upgrade ROI calculations
+- [ ] Create checkpoint
