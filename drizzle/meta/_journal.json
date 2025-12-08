@@ -169,6 +169,13 @@
       "when": 1765193238798,
       "tag": "0023_flashy_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1765193971156,
+      "tag": "0024_tearful_anthem",
+      "breakpoints": true
     }
   ]
 }

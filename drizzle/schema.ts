@@ -1389,3 +1389,93 @@ export const reportHistory = mysqlTable("report_history", {
 
 export type ReportHistory = typeof reportHistory.$inferSelect;
 export type InsertReportHistory = typeof reportHistory.$inferInsert;
+
+/**
+ * Maintenance entries - Track multiple maintenance actions per component
+ */
+export const maintenanceEntries = mysqlTable("maintenance_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  assessmentId: int("assessmentId"), // Link to specific assessment if applicable
+  componentName: varchar("componentName", { length: 255 }).notNull(),
+  location: varchar("location", { length: 255 }),
+  
+  // Entry classification
+  entryType: mysqlEnum("entryType", ["identified", "executed"]).notNull(),
+  actionType: mysqlEnum("actionType", [
+    "repair",
+    "rehabilitation",
+    "replacement",
+    "preventive_maintenance",
+    "emergency_repair",
+    "inspection",
+    "upgrade"
+  ]).notNull(),
+  lifecycleStage: mysqlEnum("lifecycleStage", [
+    "installation",
+    "routine_maintenance",
+    "major_repair",
+    "replacement",
+    "decommission"
+  ]),
+  
+  // Description and details
+  description: text("description").notNull(),
+  workPerformed: text("workPerformed"), // For executed entries
+  findings: text("findings"), // Inspection findings
+  
+  // Cost tracking
+  estimatedCost: decimal("estimatedCost", { precision: 15, scale: 2 }),
+  actualCost: decimal("actualCost", { precision: 15, scale: 2 }),
+  costVariance: decimal("costVariance", { precision: 15, scale: 2 }), // Calculated: actual - estimated
+  costVariancePercent: decimal("costVariancePercent", { precision: 5, scale: 2 }), // Calculated: (variance / estimated) * 100
+  
+  // Status and timeline
+  status: mysqlEnum("status", [
+    "planned",
+    "approved",
+    "in_progress",
+    "completed",
+    "deferred",
+    "cancelled"
+  ]).default("planned").notNull(),
+  priority: mysqlEnum("priority", ["immediate", "high", "medium", "low"]).default("medium").notNull(),
+  
+  dateIdentified: timestamp("dateIdentified"),
+  dateScheduled: timestamp("dateScheduled"),
+  dateStarted: timestamp("dateStarted"),
+  dateCompleted: timestamp("dateCompleted"),
+  
+  // Recurring maintenance
+  isRecurring: boolean("isRecurring").default(false).notNull(),
+  recurringFrequency: mysqlEnum("recurringFrequency", [
+    "weekly",
+    "monthly",
+    "quarterly",
+    "semi_annual",
+    "annual",
+    "biennial"
+  ]),
+  nextDueDate: timestamp("nextDueDate"),
+  lastCompletedDate: timestamp("lastCompletedDate"),
+  
+  // Contractor and warranty
+  contractor: varchar("contractor", { length: 255 }),
+  contractorContact: varchar("contractorContact", { length: 255 }),
+  warrantyExpiry: timestamp("warrantyExpiry"),
+  
+  // Component lifecycle tracking
+  componentAge: int("componentAge"), // Age in years at time of maintenance
+  cumulativeCost: decimal("cumulativeCost", { precision: 15, scale: 2 }), // Total maintenance cost to date
+  
+  // Notes and attachments
+  notes: text("notes"),
+  attachments: json("attachments"), // Array of file URLs
+  
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MaintenanceEntry = typeof maintenanceEntries.$inferSelect;
+export type InsertMaintenanceEntry = typeof maintenanceEntries.$inferInsert;

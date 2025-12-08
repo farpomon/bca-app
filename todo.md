@@ -1580,3 +1580,71 @@
 - [ ] Test custom templates
 - [ ] Test branding options
 - [ ] Create checkpoint
+
+
+## Multiple Maintenance Entries System
+
+### Database Schema
+- [x] Create maintenance_entries table
+- [x] Add entry type (identified, executed)
+- [x] Add action type (repair, rehabilitation, replacement, preventive, emergency)
+- [x] Add lifecycle stage (installation, routine, major_repair, replacement)
+- [x] Add cost fields (estimated, actual, variance)
+- [x] Add date fields (identified, scheduled, completed)
+- [x] Add status tracking (planned, approved, in_progress, completed, deferred, cancelled)
+- [x] Add recurring maintenance fields (frequency, next_due_date)
+- [x] Link to assessments and components
+- [x] Push database schema changes
+
+### Maintenance Entry Management
+- [x] Create maintenanceEntries.db.ts helper functions
+- [x] Implement getMaintenanceEntries (filter by component, type, status)
+- [x] Implement createMaintenanceEntry
+- [x] Implement updateMaintenanceEntry
+- [x] Implement deleteMaintenanceEntry
+- [x] Implement getMaintenanceHistory (chronological timeline)
+- [x] Implement getMaintenanceCostSummary
+- [x] Implement getRecurringMaintenance
+
+### Lifecycle Tracking
+- [ ] Calculate component age at each maintenance event
+- [ ] Track cumulative maintenance costs
+- [ ] Identify lifecycle patterns (repair frequency, cost trends)
+- [ ] Predict next maintenance needs
+- [ ] Flag components with excessive maintenance costs
+
+### tRPC API
+- [x] maintenance.getEntries
+- [x] maintenance.getEntry
+- [x] maintenance.createEntry
+- [x] maintenance.updateEntry
+- [x] maintenance.deleteEntry
+- [x] maintenance.getHistory
+- [x] maintenance.getCostSummary
+- [x] maintenance.getRecurring
+- [x] Add maintenance router to routers.ts
+
+### Frontend UI
+- [ ] Create MaintenanceEntriesTable component
+- [ ] Create MaintenanceEntryDialog (create/edit)
+- [ ] Create MaintenanceTimeline component
+- [ ] Add maintenance entries tab to component detail
+- [ ] Add identified vs executed filtering
+- [ ] Add cost variance visualization
+- [ ] Create recurring maintenance scheduler
+
+### Report Integration
+- [ ] Add maintenance_history section type to reports
+- [ ] Display identified maintenance entries
+- [ ] Display executed maintenance entries
+- [ ] Show cost variance (estimated vs actual)
+- [ ] Include maintenance timeline charts
+- [ ] Group by component and lifecycle stage
+- [ ] Add summary statistics (total entries, costs, completion rate)
+
+### Testing
+- [ ] Test maintenance entry CRUD operations
+- [ ] Test lifecycle tracking calculations
+- [ ] Test report generation with maintenance entries
+- [ ] Test recurring maintenance scheduling
+- [ ] Create checkpoint
