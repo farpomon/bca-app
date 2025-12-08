@@ -1543,3 +1543,40 @@ export type ModelAnnotation = typeof modelAnnotations.$inferSelect;
 export type InsertModelAnnotation = typeof modelAnnotations.$inferInsert;
 export type ModelViewpoint = typeof modelViewpoints.$inferSelect;
 export type InsertModelViewpoint = typeof modelViewpoints.$inferInsert;
+
+
+// Advanced BI Dashboards
+export const dashboardConfigs = mysqlTable("dashboard_configs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  layout: json("layout").notNull(), // Widget positions and sizes
+  filters: json("filters"), // Saved filter state
+  isDefault: boolean("isDefault").default(false).notNull(),
+  isShared: boolean("isShared").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const kpiSnapshots = mysqlTable("kpi_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  snapshotDate: timestamp("snapshotDate").notNull(),
+  portfolioFCI: decimal("portfolioFCI", { precision: 10, scale: 4 }),
+  portfolioCI: decimal("portfolioCI", { precision: 10, scale: 4 }),
+  totalReplacementValue: decimal("totalReplacementValue", { precision: 15, scale: 2 }),
+  totalRepairCosts: decimal("totalRepairCosts", { precision: 15, scale: 2 }),
+  maintenanceBacklog: decimal("maintenanceBacklog", { precision: 15, scale: 2 }),
+  deferredMaintenance: decimal("deferredMaintenance", { precision: 15, scale: 2 }),
+  budgetUtilization: decimal("budgetUtilization", { precision: 10, scale: 4 }),
+  completedProjects: int("completedProjects"),
+  activeProjects: int("activeProjects"),
+  criticalDeficiencies: int("criticalDeficiencies"),
+  metadata: json("metadata"), // Additional KPI data
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DashboardConfig = typeof dashboardConfigs.$inferSelect;
+export type InsertDashboardConfig = typeof dashboardConfigs.$inferInsert;
+export type KPISnapshot = typeof kpiSnapshots.$inferSelect;
+export type InsertKPISnapshot = typeof kpiSnapshots.$inferInsert;

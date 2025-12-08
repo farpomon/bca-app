@@ -9,6 +9,7 @@ import { riskRouter } from "./routers/risk.router";
 import { facilityRouter } from "./routers/facility.router";
 import { maintenanceRouter } from "./routers/maintenance.router";
 import { modelsRouter } from "./routers/models.router";
+import { dashboardsRouter } from "./routers/dashboards.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1859,6 +1860,9 @@ export const appRouter = router({
 
   // 3D digital twin models and annotations
   models: modelsRouter,
+
+  // Advanced BI dashboards and portfolio analytics
+  dashboards: dashboardsRouter,
 });
 
 export type AppRouter = typeof appRouter;

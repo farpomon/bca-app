@@ -1797,3 +1797,86 @@
 - [x] Test annotation CRUD operations
 - [x] Test mobile responsiveness
 - [x] Create checkpoint
+
+
+## Advanced BI Dashboards
+
+### Database Schema
+- [x] Create dashboard_configs table (user dashboards, layouts)
+- [x] Create dashboard_widgets table (widget configurations)
+- [x] Create kpi_snapshots table (historical KPI data)
+- [x] Push database schema changes
+
+### KPI Aggregation Services
+- [x] Build portfolioKPIService
+- [x] Calculate portfolio-wide FCI/CI
+- [x] Calculate maintenance backlog value
+- [x] Calculate deferred maintenance totals
+- [x] Calculate budget utilization rates
+- [x] Build trendAnalysisService
+- [x] Calculate year-over-year cost trends
+- [x] Calculate condition deterioration rates
+- [x] Calculate investment effectiveness metrics
+- [x] Build comparativeAnalysisService
+- [x] Compare facilities against portfolio averages
+- [x] Generate benchmark reports
+- [x] Build filteringService
+- [x] Filter by building class
+- [x] Filter by system type
+- [x] Filter by facility type
+- [x] Filter by department
+- [x] Filter by priority level
+- [x] Filter by date ranges
+
+### tRPC API
+- [x] Create dashboards router
+- [x] dashboards.getPortfolioKPIs
+- [x] dashboards.getTrends
+- [x] dashboards.getComparativeAnalysis
+- [x] dashboards.saveConfig
+- [x] dashboards.getConfigs
+- [x] dashboards.deleteConfig
+- [x] dashboards.exportDashboard
+- [x] Add dashboards router to routers.ts
+
+### Dashboard UI Components
+- [x] Create PortfolioDashboard page
+- [x] Create KPICard widget
+- [x] Create TrendChart widget
+- [x] Create FacilityComparison widget
+- [x] Create MaintenanceBacklog widget
+- [x] Create BudgetUtilization widget
+- [x] Create ConditionDistribution widget
+- [x] Create DashboardBuilder component
+- [x] Drag-and-drop widget placement
+- [x] Widget resize functionality
+- [x] Save/load dashboard layouts
+- [x] Create FilterPanel component
+- [x] Building class filter
+- [x] System type filter
+- [x] Facility type filter
+- [x] Department filter
+- [x] Priority filter
+- [x] Date range filter
+- [x] Create DrillDownView component
+- [x] Portfolio → Facility drill-down
+- [x] Facility → System drill-down
+- [x] System → Component drill-down
+
+### Export & Sharing
+- [x] Implement PDF export
+- [x] Implement Excel export
+- [x] Create shareable dashboard links
+- [x] Email dashboard reports
+
+### Real-Time Features
+- [x] Auto-refresh data polling
+- [x] Threshold breach notifications
+- [x] Live KPI updates
+
+### Testing
+- [x] Test KPI calculations
+- [x] Test filtering logic
+- [x] Test dashboard save/load
+- [x] Test export functionality
+- [x] Create checkpoint

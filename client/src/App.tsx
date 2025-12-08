@@ -20,6 +20,7 @@ import PrioritizationDashboard from "./pages/PrioritizationDashboard";
 import CapitalBudgetPlanner from "./pages/CapitalBudgetPlanner";
 import LPOptimizationDashboard from "./pages/LPOptimizationDashboard";
 import Model3DViewer from "./pages/Model3DViewer";
+import PortfolioBIDashboard from "./pages/PortfolioBIDashboard";
 
 function Router() {
   return (
@@ -40,6 +41,7 @@ function Router() {
       <Route path={"/capital-budget"} component={CapitalBudgetPlanner} />
       <Route path={"/lp-optimization"} component={LPOptimizationDashboard} />
       <Route path={"/projects/:id/3d-model"} component={Model3DViewer} />
+      <Route path={"/portfolio-analytics"} component={PortfolioBIDashboard} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
