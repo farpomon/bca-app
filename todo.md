@@ -1181,3 +1181,96 @@
 - [x] Test scenario comparison
 - [x] Test 4-year capital planning
 - [x] Create checkpoint
+
+
+## Linear Programming Portfolio Optimization
+
+### LP Solver Integration
+- [x] Install javascript-lp-solver or similar LP library
+- [x] Create LP model formulation service
+- [x] Define decision variables (binary: fund project or not)
+- [x] Define objective function (maximize weighted CI improvement)
+- [x] Define constraints (budget limit, dependencies, capacity)
+- [x] Implement solver wrapper with error handling
+
+### Portfolio Optimization Engine
+- [x] Create portfolioOptimizer.service.ts
+- [x] Implement getPortfolioMetrics (current CI, FCI, total replacement value)
+- [x] Calculate weighted condition index across all facilities
+- [x] Implement optimizePortfolio (LP-based allocation)
+- [x] Support multiple optimization objectives (CI, FCI, priority score, risk)
+- [x] Handle project dependencies (e.g., roof before interior)
+- [x] Support phasing constraints (max projects per year)
+- [x] Calculate expected CI improvement per project
+- [x] Implement greedy fallback if LP solver fails
+
+### Cost-Effectiveness Analysis
+- [x] Calculate cost per CI point improvement
+- [x] Calculate cost per FCI point improvement
+- [x] Calculate cost per priority score point
+- [x] Rank projects by cost-effectiveness
+- [x] Identify diminishing returns threshold
+- [x] Calculate marginal benefit of additional funding
+
+### Sensitivity Analysis
+- [x] Implement budget sensitivity analysis (80%-120% of target)
+- [x] Calculate optimal funding level
+- [x] Identify budget inflection points
+- [x] Show projects added/removed at each budget level
+- [x] Calculate ROI at different budget levels
+- [x] Generate funding recommendation report
+
+### Pareto Frontier
+- [x] Calculate Pareto-optimal solutions (cost vs CI improvement)
+- [x] Generate trade-off curve data
+- [x] Identify dominated solutions
+- [x] Find knee point (optimal cost-benefit)
+- [x] Support multi-objective Pareto (cost vs CI vs priority)
+
+### Portfolio-Level Metrics
+- [x] Calculate current portfolio CI (weighted average)
+- [x] Calculate current portfolio FCI
+- [x] Calculate total deferred maintenance
+- [x] Project future CI with/without intervention
+- [x] Calculate portfolio risk score
+- [x] Track portfolio improvement over time
+
+### Backend API (tRPC)
+- [x] optimization.getPortfolioMetrics (current state)
+- [x] optimization.optimizePortfolio (run LP solver)
+- [x] optimization.analyzeSensitivity (budget scenarios)
+- [x] optimization.getParetoFrontier (trade-off curve)
+- [x] optimization.compareAllocations (manual vs optimized)
+- [x] optimization.getProjectEffectiveness (cost per CI point)
+- [x] Add to optimization router
+
+### Optimization Dashboard UI
+- [x] Create PortfolioOptimizationDashboard component
+- [x] Display current portfolio metrics (CI, FCI, total cost)
+- [x] Add budget input and constraint configuration
+- [x] Show optimization results (selected projects, expected CI)
+- [x] Display before/after portfolio comparison
+- [x] Show cost-effectiveness ranking
+- [x] Add sensitivity analysis chart
+- [x] Display Pareto frontier visualization
+- [x] Support constraint adjustment (dependencies, phasing)
+- [x] Add route to App.tsx
+
+### Results Visualization
+- [x] Create portfolio CI improvement chart
+- [x] Create budget allocation pie chart
+- [x] Create sensitivity analysis line chart
+- [x] Create Pareto frontier scatter plot
+- [x] Create cost-effectiveness bar chart
+- [x] Create project selection timeline
+- [x] Add export to Excel/PDF
+
+### Testing
+- [x] Test LP solver integration
+- [x] Test portfolio metrics calculation
+- [x] Test optimization with various budgets
+- [x] Test constraint handling
+- [x] Test sensitivity analysis
+- [x] Test Pareto frontier calculation
+- [x] Test edge cases (zero budget, unlimited budget)
+- [x] Create checkpoint

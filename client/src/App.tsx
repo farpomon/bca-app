@@ -18,6 +18,7 @@ import PredictionsDashboard from "./pages/PredictionsDashboard";
 import OptimizationDashboard from "./pages/OptimizationDashboard";
 import PrioritizationDashboard from "./pages/PrioritizationDashboard";
 import CapitalBudgetPlanner from "./pages/CapitalBudgetPlanner";
+import LPOptimizationDashboard from "./pages/LPOptimizationDashboard";
 
 function Router() {
   return (
@@ -36,6 +37,7 @@ function Router() {
       <Route path={"/projects/:id/optimization"} component={OptimizationDashboard} />
       <Route path={"/prioritization"} component={PrioritizationDashboard} />
       <Route path={"/capital-budget"} component={CapitalBudgetPlanner} />
+      <Route path={"/lp-optimization"} component={LPOptimizationDashboard} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

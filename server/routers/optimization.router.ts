@@ -17,6 +17,7 @@ import {
   generateStrategyOptions,
   type OptimizationConfig,
 } from "../services/optimization.service";
+import * as lpOptimizer from "../services/lpOptimizer.service";
 
 /**
  * Optimization router for scenario modeling and strategy comparison
@@ -314,4 +315,58 @@ export const optimizationRouter = router({
       });
       return { success: true };
     }),
+
+  /**
+   * Get current portfolio metrics
+   */
+  getPortfolioMetrics: protectedProcedure.query(async () => {
+    return await lpOptimizer.getPortfolioMetrics();
+  }),
+
+  /**
+   * Optimize portfolio using Linear Programming
+   */
+  optimizePortfolioLP: protectedProcedure
+    .input(
+      z.object({
+        maxBudget: z.number().positive(),
+        minProjects: z.number().int().min(0).optional(),
+        maxProjects: z.number().int().positive().optional(),
+        requiredProjectIds: z.array(z.number()).optional(),
+        excludedProjectIds: z.array(z.number()).optional(),
+        minCIImprovement: z.number().min(0).optional(),
+        maxRiskTolerance: z.number().min(0).max(10).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return await lpOptimizer.optimizePortfolio(input);
+    }),
+
+  /**
+   * Analyze budget sensitivity
+   */
+  analyzeSensitivity: protectedProcedure
+    .input(
+      z.object({
+        baseBudget: z.number().positive(),
+        rangePercent: z.number().min(0).max(100).default(50),
+      })
+    )
+    .query(async ({ input }) => {
+      return await lpOptimizer.analyzeSensitivity(input.baseBudget, input.rangePercent);
+    }),
+
+  /**
+   * Calculate Pareto frontier
+   */
+  getParetoFrontier: protectedProcedure.query(async () => {
+    return await lpOptimizer.calculateParetoFrontier();
+  }),
+
+  /**
+   * Get cost-effectiveness ranking
+   */
+  getCostEffectivenessRanking: protectedProcedure.query(async () => {
+    return await lpOptimizer.getCostEffectivenessRanking();
+  }),
 });
