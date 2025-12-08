@@ -11,6 +11,7 @@ import { maintenanceRouter } from "./routers/maintenance.router";
 import { modelsRouter } from "./routers/models.router";
 import { dashboardsRouter } from "./routers/dashboards.router";
 import { esgRouter } from "./routers/esg.router";
+import { mediaRouter } from "./routers/media.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1865,6 +1866,7 @@ export const appRouter = router({
   // Advanced BI dashboards and portfolio analytics
   dashboards: dashboardsRouter,
   esg: esgRouter,
+  media: mediaRouter,
 });
 
 export type AppRouter = typeof appRouter;

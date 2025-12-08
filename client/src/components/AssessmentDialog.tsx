@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Upload, X, Sparkles } from "lucide-react";
+import { Loader2, Upload, X, Sparkles, Mic } from "lucide-react";
 import { ValidationWarning } from "@/components/ValidationWarning";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 interface AssessmentDialogProps {
   open: boolean;
@@ -103,6 +104,8 @@ export function AssessmentDialog({
   const [validationResults, setValidationResults] = useState<any[]>([]);
   const [showValidation, setShowValidation] = useState(false);
   const [validationOverrides, setValidationOverrides] = useState<Map<number, string>>(new Map());
+  const [showObservationsVoice, setShowObservationsVoice] = useState(false);
+  const [showRecommendationsVoice, setShowRecommendationsVoice] = useState(false);
 
   const upsertAssessment = trpc.assessments.upsert.useMutation();
   const checkValidation = trpc.validation.check.useMutation();
@@ -482,7 +485,28 @@ export function AssessmentDialog({
 
           {/* Observations */}
           <div className="space-y-2">
-            <Label htmlFor="observations">Observations</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="observations">Observations</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowObservationsVoice(!showObservationsVoice)}
+                className="gap-2"
+              >
+                <Mic className="w-4 h-4" />
+                {showObservationsVoice ? "Hide" : "Voice Input"}
+              </Button>
+            </div>
+            {showObservationsVoice && (
+              <VoiceRecorder
+                onTranscriptionComplete={(text) => {
+                  setObservations(observations + (observations ? "\n\n" : "") + text);
+                  setShowObservationsVoice(false);
+                }}
+                onCancel={() => setShowObservationsVoice(false)}
+              />
+            )}
             <RichTextEditor
               content={observations}
               onChange={setObservations}
@@ -492,7 +516,28 @@ export function AssessmentDialog({
 
           {/* Recommendations */}
           <div className="space-y-2">
-            <Label htmlFor="recommendations">Recommendations</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="recommendations">Recommendations</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowRecommendationsVoice(!showRecommendationsVoice)}
+                className="gap-2"
+              >
+                <Mic className="w-4 h-4" />
+                {showRecommendationsVoice ? "Hide" : "Voice Input"}
+              </Button>
+            </div>
+            {showRecommendationsVoice && (
+              <VoiceRecorder
+                onTranscriptionComplete={(text) => {
+                  setRecommendations(recommendations + (recommendations ? "\n\n" : "") + text);
+                  setShowRecommendationsVoice(false);
+                }}
+                onCancel={() => setShowRecommendationsVoice(false)}
+              />
+            )}
             <RichTextEditor
               content={recommendations}
               onChange={setRecommendations}

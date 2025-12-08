@@ -34,6 +34,7 @@ export const projects = mysqlTable("projects", {
   numberOfStories: int("numberOfStories"),
   buildingCode: varchar("buildingCode", { length: 100 }),
   assessmentDate: timestamp("assessmentDate"),
+  observations: text("observations"),
   status: mysqlEnum("status", ["draft", "in_progress", "completed", "archived"]).default("draft").notNull(),
   overallConditionScore: int("overallConditionScore"), // Calculated overall building condition score
   overallFciScore: int("overallFciScore"), // Overall Facility Condition Index (0-100)

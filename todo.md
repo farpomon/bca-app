@@ -1963,3 +1963,42 @@
 - [ ] Test goal tracking logic
 - [ ] Test green upgrade ROI calculations
 - [ ] Create checkpoint
+
+
+## Voice-to-Transcript for Assessments
+
+### Database Schema
+- [x] Add observations field to projects table
+- [x] Add audio_recordings table for storing transcription metadata
+
+### Voice Recording Component
+- [x] Create VoiceRecorder component with audio capture
+- [x] Add visual feedback (waveform, recording indicator)
+- [x] Implement start/stop/pause controls
+- [x] Add audio playback preview
+- [x] Upload audio to S3 storage
+- [x] Call manus-speech-to-text for transcription
+- [x] Display transcribed text with edit capability
+- [x] Handle transcription errors gracefully
+
+### Assessment Integration
+- [x] Add voice input buttons to observations field
+- [x] Add voice input buttons to recommendations field
+- [x] Add voice input buttons to deficiency descriptions
+- [x] Auto-populate fields with transcribed text
+- [x] Allow manual editing after transcription
+- [x] Show transcription status (recording, processing, complete)
+
+### Enhanced Project Creation
+- [x] Update project creation form with observations field
+- [x] Add rich text editor for project observations
+- [x] Update createProject tRPC procedure to accept observations
+- [x] Update project detail page to display observations
+- [x] Add edit capability for project observations
+
+### Testing
+- [x] Test voice recording on desktop browsers
+- [x] Test voice recording on mobile devices
+- [x] Test transcription accuracy
+- [x] Test project creation with observations
+- [x] Create checkpoint

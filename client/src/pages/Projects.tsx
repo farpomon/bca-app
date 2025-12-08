@@ -5,10 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic } from "lucide-react";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -32,7 +34,9 @@ export default function Projects() {
     numberOfUnits: "",
     numberOfStories: "",
     buildingCode: "",
+    observations: "",
   });
+  const [showObservationsVoice, setShowObservationsVoice] = useState(false);
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
@@ -76,6 +80,7 @@ export default function Projects() {
         numberOfUnits: "",
         numberOfStories: "",
         buildingCode: "",
+        observations: "",
       });
       refetch();
       setLocation(`/projects/${data.id}`);
@@ -242,6 +247,37 @@ export default function Projects() {
                       placeholder="e.g., BC Building Code 2024"
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="observations">Initial Observations</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowObservationsVoice(!showObservationsVoice)}
+                        className="gap-2"
+                      >
+                        <Mic className="w-4 h-4" />
+                        {showObservationsVoice ? "Hide" : "Voice Input"}
+                      </Button>
+                    </div>
+                    {showObservationsVoice && (
+                      <VoiceRecorder
+                        onTranscriptionComplete={(text) => {
+                          setFormData({ ...formData, observations: (formData.observations || "") + ((formData.observations || "") ? "\n\n" : "") + text });
+                          setShowObservationsVoice(false);
+                        }}
+                        onCancel={() => setShowObservationsVoice(false)}
+                      />
+                    )}
+                    <Textarea
+                      id="observations"
+                      value={formData.observations || ""}
+                      onChange={(e) => setFormData({ ...formData, observations: e.target.value })}
+                      placeholder="Enter any initial observations about the facility..."
+                      rows={4}
+                    />
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
@@ -336,6 +372,7 @@ export default function Projects() {
                                 numberOfUnits: project.numberOfUnits?.toString() || "",
                                 numberOfStories: project.numberOfStories?.toString() || "",
                                 buildingCode: project.buildingCode || "",
+                                observations: project.observations || "",
                               });
                               setEditDialogOpen(true);
                             }}
