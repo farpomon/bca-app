@@ -4,6 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { optimizationRouter } from "./routers/optimization.router";
+import { prioritizationRouter } from "./routers/prioritization.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1839,6 +1840,9 @@ export const appRouter = router({
 
   // Optimization and scenario modeling
   optimization: optimizationRouter,
+
+  // Multi-criteria prioritization and capital budget planning
+  prioritization: prioritizationRouter,
 });
 
 export type AppRouter = typeof appRouter;

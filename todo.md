@@ -1058,3 +1058,126 @@
 - [x] Test scenario CRUD operations
 - [x] Test optimization with various budget levels
 - [x] Create checkpoint
+
+
+## Multi-Criteria Prioritization Module
+
+### Database Schema
+- [x] Create prioritization_criteria table (name, description, weight, category, isActive)
+- [x] Create project_scores table (projectId, criteriaId, score, justification, scoredBy, scoredAt)
+- [x] Create criteria_presets table (name, description, criteria configuration for common scenarios)
+- [x] Create capital_budget_cycles table (name, startYear, endYear, totalBudget, status)
+- [x] Create budget_allocations table (cycleId, projectId, allocatedAmount, priority, year)
+- [x] Add default criteria: Urgency, Mission Criticality, Energy Savings, Code Compliance, Safety, Accessibility, Environmental Impact
+- [x] Push database schema changes
+
+### Criteria Management System
+- [x] Create criteriaService.ts with CRUD operations
+- [x] Implement criteria weight normalization (ensure weights sum to 100%)
+- [x] Support criteria categories (Risk, Strategic, Compliance, Financial)
+- [x] Allow custom criteria creation by users
+- [x] Implement criteria presets (e.g., "Safety First", "Cost Optimization", "Strategic Alignment")
+- [x] Add criteria activation/deactivation
+
+### Scoring Engine
+- [x] Create scoringService.ts with weighted calculation algorithms
+- [x] Implement 1-10 scoring scale with clear definitions
+- [x] Calculate composite priority score (weighted sum of all criteria)
+- [x] Normalize scores to 0-100 scale
+- [x] Support score overrides with justification
+- [x] Track scoring history and changes
+- [x] Calculate confidence intervals for scores
+
+### Project Ranking System
+- [x] Implement multi-criteria ranking algorithm
+- [x] Support different ranking modes (by total score, by specific criteria, by cost-effectiveness)
+- [x] Generate ranked project lists
+- [x] Support filtering by score thresholds
+- [x] Calculate funding gaps and shortfalls
+- [x] Generate "bubble" projects (next in line if budget increases)
+
+### 4-Year Capital Planning
+- [x] Create capital cycle management
+- [x] Allocate projects to budget years based on priority and urgency
+- [x] Support budget constraints per year
+- [x] Calculate year-by-year funding requirements
+- [x] Track allocated vs available budget
+- [x] Support project phasing across multiple years
+- [x] Generate funding request justifications
+
+### Strategic Alignment
+- [x] Link criteria to strategic objectives
+- [x] Calculate alignment scores with city goals
+- [x] Generate strategic impact reports
+- [x] Support scenario modeling (what if we prioritize X over Y?)
+- [x] Track KPIs and outcomes
+
+### Backend API (tRPC)
+- [x] prioritization.getCriteria (list all criteria with weights)
+- [x] prioritization.createCriteria (add custom criteria)
+- [x] prioritization.updateCriteria (modify weights and definitions)
+- [x] prioritization.deleteCriteria (remove criteria)
+- [x] prioritization.scoreProject (submit scores for a project)
+- [x] prioritization.getProjectScores (get all scores for a project)
+- [x] prioritization.getRankedProjects (get prioritized project list)
+- [x] prioritization.createBudgetCycle (create 4-year planning cycle)
+- [x] prioritization.allocateBudget (assign projects to budget years)
+- [x] prioritization.getBudgetPlan (get complete capital plan)
+- [x] prioritization.compareScenarios (compare different weighting schemes)
+- [x] Add prioritization router to routers.ts
+
+### Criteria Definition UI
+- [x] Create CriteriaManager component
+- [x] Display criteria list with weights
+- [x] Add weight adjustment sliders (auto-normalize to 100%)
+- [x] Add criteria creation dialog
+- [x] Show criteria descriptions and scoring guidelines
+- [x] Support criteria presets dropdown
+- [x] Add visual weight distribution chart
+
+### Project Scoring UI
+- [x] Create ProjectScoringForm component
+- [x] Display all active criteria with scoring scales
+- [x] Add score input (1-10) with descriptions for each level
+- [x] Add justification text fields for each score
+- [x] Show real-time composite score calculation
+- [x] Display score breakdown by criteria
+- [x] Add bulk scoring for multiple projects
+- [x] Support score comparison with similar projects
+
+### Prioritization Dashboard
+- [x] Create PrioritizationDashboard page at /prioritization
+- [x] Display ranked project list with composite scores
+- [x] Show score breakdown by criteria (stacked bar chart)
+- [x] Add filtering by score range, criteria, project type
+- [x] Display funding gap analysis
+- [x] Show "bubble" projects (next in priority)
+- [x] Add scenario comparison view (side-by-side rankings)
+- [x] Support export to Excel/PDF
+
+### Capital Budget Planning UI
+- [x] Create CapitalBudgetPlanner component
+- [x] Display 4-year timeline view
+- [x] Drag-and-drop projects to budget years
+- [x] Show year-by-year budget allocation
+- [x] Display cumulative costs and remaining budget
+- [x] Highlight over-budget years
+- [x] Generate funding request summaries
+- [x] Add route to App.tsx
+
+### Reporting & Justification
+- [x] Generate priority ranking reports
+- [x] Create defensible justification documents
+- [x] Export scoring matrices
+- [x] Generate executive summaries
+- [x] Create board presentation materials
+
+### Testing
+- [x] Test criteria CRUD operations
+- [x] Test weight normalization
+- [x] Test composite score calculations
+- [x] Test project ranking algorithms
+- [x] Test budget allocation logic
+- [x] Test scenario comparison
+- [x] Test 4-year capital planning
+- [x] Create checkpoint

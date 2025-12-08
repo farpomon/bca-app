@@ -16,6 +16,8 @@ import ConsultantUpload from "./pages/ConsultantUpload";
 import ReviewDashboard from "./pages/ReviewDashboard";
 import PredictionsDashboard from "./pages/PredictionsDashboard";
 import OptimizationDashboard from "./pages/OptimizationDashboard";
+import PrioritizationDashboard from "./pages/PrioritizationDashboard";
+import CapitalBudgetPlanner from "./pages/CapitalBudgetPlanner";
 
 function Router() {
   return (
@@ -32,6 +34,8 @@ function Router() {
       <Route path={"/admin/review"} component={ReviewDashboard} />
       <Route path={"/predictions"} component={PredictionsDashboard} />
       <Route path={"/projects/:id/optimization"} component={OptimizationDashboard} />
+      <Route path={"/prioritization"} component={PrioritizationDashboard} />
+      <Route path={"/capital-budget"} component={CapitalBudgetPlanner} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
