@@ -38,6 +38,13 @@ export const projects = mysqlTable("projects", {
   overallConditionScore: int("overallConditionScore"), // Calculated overall building condition score
   overallFciScore: int("overallFciScore"), // Overall Facility Condition Index (0-100)
   overallConditionRating: varchar("overallConditionRating", { length: 50 }), // e.g., "Good", "Fair", "Poor"
+  
+  // Automated CI/FCI calculations
+  ci: decimal("ci", { precision: 5, scale: 2 }), // Condition Index (0-100, higher is better)
+  fci: decimal("fci", { precision: 5, scale: 4 }), // Facility Condition Index (0-1, lower is better)
+  deferredMaintenanceCost: decimal("deferredMaintenanceCost", { precision: 15, scale: 2 }),
+  currentReplacementValue: decimal("currentReplacementValue", { precision: 15, scale: 2 }),
+  lastCalculatedAt: timestamp("lastCalculatedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -737,3 +744,36 @@ export const predictionHistory = mysqlTable("prediction_history", {
 
 export type PredictionHistory = typeof predictionHistory.$inferSelect;
 export type InsertPredictionHistory = typeof predictionHistory.$inferInsert;
+
+/**
+ * CI/FCI Snapshots - Track Condition Index and Facility Condition Index over time
+ */
+export const ciFciSnapshots = mysqlTable("ci_fci_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  projectId: int("projectId").notNull(),
+  
+  // Hierarchy level
+  level: mysqlEnum("level", ["component", "system", "building", "portfolio"]).notNull(),
+  entityId: varchar("entityId", { length: 100 }), // componentCode, systemName, buildingId, or null for portfolio
+  
+  // Condition Index (0-100, higher is better)
+  ci: decimal("ci", { precision: 5, scale: 2 }),
+  
+  // Facility Condition Index (0-1, lower is better)
+  // FCI = Deferred Maintenance Cost / Current Replacement Value
+  fci: decimal("fci", { precision: 5, scale: 4 }),
+  
+  // Supporting metrics
+  deferredMaintenanceCost: decimal("deferredMaintenanceCost", { precision: 15, scale: 2 }),
+  currentReplacementValue: decimal("currentReplacementValue", { precision: 15, scale: 2 }),
+  
+  // Metadata
+  calculatedAt: timestamp("calculatedAt").defaultNow().notNull(),
+  calculationMethod: varchar("calculationMethod", { length: 50 }), // "weighted_avg", "direct", etc.
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CiFciSnapshot = typeof ciFciSnapshots.$inferSelect;
+export type InsertCiFciSnapshot = typeof ciFciSnapshots.$inferInsert;

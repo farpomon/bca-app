@@ -32,7 +32,8 @@ import {
   submissionPhotos,
   deteriorationCurves,
   componentDeteriorationConfig,
-  predictionHistory
+  predictionHistory,
+  ciFciSnapshots
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1862,4 +1863,50 @@ export async function getAssessmentsByComponent(projectId: number, componentCode
       )
     )
     .orderBy(desc(assessments.assessedAt));
+}
+
+
+// ============================================================================
+// CI/FCI Snapshot Functions
+// ============================================================================
+
+export async function saveCiFciSnapshot(snapshot: {
+  projectId: number;
+  level: "component" | "system" | "building" | "portfolio";
+  entityId: string;
+  ci: string;
+  fci: string;
+  deferredMaintenanceCost: string;
+  currentReplacementValue: string;
+  calculationMethod: string;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.insert(ciFciSnapshots).values({
+    projectId: snapshot.projectId,
+    level: snapshot.level,
+    entityId: snapshot.entityId,
+    ci: snapshot.ci,
+    fci: snapshot.fci,
+    deferredMaintenanceCost: snapshot.deferredMaintenanceCost,
+    currentReplacementValue: snapshot.currentReplacementValue,
+    calculationMethod: snapshot.calculationMethod,
+  });
+}
+
+export async function getCiFciSnapshots(projectId: number, level?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(ciFciSnapshots.projectId, projectId)];
+  if (level) {
+    conditions.push(eq(ciFciSnapshots.level, level as any));
+  }
+  
+  return await db
+    .select()
+    .from(ciFciSnapshots)
+    .where(and(...conditions))
+    .orderBy(desc(ciFciSnapshots.calculatedAt));
 }

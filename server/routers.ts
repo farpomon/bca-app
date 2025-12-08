@@ -342,6 +342,39 @@ export const appRouter = router({
           });
         }
         
+        // Trigger CI/FCI recalculation
+        const { calculateBuildingCI } = await import("./ciCalculationService");
+        const { calculateFCI } = await import("./fciCalculationService");
+        
+        try {
+          const ciResult = await calculateBuildingCI(input.projectId);
+          const fciResult = await calculateFCI(input.projectId);
+          
+          // Update project with new CI/FCI values
+          await db.updateProject(input.projectId, ctx.user.id, {
+            ci: ciResult.ci.toString(),
+            fci: fciResult.fci.toString(),
+            deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+            currentReplacementValue: fciResult.currentReplacementValue.toString(),
+            lastCalculatedAt: new Date(),
+          });
+          
+          // Save snapshot for historical tracking
+          await db.saveCiFciSnapshot({
+            projectId: input.projectId,
+            level: "building",
+            entityId: input.projectId.toString(),
+            ci: ciResult.ci.toString(),
+            fci: fciResult.fci.toString(),
+            deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+            currentReplacementValue: fciResult.currentReplacementValue.toString(),
+            calculationMethod: ciResult.calculationMethod,
+          });
+        } catch (error) {
+          console.error("CI/FCI calculation failed:", error);
+          // Don't fail the mutation if calculation fails
+        }
+        
         return { id: assessmentId };
       }),
   }),
@@ -1755,6 +1788,51 @@ export const appRouter = router({
         const csv = generateCostEstimatesCSV(deficiencies);
         
         return { csv, filename: `cost-estimates-${input.projectId}-${Date.now()}.csv` };
+      }),
+  }),
+
+  cifci: router({
+    getSnapshots: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        
+        return await db.getCiFciSnapshots(input.projectId);
+      }),
+
+    recalculate: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        
+        const { calculateBuildingCI } = await import("./ciCalculationService");
+        const { calculateFCI } = await import("./fciCalculationService");
+        
+        const ciResult = await calculateBuildingCI(input.projectId);
+        const fciResult = await calculateFCI(input.projectId);
+        
+        await db.updateProject(input.projectId, ctx.user.id, {
+          ci: ciResult.ci.toString(),
+          fci: fciResult.fci.toString(),
+          deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+          currentReplacementValue: fciResult.currentReplacementValue.toString(),
+          lastCalculatedAt: new Date(),
+        });
+        
+        await db.saveCiFciSnapshot({
+          projectId: input.projectId,
+          level: "building",
+          entityId: input.projectId.toString(),
+          ci: ciResult.ci.toString(),
+          fci: fciResult.fci.toString(),
+          deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+          currentReplacementValue: fciResult.currentReplacementValue.toString(),
+          calculationMethod: ciResult.calculationMethod,
+        });
+        
+        return { ci: ciResult.ci, fci: fciResult.fci };
       }),
   }),
 });
