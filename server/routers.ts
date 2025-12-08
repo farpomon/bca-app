@@ -6,6 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { optimizationRouter } from "./routers/optimization.router";
 import { prioritizationRouter } from "./routers/prioritization.router";
 import { riskRouter } from "./routers/risk.router";
+import { facilityRouter } from "./routers/facility.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1847,6 +1848,9 @@ export const appRouter = router({
 
   // Risk assessment (PoF × CoF methodology)
   risk: riskRouter,
+
+  // Facility summary and lifecycle management
+  facility: facilityRouter,
 });
 
 export type AppRouter = typeof appRouter;

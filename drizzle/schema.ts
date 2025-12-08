@@ -45,6 +45,20 @@ export const projects = mysqlTable("projects", {
   deferredMaintenanceCost: decimal("deferredMaintenanceCost", { precision: 15, scale: 2 }),
   currentReplacementValue: decimal("currentReplacementValue", { precision: 15, scale: 2 }),
   lastCalculatedAt: timestamp("lastCalculatedAt"),
+  
+  // Facility lifecycle information
+  designLife: int("designLife"), // Expected design life in years (e.g., 50)
+  endOfLifeDate: timestamp("endOfLifeDate"), // Calculated end of life date
+  
+  // Administrative information
+  holdingDepartment: varchar("holdingDepartment", { length: 255 }),
+  propertyManager: varchar("propertyManager", { length: 255 }),
+  managerEmail: varchar("managerEmail", { length: 320 }),
+  managerPhone: varchar("managerPhone", { length: 50 }),
+  facilityType: varchar("facilityType", { length: 100 }), // e.g., "Recreation Center", "Office Building"
+  occupancyStatus: mysqlEnum("occupancyStatus", ["occupied", "vacant", "partial"]),
+  criticalityLevel: mysqlEnum("criticalityLevel", ["critical", "important", "standard"]),
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -1251,3 +1265,25 @@ export const riskMitigationActions = mysqlTable("risk_mitigation_actions", {
 
 export type RiskMitigationAction = typeof riskMitigationActions.$inferSelect;
 export type InsertRiskMitigationAction = typeof riskMitigationActions.$inferInsert;
+
+/**
+ * Renovation costs table - tracks identified, planned, and executed renovation costs
+ */
+export const renovationCosts = mysqlTable("renovation_costs", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  costType: mysqlEnum("costType", ["identified", "planned", "executed"]).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "in_progress", "completed", "cancelled"]).default("pending").notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }), // e.g., "HVAC", "Roof", "Structural"
+  fiscalYear: int("fiscalYear"),
+  dateRecorded: timestamp("dateRecorded").defaultNow().notNull(),
+  dateCompleted: timestamp("dateCompleted"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RenovationCost = typeof renovationCosts.$inferSelect;
+export type InsertRenovationCost = typeof renovationCosts.$inferInsert;

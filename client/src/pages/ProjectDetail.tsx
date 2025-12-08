@@ -22,6 +22,7 @@ import { AssessmentDialog } from "@/components/AssessmentDialog";
 import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
+import FacilitySummaryTab from "@/components/FacilitySummaryTab";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -329,6 +330,7 @@ export default function ProjectDetail() {
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="summary">Facility Summary</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="assessments">Assessments</TabsTrigger>
             <TabsTrigger value="deficiencies">Deficiencies</TabsTrigger>
@@ -338,6 +340,10 @@ export default function ProjectDetail() {
             <TabsTrigger value="ratings">Ratings</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="summary" className="space-y-4">
+            <FacilitySummaryTab projectId={projectId} />
+          </TabsContent>
 
           <TabsContent value="overview" className="space-y-4">
             <Card>

@@ -1419,3 +1419,57 @@
 - [ ] Test portfolio risk metrics
 - [ ] Test risk-based prioritization
 - [ ] Create checkpoint
+
+
+## Facility Summary Tab
+
+### Database Schema Extensions
+- [x] Add facility lifecycle fields to projects table (designLife, remainingYears, endOfLifeDate)
+- [x] Add administrative fields (holdingDepartment, propertyManager, managerEmail, managerPhone)
+- [x] Create renovation_costs table (projectId, costType, amount, status, description, date)
+- [x] Add facility classification fields (facilityType, occupancyStatus, criticalityLevel)
+- [x] Push database schema changes
+
+### Data Aggregation Service
+- [x] Create facilitySummary.service.ts
+- [x] Calculate general condition metrics (CI, FCI, condition rating, trend)
+- [x] Aggregate financial metrics (identified costs, planned costs, executed costs)
+- [x] Calculate lifecycle metrics (age, design life, remaining years, renewal timeline)
+- [x] Aggregate component statistics (condition distribution, deficiency counts)
+- [x] Get recent assessment activity
+- [x] Identify action items (upcoming maintenance, overdue items, critical deficiencies)
+- [x] Generate facility health score (composite metric)
+
+### Backend API (tRPC)
+- [x] facility.getSummary (get complete facility summary)
+- [x] facility.updateLifecycle (update design life and administrative info)
+- [x] facility.addRenovationCost (record planned/executed costs)
+- [x] facility.getRenovationCosts (list all renovation costs)
+- [x] facility.updateAdministrative (update holding department and manager info)
+- [x] Add facility router to routers.ts
+
+### Facility Summary UI
+- [x] Create FacilitySummaryTab component
+- [x] Display general condition section (CI/FCI gauges, condition rating, trend chart)
+- [x] Display financial metrics section (cost breakdown, budget tracking, spending chart)
+- [x] Display lifecycle information section (age, design life, remaining years, timeline)
+- [x] Display administrative details section (department, manager contact, facility info)
+- [x] Display quick stats section (component distribution, deficiency counts)
+- [x] Display action items section (upcoming tasks, overdue items, alerts)
+- [x] Add visual health gauge (0-100 score with color coding)
+- [x] Add trend indicators (improving, stable, declining)
+- [x] Add export to PDF button
+
+### Integration
+- [x] Add Facility Summary tab to ProjectDetail page
+- [x] Link to existing assessment data
+- [x] Link to optimization results
+- [x] Link to prioritization scores
+- [x] Link to risk assessments
+
+### Testing
+- [x] Test facility summary data aggregation
+- [x] Test financial metrics calculation
+- [x] Test lifecycle calculations
+- [x] Test UI rendering with real data
+- [x] Create checkpoint
