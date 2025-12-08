@@ -1073,3 +1073,181 @@ export const criteriaObjectiveLinks = mysqlTable("criteria_objective_links", {
 
 export type CriteriaObjectiveLink = typeof criteriaObjectiveLinks.$inferSelect;
 export type InsertCriteriaObjectiveLink = typeof criteriaObjectiveLinks.$inferInsert;
+
+
+// ============================================
+// Risk Assessment Tables
+// ============================================
+
+/**
+ * Risk assessments for components based on PoF × CoF methodology
+ */
+export const riskAssessments = mysqlTable("risk_assessments", {
+  id: int("id").autoincrement().primaryKey(),
+  assessmentId: int("assessmentId").notNull(), // Link to assessments table
+  
+  // Probability of Failure (1-5 scale)
+  pof: decimal("pof", { precision: 3, scale: 2 }).notNull(), // 1.00 to 5.00
+  pofJustification: text("pofJustification"),
+  
+  // Consequence of Failure (1-5 scale)
+  cof: decimal("cof", { precision: 3, scale: 2 }).notNull(), // 1.00 to 5.00
+  cofJustification: text("cofJustification"),
+  
+  // Risk Score (PoF × CoF)
+  riskScore: decimal("riskScore", { precision: 5, scale: 2 }).notNull(), // 1.00 to 25.00
+  riskLevel: mysqlEnum("riskLevel", ["very_low", "low", "medium", "high", "critical"]).notNull(),
+  
+  // Assessment metadata
+  assessedBy: int("assessedBy").notNull(),
+  assessedAt: timestamp("assessedAt").defaultNow().notNull(),
+  reviewedBy: int("reviewedBy"),
+  reviewedAt: timestamp("reviewedAt"),
+  status: mysqlEnum("status", ["draft", "approved", "archived"]).default("draft").notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RiskAssessment = typeof riskAssessments.$inferSelect;
+export type InsertRiskAssessment = typeof riskAssessments.$inferInsert;
+
+/**
+ * Probability of Failure factors
+ */
+export const pofFactors = mysqlTable("pof_factors", {
+  id: int("id").autoincrement().primaryKey(),
+  riskAssessmentId: int("riskAssessmentId").notNull(),
+  
+  // Age-related factors
+  age: int("age"), // Years since installation
+  expectedUsefulLife: int("expectedUsefulLife"), // Years
+  remainingLifePercent: decimal("remainingLifePercent", { precision: 5, scale: 2 }),
+  
+  // Condition-related factors
+  conditionIndex: decimal("conditionIndex", { precision: 5, scale: 2 }),
+  defectSeverity: mysqlEnum("defectSeverity", ["none", "minor", "moderate", "major", "critical"]),
+  
+  // Maintenance-related factors
+  maintenanceFrequency: mysqlEnum("maintenanceFrequency", ["none", "reactive", "scheduled", "preventive", "predictive"]),
+  lastMaintenanceDate: timestamp("lastMaintenanceDate"),
+  deferredMaintenanceYears: int("deferredMaintenanceYears"),
+  
+  // Operating environment
+  operatingEnvironment: mysqlEnum("operatingEnvironment", ["controlled", "normal", "harsh", "extreme"]),
+  utilizationRate: decimal("utilizationRate", { precision: 5, scale: 2 }), // % of design capacity
+  
+  // Equipment-specific factors
+  equipmentType: varchar("equipmentType", { length: 100 }),
+  manufacturer: varchar("manufacturer", { length: 255 }),
+  model: varchar("model", { length: 255 }),
+  
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PofFactor = typeof pofFactors.$inferSelect;
+export type InsertPofFactor = typeof pofFactors.$inferInsert;
+
+/**
+ * Consequence of Failure factors
+ */
+export const cofFactors = mysqlTable("cof_factors", {
+  id: int("id").autoincrement().primaryKey(),
+  riskAssessmentId: int("riskAssessmentId").notNull(),
+  
+  // Safety consequences (1-5 scale)
+  safetyImpact: decimal("safetyImpact", { precision: 3, scale: 2 }).notNull(),
+  safetyNotes: text("safetyNotes"),
+  
+  // Operational consequences (1-5 scale)
+  operationalImpact: decimal("operationalImpact", { precision: 3, scale: 2 }).notNull(),
+  downtimeDays: decimal("downtimeDays", { precision: 5, scale: 1 }),
+  affectedSystems: text("affectedSystems"), // JSON array of dependent systems
+  operationalNotes: text("operationalNotes"),
+  
+  // Financial consequences (1-5 scale)
+  financialImpact: decimal("financialImpact", { precision: 3, scale: 2 }).notNull(),
+  repairCost: decimal("repairCost", { precision: 15, scale: 2 }),
+  revenueLoss: decimal("revenueLoss", { precision: 15, scale: 2 }),
+  penaltyCost: decimal("penaltyCost", { precision: 15, scale: 2 }),
+  financialNotes: text("financialNotes"),
+  
+  // Environmental consequences (1-5 scale)
+  environmentalImpact: decimal("environmentalImpact", { precision: 3, scale: 2 }).notNull(),
+  environmentalNotes: text("environmentalNotes"),
+  
+  // Reputational consequences (1-5 scale)
+  reputationalImpact: decimal("reputationalImpact", { precision: 3, scale: 2 }).notNull(),
+  reputationalNotes: text("reputationalNotes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CofFactor = typeof cofFactors.$inferSelect;
+export type InsertCofFactor = typeof cofFactors.$inferInsert;
+
+/**
+ * Critical equipment registry
+ */
+export const criticalEquipment = mysqlTable("critical_equipment", {
+  id: int("id").autoincrement().primaryKey(),
+  assessmentId: int("assessmentId").notNull().unique(), // Link to assessments table
+  
+  criticalityLevel: mysqlEnum("criticalityLevel", ["critical", "important", "standard"]).notNull(),
+  criticalityJustification: text("criticalityJustification"),
+  
+  // Classification
+  isSafetyRelated: int("isSafetyRelated").default(0),
+  isMissionCritical: int("isMissionCritical").default(0),
+  isHighValue: int("isHighValue").default(0),
+  hasRedundancy: int("hasRedundancy").default(0),
+  
+  // Mitigation
+  mitigationStrategies: text("mitigationStrategies"), // JSON array
+  contingencyPlan: text("contingencyPlan"),
+  
+  designatedBy: int("designatedBy").notNull(),
+  designatedAt: timestamp("designatedAt").defaultNow().notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CriticalEquipment = typeof criticalEquipment.$inferSelect;
+export type InsertCriticalEquipment = typeof criticalEquipment.$inferInsert;
+
+/**
+ * Risk mitigation actions
+ */
+export const riskMitigationActions = mysqlTable("risk_mitigation_actions", {
+  id: int("id").autoincrement().primaryKey(),
+  riskAssessmentId: int("riskAssessmentId").notNull(),
+  
+  action: text("action").notNull(),
+  actionType: mysqlEnum("actionType", ["inspection", "maintenance", "repair", "replacement", "monitoring", "procedure_change", "training"]).notNull(),
+  
+  priority: mysqlEnum("priority", ["immediate", "high", "medium", "low"]).notNull(),
+  status: mysqlEnum("status", ["planned", "in_progress", "completed", "cancelled"]).default("planned").notNull(),
+  
+  assignedTo: int("assignedTo"),
+  dueDate: timestamp("dueDate"),
+  completedDate: timestamp("completedDate"),
+  
+  estimatedCost: decimal("estimatedCost", { precision: 15, scale: 2 }),
+  actualCost: decimal("actualCost", { precision: 15, scale: 2 }),
+  
+  // Effectiveness tracking
+  expectedRiskReduction: decimal("expectedRiskReduction", { precision: 5, scale: 2 }), // Points
+  actualRiskReduction: decimal("actualRiskReduction", { precision: 5, scale: 2 }),
+  effectiveness: mysqlEnum("effectiveness", ["not_effective", "partially_effective", "effective", "highly_effective"]),
+  
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RiskMitigationAction = typeof riskMitigationActions.$inferSelect;
+export type InsertRiskMitigationAction = typeof riskMitigationActions.$inferInsert;

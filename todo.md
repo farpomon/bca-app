@@ -1274,3 +1274,148 @@
 - [x] Test Pareto frontier calculation
 - [x] Test edge cases (zero budget, unlimited budget)
 - [x] Create checkpoint
+
+
+## Risk Assessment Module (PoF × CoF)
+
+### Database Schema
+- [x] Create risk_assessments table (componentId, pof, cof, riskScore, riskLevel, assessedBy, assessedAt)
+- [x] Create pof_factors table (componentId, age, condition, maintenanceHistory, operatingEnvironment, expectedLife)
+- [x] Create cof_factors table (componentId, safetyImpact, operationalImpact, financialImpact, environmentalImpact, reputationalImpact)
+- [x] Create critical_equipment_registry table (componentId, criticalityLevel, justification, mitigationStrategies)
+- [x] Create risk_mitigation_actions table (riskId, action, status, dueDate, completedDate, effectiveness)
+- [x] Add risk assessment history tracking
+- [x] Push database schema changes
+
+### PoF Calculation Engine
+- [x] Create pofCalculator.service.ts
+- [x] Implement age-based failure probability (Weibull distribution)
+- [x] Factor in condition index (lower CI = higher PoF)
+- [x] Consider maintenance history (deferred maintenance increases PoF)
+- [x] Account for operating environment (harsh conditions increase PoF)
+- [x] Calculate remaining useful life percentage
+- [x] Implement equipment-specific failure curves (boilers, HVAC, electrical)
+- [x] Support manual PoF overrides with justification
+- [x] Generate PoF score (1-5 scale: Very Low to Very High)
+
+### CoF Calculation Engine
+- [x] Create cofCalculator.service.ts
+- [x] Assess safety consequences (injury risk, life safety systems)
+- [x] Evaluate operational impact (downtime, service disruption, cascading failures)
+- [x] Calculate financial consequences (repair cost, revenue loss, penalties)
+- [x] Assess environmental impact (spills, emissions, regulatory violations)
+- [x] Evaluate reputational damage (public perception, client satisfaction)
+- [x] Implement weighted CoF scoring across dimensions
+- [x] Support equipment-specific consequence profiles
+- [x] Generate CoF score (1-5 scale: Negligible to Catastrophic)
+
+### Risk Scoring & Matrix
+- [x] Create riskMatrix.service.ts
+- [x] Calculate risk score (PoF × CoF)
+- [x] Map risk score to risk level (Critical, High, Medium, Low, Very Low)
+- [x] Implement 5x5 risk matrix
+- [x] Define risk tolerance thresholds
+- [x] Generate risk ranking across portfolio
+- [x] Support custom risk matrix configurations
+- [x] Calculate portfolio risk metrics (average risk, high-risk count)
+
+### Critical Equipment Registry
+- [x] Identify critical components (life safety, mission critical, high value)
+- [x] Tag equipment by criticality level (Critical, Important, Standard)
+- [x] Document criticality justification
+- [x] Link to risk assessments
+- [x] Track mitigation strategies per critical component
+- [x] Support bulk criticality assignment
+- [x] Generate critical equipment reports
+
+### Risk-Based Prioritization
+- [x] Rank components by risk score
+- [x] Prioritize high-risk components for immediate action
+- [x] Generate risk-based maintenance schedules
+- [x] Identify risk reduction opportunities
+- [x] Calculate risk reduction per dollar spent
+- [x] Support "what-if" risk scenarios
+- [x] Integrate with optimization engine (risk-adjusted ROI)
+
+### Mitigation Tracking
+- [x] Create mitigation action plans
+- [x] Track mitigation status (planned, in-progress, completed)
+- [x] Measure mitigation effectiveness (risk reduction achieved)
+- [x] Link mitigations to risk assessments
+- [x] Generate mitigation reports
+- [x] Track mitigation costs and benefits
+- [x] Support recurring mitigation tasks
+
+### Backend API (tRPC)
+- [ ] risk.assessComponent (calculate PoF, CoF, risk score)
+- [ ] risk.getAssessment (retrieve risk assessment)
+- [ ] risk.listAssessments (get all assessments with filters)
+- [ ] risk.updatePoFFactor (update PoF inputs)
+- [ ] risk.updateCoFFactor (update CoF inputs)
+- [ ] risk.getRiskMatrix (get risk matrix data)
+- [ ] risk.getCriticalEquipment (list critical components)
+- [ ] risk.updateCriticality (set criticality level)
+- [ ] risk.createMitigation (add mitigation action)
+- [ ] risk.updateMitigation (update mitigation status)
+- [ ] risk.getPortfolioRisk (portfolio-level risk metrics)
+- [ ] risk.getRiskTrends (risk over time)
+- [ ] Add risk router to routers.ts
+
+### Risk Assessment UI
+- [ ] Create RiskAssessmentForm component
+- [ ] Display PoF factors input (age, condition, maintenance, environment)
+- [ ] Display CoF factors input (safety, operational, financial, environmental, reputational)
+- [ ] Show real-time risk score calculation
+- [ ] Display risk level badge (color-coded)
+- [ ] Add equipment-specific templates
+- [ ] Support bulk assessment
+- [ ] Show assessment history
+
+### Risk Matrix Visualization
+- [ ] Create RiskMatrixChart component
+- [ ] Display 5x5 matrix (PoF vs CoF)
+- [ ] Plot components on matrix
+- [ ] Color-code by risk level
+- [ ] Interactive hover (component details)
+- [ ] Click to view component details
+- [ ] Filter by project, system, criticality
+- [ ] Export matrix as image/PDF
+
+### Risk Dashboard
+- [ ] Create RiskDashboard page at /risk
+- [ ] Display portfolio risk summary (critical, high, medium, low counts)
+- [ ] Show risk distribution chart
+- [ ] Display top 10 highest-risk components
+- [ ] Show critical equipment list
+- [ ] Display risk trends over time
+- [ ] Add risk heat map by project/system
+- [ ] Show mitigation action tracker
+- [ ] Add route to App.tsx
+
+### Critical Equipment Registry UI
+- [ ] Create CriticalEquipmentRegistry component
+- [ ] List critical components with risk scores
+- [ ] Display criticality justification
+- [ ] Show mitigation strategies
+- [ ] Add criticality assignment dialog
+- [ ] Support bulk criticality updates
+- [ ] Filter by criticality level
+- [ ] Export critical equipment list
+
+### Reporting
+- [ ] Generate risk assessment reports
+- [ ] Create executive risk summary
+- [ ] Export risk matrix
+- [ ] Generate critical equipment reports
+- [ ] Create mitigation action plans
+- [ ] Export to Excel/PDF
+
+### Testing
+- [ ] Test PoF calculation logic
+- [ ] Test CoF calculation logic
+- [ ] Test risk scoring and matrix
+- [ ] Test critical equipment registry
+- [ ] Test mitigation tracking
+- [ ] Test portfolio risk metrics
+- [ ] Test risk-based prioritization
+- [ ] Create checkpoint

@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { optimizationRouter } from "./routers/optimization.router";
 import { prioritizationRouter } from "./routers/prioritization.router";
+import { riskRouter } from "./routers/risk.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -1843,6 +1844,9 @@ export const appRouter = router({
 
   // Multi-criteria prioritization and capital budget planning
   prioritization: prioritizationRouter,
+
+  // Risk assessment (PoF × CoF methodology)
+  risk: riskRouter,
 });
 
 export type AppRouter = typeof appRouter;
