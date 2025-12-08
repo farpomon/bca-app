@@ -9,6 +9,10 @@ import { ConditionMatrix } from "@/components/ConditionMatrix";
 import { FinancialPlanning } from "@/components/FinancialPlanning";
 import OverallConditionWidget from "@/components/OverallConditionWidget";
 import AssessmentProgressWidget from "@/components/AssessmentProgressWidget";
+import { YearOverYearCostsChart } from "@/components/charts/YearOverYearCostsChart";
+import { ConditionDistributionChart } from "@/components/charts/ConditionDistributionChart";
+import { TrendLineChart } from "@/components/charts/TrendLineChart";
+import { DeficiencyPriorityChart } from "@/components/charts/DeficiencyPriorityChart";
 
 export default function ProjectDashboard() {
   const { id } = useParams();
@@ -95,6 +99,12 @@ export default function ProjectDashboard() {
 
         {/* Financial Planning */}
         <FinancialPlanning data={financialData} isLoading={financialLoading} />
+
+        {/* Visual Analytics Section - Charts will be populated with real data */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Visual Analytics</h2>
+          <p className="text-muted-foreground">Advanced visualizations will appear here as data is collected.</p>
+        </div>
       </div>
     </DashboardLayout>
   );
