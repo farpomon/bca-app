@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { eq, and, desc, asc, sql, like, or, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
@@ -29,7 +29,10 @@ import {
   componentHistory,
   consultantSubmissions,
   submissionItems,
-  submissionPhotos
+  submissionPhotos,
+  deteriorationCurves,
+  componentDeteriorationConfig,
+  predictionHistory
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1616,4 +1619,247 @@ export async function getDeficienciesByProject(projectId: number) {
   const database = await getDb();
   if (!database) return [];
   return database.select().from(deficiencies).where(eq(deficiencies.projectId, projectId));
+}
+
+
+// ========================================
+// Deterioration Curves & Predictions
+// ========================================
+
+export async function getDeteriorationCurves(projectId?: number, componentType?: string) {
+  const database = await getDb();
+  if (!database) return [];
+
+  let query = database.select().from(deteriorationCurves);
+
+  if (projectId !== undefined && componentType) {
+    return database
+      .select()
+      .from(deteriorationCurves)
+      .where(
+        and(
+          or(eq(deteriorationCurves.projectId, projectId), isNull(deteriorationCurves.projectId)),
+          or(eq(deteriorationCurves.componentType, componentType), isNull(deteriorationCurves.componentType))
+        )
+      );
+  } else if (projectId !== undefined) {
+    return database
+      .select()
+      .from(deteriorationCurves)
+      .where(or(eq(deteriorationCurves.projectId, projectId), isNull(deteriorationCurves.projectId)));
+  } else if (componentType) {
+    return database
+      .select()
+      .from(deteriorationCurves)
+      .where(or(eq(deteriorationCurves.componentType, componentType), isNull(deteriorationCurves.componentType)));
+  }
+
+  return database.select().from(deteriorationCurves);
+}
+
+export async function getDeteriorationCurve(id: number) {
+  const database = await getDb();
+  if (!database) return null;
+
+  const result = await database
+    .select()
+    .from(deteriorationCurves)
+    .where(eq(deteriorationCurves.id, id))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+export async function createDeteriorationCurve(data: {
+  name: string;
+  curveType: "best" | "design" | "worst";
+  componentType?: string;
+  param1: number;
+  param2: number;
+  param3: number;
+  param4: number;
+  param5: number;
+  param6: number;
+  description?: string;
+  isDefault?: boolean;
+  interpolationType?: "linear" | "polynomial" | "exponential";
+  createdBy?: number;
+  projectId?: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const result = await database.insert(deteriorationCurves).values(data);
+  return result[0].insertId;
+}
+
+export async function updateDeteriorationCurve(
+  id: number,
+  data: Partial<{
+    name: string;
+    param1: number;
+    param2: number;
+    param3: number;
+    param4: number;
+    param5: number;
+    param6: number;
+    description: string;
+    interpolationType: "linear" | "polynomial" | "exponential";
+  }>
+) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  await database.update(deteriorationCurves).set(data).where(eq(deteriorationCurves.id, id));
+}
+
+export async function deleteDeteriorationCurve(id: number) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  await database.delete(deteriorationCurves).where(eq(deteriorationCurves.id, id));
+}
+
+export async function getComponentDeteriorationConfig(projectId: number, componentCode: string) {
+  const database = await getDb();
+  if (!database) return null;
+
+  const result = await database
+    .select()
+    .from(componentDeteriorationConfig)
+    .where(
+      and(
+        eq(componentDeteriorationConfig.projectId, projectId),
+        eq(componentDeteriorationConfig.componentCode, componentCode)
+      )
+    )
+    .limit(1);
+
+  return result[0] || null;
+}
+
+export async function upsertComponentDeteriorationConfig(data: {
+  projectId: number;
+  componentCode: string;
+  bestCaseCurveId?: number;
+  designCaseCurveId?: number;
+  worstCaseCurveId?: number;
+  activeCurve?: "best" | "design" | "worst";
+  customParam1?: number;
+  customParam2?: number;
+  customParam3?: number;
+  customParam4?: number;
+  customParam5?: number;
+  customParam6?: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  await database
+    .insert(componentDeteriorationConfig)
+    .values(data)
+    .onDuplicateKeyUpdate({ set: data });
+}
+
+export async function savePredictionHistory(data: {
+  projectId: number;
+  componentCode: string;
+  assessmentId?: number;
+  predictedFailureYear: number;
+  predictedRemainingLife: number;
+  predictedCondition: number;
+  confidenceScore: number;
+  predictionMethod: "curve_based" | "ml_model" | "historical_trend" | "hybrid";
+  modelVersion?: string;
+  curveUsed?: "best" | "design" | "worst";
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const result = await database.insert(predictionHistory).values({
+    ...data,
+    confidenceScore: data.confidenceScore.toString(),
+  });
+  return result[0].insertId;
+}
+
+export async function getPredictionHistory(projectId: number, componentCode: string) {
+  const database = await getDb();
+  if (!database) return [];
+
+  return database
+    .select()
+    .from(predictionHistory)
+    .where(
+      and(
+        eq(predictionHistory.projectId, projectId),
+        eq(predictionHistory.componentCode, componentCode)
+      )
+    )
+    .orderBy(desc(predictionHistory.predictionDate));
+}
+
+
+export async function getComponentByCode(componentCode: string) {
+  const database = await getDb();
+  if (!database) return null;
+
+  const result = await database
+    .select()
+    .from(buildingComponents)
+    .where(eq(buildingComponents.code, componentCode))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+export async function getProjectComponents(projectId: number) {
+  const database = await getDb();
+  if (!database) return [];
+
+  // Get all assessments for this project to find which components have been assessed
+  const projectAssessments = await database
+    .select()
+    .from(assessments)
+    .where(eq(assessments.projectId, projectId));
+
+  const componentCodesSet = new Set<string>();
+  projectAssessments.forEach(a => componentCodesSet.add(a.componentCode));
+  const componentCodes = Array.from(componentCodesSet);
+
+  if (componentCodes.length === 0) return [];
+
+  // Get component details - just return basic info from assessments
+  const components = componentCodes.map(code => ({
+    id: 0,
+    componentCode: code,
+    name: code,
+    category: '',
+    uniformatCode: code,
+    description: null,
+    quantity: null,
+    unit: null,
+    installYear: null,
+    expectedServiceLife: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }));
+
+  return components;
+}
+
+export async function getAssessmentsByComponent(projectId: number, componentCode: string) {
+  const database = await getDb();
+  if (!database) return [];
+
+  return database
+    .select()
+    .from(assessments)
+    .where(
+      and(
+        eq(assessments.projectId, projectId),
+        eq(assessments.componentCode, componentCode)
+      )
+    )
+    .orderBy(desc(assessments.assessedAt));
 }

@@ -1510,6 +1510,191 @@ export const appRouter = router({
       }),
   }),
 
+  predictions: router({
+    // Get component prediction using curves or ML
+    component: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        componentCode: z.string(),
+        method: z.enum(["curve", "ml", "hybrid"]).default("curve"),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        const { predictDeteriorationML } = await import("./mlPredictionService");
+        const { predictFailureYear, calculateRemainingLife, generateCurveData, calculateConfidenceScore, DEFAULT_CURVES } = await import("./deteriorationCurveService");
+
+        // Get component assessments for historical data
+        const assessments = await db.getAssessmentsByComponent(input.projectId, input.componentCode);
+        
+        if (input.method === "ml" || input.method === "hybrid") {
+          // Use ML prediction
+          const historicalData = assessments.map((a: any) => ({
+            assessmentDate: a.assessedAt,
+            condition: a.conditionPercentage ? parseInt(a.conditionPercentage) : 70,
+            age: new Date().getFullYear() - (a.reviewYear || new Date().getFullYear()),
+            observations: a.observations || undefined,
+          }));
+
+          const component = await db.getComponentByCode(input.componentCode);
+          const installYear = project.yearBuilt || new Date().getFullYear() - 20;
+
+          const mlPrediction = await predictDeteriorationML(
+            input.componentCode,
+            installYear,
+            historicalData
+          );
+
+          // Save prediction to history
+          await db.savePredictionHistory({
+            projectId: input.projectId,
+            componentCode: input.componentCode,
+            predictedFailureYear: mlPrediction.predictedFailureYear,
+            predictedRemainingLife: mlPrediction.predictedRemainingLife,
+            predictedCondition: mlPrediction.currentConditionEstimate,
+            confidenceScore: mlPrediction.confidenceScore,
+            predictionMethod: "ml_model",
+            modelVersion: "v1.0",
+          });
+
+          return mlPrediction;
+        } else {
+          // Use curve-based prediction
+          const config = await db.getComponentDeteriorationConfig(input.projectId, input.componentCode);
+          const componentType = input.componentCode.substring(0, 3); // e.g., "B30" from "B3010"
+          const curves = DEFAULT_CURVES[componentType] || DEFAULT_CURVES.default;
+          const activeCurve = config?.activeCurve || "design";
+          const params = curves[activeCurve];
+
+          const installYear = project.yearBuilt || new Date().getFullYear() - 20;
+          const failureYear = predictFailureYear(params, installYear);
+          const remainingLife = calculateRemainingLife(params, installYear, 70);
+          const curveData = generateCurveData(params, installYear, 30);
+
+          const confidence = calculateConfidenceScore(
+            assessments.length,
+            assessments.length > 0 ? 5 : 0,
+            assessments.length > 0 ? 1 : 10
+          );
+
+          // Save prediction to history
+          await db.savePredictionHistory({
+            projectId: input.projectId,
+            componentCode: input.componentCode,
+            predictedFailureYear: failureYear,
+            predictedRemainingLife: remainingLife,
+            predictedCondition: 70,
+            confidenceScore: confidence,
+            predictionMethod: "curve_based",
+            curveUsed: activeCurve,
+          });
+
+          return {
+            predictedFailureYear: failureYear,
+            predictedRemainingLife: remainingLife,
+            currentConditionEstimate: 70,
+            confidenceScore: confidence,
+            curveUsed: activeCurve,
+            dataPoints: curveData,
+          };
+        }
+      }),
+
+    // Get all project predictions
+    project: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+
+        const components = await db.getProjectComponents(input.projectId);
+        const predictions = [];
+
+        for (const component of components) {
+          const assessments = await db.getAssessmentsByComponent(input.projectId, component.componentCode);
+          if (assessments.length > 0) {
+            const latest = assessments[0];
+            predictions.push({
+              componentCode: component.componentCode,
+              componentName: component.name,
+              lastAssessment: latest.assessedAt,
+              condition: latest.conditionPercentage,
+            });
+          }
+        }
+
+        return predictions;
+      }),
+
+    // Get/create deterioration curves
+    curves: protectedProcedure
+      .input(z.object({
+        projectId: z.number().optional(),
+        componentType: z.string().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getDeteriorationCurves(input.projectId, input.componentType);
+      }),
+
+    // Create custom curve
+    createCurve: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        curveType: z.enum(["best", "design", "worst"]),
+        componentType: z.string().optional(),
+        param1: z.number(),
+        param2: z.number(),
+        param3: z.number(),
+        param4: z.number(),
+        param5: z.number(),
+        param6: z.number(),
+        description: z.string().optional(),
+        projectId: z.number().optional(),
+        interpolationType: z.enum(["linear", "polynomial", "exponential"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const curveId = await db.createDeteriorationCurve({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+        return { curveId };
+      }),
+
+    // Update curve parameters
+    updateCurve: protectedProcedure
+      .input(z.object({
+        curveId: z.number(),
+        param1: z.number().optional(),
+        param2: z.number().optional(),
+        param3: z.number().optional(),
+        param4: z.number().optional(),
+        param5: z.number().optional(),
+        param6: z.number().optional(),
+        description: z.string().optional(),
+        interpolationType: z.enum(["linear", "polynomial", "exponential"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { curveId, ...updateData } = input;
+        await db.updateDeteriorationCurve(curveId, updateData);
+        return { success: true };
+      }),
+
+    // Get prediction history
+    history: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        componentCode: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        return await db.getPredictionHistory(input.projectId, input.componentCode);
+      }),
+  }),
+
   exports: router({
     deficiencies: protectedProcedure
       .input(z.object({ projectId: z.number() }))

@@ -627,3 +627,113 @@ export const submissionPhotos = mysqlTable("submission_photos", {
 
 export type SubmissionPhoto = typeof submissionPhotos.$inferSelect;
 export type InsertSubmissionPhoto = typeof submissionPhotos.$inferInsert;
+
+
+/**
+ * Deterioration Curves - Best/Design/Worst case scenarios for component lifecycle modeling
+ * Each curve has 6 parameters representing condition at different time points
+ */
+export const deteriorationCurves = mysqlTable("deterioration_curves", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Curve identification
+  name: varchar("name", { length: 255 }).notNull(), // e.g., "Roof Membrane - Best Case"
+  curveType: mysqlEnum("curveType", ["best", "design", "worst"]).notNull(),
+  componentType: varchar("componentType", { length: 100 }), // UNIFORMAT II code or category
+  
+  // 6 curve parameters (condition percentages at different years)
+  // These represent points on the deterioration curve
+  param1: int("param1").notNull(), // Initial condition (% of ESL, typically 100)
+  param2: int("param2").notNull(), // Condition at year 1
+  param3: int("param3").notNull(), // Condition at year 2
+  param4: int("param4").notNull(), // Condition at year 3
+  param5: int("param5").notNull(), // Condition at year 4
+  param6: int("param6").notNull(), // Condition at year 5 (or failure threshold)
+  
+  // Curve metadata
+  description: text("description"),
+  isDefault: boolean("isDefault").default(false), // System-provided default curves
+  interpolationType: mysqlEnum("interpolationType", ["linear", "polynomial", "exponential"]).default("linear"),
+  
+  // Ownership
+  createdBy: int("createdBy"), // User who created custom curve
+  projectId: int("projectId"), // Project-specific curve, null for global
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DeteriorationCurve = typeof deteriorationCurves.$inferSelect;
+export type InsertDeteriorationCurve = typeof deteriorationCurves.$inferInsert;
+
+/**
+ * Component Deterioration Config - Assigns curves to specific components
+ */
+export const componentDeteriorationConfig = mysqlTable("component_deterioration_config", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  projectId: int("projectId").notNull(),
+  componentCode: varchar("componentCode", { length: 50 }).notNull(),
+  
+  // Assigned curves
+  bestCaseCurveId: int("bestCaseCurveId"),
+  designCaseCurveId: int("designCaseCurveId"),
+  worstCaseCurveId: int("worstCaseCurveId"),
+  
+  // Active curve selection
+  activeCurve: mysqlEnum("activeCurve", ["best", "design", "worst"]).default("design"),
+  
+  // Override parameters (if user wants to fine-tune without creating new curve)
+  customParam1: int("customParam1"),
+  customParam2: int("customParam2"),
+  customParam3: int("customParam3"),
+  customParam4: int("customParam4"),
+  customParam5: int("customParam5"),
+  customParam6: int("customParam6"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ComponentDeteriorationConfig = typeof componentDeteriorationConfig.$inferSelect;
+export type InsertComponentDeteriorationConfig = typeof componentDeteriorationConfig.$inferInsert;
+
+/**
+ * Prediction History - Track predictions over time for accuracy analysis
+ */
+export const predictionHistory = mysqlTable("prediction_history", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  projectId: int("projectId").notNull(),
+  componentCode: varchar("componentCode", { length: 50 }).notNull(),
+  assessmentId: int("assessmentId"), // Assessment that triggered prediction
+  
+  // Prediction details
+  predictionDate: timestamp("predictionDate").defaultNow().notNull(),
+  predictedFailureYear: int("predictedFailureYear"),
+  predictedRemainingLife: int("predictedRemainingLife"), // Years
+  predictedCondition: int("predictedCondition"), // Condition percentage at prediction date
+  
+  // Confidence and methodology
+  confidenceScore: decimal("confidenceScore", { precision: 5, scale: 2 }), // 0-100%
+  predictionMethod: mysqlEnum("predictionMethod", [
+    "curve_based",
+    "ml_model",
+    "historical_trend",
+    "hybrid"
+  ]).default("curve_based"),
+  
+  // Model information
+  modelVersion: varchar("modelVersion", { length: 50 }),
+  curveUsed: mysqlEnum("curveUsed", ["best", "design", "worst"]),
+  
+  // Actual outcome (for validation)
+  actualFailureYear: int("actualFailureYear"),
+  actualConditionAtDate: int("actualConditionAtDate"),
+  predictionAccuracy: decimal("predictionAccuracy", { precision: 5, scale: 2 }), // Calculated later
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PredictionHistory = typeof predictionHistory.$inferSelect;
+export type InsertPredictionHistory = typeof predictionHistory.$inferInsert;

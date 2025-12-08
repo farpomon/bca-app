@@ -120,6 +120,13 @@
       "when": 1765150129907,
       "tag": "0016_clammy_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1765154390924,
+      "tag": "0017_same_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }

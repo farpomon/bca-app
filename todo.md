@@ -744,3 +744,90 @@
 - [x] Test error handling (invalid files, non-existent projects)
 - [x] All 128 tests (21 new consultant upload tests, 127 passing, 1 flaky Gemini test)
 - [x] Create checkpoint
+
+
+## Predictive Analytics & AI/ML Deterioration Modeling
+
+### Database Schema
+- [x] Create deterioration_curves table for Best/Design/Worst scenarios
+- [x] Add 6 configurable parameters per curve (param1-param6 for years 0-5)
+- [x] Create component_deterioration_config table (per-component curve assignments)
+- [x] Create prediction_history table (track predictions over time)
+- [x] Add confidence_score, prediction_method, model_version fields
+- [x] Push database schema changes
+
+### Deterioration Curve Models
+- [x] Define curve parameter structure (CurveParameters interface with 6 params)
+- [x] Create default Best/Design/Worst curves for 5 component types (B30, B20, D30, D20, D50)
+- [x] Implement linear interpolation algorithm
+- [x] Implement polynomial interpolation (Lagrange method)
+- [x] Implement exponential decay interpolation
+- [x] Calculate remaining service life from current condition
+- [x] Predict failure year based on curve trajectory
+- [x] Support custom curve creation per component
+- [x] Generate 30-year curve projection data for visualization
+
+### ML Prediction Engine
+- [x] Create mlPredictionService.ts with AI-powered predictions
+- [x] Calculate deterioration rate from historical assessment data
+- [x] Estimate current condition with trend extrapolation
+- [x] Predict failure year using linear trend projection
+- [x] Determine risk level (low/medium/high/critical)
+- [x] Add prediction confidence scoring based on data quality
+- [x] Use LLM (Gemini) for generateAIInsights (3-5 actionable recommendations)
+- [x] Implement analyzeComponentPatterns for portfolio-wide analysis
+
+### Historical Pattern Analysis
+- [x] Analyze deterioration trends from historical assessments
+- [x] Identify accelerated deterioration components (rate > 4% per year)
+- [x] Identify stable components (rate < 1.5% per year)
+- [x] Calculate average deterioration rate across component portfolio
+- [x] Generate AI insights from historical patterns
+- [ ] Visualize deterioration trajectories (UI pending)
+- [ ] Compare actual vs predicted deterioration (UI pending)
+
+### Interactive Curve Editor UI
+- [ ] Create DeteriorationCurveEditor component
+- [ ] Add visual curve chart (line chart with 3 curves)
+- [ ] Add 6 input fields per curve (editable year parameters)
+- [ ] Show real-time curve updates as parameters change
+- [ ] Add preset curve templates (dropdown)
+- [ ] Add "Reset to Default" button
+- [ ] Show predicted failure year on chart
+- [ ] Add current condition marker on curve
+
+### Prediction Dashboard
+- [ ] Create PredictionDashboard page
+- [ ] Show components at risk (sorted by predicted failure year)
+- [ ] Display confidence scores for predictions
+- [ ] Add filters (component type, risk level, timeframe)
+- [ ] Show deterioration trend charts
+- [ ] Add export predictions to CSV/Excel
+
+### What-If Scenario Analysis
+- [ ] Create scenario comparison tool
+- [ ] Allow users to adjust maintenance timing
+- [ ] Show impact on component lifecycle
+- [ ] Calculate cost implications of different strategies
+- [ ] Compare multiple scenarios side-by-side
+- [ ] Generate scenario reports
+
+### Backend API (tRPC)
+- [x] predictions.component (get prediction for single component with method selection)
+- [x] predictions.project (get predictions for all components)
+- [x] predictions.createCurve (create custom curve)
+- [x] predictions.updateCurve (edit curve parameters)
+- [x] predictions.curves (list available curves with filters)
+- [x] predictions.history (get prediction history)
+- [x] Add predictions router to routers.ts
+- [x] Database helper functions (getDeteriorationCurves, savePredictionHistory, etc.)
+- [x] Support curve/ml/hybrid prediction methods
+
+### Testing
+- [ ] Test curve interpolation algorithms (linear, polynomial, exponential)
+- [ ] Test ML model predictions with various data patterns
+- [ ] Test curve parameter editing and saving
+- [ ] Test historical pattern analysis
+- [ ] Test confidence score calculations
+- [ ] Test prediction history tracking
+- [ ] Create checkpoint
