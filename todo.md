@@ -2017,3 +2017,69 @@
 ### Create Checkpoint
 - [x] Update todo.md
 - [x] Create checkpoint
+
+
+## Advanced Microphone Permission UX
+
+### Permission Pre-Check
+- [ ] Add "Test Microphone" button
+- [ ] Check permission status before recording
+- [ ] Show microphone status indicator (ready, denied, not tested)
+- [ ] Allow users to grant access upfront
+
+### Retry Functionality
+- [ ] Add "Try Again" button when permission denied
+- [ ] Re-trigger permission request without page refresh
+- [ ] Clear denied state on retry
+- [ ] Test retry flow
+
+### Browser-Specific Instructions
+- [ ] Detect user's browser (Chrome, Firefox, Safari, Edge)
+- [ ] Create browser-specific instruction components
+- [ ] Show tailored permission steps based on browser
+- [ ] Add browser icons/visual aids
+- [ ] Test on different browsers
+
+### Create Checkpoint
+- [ ] Update todo.md
+- [ ] Create checkpoint
+
+
+## Advanced Microphone Permission UX Enhancements
+
+### Permission Pre-Check
+- [x] Add "Test Microphone" button that appears before recording
+- [x] Check permission status before starting assessment
+- [x] Show microphone status indicator (ready, denied, not tested)
+- [x] Allow users to grant access upfront
+- [x] Display green "Microphone Ready" badge when granted
+- [x] Display red "Microphone Denied" badge when denied
+
+### Retry Functionality
+- [x] Add "Try Again" button when permission denied
+- [x] Re-trigger permission request without page refresh
+- [x] Clear denied state on retry
+- [x] Test retry flow with multiple attempts
+
+### Browser-Specific Instructions
+- [x] Detect user's browser (Chrome, Firefox, Safari, Edge)
+- [x] Create getBrowserInstructions function with tailored steps
+- [x] Show Chrome-specific permission instructions (lock icon in address bar)
+- [x] Show Firefox-specific permission instructions (microphone icon in address bar)
+- [x] Show Safari-specific permission instructions (Settings → Websites → Microphone)
+- [x] Show Edge-specific permission instructions (lock icon in address bar)
+- [x] Show fallback instructions for unknown browsers
+- [x] Test browser detection logic
+
+### Testing
+- [x] Create comprehensive test suite (22 tests)
+- [x] Test permission pre-check functionality (4 tests)
+- [x] Test retry functionality (2 tests)
+- [x] Test browser detection (9 tests)
+- [x] Test permission state management (3 tests)
+- [x] Test error handling (4 tests)
+- [x] All 22 tests passing
+
+### Checkpoint
+- [x] Update todo.md with completed tasks
+- [x] Create checkpoint with all enhancements

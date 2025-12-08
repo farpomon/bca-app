@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Loader2, Check, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Mic, Square, Loader2, Check, X, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -16,12 +17,28 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
   const [transcribedText, setTranscribedText] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
   const [permissionState, setPermissionState] = useState<"idle" | "requesting" | "granted" | "denied">("idle");
+  const [micTested, setMicTested] = useState(false);
+  const [browserType, setBrowserType] = useState<"chrome" | "firefox" | "safari" | "edge" | "other">("other");
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const transcribeMutation = trpc.media.transcribeAudio.useMutation();
+
+  useEffect(() => {
+    // Detect browser
+    const ua = navigator.userAgent;
+    if (ua.includes("Chrome") && !ua.includes("Edg")) {
+      setBrowserType("chrome");
+    } else if (ua.includes("Firefox")) {
+      setBrowserType("firefox");
+    } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
+      setBrowserType("safari");
+    } else if (ua.includes("Edg")) {
+      setBrowserType("edge");
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -33,6 +50,38 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
       }
     };
   }, []);
+
+  const testMicrophone = async () => {
+    try {
+      setPermissionState("requesting");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setPermissionState("granted");
+      setMicTested(true);
+      stream.getTracks().forEach(track => track.stop());
+      toast.success("Microphone access granted! Ready to record.");
+    } catch (error: any) {
+      console.error("Error testing microphone:", error);
+      setPermissionState("denied");
+      setMicTested(true);
+      
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        toast.error(
+          "Microphone access denied. Please enable microphone permissions in your browser settings.",
+          { duration: 5000 }
+        );
+      } else if (error.name === "NotFoundError") {
+        toast.error("No microphone found. Please connect a microphone and try again.");
+      } else {
+        toast.error("Could not access microphone. Please check permissions and try again.");
+      }
+    }
+  };
+
+  const retryPermission = () => {
+    setPermissionState("idle");
+    setMicTested(false);
+    testMicrophone();
+  };
 
   const startRecording = async () => {
     try {
@@ -158,6 +207,47 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const getBrowserInstructions = () => {
+    const instructions = {
+      chrome: [
+        "Click the lock icon (🔒) in the address bar",
+        "Find 'Microphone' and select 'Allow'",
+        "Click 'Try Again' below"
+      ],
+      firefox: [
+        "Click the microphone icon in the address bar",
+        "Select 'Allow' for microphone access",
+        "Click 'Try Again' below"
+      ],
+      safari: [
+        "Go to Safari → Settings → Websites → Microphone",
+        "Find this website and select 'Allow'",
+        "Click 'Try Again' below"
+      ],
+      edge: [
+        "Click the lock icon in the address bar",
+        "Find 'Microphone' and select 'Allow'",
+        "Click 'Try Again' below"
+      ],
+      other: [
+        "Click the lock/info icon in your browser's address bar",
+        "Find 'Microphone' in the permissions list",
+        "Change the setting to 'Allow'",
+        "Click 'Try Again' below"
+      ]
+    };
+
+    const steps = instructions[browserType];
+    
+    return (
+      <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
+        {steps.map((step, index) => (
+          <li key={index}>{step}</li>
+        ))}
+      </ul>
+    );
+  };
+
   return (
     <div className="space-y-4 p-4 border rounded-lg">
       <div className="flex items-center justify-between">
@@ -170,23 +260,57 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel }: VoiceRecord
         )}
       </div>
 
+      {/* Microphone Status Badge */}
+      {micTested && (
+        <div className="flex items-center gap-2">
+          {permissionState === "granted" ? (
+            <Badge variant="outline" className="gap-1.5 bg-green-50 text-green-700 border-green-200">
+              <CheckCircle2 className="w-3 h-3" />
+              Microphone Ready
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="gap-1.5 bg-red-50 text-red-700 border-red-200">
+              <AlertCircle className="w-3 h-3" />
+              Microphone Denied
+            </Badge>
+          )}
+        </div>
+      )}
+
       {permissionState === "denied" && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-          <p className="text-sm font-medium text-destructive mb-2">Microphone Access Denied</p>
-          <p className="text-xs text-muted-foreground mb-3">
-            To use voice recording, please enable microphone permissions:
-          </p>
-          <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
-            <li>Click the lock/info icon in your browser's address bar</li>
-            <li>Find "Microphone" in the permissions list</li>
-            <li>Change the setting to "Allow"</li>
-            <li>Refresh the page and try again</li>
-          </ul>
+        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md space-y-3">
+          <div>
+            <p className="text-sm font-medium text-destructive mb-2">Microphone Access Denied</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              To use voice recording, please enable microphone permissions:
+            </p>
+            {getBrowserInstructions()}
+          </div>
+          <Button 
+            onClick={retryPermission} 
+            variant="outline" 
+            size="sm"
+            className="gap-2"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Try Again
+          </Button>
         </div>
       )}
 
       <div className="flex gap-2">
-        {!isRecording && !audioBlob && permissionState !== "denied" && (
+        {!micTested && permissionState === "idle" && (
+          <Button 
+            onClick={testMicrophone} 
+            variant="outline" 
+            className="gap-2"
+          >
+            <Mic className="w-4 h-4" />
+            Test Microphone
+          </Button>
+        )}
+        
+        {!isRecording && !audioBlob && permissionState !== "denied" && micTested && (
           <Button 
             onClick={startRecording} 
             variant="default" 
