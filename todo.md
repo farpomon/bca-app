@@ -2002,3 +2002,18 @@
 - [x] Test transcription accuracy
 - [x] Test project creation with observations
 - [x] Create checkpoint
+
+
+## Microphone Permission UX Improvements
+
+### Permission Handling
+- [x] Add "requesting permission" loading state
+- [x] Show clear permission denied error message
+- [x] Provide instructions to re-enable microphone in browser settings
+- [x] Add visual feedback during permission request
+- [x] Handle permission errors gracefully
+- [x] Test permission flow on different browsers
+
+### Create Checkpoint
+- [x] Update todo.md
+- [x] Create checkpoint
