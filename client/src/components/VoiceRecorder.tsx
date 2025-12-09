@@ -26,10 +26,14 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const [browserType, setBrowserType] = useState<"chrome" | "firefox" | "safari" | "edge" | "other">("other");
   const [showHistory, setShowHistory] = useState(false);
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
   
   const transcribeMutation = trpc.media.transcribeAudio.useMutation();
   const { playFeedback, isEnabled: audioFeedbackEnabled, toggleAudioFeedback } = useAudioFeedback();
@@ -62,6 +66,12 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       }
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
   }, []);
@@ -100,6 +110,51 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
     testMicrophone();
   };
 
+  const monitorAudioLevel = (stream: MediaStream) => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      microphone.connect(analyser);
+      
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+      
+      const updateLevel = () => {
+        if (!analyserRef.current) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+        const normalized = Math.min(100, (average / 255) * 100);
+        setAudioLevel(normalized);
+        
+        animationFrameRef.current = requestAnimationFrame(updateLevel);
+      };
+      
+      updateLevel();
+    } catch (error) {
+      console.error("Error monitoring audio level:", error);
+    }
+  };
+
+  const stopAudioLevelMonitoring = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    analyserRef.current = null;
+    setAudioLevel(0);
+  };
+
   const startRecording = async () => {
     try {
       setPermissionState("requesting");
@@ -120,10 +175,14 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         setAudioBlob(blob);
         stream.getTracks().forEach(track => track.stop());
+        stopAudioLevelMonitoring();
         
         // Auto-transcribe when recording stops
         handleTranscribe(blob);
       };
+      
+      // Start audio level monitoring
+      monitorAudioLevel(stream);
       
       mediaRecorder.start();
       setIsRecording(true);
@@ -331,8 +390,30 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         </div>
       </div>
 
-      {/* Microphone Status Badge - Only show if granted */}
-      {micTested && permissionState === "granted" && (
+      {/* Audio Level Indicator - Show during recording */}
+      {isRecording && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Audio Level</span>
+            <span className={audioLevel > 60 ? "text-green-600 font-medium" : audioLevel > 20 ? "text-amber-600" : "text-red-600"}>
+              {audioLevel > 60 ? "Good" : audioLevel > 20 ? "Low" : "Very Low"}
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-100 ${
+                audioLevel > 60 ? "bg-green-500" : 
+                audioLevel > 20 ? "bg-amber-500" : 
+                "bg-red-500"
+              }`}
+              style={{ width: `${audioLevel}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Microphone Status Badge - Only show if granted and not recording */}
+      {!isRecording && micTested && permissionState === "granted" && (
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="gap-1.5 bg-green-50 text-green-700 border-green-200">
             <CheckCircle2 className="w-3 h-3" />

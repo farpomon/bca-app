@@ -19,6 +19,23 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 /**
+ * Custom vocabulary - user-defined technical terms for improved transcription
+ */
+export const customVocabulary = mysqlTable("custom_vocabulary", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  term: varchar("term", { length: 255 }).notNull(),
+  pronunciation: varchar("pronunciation", { length: 255 }), // Optional phonetic guide
+  category: varchar("category", { length: 100 }), // e.g., "Product Names", "Technical Terms"
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CustomVocabulary = typeof customVocabulary.$inferSelect;
+export type InsertCustomVocabulary = typeof customVocabulary.$inferInsert;
+
+/**
  * Projects table - represents a building being assessed
  */
 export const projects = mysqlTable("projects", {

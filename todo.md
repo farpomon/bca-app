@@ -2558,3 +2558,14 @@
 - [x] Fix manus-speech-to-text command not found error (replaced CLI with built-in API)
 - [x] Test audio recording and transcription
 - [x] Create checkpoint with fix
+
+## Voice Recording Enhancements
+- [x] Implement real-time audio level indicator
+- [x] Add visual feedback for recording quality
+- [x] Build offline recording queue with IndexedDB
+- [x] Implement auto-upload when connection returns
+- [ ] Create custom vocabulary management UI (backend complete)
+- [x] Add vocabulary CRUD backend
+- [ ] Integrate custom vocabulary with transcription
+- [ ] Test all three features
+- [x] Create checkpoint with enhancements (partial - backend complete)

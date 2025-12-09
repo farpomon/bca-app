@@ -14,6 +14,7 @@ import { esgRouter } from "./routers/esg.router";
 import { mediaRouter } from "./routers/media.router";
 import { audioRouter } from "./routers/audio.router";
 import { adminRouter } from "./routers/admin.router";
+import { vocabularyRouter } from "./routers/vocabulary.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -28,6 +29,7 @@ export const appRouter = router({
   system: systemRouter,
   audio: audioRouter,
   admin: adminRouter,
+  vocabulary: vocabularyRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
