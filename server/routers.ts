@@ -12,6 +12,7 @@ import { modelsRouter } from "./routers/models.router";
 import { dashboardsRouter } from "./routers/dashboards.router";
 import { esgRouter } from "./routers/esg.router";
 import { mediaRouter } from "./routers/media.router";
+import { audioRouter } from "./routers/audio.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -22,6 +23,7 @@ import { assessPhotoWithAI } from "./photoAssessment";
 
 export const appRouter = router({
   system: systemRouter,
+  audio: audioRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

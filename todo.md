@@ -2318,3 +2318,44 @@
 - [ ] Test on Firefox Mobile (real device)
 - [ ] Test landscape and portrait modes
 - [x] Create checkpoint
+
+
+## ElevenLabs Voice Feedback Integration
+
+### API Setup
+- [x] Store ElevenLabs API key securely
+- [x] Create ElevenLabs service wrapper (server/elevenlabs.ts)
+- [x] Add text-to-speech helper functions
+- [x] Test API connectivity (4 tests passing)
+- [x] Use free tier compatible model (eleven_turbo_v2_5)
+
+### Audio Feedback Features
+- [x] Recording started confirmation ("Recording started")
+- [x] Recording stopped confirmation ("Recording stopped, transcribing your audio")
+- [x] Transcription success feedback ("Transcription complete")
+- [x] Error feedback with voice guidance ("Sorry, transcription failed")
+- [x] Microphone permission feedback ("Microphone is ready" / "Microphone access denied")
+- [x] Pre-defined audio messages in AUDIO_MESSAGES constant
+
+### tRPC Integration
+- [x] Create audio router (server/routers/audio.router.ts)
+- [x] Add getFeedbackAudio mutation for predefined messages
+- [x] Add generateCustomAudio mutation for custom text
+- [x] Register audio router in appRouter
+
+### Voice Recorder Enhancement
+- [x] Add audio feedback toggle button (Volume2/VolumeX icon)
+- [x] Create useAudioFeedback hook (client/src/hooks/useAudioFeedback.ts)
+- [x] Integrate ElevenLabs TTS into VoiceRecorder
+- [x] Add voice guidance for microphone permission states
+- [x] Save audio feedback preference to localStorage
+- [x] Auto-play feedback at key workflow points
+
+### Testing
+- [x] Test ElevenLabs API connectivity (4 tests passing)
+- [x] Test text-to-speech generation
+- [x] Test voice list retrieval
+- [x] Test audio buffer validation
+- [ ] Test audio playback on mobile browsers (requires real device)
+- [ ] Test audio feedback during assessment workflow (requires real device)
+- [x] Create checkpoint

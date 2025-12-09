@@ -6,6 +6,8 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { saveRecording } from "@/lib/voiceRecordingHistory";
 import { RecordingHistory } from "./RecordingHistory";
+import { useAudioFeedback } from "@/hooks/useAudioFeedback";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface VoiceRecorderProps {
   onTranscriptionComplete: (text: string) => void;
@@ -30,6 +32,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const transcribeMutation = trpc.media.transcribeAudio.useMutation();
+  const { playFeedback, isEnabled: audioFeedbackEnabled, toggleAudioFeedback } = useAudioFeedback();
 
   useEffect(() => {
     // Detect browser
@@ -64,10 +67,12 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       setMicTested(true);
       stream.getTracks().forEach(track => track.stop());
       toast.success("Microphone access granted! Ready to record.");
+      playFeedback("MICROPHONE_READY");
     } catch (error: any) {
       console.error("Error testing microphone:", error);
       setPermissionState("denied");
       setMicTested(true);
+      playFeedback("MICROPHONE_DENIED");
       
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
         toast.error(
@@ -115,8 +120,9 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       
       mediaRecorder.start();
       setIsRecording(true);
-      setRecordingTime(0);
       setRecordingStartTime(Date.now());
+      setRecordingTime(0);
+      playFeedback("RECORDING_STARTED");
       
       // Start timer
       timerRef.current = setInterval(() => {
@@ -143,13 +149,15 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
+    
+    setIsRecording(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    playFeedback("RECORDING_STOPPED");
   };
 
   const handleTranscribe = async (blob: Blob) => {
@@ -189,6 +197,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       saveRecording(result.text, duration, context);
       
       toast.success("Transcription complete and saved to history!");
+      playFeedback("TRANSCRIPTION_COMPLETE");
       
     } catch (error: any) {
       console.error("Transcription error:", error);
@@ -209,6 +218,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       }
       
       toast.error(errorMessage, { duration: 5000 });
+      playFeedback("TRANSCRIPTION_ERROR");
     } finally {
       setIsProcessing(false);
     }
@@ -291,6 +301,15 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
               Recording: {formatTime(recordingTime)}
             </div>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleAudioFeedback}
+            className="gap-2"
+            title={audioFeedbackEnabled ? "Disable audio feedback" : "Enable audio feedback"}
+          >
+            {audioFeedbackEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
