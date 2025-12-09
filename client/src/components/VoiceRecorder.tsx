@@ -190,9 +190,25 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       
       toast.success("Transcription complete and saved to history!");
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Transcription error:", error);
-      toast.error("Failed to transcribe audio. Please try again.");
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to transcribe audio. ";
+      
+      if (error.message?.includes("upload")) {
+        errorMessage += "Could not upload audio file.";
+      } else if (error.message?.includes("network") || error.message?.includes("fetch")) {
+        errorMessage += "Network error. Please check your connection.";
+      } else if (error.data?.message) {
+        errorMessage += error.data.message;
+      } else if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += "Please try again.";
+      }
+      
+      toast.error(errorMessage, { duration: 5000 });
     } finally {
       setIsProcessing(false);
     }

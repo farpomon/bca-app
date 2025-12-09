@@ -2193,3 +2193,68 @@
 - [x] Increase button size to lg for better touch targets
 - [x] Improve error message layout with icon and better spacing
 - [x] Create checkpoint
+
+
+## Transcription Failure Error
+
+### Problem
+- Voice recording completes successfully (Microphone Ready badge shows)
+- "Transcribing..." button appears
+- Error toast: "Failed to transcribe audio. Please try again."
+- Transcription workflow is failing after recording
+
+### Investigation
+- [ ] Check server logs for transcription errors
+- [ ] Verify audio upload to S3 is working
+- [ ] Check if manus-speech-to-text is receiving the audio file
+- [ ] Verify JSON parsing is working correctly
+- [ ] Check for any network/timeout issues
+
+### Fix
+- [ ] Identify root cause of transcription failure
+- [ ] Fix the transcription workflow
+- [ ] Add better error logging
+- [ ] Test end-to-end recording → upload → transcription
+- [ ] Create checkpoint
+
+
+## Mobile Device Optimization
+
+### Device Detection
+- [x] Create useDeviceDetection hook to detect mobile vs desktop
+- [x] Detect touch capability (ontouchstart, maxTouchPoints)
+- [x] Detect screen size and orientation (portrait/landscape)
+- [x] Detect platform (iOS, Android, Windows, Mac, Linux)
+- [x] Provide device context throughout app (DeviceProvider)
+- [x] Added to main.tsx provider tree
+
+### Mobile-Optimized UI Components
+- [x] MobileButton - larger touch targets (min 44px), full-width option
+- [x] MobileInput - 16px text (prevents iOS zoom), better padding
+- [x] MobileTextarea - larger, comfortable typing area
+- [x] MobileFormField - better spacing between fields
+- [x] MobileCard - responsive padding
+- [x] MobileGrid - single column on mobile, responsive on desktop
+- [x] DeviceInfo - debug component for development
+
+### Implementation Details
+- [x] Created hooks/useDeviceDetection.ts
+- [x] Created contexts/DeviceContext.tsx
+- [x] Created components/MobileOptimized.tsx
+- [x] Integrated with main.tsx
+- [x] Automatic responsive behavior based on device
+
+### Next Steps (Future Enhancements)
+- [ ] Apply mobile components to Assessment forms
+- [ ] Apply mobile components to Project forms
+- [ ] Optimize tables for mobile (stack columns, horizontal scroll)
+- [ ] Mobile-friendly modals and dialogs
+- [ ] Hamburger menu for mobile navigation
+- [ ] Bottom navigation bar for key actions
+- [ ] Swipe gestures for navigation
+
+### Testing
+- [ ] Test on various mobile devices
+- [ ] Test portrait and landscape orientations
+- [ ] Test touch interactions
+- [x] Create checkpoint
