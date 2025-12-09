@@ -8,6 +8,7 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import { DeviceProvider } from "./contexts/DeviceContext";
 import "./index.css";
+import "./mobile-compat.css";
 
 const queryClient = new QueryClient();
 

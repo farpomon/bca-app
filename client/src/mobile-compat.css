@@ -1,0 +1,268 @@
+/**
+ * Mobile Browser Compatibility Fixes
+ * Handles browser-specific quirks and ensures consistent behavior across mobile browsers
+ */
+
+/* ===== iOS Safari Fixes ===== */
+
+/* Prevent iOS Safari from zooming on input focus */
+@supports (-webkit-touch-callout: none) {
+  /* iOS-specific styles */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important; /* Minimum 16px to prevent zoom */
+  }
+}
+
+/* Fix iOS Safari 100vh issue (includes browser chrome) */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+  
+  html {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Fix iOS Safari sticky positioning */
+@supports (-webkit-touch-callout: none) {
+  .sticky {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+}
+
+/* ===== Safe Area Insets (for notched devices) ===== */
+
+/* Add padding for notched devices (iPhone X and newer) */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  
+  /* For fixed/sticky headers */
+  .safe-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  
+  /* For fixed/sticky footers */
+  .safe-bottom {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ===== Prevent Horizontal Scroll ===== */
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+/* Ensure all containers respect viewport width */
+* {
+  max-width: 100%;
+}
+
+/* ===== Touch Target Optimization ===== */
+
+/* Minimum touch target size for all interactive elements */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+[role="link"] {
+  min-height: 44px; /* iOS minimum */
+  min-width: 44px;
+}
+
+/* Better tap highlight */
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Remove tap highlight on specific elements */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Smooth Scrolling ===== */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+}
+
+/* ===== Text Selection ===== */
+
+/* Prevent text selection on buttons and interactive elements */
+button,
+[role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs and content */
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ===== Input Styling ===== */
+
+/* Remove iOS input shadows and rounded corners */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="password"],
+textarea,
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Remove iOS search input cancel button styling */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+/* ===== Button Styling ===== */
+
+/* Remove iOS button styling */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* ===== Prevent Pull-to-Refresh on Mobile ===== */
+
+/* Prevent overscroll on body (optional - can be enabled per page) */
+body.no-overscroll {
+  overscroll-behavior-y: contain;
+}
+
+/* ===== Android Chrome Fixes ===== */
+
+/* Fix Android Chrome viewport units */
+@media screen and (max-width: 767px) {
+  .mobile-full-height {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* ===== Samsung Internet Fixes ===== */
+
+/* Samsung Internet specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Add Samsung-specific fixes here if needed */
+}
+
+/* ===== Responsive Images ===== */
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== Responsive Tables ===== */
+
+/* Make tables scrollable on mobile */
+@media screen and (max-width: 767px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 100%;
+  }
+}
+
+/* ===== Focus Styles ===== */
+
+/* Better focus indicators for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ===== Accessibility ===== */
+
+/* Ensure sufficient color contrast */
+::selection {
+  background-color: hsl(var(--primary) / 0.3);
+}
+
+/* ===== Performance Optimizations ===== */
+
+/* GPU acceleration for smooth animations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Optimize font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ===== Landscape Mode Optimizations ===== */
+
+@media screen and (max-width: 767px) and (orientation: landscape) {
+  /* Reduce padding in landscape mode to maximize content area */
+  .mobile-landscape-compact {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* ===== Print Styles ===== */
+
+@media print {
+  /* Hide non-essential elements when printing */
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Ensure content fits on page */
+  body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}

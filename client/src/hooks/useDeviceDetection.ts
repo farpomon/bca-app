@@ -8,6 +8,11 @@ export interface DeviceInfo {
   screenSize: "sm" | "md" | "lg" | "xl" | "2xl";
   orientation: "portrait" | "landscape";
   platform: "ios" | "android" | "windows" | "mac" | "linux" | "unknown";
+  browser: "safari" | "chrome" | "firefox" | "edge" | "samsung" | "opera" | "unknown";
+  browserVersion: string;
+  isIOSSafari: boolean;
+  isAndroidChrome: boolean;
+  isSamsungInternet: boolean;
 }
 
 /**
@@ -57,6 +62,51 @@ function getDeviceInfo(): DeviceInfo {
     platform = "linux";
   }
 
+  // Detect browser
+  let browser: DeviceInfo["browser"] = "unknown";
+  let browserVersion = "unknown";
+  
+  if (/SamsungBrowser/i.test(ua)) {
+    browser = "samsung";
+    const match = ua.match(/SamsungBrowser\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/EdgiOS|Edge|Edg/i.test(ua)) {
+    browser = "edge";
+    const match = ua.match(/(?:Edge|Edg|EdgiOS)\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/OPR|Opera/i.test(ua)) {
+    browser = "opera";
+    const match = ua.match(/(?:OPR|Opera)\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/CriOS/i.test(ua)) {
+    // Chrome on iOS
+    browser = "chrome";
+    const match = ua.match(/CriOS\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/FxiOS/i.test(ua)) {
+    // Firefox on iOS
+    browser = "firefox";
+    const match = ua.match(/FxiOS\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) {
+    browser = "chrome";
+    const match = ua.match(/Chrome\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+    browser = "safari";
+    const match = ua.match(/Version\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  } else if (/Firefox/i.test(ua)) {
+    browser = "firefox";
+    const match = ua.match(/Firefox\/([\d.]+)/);
+    browserVersion = match ? match[1] : "unknown";
+  }
+
+  // Detect specific browser + platform combinations
+  const isIOSSafari = platform === "ios" && browser === "safari";
+  const isAndroidChrome = platform === "android" && browser === "chrome";
+  const isSamsungInternet = browser === "samsung";
+
   // Detect touch capability
   const isTouchDevice =
     "ontouchstart" in window ||
@@ -96,6 +146,11 @@ function getDeviceInfo(): DeviceInfo {
     screenSize,
     orientation,
     platform,
+    browser,
+    browserVersion,
+    isIOSSafari,
+    isAndroidChrome,
+    isSamsungInternet,
   };
 }
 

@@ -155,12 +155,21 @@ export function DeviceInfo() {
   if (process.env.NODE_ENV !== "development") return null;
 
   return (
-    <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded z-50 font-mono">
-      <div>Device: {device.isMobile ? "Mobile" : device.isTablet ? "Tablet" : "Desktop"}</div>
-      <div>Touch: {device.isTouchDevice ? "Yes" : "No"}</div>
+    <div className="fixed bottom-4 left-4 bg-black/90 text-white text-xs p-3 rounded-lg z-50 font-mono shadow-lg max-w-xs">
+      <div className="font-bold mb-2 text-green-400">Device Info</div>
+      <div>Device: {device.isMobile ? "📱 Mobile" : device.isTablet ? "📱 Tablet" : "💻 Desktop"}</div>
+      <div>Touch: {device.isTouchDevice ? "✓ Yes" : "✗ No"}</div>
       <div>Screen: {device.screenSize}</div>
-      <div>Orientation: {device.orientation}</div>
-      <div>Platform: {device.platform}</div>
+      <div>Orientation: {device.orientation === "portrait" ? "📱 Portrait" : "📱 Landscape"}</div>
+      <div className="mt-2 pt-2 border-t border-gray-600">
+        <div className="font-bold text-blue-400">Browser</div>
+        <div>Name: {device.browser}</div>
+        <div>Version: {device.browserVersion}</div>
+        <div>Platform: {device.platform}</div>
+      </div>
+      {device.isIOSSafari && <div className="mt-1 text-yellow-400">⚠️ iOS Safari</div>}
+      {device.isAndroidChrome && <div className="mt-1 text-green-400">✓ Android Chrome</div>}
+      {device.isSamsungInternet && <div className="mt-1 text-purple-400">Samsung Internet</div>}
     </div>
   );
 }
