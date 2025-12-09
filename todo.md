@@ -2591,3 +2591,13 @@
 - [x] Remove all placeholder text (e.g., "recommendations", "observations") from project form
 - [x] Test form to ensure fields are empty
 - [x] Create checkpoint
+
+## Form Improvements (3 Features)
+- [x] Remove placeholder text from asset creation form
+- [x] Create tooltip component with info icons
+- [x] Add tooltips to project form fields
+- [x] Add tooltips to asset form fields
+- [x] Implement inline validation for project form (year range, required fields)
+- [x] Implement inline validation for asset form
+- [x] Test all form improvements
+- [x] Create checkpoint

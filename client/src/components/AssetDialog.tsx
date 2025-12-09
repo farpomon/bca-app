@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
+import { FieldTooltip } from "@/components/FieldTooltip";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import type { Asset } from "../../../drizzle/schema";
@@ -26,8 +27,8 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
   const [grossFloorArea, setGrossFloorArea] = useState("");
   const [numberOfStories, setNumberOfStories] = useState("");
   const [constructionType, setConstructionType] = useState("");
-  const [currentReplacementValue, setCurrentReplacementValue] = useState("");
-  const [status, setStatus] = useState<"active" | "inactive" | "demolished">("active");
+  const [currentReplacementValue, setCurrentReplacementValue] = useState("");  const [status, setStatus] = useState<"active" | "inactive" | "demolished">("active");
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const utils = trpc.useUtils();
 
@@ -126,22 +127,28 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Asset Name *</Label>
+            <Label htmlFor="name" className="flex items-center">
+              Asset Name *
+              <FieldTooltip content="Example: Main Building, Parking Structure, Pool House" />
+            </Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Main Building, Parking Structure"
+
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assetType">Asset Type</Label>
+            <Label htmlFor="assetType" className="flex items-center">
+              Asset Type
+              <FieldTooltip content="Example: Office Building, Warehouse, Recreation Center" />
+            </Label>
             <Input
               id="assetType"
               value={assetType}
               onChange={(e) => setAssetType(e.target.value)}
-              placeholder="e.g., Office Building, Warehouse"
+
             />
           </div>
 
@@ -151,7 +158,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of this asset"
+
               rows={3}
             />
           </div>
@@ -162,31 +169,37 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Physical address of this asset"
+
               rows={2}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="yearBuilt">Year Built</Label>
+              <Label htmlFor="yearBuilt" className="flex items-center">
+                Year Built
+                <FieldTooltip content="Example: 2000, 1985" />
+              </Label>
               <Input
                 id="yearBuilt"
                 type="number"
                 value={yearBuilt}
                 onChange={(e) => setYearBuilt(e.target.value)}
-                placeholder="e.g., 2000"
+
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="grossFloorArea">Gross Floor Area (sq ft)</Label>
+              <Label htmlFor="grossFloorArea" className="flex items-center">
+                Gross Floor Area (sq ft)
+                <FieldTooltip content="Example: 50000, 125000" />
+              </Label>
               <Input
                 id="grossFloorArea"
                 type="number"
                 value={grossFloorArea}
                 onChange={(e) => setGrossFloorArea(e.target.value)}
-                placeholder="e.g., 50000"
+
               />
             </div>
           </div>
@@ -199,7 +212,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 type="number"
                 value={numberOfStories}
                 onChange={(e) => setNumberOfStories(e.target.value)}
-                placeholder="e.g., 3"
+
               />
             </div>
 
@@ -209,7 +222,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 id="constructionType"
                 value={constructionType}
                 onChange={(e) => setConstructionType(e.target.value)}
-                placeholder="e.g., Steel Frame"
+
               />
             </div>
           </div>
@@ -220,7 +233,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="currentReplacementValue"
               value={currentReplacementValue}
               onChange={(e) => setCurrentReplacementValue(e.target.value)}
-              placeholder="e.g., 5000000"
+
             />
           </div>
 

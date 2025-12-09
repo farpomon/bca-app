@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { FieldTooltip } from "@/components/FieldTooltip";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ export default function Projects() {
     observations: "",
   });
   const [showObservationsVoice, setShowObservationsVoice] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
@@ -90,8 +92,46 @@ export default function Projects() {
     },
   });
 
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    
+    // Validate year built
+    if (formData.yearBuilt) {
+      const year = parseInt(formData.yearBuilt);
+      const currentYear = new Date().getFullYear();
+      if (year < 1800 || year > currentYear + 5) {
+        errors.yearBuilt = `Year must be between 1800 and ${currentYear + 5}`;
+      }
+    }
+    
+    // Validate number of units
+    if (formData.numberOfUnits) {
+      const units = parseInt(formData.numberOfUnits);
+      if (units < 0 || units > 10000) {
+        errors.numberOfUnits = "Number of units must be between 0 and 10,000";
+      }
+    }
+    
+    // Validate number of stories
+    if (formData.numberOfStories) {
+      const stories = parseInt(formData.numberOfStories);
+      if (stories < 0 || stories > 200) {
+        errors.numberOfStories = "Number of stories must be between 0 and 200";
+      }
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error("Please fix validation errors before submitting");
+      return;
+    }
+    
     createProject.mutate({
       name: formData.name,
       address: formData.address || undefined,
@@ -159,7 +199,10 @@ export default function Projects() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Project Name *</Label>
+                    <Label htmlFor="name" className="flex items-center">
+                      Project Name *
+                      <FieldTooltip content="Example: 1729 Comox Avenue BCA, City Hall Building Assessment" />
+                    </Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -169,7 +212,10 @@ export default function Projects() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="address">Property Address</Label>
+                    <Label htmlFor="address" className="flex items-center">
+                      Property Address
+                      <FieldTooltip content="Example: 1729 Comox Ave, V9M 3M1, BC" />
+                    </Label>
                     <Input
                       id="address"
                       value={formData.address}
@@ -178,7 +224,10 @@ export default function Projects() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="clientName">Client Name</Label>
+                    <Label htmlFor="clientName" className="flex items-center">
+                      Client Name
+                      <FieldTooltip content="Example: Town of Comox, ABC Property Management" />
+                    </Label>
                     <Input
                       id="clientName"
                       value={formData.clientName}
@@ -188,7 +237,10 @@ export default function Projects() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="propertyType">Property Type</Label>
+                      <Label htmlFor="propertyType" className="flex items-center">
+                        Property Type
+                        <FieldTooltip content="Example: Mixed Use, Residential, Commercial, Industrial" />
+                      </Label>
                       <Input
                         id="propertyType"
                         value={formData.propertyType}
@@ -197,7 +249,10 @@ export default function Projects() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="constructionType">Construction Type</Label>
+                      <Label htmlFor="constructionType" className="flex items-center">
+                        Construction Type
+                        <FieldTooltip content="Example: Wood Framing, Steel Frame, Concrete, Masonry" />
+                      </Label>
                       <Input
                         id="constructionType"
                         value={formData.constructionType}
@@ -208,14 +263,23 @@ export default function Projects() {
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="yearBuilt">Year Built</Label>
+                      <Label htmlFor="yearBuilt" className="flex items-center">
+                        Year Built
+                        <FieldTooltip content="Example: 1973, 2005" />
+                      </Label>
                       <Input
                         id="yearBuilt"
                         type="number"
                         value={formData.yearBuilt}
-                        onChange={(e) => setFormData({ ...formData, yearBuilt: e.target.value })}
-
+                        onChange={(e) => {
+                          setFormData({ ...formData, yearBuilt: e.target.value });
+                          setValidationErrors({ ...validationErrors, yearBuilt: "" });
+                        }}
+                        className={validationErrors.yearBuilt ? "border-red-500" : ""}
                       />
+                      {validationErrors.yearBuilt && (
+                        <p className="text-sm text-red-500">{validationErrors.yearBuilt}</p>
+                      )}
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="numberOfUnits">Number of Units</Label>
@@ -223,9 +287,15 @@ export default function Projects() {
                         id="numberOfUnits"
                         type="number"
                         value={formData.numberOfUnits}
-                        onChange={(e) => setFormData({ ...formData, numberOfUnits: e.target.value })}
-
+                        onChange={(e) => {
+                          setFormData({ ...formData, numberOfUnits: e.target.value });
+                          setValidationErrors({ ...validationErrors, numberOfUnits: "" });
+                        }}
+                        className={validationErrors.numberOfUnits ? "border-red-500" : ""}
                       />
+                      {validationErrors.numberOfUnits && (
+                        <p className="text-sm text-red-500">{validationErrors.numberOfUnits}</p>
+                      )}
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="numberOfStories">Number of Stories</Label>
@@ -233,9 +303,15 @@ export default function Projects() {
                         id="numberOfStories"
                         type="number"
                         value={formData.numberOfStories}
-                        onChange={(e) => setFormData({ ...formData, numberOfStories: e.target.value })}
-
+                        onChange={(e) => {
+                          setFormData({ ...formData, numberOfStories: e.target.value });
+                          setValidationErrors({ ...validationErrors, numberOfStories: "" });
+                        }}
+                        className={validationErrors.numberOfStories ? "border-red-500" : ""}
                       />
+                      {validationErrors.numberOfStories && (
+                        <p className="text-sm text-red-500">{validationErrors.numberOfStories}</p>
+                      )}
                     </div>
                   </div>
                   <div className="grid gap-2">
