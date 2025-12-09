@@ -2174,3 +2174,22 @@
 - [x] Set enabledComponents to ["A","B","C","D","E","F","G"] for all projects
 - [x] Verify update was successful (10 projects updated)
 - [x] Create checkpoint
+
+
+## Voice Recording Mobile UX Issue
+
+### Problem
+- Microphone denied error was too prominent and scary
+- Error badge showed even when not needed
+- Buttons were too small for mobile touch targets
+- Error message used destructive red color (intimidating)
+
+### Fix
+- [x] Remove "Microphone Denied" badge (only show "Microphone Ready" when granted)
+- [x] Change error styling from red/destructive to amber/warning (less scary)
+- [x] Rename "Test Microphone" to "Enable Microphone" (clearer action)
+- [x] Rename "Try Again" to "Grant Microphone Access" (clearer CTA)
+- [x] Make all buttons full-width on mobile (w-full sm:w-auto)
+- [x] Increase button size to lg for better touch targets
+- [x] Improve error message layout with icon and better spacing
+- [x] Create checkpoint

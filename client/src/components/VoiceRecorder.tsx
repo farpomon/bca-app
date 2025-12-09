@@ -287,40 +287,36 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         </div>
       </div>
 
-      {/* Microphone Status Badge */}
-      {micTested && (
+      {/* Microphone Status Badge - Only show if granted */}
+      {micTested && permissionState === "granted" && (
         <div className="flex items-center gap-2">
-          {permissionState === "granted" ? (
-            <Badge variant="outline" className="gap-1.5 bg-green-50 text-green-700 border-green-200">
-              <CheckCircle2 className="w-3 h-3" />
-              Microphone Ready
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="gap-1.5 bg-red-50 text-red-700 border-red-200">
-              <AlertCircle className="w-3 h-3" />
-              Microphone Denied
-            </Badge>
-          )}
+          <Badge variant="outline" className="gap-1.5 bg-green-50 text-green-700 border-green-200">
+            <CheckCircle2 className="w-3 h-3" />
+            Microphone Ready
+          </Badge>
         </div>
       )}
 
       {permissionState === "denied" && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md space-y-3">
-          <div>
-            <p className="text-sm font-medium text-destructive mb-2">Microphone Access Denied</p>
-            <p className="text-xs text-muted-foreground mb-3">
-              To use voice recording, please enable microphone permissions:
-            </p>
-            {getBrowserInstructions()}
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-md space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <p className="text-sm font-medium text-amber-900">Microphone Permission Needed</p>
+              <p className="text-xs text-amber-800">
+                To use voice recording, please enable microphone access:
+              </p>
+              {getBrowserInstructions()}
+            </div>
           </div>
           <Button 
             onClick={retryPermission} 
-            variant="outline" 
+            variant="default" 
             size="sm"
-            className="gap-2"
+            className="w-full gap-2 bg-amber-600 hover:bg-amber-700"
           >
             <RefreshCw className="w-3 h-3" />
-            Try Again
+            Grant Microphone Access
           </Button>
         </div>
       )}
@@ -329,11 +325,12 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         {!micTested && permissionState === "idle" && (
           <Button 
             onClick={testMicrophone} 
-            variant="outline" 
-            className="gap-2"
+            variant="default" 
+            className="gap-2 w-full sm:w-auto"
+            size="lg"
           >
             <Mic className="w-4 h-4" />
-            Test Microphone
+            Enable Microphone
           </Button>
         )}
         
@@ -341,13 +338,14 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
           <Button 
             onClick={startRecording} 
             variant="default" 
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
+            size="lg"
             disabled={permissionState === "requesting"}
           >
             {permissionState === "requesting" ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Requesting Permission...
+                Requesting...
               </>
             ) : (
               <>
@@ -359,7 +357,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         )}
         
         {isRecording && (
-          <Button onClick={stopRecording} variant="destructive" className="gap-2">
+          <Button onClick={stopRecording} variant="destructive" className="gap-2 w-full sm:w-auto" size="lg">
             <Square className="w-4 h-4" />
             Stop Recording
           </Button>
