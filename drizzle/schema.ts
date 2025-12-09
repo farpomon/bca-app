@@ -174,10 +174,10 @@ export const assessments = mysqlTable("assessments", {
   projectId: int("projectId").notNull(),
   assetId: int("assetId").notNull(), // Links assessment to a specific asset
   sectionId: int("sectionId"),
-  componentCode: varchar("componentCode", { length: 20 }).notNull(),
+  componentCode: varchar("componentCode", { length: 20 }),
   componentName: varchar("componentName", { length: 255 }),
   componentLocation: varchar("componentLocation", { length: 255 }),
-  condition: mysqlEnum("condition", ["good", "fair", "poor", "not_assessed"]).default("not_assessed").notNull(),
+  condition: mysqlEnum("condition", ["good", "fair", "poor", "not_assessed"]).default("not_assessed"),
   status: mysqlEnum("status", ["initial", "active", "completed"]).default("initial").notNull(),
   conditionPercentage: varchar("conditionPercentage", { length: 50 }), // e.g., "75-50% of ESL" for Fair condition
   observations: text("observations"),

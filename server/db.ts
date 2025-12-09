@@ -238,7 +238,7 @@ export async function upsertAssessment(data: InsertAssessment) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const existing = await getAssessmentByComponent(data.projectId, data.componentCode);
+  const existing = data.componentCode ? await getAssessmentByComponent(data.projectId, data.componentCode) : null;
   
   if (existing) {
     await db
@@ -716,7 +716,7 @@ export async function calculateOverallBuildingCondition(projectId: number) {
   }
 
   const totalScore = assessedComponents.reduce((sum, assessment) => {
-    return sum + conditionValues[assessment.condition];
+    return sum + (assessment.condition ? conditionValues[assessment.condition] : 0);
   }, 0);
 
   const avgScore = totalScore / assessedComponents.length;
@@ -1825,7 +1825,7 @@ export async function getProjectComponents(projectId: number) {
     .where(eq(assessments.projectId, projectId));
 
   const componentCodesSet = new Set<string>();
-  projectAssessments.forEach(a => componentCodesSet.add(a.componentCode));
+  projectAssessments.forEach(a => { if (a.componentCode) componentCodesSet.add(a.componentCode); });
   const componentCodes = Array.from(componentCodesSet);
 
   if (componentCodes.length === 0) return [];

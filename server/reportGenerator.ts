@@ -328,7 +328,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
   // Group assessments by UNIFORMAT Level 1 (first letter of component code)
   const groupedAssessments: Record<string, (Assessment & { photos: Photo[] })[]> = {};
   data.assessments.forEach(assessment => {
-    const level1 = assessment.componentCode.charAt(0) || "Other";
+    const level1 = assessment.componentCode?.charAt(0) || "Other";
     if (!groupedAssessments[level1]) {
       groupedAssessments[level1] = [];
     }
@@ -386,7 +386,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
       autoTable(doc, {
         startY: yPos,
         body: [
-          ["Condition:", assessment.condition.charAt(0).toUpperCase() + assessment.condition.slice(1), 
+          ["Condition:", assessment.condition ? (assessment.condition.charAt(0).toUpperCase() + assessment.condition.slice(1)) : "Not Assessed", 
            "Estimated Service Life:", assessment.expectedUsefulLife ? `${assessment.expectedUsefulLife} years` : "N/A"],
           ["Review Year:", assessment.reviewYear?.toString() || "2025", 
            "Last Time Action:", assessment.lastTimeAction?.toString() || "N/A"],

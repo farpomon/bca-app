@@ -372,8 +372,8 @@ export const appRouter = router({
       .input(z.object({
         projectId: z.number(),
         assetId: z.number(),
-        componentCode: z.string(),
-        condition: z.enum(["good", "fair", "poor", "not_assessed"]),
+        componentCode: z.string().optional(),
+        condition: z.enum(["good", "fair", "poor", "not_assessed"]).optional(),
         status: z.enum(["initial", "active", "completed"]).optional(),
         conditionPercentage: z.string().optional(),
         componentName: z.string().optional(),
@@ -395,7 +395,7 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
         
         // Get existing assessment to detect changes
-        const existing = await db.getAssessmentByComponent(input.projectId, input.componentCode);
+        const existing = input.componentCode ? await db.getAssessmentByComponent(input.projectId, input.componentCode) : null;
         const isNew = !existing;
         
         const assessmentId = await db.upsertAssessment({
@@ -429,19 +429,21 @@ export const appRouter = router({
           }
         );
         
-        await logAssessmentChange({
-          projectId: input.projectId,
-          componentCode: input.componentCode,
-          assessmentId,
-          userId: ctx.user.id,
-          userName: ctx.user.name || undefined,
-          isNew,
-          changes,
-          richTextFields: {
-            ...(input.observations && { observations: input.observations }),
-            ...(input.recommendations && { recommendations: input.recommendations }),
-          },
-        });
+        if (input.componentCode) {
+          await logAssessmentChange({
+            projectId: input.projectId,
+            componentCode: input.componentCode,
+            assessmentId,
+            userId: ctx.user.id,
+            userName: ctx.user.name || undefined,
+            isNew,
+            changes,
+            richTextFields: {
+              ...(input.observations && { observations: input.observations }),
+              ...(input.recommendations && { recommendations: input.recommendations }),
+            },
+          });
+        }
         
         // Log status change to audit log if it occurred
         if (existing && input.status && existing.status !== input.status) {

@@ -1,0 +1,2 @@
+ALTER TABLE `assessments` MODIFY COLUMN `componentCode` varchar(20);--> statement-breakpoint
+ALTER TABLE `assessments` MODIFY COLUMN `condition` enum('good','fair','poor','not_assessed') DEFAULT 'not_assessed';

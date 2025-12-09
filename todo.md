@@ -2569,3 +2569,20 @@
 - [ ] Integrate custom vocabulary with transcription
 - [ ] Test all three features
 - [x] Create checkpoint with enhancements (partial - backend complete)
+
+## Offline Queue Status Widget
+- [x] Create queue status badge component showing pending count
+- [x] Build detailed queue view with recording list
+- [x] Add status indicators (pending/uploading/failed)
+- [x] Implement retry and clear queue actions
+- [x] Integrate widget into VoiceRecorder component
+- [x] Test offline/online transitions
+- [x] Create checkpoint with queue widget
+
+## Make Assessment Form Fields Optional
+- [x] Remove required validation from all assessment form fields
+- [x] Update backend schema validation to allow optional fields
+- [x] Update database schema to make fields nullable
+- [x] Fix all TypeScript errors from nullable fields
+- [x] Test form submission with minimal data
+- [x] Create checkpoint with optional fields

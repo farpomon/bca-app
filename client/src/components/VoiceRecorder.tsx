@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { saveRecording } from "@/lib/voiceRecordingHistory";
 import { RecordingHistory } from "./RecordingHistory";
 import { useAudioFeedback } from "@/hooks/useAudioFeedback";
+import { OfflineQueueWidget } from "./OfflineQueueWidget";
 import { Volume2, VolumeX } from "lucide-react";
 
 interface VoiceRecorderProps {
@@ -378,6 +379,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
           >
             {audioFeedbackEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </Button>
+          <OfflineQueueWidget />
           <Button
             variant="ghost"
             size="sm"

@@ -68,7 +68,7 @@ export async function getFinancialPlanningData(projectId: number): Promise<Finan
   // Group by UNIFORMAT Level 1 (first letter of component code)
   const groups = Object.entries(UNIFORMAT_GROUPS).map(([code, name]) => {
     const groupAssessments = projectAssessments.filter(
-      (a) => a.componentCode.startsWith(code)
+      (a) => a.componentCode && a.componentCode.startsWith(code)
     );
 
     const periodCosts = periods.map((period) => {
@@ -119,7 +119,7 @@ export async function getConditionMatrixData(projectId: number): Promise<Conditi
   // Group by UNIFORMAT Level 1
   const systems = Object.entries(UNIFORMAT_GROUPS).map(([code, name]) => {
     const systemAssessments = projectAssessments.filter((a) =>
-      a.componentCode.startsWith(code)
+      a.componentCode && a.componentCode.startsWith(code)
     );
 
     if (systemAssessments.length === 0) {

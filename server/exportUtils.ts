@@ -29,7 +29,7 @@ export function generateDeficienciesCSV(deficiencies: Deficiency[]): string {
 
   const csvContent = [
     headers.join(","),
-    ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(",")),
+    ...rows.map(row => row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(",")),
   ].join("\n");
 
   return csvContent;
@@ -56,7 +56,7 @@ export function generateAssessmentsCSV(assessments: Assessment[]): string {
 
   const csvContent = [
     headers.join(","),
-    ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(",")),
+    ...rows.map(row => row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(",")),
   ].join("\n");
 
   return csvContent;
@@ -102,7 +102,7 @@ export function generateCostEstimatesCSV(deficiencies: Deficiency[]): string {
 
   const csvContent = [
     headers.join(","),
-    ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(",")),
+    ...rows.map(row => row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(",")),
     "",
     ...totals.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(",")),
     "",

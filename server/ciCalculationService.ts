@@ -82,7 +82,7 @@ export async function calculateSystemCI(
   
   // Filter assessments for this system (components starting with systemCode)
   const systemAssessments = assessments.filter(a => 
-    a.componentCode.startsWith(systemCode)
+    a.componentCode && a.componentCode.startsWith(systemCode)
   );
   
   if (systemAssessments.length === 0) {
@@ -139,8 +139,8 @@ export async function calculateBuildingCI(projectId: number): Promise<Calculatio
     const weight = parseFloat(String(assessment.estimatedRepairCost || "1"));
     
     components.push({
-      componentCode: assessment.componentCode,
-      componentName: assessment.componentCode, // Could fetch name from buildingComponents
+      componentCode: assessment.componentCode || 'unknown',
+      componentName: assessment.componentCode || 'unknown', // Could fetch name from buildingComponents
       ci,
       weight,
       assessmentDate: assessment.assessedAt || new Date(),
