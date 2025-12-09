@@ -2359,3 +2359,41 @@
 - [ ] Test audio playback on mobile browsers (requires real device)
 - [ ] Test audio feedback during assessment workflow (requires real device)
 - [x] Create checkpoint
+
+
+## Admin Section with Role-Based Access
+
+### Access Control
+- [x] Create adminProcedure for tRPC (checks user.role === 'admin')
+- [x] Add admin role check middleware (already exists in _core/trpc.ts)
+- [x] Protect admin routes with role verification
+- [x] Auto-assign admin role to owner (OWNER_OPEN_ID) - already in db.ts
+- [x] Create admin role management endpoints
+
+### Admin Router (server/routers/admin.router.ts)
+- [x] getSystemStats - total users, admins, projects, project status breakdown
+- [x] getAllUsers - list all users with role, email, login method
+- [x] updateUserRole - promote/demote admin
+- [x] getAllProjects - view all projects with pagination and status filter
+- [x] getProjectById - view any project details
+- [x] deleteUser - delete user (cannot delete self)
+
+### Admin Navigation
+- [x] Add "Admin" tab above "Projects" in DashboardLayout
+- [x] Show admin tab only for users with admin role (filter in menuItems)
+- [x] Create admin dashboard layout with tabs
+- [x] Add admin page routing (/admin)
+
+### Admin Features (client/src/pages/Admin.tsx)
+- [x] User management table (view all users, promote/demote, delete)
+- [x] System statistics dashboard (total users, projects, status breakdown)
+- [x] Project overview table (all projects across all users)
+- [x] Access denied page for non-admin users
+- [x] Three tabs: Overview, Users, Projects
+
+### Testing
+- [ ] Test admin role assignment (manual)
+- [ ] Test admin access control (manual)
+- [ ] Test non-admin users cannot access admin section (manual)
+- [ ] Test owner auto-admin assignment (automatic in db.ts)
+- [x] Create checkpoint
