@@ -37,14 +37,21 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   useEffect(() => {
     // Detect browser
     const ua = navigator.userAgent;
-    if (ua.includes("Chrome") && !ua.includes("Edg")) {
-      setBrowserType("chrome");
-    } else if (ua.includes("Firefox")) {
-      setBrowserType("firefox");
-    } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
-      setBrowserType("safari");
-    } else if (ua.includes("Edg")) {
+    // Check Edge first (includes "Chrome" in UA)
+    if (ua.includes("Edg")) {
       setBrowserType("edge");
+    }
+    // Check Chrome (includes "Chrome" but not "Edg")
+    else if (ua.includes("Chrome") || ua.includes("CriOS")) {
+      setBrowserType("chrome");
+    }
+    // Check Firefox
+    else if (ua.includes("Firefox") || ua.includes("FxiOS")) {
+      setBrowserType("firefox");
+    }
+    // Check Safari (only if no Chrome/CriOS)
+    else if (ua.includes("Safari")) {
+      setBrowserType("safari");
     }
   }, []);
 
@@ -247,8 +254,9 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const getBrowserInstructions = () => {
     const instructions = {
       chrome: [
-        "Click the lock icon (🔒) in the address bar",
-        "Find 'Microphone' and select 'Allow'",
+        "Tap the lock icon (🔒) or site settings in the address bar",
+        "Find 'Microphone' and change to 'Allow'",
+        "Refresh the page if needed",
         "Click 'Try Again' below"
       ],
       firefox: [
@@ -257,8 +265,9 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         "Click 'Try Again' below"
       ],
       safari: [
-        "Go to Safari → Settings → Websites → Microphone",
-        "Find this website and select 'Allow'",
+        "Tap the 'aA' icon in the address bar",
+        "Select 'Website Settings'",
+        "Enable 'Microphone' and tap 'Done'",
         "Click 'Try Again' below"
       ],
       edge: [

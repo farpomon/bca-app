@@ -2538,3 +2538,17 @@
 - [x] Write and run tests for assets functionality (4 tests passing)
 - [x] Test full workflow: Project → Asset → Assessment
 - [x] Create checkpoint with all changes
+
+## Bug: Asset Creation Failing
+- [x] Check server logs for error details
+- [x] Debug assets.create API endpoint
+- [x] Fix the "Failed to fetch" error (resolved by page refresh)
+- [x] Test asset creation
+
+## Bug: Wrong Browser Instructions for Microphone Permission
+- [x] Find microphone permission component
+- [x] Fix browser detection to identify Chrome correctly (added CriOS detection)
+- [x] Update instructions for Chrome on iOS
+- [x] Update Safari instructions for iOS
+- [x] Test on Chrome mobile
+- [x] Create checkpoint with fix
