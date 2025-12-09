@@ -21,6 +21,8 @@ interface AssessmentDialogProps {
   existingAssessment?: {
     condition: string;
     conditionPercentage?: string | null;
+    componentName?: string | null;
+    componentLocation?: string | null;
     observations?: string | null;
     recommendations?: string | null;
     remainingUsefulLife?: number | null;
@@ -53,11 +55,15 @@ export function AssessmentDialog({
 }: AssessmentDialogProps) {
   const [condition, setCondition] = useState(existingAssessment?.condition || "not_assessed");
   const [status, setStatus] = useState<"initial" | "active" | "completed">("initial");
+  const [componentNameField, setComponentNameField] = useState("");
+  const [componentLocationField, setComponentLocationField] = useState("");
 
   // Sync state when existingAssessment changes (for edit mode)
   useEffect(() => {
     if (existingAssessment) {
       setCondition(existingAssessment.condition || "not_assessed");
+      setComponentNameField(existingAssessment.componentName || "");
+      setComponentLocationField(existingAssessment.componentLocation || "");
       setObservations(existingAssessment.observations || "");
       setRecommendations(existingAssessment.recommendations || "");
       setRemainingUsefulLife(existingAssessment.remainingUsefulLife?.toString() || "");
@@ -70,6 +76,8 @@ export function AssessmentDialog({
     } else {
       // Reset to defaults for new assessment
       setCondition("not_assessed");
+      setComponentNameField("");
+      setComponentLocationField("");
       setObservations("");
       setRecommendations("");
       setRemainingUsefulLife("");
@@ -133,6 +141,8 @@ export function AssessmentDialog({
         condition: condition as "good" | "fair" | "poor" | "not_assessed",
         status: status,
         conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
+        componentName: componentNameField || undefined,
+        componentLocation: componentLocationField || undefined,
         observations: observations || undefined,
         recommendations: recommendations || undefined,
         remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
@@ -228,6 +238,8 @@ export function AssessmentDialog({
         componentCode,
         condition: condition as "good" | "fair" | "poor" | "not_assessed",
         conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
+        componentName: componentNameField || undefined,
+        componentLocation: componentLocationField || undefined,
         observations: observations || undefined,
         recommendations: recommendations || undefined,
         remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
@@ -350,6 +362,8 @@ export function AssessmentDialog({
 
   const handleClose = () => {
     setCondition("not_assessed");
+    setComponentNameField("");
+    setComponentLocationField("");
     setObservations("");
     setRecommendations("");
     setRemainingUsefulLife("");
@@ -375,13 +389,36 @@ export function AssessmentDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Component Name and Location */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="componentName">Component Name</Label>
+              <Input
+                id="componentName"
+                type="text"
+                value={componentNameField}
+                onChange={(e) => setComponentNameField(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="componentLocation">Component Location</Label>
+              <Input
+                id="componentLocation"
+                type="text"
+                value={componentLocationField}
+                onChange={(e) => setComponentLocationField(e.target.value)}
+              />
+            </div>
+          </div>
+
           {/* Condition Rating */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="condition">Condition *</Label>
               <Select value={condition} onValueChange={setCondition}>
                 <SelectTrigger id="condition">
-                  <SelectValue placeholder="Select condition" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="good">Good (90-75% of ESL)</SelectItem>
@@ -396,7 +433,7 @@ export function AssessmentDialog({
               <Label htmlFor="status">Assessment Status *</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as "initial" | "active" | "completed")}>
                 <SelectTrigger id="status">
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="initial">Initial (Not Started)</SelectItem>
@@ -414,7 +451,6 @@ export function AssessmentDialog({
               <Input
                 id="esl"
                 type="number"
-                placeholder="e.g., 50"
                 value={estimatedServiceLife}
                 onChange={(e) => setEstimatedServiceLife(e.target.value)}
               />
@@ -428,7 +464,6 @@ export function AssessmentDialog({
               <Input
                 id="reviewYear"
                 type="number"
-                placeholder="e.g., 2025"
                 value={reviewYear}
                 onChange={(e) => setReviewYear(e.target.value)}
               />
@@ -439,7 +474,6 @@ export function AssessmentDialog({
               <Input
                 id="lastAction"
                 type="number"
-                placeholder="e.g., 2009"
                 value={lastTimeAction}
                 onChange={(e) => setLastTimeAction(e.target.value)}
               />
@@ -453,7 +487,6 @@ export function AssessmentDialog({
               <Input
                 id="repairCost"
                 type="number"
-                placeholder="e.g., 5000"
                 value={estimatedRepairCost}
                 onChange={(e) => setEstimatedRepairCost(e.target.value)}
               />
@@ -464,7 +497,6 @@ export function AssessmentDialog({
               <Input
                 id="replacementValue"
                 type="number"
-                placeholder="e.g., 25000"
                 value={replacementValue}
                 onChange={(e) => setReplacementValue(e.target.value)}
               />
@@ -477,7 +509,6 @@ export function AssessmentDialog({
             <Input
               id="actionYear"
               type="number"
-              placeholder="e.g., 2026"
               value={actionYear}
               onChange={(e) => setActionYear(e.target.value)}
             />
@@ -510,7 +541,6 @@ export function AssessmentDialog({
             <RichTextEditor
               content={observations}
               onChange={setObservations}
-              placeholder="Enter detailed observations about the component condition..."
             />
           </div>
 
@@ -541,7 +571,6 @@ export function AssessmentDialog({
             <RichTextEditor
               content={recommendations}
               onChange={setRecommendations}
-              placeholder="Enter maintenance or repair recommendations..."
             />
           </div>
 

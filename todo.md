@@ -2463,3 +2463,32 @@
 - [ ] Test assessment with custom components (manual)
 - [ ] Test custom component deletion (manual)
 - [x] Create checkpoint
+
+
+## Assessment Field Updates
+
+### Add New Fields
+- [ ] Add componentName field to assessments table
+- [ ] Add componentLocation field to assessments table
+- [ ] Update schema and push to database
+- [ ] Update assessment endpoints to handle new fields
+
+### UI Updates
+- [ ] Add Component Name input field to AssessmentDialog
+- [ ] Add Component Location input field to AssessmentDialog
+- [ ] Remove all placeholder text from input fields
+- [ ] Update form validation if needed
+
+### Testing
+- [ ] Test assessment creation with new fields
+- [ ] Test assessment updates with new fields
+- [ ] Create checkpoint
+
+## Component Name and Location Fields (User Request)
+- [x] Add componentName field to assessments table
+- [x] Add componentLocation field to assessments table
+- [x] Update assessments.upsert tRPC endpoint to accept new fields
+- [x] Add componentName and componentLocation inputs to AssessmentDialog UI
+- [x] Remove all placeholder text from input fields
+- [x] Test component name and location fields (3 tests passing)
+- [x] Create checkpoint with new fields

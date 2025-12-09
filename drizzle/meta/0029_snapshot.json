@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "7428c5ee-1a67-45d0-94a2-0597c3ef3cfe",
-  "prevId": "b293c2d2-6268-479a-9b6a-4bcb7363749c",
+  "id": "0b75a65a-7bda-40c3-92e3-00590c373d3a",
+  "prevId": "7428c5ee-1a67-45d0-94a2-0597c3ef3cfe",
   "tables": {
     "assessment_versions": {
       "name": "assessment_versions",
@@ -100,6 +100,20 @@
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "componentName": {
+          "name": "componentName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "componentLocation": {
+          "name": "componentLocation",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "condition": {

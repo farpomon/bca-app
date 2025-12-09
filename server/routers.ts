@@ -287,6 +287,8 @@ export const appRouter = router({
         condition: z.enum(["good", "fair", "poor", "not_assessed"]),
         status: z.enum(["initial", "active", "completed"]).optional(),
         conditionPercentage: z.string().optional(),
+        componentName: z.string().optional(),
+        componentLocation: z.string().optional(),
         observations: z.string().optional(),
         recommendations: z.string().optional(),
         remainingUsefulLife: z.number().optional(),
