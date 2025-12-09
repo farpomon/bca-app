@@ -2397,3 +2397,31 @@
 - [ ] Test non-admin users cannot access admin section (manual)
 - [ ] Test owner auto-admin assignment (automatic in db.ts)
 - [x] Create checkpoint
+
+
+## E, F, G Component Visibility Issue
+
+### Problem
+- E, F, G sections appeared in component list
+- But no individual components showed inside when expanded
+- Could not add assessments for E, F, G components
+
+### Investigation
+- [x] Check if E, F, G components exist in building_components table
+- [x] Check component filtering logic in Assessment page
+- [x] Check hierarchy configuration for E, F, G
+- [x] Verify component query includes E, F, G groups
+
+### Root Cause
+- Only level 1 E, F, G components existed (3 components)
+- Missing level 2 and level 3 sub-components
+- Assessment form shows level 2/3 components in accordion
+- Without level 2/3 components, accordions were empty
+
+### Fix
+- [x] Added 42 UNIFORMAT II level 2 and 3 components for E, F, G
+- [x] E - Equipment & Furnishings: E10, E20 with 6 sub-components
+- [x] F - Special Construction: F10, F20 with 7 sub-components
+- [x] G - Building Sitework: G10, G20, G30, G40, G90 with 29 sub-components
+- [x] Components now visible in assessment form
+- [x] Create checkpoint
