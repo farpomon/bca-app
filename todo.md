@@ -2552,3 +2552,9 @@
 - [x] Update Safari instructions for iOS
 - [x] Test on Chrome mobile
 - [x] Create checkpoint with fix
+
+## Bug: Audio Transcription Not Working
+- [x] Investigate transcription code
+- [x] Fix manus-speech-to-text command not found error (replaced CLI with built-in API)
+- [x] Test audio recording and transcription
+- [x] Create checkpoint with fix
