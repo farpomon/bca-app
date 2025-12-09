@@ -14,6 +14,7 @@ import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
+import { AddCustomComponentDialog } from "@/components/AddCustomComponentDialog";
 
 export default function Assessment() {
   const { id } = useParams();
@@ -42,6 +43,7 @@ export default function Assessment() {
   const [selectedComponent, setSelectedComponent] = useState<string>("");
   const [selectedComponentName, setSelectedComponentName] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [customComponentDialogOpen, setCustomComponentDialogOpen] = useState(false);
   const [condition, setCondition] = useState<string>("not_assessed");
   const [observations, setObservations] = useState("");
   const [remainingUsefulLife, setRemainingUsefulLife] = useState("");
@@ -156,10 +158,22 @@ export default function Assessment() {
           {/* Left: Component Selection */}
           <Card>
             <CardHeader className="pb-3 md:pb-6">
-              <CardTitle className="text-lg md:text-xl">UNIFORMAT II Components</CardTitle>
-              <CardDescription className="text-sm">
-                Select a component to assess. Components are organized by Major Group, Group, and Individual Element.
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg md:text-xl">UNIFORMAT II Components</CardTitle>
+                  <CardDescription className="text-sm">
+                    Select a component to assess. Components are organized by Major Group, Group, and Individual Element.
+                  </CardDescription>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCustomComponentDialogOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Custom
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
@@ -361,6 +375,21 @@ export default function Assessment() {
         componentName={selectedComponentName}
         existingAssessment={assessmentMap.get(selectedComponent)}
         onSuccess={refetchAssessments}
+      />
+
+      {/* Add Custom Component Dialog */}
+      <AddCustomComponentDialog
+        open={customComponentDialogOpen}
+        onOpenChange={setCustomComponentDialogOpen}
+        projectId={projectId}
+        parentComponents={[
+          ...componentsByLevel.level1.map(c => ({ code: c.code, name: c.name })),
+          ...componentsByLevel.level2.map(c => ({ code: c.code, name: c.name })),
+        ]}
+        onSuccess={() => {
+          // Refetch components to show the new custom component
+          window.location.reload();
+        }}
       />
     </DashboardLayout>
   );

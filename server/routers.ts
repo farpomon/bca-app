@@ -17,6 +17,7 @@ import { adminRouter } from "./routers/admin.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
+import * as customComponentsDb from "./db-custom-components";
 import * as dashboardData from "./dashboardData";
 import { generateBCAReport } from "./reportGenerator";
 import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
@@ -163,8 +164,9 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const components = await db.getAllBuildingComponents();
         
-        // If projectId provided, filter by hierarchy config
+        // If projectId provided, filter by hierarchy config and merge custom components
         if (input.projectId) {
+          const customComps = await customComponentsDb.getCustomComponentsByProject(input.projectId);
           const config = await db.getProjectHierarchyConfig(input.projectId);
           
           if (config) {
@@ -181,8 +183,18 @@ export const appRouter = router({
               });
             }
             
-            return filtered;
+            // Merge custom components
+            return [...filtered, ...customComps.map((c: any) => ({
+              ...c,
+              isCustom: true
+            }))];
           }
+          
+          // No config, just merge custom components
+          return [...components, ...customComps.map((c: any) => ({
+            ...c,
+            isCustom: true
+          }))];
         }
         
         return components;
@@ -1871,6 +1883,52 @@ export const appRouter = router({
   dashboards: dashboardsRouter,
   esg: esgRouter,
   media: mediaRouter,
+
+  // Custom components management
+  customComponents: router({
+    list: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ input }) => {
+        return await customComponentsDb.getCustomComponentsByProject(input.projectId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        code: z.string().min(1).max(20),
+        level: z.number().min(2).max(3),
+        parentCode: z.string().min(1).max(20),
+        name: z.string().min(1).max(255),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Check if code already exists
+        const exists = await customComponentsDb.customComponentCodeExists(input.projectId, input.code);
+        if (exists) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Component code already exists for this project",
+          });
+        }
+
+        await customComponentsDb.createCustomComponent({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        projectId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await customComponentsDb.deleteCustomComponent(input.id, input.projectId, ctx.user.id);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

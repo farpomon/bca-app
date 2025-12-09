@@ -107,6 +107,25 @@ export type BuildingComponent = typeof buildingComponents.$inferSelect;
 export type InsertBuildingComponent = typeof buildingComponents.$inferInsert;
 
 /**
+ * Custom components - project-specific components not in standard UNIFORMAT II
+ */
+export const customComponents = mysqlTable("custom_components", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  code: varchar("code", { length: 20 }).notNull(),
+  level: int("level").notNull(), // 2=Group, 3=Individual Element (custom components can't be level 1)
+  parentCode: varchar("parentCode", { length: 20 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  createdBy: int("createdBy").notNull(), // userId who created it
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CustomComponent = typeof customComponents.$inferSelect;
+export type InsertCustomComponent = typeof customComponents.$inferInsert;
+
+/**
  * Assessments - links projects to building components with condition ratings
  */
 export const assessments = mysqlTable("assessments", {

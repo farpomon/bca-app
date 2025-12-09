@@ -2425,3 +2425,41 @@
 - [x] G - Building Sitework: G10, G20, G30, G40, G90 with 29 sub-components
 - [x] Components now visible in assessment form
 - [x] Create checkpoint
+
+
+## Custom Component Creation Feature
+
+### Data Model
+- [x] Add custom_components table to schema (project-specific components)
+- [x] Fields: id, projectId, code, name, level, parentCode, createdBy, createdAt, updatedAt, description
+- [x] Link custom components to projects
+- [x] Created table directly in database
+
+### Backend Endpoints
+- [x] Create tRPC endpoint to add custom component (customComponents.create)
+- [x] Create tRPC endpoint to list custom components for project (customComponents.list)
+- [x] Create tRPC endpoint to delete custom component (customComponents.delete)
+- [x] Merge custom components with standard components in components.list
+- [x] Validate custom component data (code uniqueness check)
+- [x] Created db-custom-components.ts with helper functions
+
+### UI Components
+- [x] Add "Add Custom Component" button in assessment form (Plus icon)
+- [x] Create AddCustomComponentDialog component
+- [x] Form fields: component code, name, parent component selection, level, description
+- [x] Custom components marked with isCustom flag
+- [x] Allow users to add multiple custom components
+- [x] Delete option available via tRPC endpoint
+
+### Integration
+- [x] Merge custom components into component hierarchy display
+- [x] Allow assessments for custom components (they appear in component list)
+- [x] Persist custom components per project
+- [x] Custom components automatically included in components.list query
+
+### Testing
+- [ ] Test custom component creation (manual)
+- [ ] Test multiple custom components (manual)
+- [ ] Test assessment with custom components (manual)
+- [ ] Test custom component deletion (manual)
+- [x] Create checkpoint
