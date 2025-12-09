@@ -2120,3 +2120,35 @@
 - [x] Test ID generation (2 tests)
 - [x] All 29 tests passing
 - [x] Create checkpoint
+
+
+## Voice Transcription Bug Fix
+
+### Investigation
+- [x] Check VoiceRecorder component transcription flow
+- [x] Verify audio upload endpoint exists and works
+- [x] Check media.transcribeAudio tRPC endpoint
+- [x] Verify manus-speech-to-text utility integration
+- [x] Identified root cause: JSON parsing issue
+
+### Root Cause
+- manus-speech-to-text outputs human-readable text to stdout
+- Actual JSON result is saved to a file (e.g., /tmp/test_transcription_*.json)
+- Code was trying to parse stdout as JSON, which fails
+- Need to extract JSON file path from stdout and read the file
+
+### Fix Implementation
+- [x] Fix media router to extract JSON file path from stdout
+- [x] Read JSON file instead of parsing stdout
+- [x] Use result.full_text field from JSON
+- [x] Clean up JSON file after reading
+- [x] Restart server to apply fix
+
+### Testing
+- [x] Test JSON file path extraction (regex pattern)
+- [x] Test JSON file reading and parsing
+- [x] Test full_text field usage
+- [x] Test file cleanup
+- [x] Test edge cases in output parsing
+- [x] All 6 tests passing
+- [x] Create checkpoint with fix

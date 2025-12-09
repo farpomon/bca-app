@@ -46,14 +46,24 @@ export const mediaRouter = router({
           console.error("Transcription stderr:", stderr);
         }
         
-        // Parse the output (manus-speech-to-text returns JSON)
-        const result = JSON.parse(stdout);
+        // manus-speech-to-text saves JSON to a file, extract the path from stdout
+        const jsonFileMatch = stdout.match(/Complete transcription result saved to: (.+\.json)/);
+        if (!jsonFileMatch) {
+          throw new Error("Could not find JSON output file path in transcription output");
+        }
+        
+        const jsonFilePath = jsonFileMatch[1];
+        const jsonContent = await fs.readFile(jsonFilePath, "utf-8");
+        const result = JSON.parse(jsonContent);
+        
+        // Clean up JSON file
+        await fs.unlink(jsonFilePath).catch(console.error);
         
         // Clean up temp file
         await fs.unlink(tempFilePath).catch(console.error);
         
         return {
-          text: result.text || "",
+          text: result.full_text || result.text || "",
           language: result.language || language || "en",
           segments: result.segments || [],
         };
