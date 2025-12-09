@@ -68,6 +68,30 @@ export type Project = typeof projects.$inferSelect;
 export type InsertProject = typeof projects.$inferInsert;
 
 /**
+ * Assets table - represents individual buildings/facilities within a project
+ * A project can have multiple assets, and each asset has its own assessments
+ */
+export const assets = mysqlTable("assets", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  assetType: varchar("assetType", { length: 100 }), // e.g., "Building A", "Parking Structure", "Pool House"
+  address: text("address"),
+  yearBuilt: int("yearBuilt"),
+  grossFloorArea: int("grossFloorArea"), // in square feet
+  numberOfStories: int("numberOfStories"),
+  constructionType: varchar("constructionType", { length: 100 }),
+  currentReplacementValue: decimal("currentReplacementValue", { precision: 15, scale: 2 }),
+  status: mysqlEnum("status", ["active", "inactive", "demolished"]).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Asset = typeof assets.$inferSelect;
+export type InsertAsset = typeof assets.$inferInsert;
+
+/**
  * Building sections - represents extensions, additions, or distinct areas within a project
  */
 export const buildingSections = mysqlTable("building_sections", {
@@ -131,6 +155,7 @@ export type InsertCustomComponent = typeof customComponents.$inferInsert;
 export const assessments = mysqlTable("assessments", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("projectId").notNull(),
+  assetId: int("assetId").notNull(), // Links assessment to a specific asset
   sectionId: int("sectionId"),
   componentCode: varchar("componentCode", { length: 20 }).notNull(),
   componentName: varchar("componentName", { length: 255 }),

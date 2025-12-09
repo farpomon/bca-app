@@ -17,6 +17,7 @@ import { adminRouter } from "./routers/admin.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
+import * as assetsDb from "./db-assets";
 import * as customComponentsDb from "./db-custom-components";
 import * as dashboardData from "./dashboardData";
 import { generateBCAReport } from "./reportGenerator";
@@ -158,6 +159,91 @@ export const appRouter = router({
       }),
   }),
 
+  assets: router({
+    list: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        return await assetsDb.getProjectAssets(input.projectId);
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        const asset = await assetsDb.getAssetById(input.id, input.projectId);
+        if (!asset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        }
+        return asset;
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        assetType: z.string().optional(),
+        address: z.string().optional(),
+        yearBuilt: z.number().optional(),
+        grossFloorArea: z.number().optional(),
+        numberOfStories: z.number().optional(),
+        constructionType: z.string().optional(),
+        currentReplacementValue: z.string().optional(),
+        status: z.enum(["active", "inactive", "demolished"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        const assetId = await assetsDb.createAsset(input);
+        return { id: assetId };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        projectId: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        assetType: z.string().optional(),
+        address: z.string().optional(),
+        yearBuilt: z.number().optional(),
+        grossFloorArea: z.number().optional(),
+        numberOfStories: z.number().optional(),
+        constructionType: z.string().optional(),
+        currentReplacementValue: z.string().optional(),
+        status: z.enum(["active", "inactive", "demolished"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        const { id, projectId, ...data } = input;
+        await assetsDb.updateAsset(id, projectId, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number(), projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        await assetsDb.deleteAsset(input.id, input.projectId);
+        return { success: true };
+      }),
+  }),
+
   components: router({
     list: publicProcedure
       .input(z.object({ projectId: z.number().optional() }))
@@ -283,6 +369,7 @@ export const appRouter = router({
     upsert: protectedProcedure
       .input(z.object({
         projectId: z.number(),
+        assetId: z.number(),
         componentCode: z.string(),
         condition: z.enum(["good", "fair", "poor", "not_assessed"]),
         status: z.enum(["initial", "active", "completed"]).optional(),
@@ -1443,6 +1530,7 @@ export const appRouter = router({
             if (item.itemType === "assessment") {
               const assessmentId = await db.upsertAssessment({
                 projectId: submission.projectId,
+                assetId: 1, // TODO: Get actual assetId from submission data
                 componentCode: data.componentCode,
                 condition: data.condition,
                 status: data.status || "initial",

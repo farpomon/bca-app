@@ -83,7 +83,7 @@ export default function Projects() {
         observations: "",
       });
       refetch();
-      setLocation(`/projects/${data.id}`);
+      setLocation(`/projects/${data.id}/assets`);
     },
     onError: (error) => {
       toast.error("Failed to create project: " + error.message);
@@ -340,7 +340,7 @@ export default function Projects() {
               <Card
                 key={project.id}
                 className="project-card cursor-pointer group"
-                onClick={() => setLocation(`/projects/${project.id}`)}
+                onClick={() => setLocation(`/projects/${project.id}/assets`)}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">

@@ -2499,3 +2499,42 @@
 - [x] Add visible "Add Custom Component" button in assessment page
 - [x] Test mobile UI fixes on actual device
 - [x] Create checkpoint with mobile UI fixes
+
+## Mobile Button Scrolling Fix (User Report)
+- [ ] Fix Dashboard/Optimization button row to scroll horizontally on mobile
+
+## Assets Layer Implementation (User Request)
+- [ ] Create assets table in database schema
+- [ ] Add asset CRUD endpoints in backend
+- [ ] Create asset list page UI
+- [ ] Create asset creation dialog
+- [ ] Create asset edit dialog
+- [ ] Update project detail page to show assets instead of direct assessments
+- [ ] Create asset detail page showing assessments for that asset
+- [ ] Update assessment workflow to require asset selection
+- [ ] Create migration script to move existing assessments to default assets
+- [ ] Update all assessment queries to filter by assetId
+- [ ] Update dashboard calculations to work with assets
+- [ ] Update reports to include asset information
+- [ ] Test complete workflow: Project → Asset → Assessment
+- [ ] Create checkpoint with assets layer
+
+## Mobile Button Scrolling Fix
+- [x] Fix button row horizontal scrolling on mobile (Dashboard/Optimization buttons)
+
+## Assets Layer Implementation (Projects → Assets → Assessments)
+- [x] Create assets database table
+- [x] Add assetId column to assessments table
+- [x] Build assets CRUD backend API
+- [x] Create AssetDialog component
+- [x] Create AssetsList page
+- [x] Update Projects page to navigate to assets
+- [x] Update App.tsx routing for assets
+- [x] Update Assessment page to use assetId from URL
+- [x] Update AssessmentDialog to accept and use assetId
+- [x] Create migration script for existing projects
+- [x] Run migration to create default assets (198 projects migrated)
+- [x] Update assessment queries to filter by asset
+- [x] Write and run tests for assets functionality (4 tests passing)
+- [x] Test full workflow: Project → Asset → Assessment
+- [x] Create checkpoint with all changes

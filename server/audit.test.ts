@@ -127,6 +127,7 @@ describe("Audit Trail System", () => {
     // Create an assessment
     const assessmentId = await db.upsertAssessment({
       projectId,
+      assetId: 1,
       componentCode: "B2010",
       condition: "good",
       notes: "Initial assessment",
@@ -173,6 +174,7 @@ describe("Audit Trail System", () => {
     // Create an assessment
     const assessmentId = await db.upsertAssessment({
       projectId,
+      assetId: 1,
       componentCode: "B2020",
       condition: "fair",
       notes: "First version",

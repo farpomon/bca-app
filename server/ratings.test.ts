@@ -132,6 +132,7 @@ describe("Rating Scales System", () => {
     // Add some assessments
     await db.upsertAssessment({
       projectId,
+      assetId: 1,
       componentCode: "B2010",
       condition: "good",
       notes: "Test assessment 1",
@@ -140,6 +141,7 @@ describe("Rating Scales System", () => {
 
     await db.upsertAssessment({
       projectId,
+      assetId: 1,
       componentCode: "B2020",
       condition: "fair",
       notes: "Test assessment 2",

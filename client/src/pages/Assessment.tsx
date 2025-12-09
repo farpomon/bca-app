@@ -17,9 +17,10 @@ import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { AddCustomComponentDialog } from "@/components/AddCustomComponentDialog";
 
 export default function Assessment() {
-  const { id } = useParams();
+  const { id, assetId } = useParams();
   const [, setLocation] = useLocation();
   const projectId = parseInt(id!);
+  const assetIdNum = parseInt(assetId!);
 
   const { user, loading: authLoading } = useAuth();
   const { data: project, isLoading: projectLoading, error: projectError } = trpc.projects.get.useQuery(
@@ -89,6 +90,7 @@ export default function Assessment() {
 
     upsertAssessment.mutate({
       projectId,
+      assetId: assetIdNum,
       componentCode: selectedComponent,
       condition: condition as "good" | "fair" | "poor" | "not_assessed",
       observations: observations || undefined,
@@ -380,6 +382,7 @@ export default function Assessment() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         projectId={projectId}
+        assetId={assetIdNum}
         componentCode={selectedComponent}
         componentName={selectedComponentName}
         existingAssessment={assessmentMap.get(selectedComponent)}

@@ -246,16 +246,16 @@ export default function ProjectDetail() {
               {project.address || "No address specified"}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/dashboard`)}>
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide max-w-full">
+            <Button variant="outline" className="flex-none" onClick={() => setLocation(`/projects/${projectId}/dashboard`)}>
               <Building2 className="mr-2 h-4 w-4" />
               Dashboard
             </Button>
-            <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/optimization`)}>
+            <Button variant="outline" className="flex-none" onClick={() => setLocation(`/projects/${projectId}/optimization`)}>
               <Target className="mr-2 h-4 w-4" />
               Optimization
             </Button>
-            <Button variant="outline" onClick={handleEditProject}>
+            <Button variant="outline" className="flex-none" onClick={handleEditProject}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
@@ -906,6 +906,7 @@ export default function ProjectDetail() {
           }
         }}
         projectId={projectId}
+        assetId={1}
         componentCode={editingAssessment?.componentCode || ""}
         componentName={editingAssessment?.componentCode || ""}
         existingAssessment={editingAssessment ? {

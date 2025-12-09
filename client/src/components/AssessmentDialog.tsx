@@ -16,6 +16,7 @@ interface AssessmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: number;
+  assetId: number;
   componentCode: string;
   componentName: string;
   existingAssessment?: {
@@ -48,6 +49,7 @@ export function AssessmentDialog({
   open,
   onOpenChange,
   projectId,
+  assetId,
   componentCode,
   componentName,
   existingAssessment,
@@ -137,6 +139,7 @@ export function AssessmentDialog({
     try {
       const result = await upsertAssessment.mutateAsync({
         projectId,
+        assetId,
         componentCode,
         condition: condition as "good" | "fair" | "poor" | "not_assessed",
         status: status,
@@ -235,6 +238,7 @@ export function AssessmentDialog({
       // No photo, just save the assessment
       upsertAssessment.mutate({
         projectId,
+        assetId,
         componentCode,
         condition: condition as "good" | "fair" | "poor" | "not_assessed",
         conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
