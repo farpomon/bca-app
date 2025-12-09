@@ -220,6 +220,15 @@ export default function Assessment() {
                                         </div>
                                       </Button>
                                     ))}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-left mt-2 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setCustomComponentDialogOpen(true)}
+                                  >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Custom Component
+                                  </Button>
                                 </div>
                               </AccordionContent>
                             </AccordionItem>

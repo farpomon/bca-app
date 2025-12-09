@@ -2492,3 +2492,10 @@
 - [x] Remove all placeholder text from input fields
 - [x] Test component name and location fields (3 tests passing)
 - [x] Create checkpoint with new fields
+
+## Mobile UI Issues (User Report)
+- [x] Fix tab navigation horizontal scrolling on mobile (tabs are overlapping)
+- [x] Prevent section names from overlapping in bottom tab bar
+- [x] Add visible "Add Custom Component" button in assessment page
+- [x] Test mobile UI fixes on actual device
+- [x] Create checkpoint with mobile UI fixes
