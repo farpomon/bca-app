@@ -2152,3 +2152,25 @@
 - [x] Test edge cases in output parsing
 - [x] All 6 tests passing
 - [x] Create checkpoint with fix
+
+
+## Component E, F, G Data Input Issue
+
+### Investigation
+- [x] Check UNIFORMAT II hierarchy for components E, F, G
+- [x] Check assessment form component filtering logic
+- [x] Verify component codes in database
+- [x] Check if components E, F, G are being excluded somewhere
+- [x] Review hierarchy configuration settings
+
+### Root Cause
+- Project hierarchy configurations had `enabledComponents` set to only include A, B, C, D
+- Components E (Equipment & Furnishings), F (Special Construction), G (Building Sitework) were excluded
+- Filtering logic in routers.ts checks `enabledComponents` and excludes non-listed groups
+
+### Fix
+- [x] Identify root cause: hierarchy config filtering
+- [x] Update all project_hierarchy_config records to include E, F, G
+- [x] Set enabledComponents to ["A","B","C","D","E","F","G"] for all projects
+- [x] Verify update was successful (10 projects updated)
+- [x] Create checkpoint
