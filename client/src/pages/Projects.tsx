@@ -164,7 +164,7 @@ export default function Projects() {
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="e.g., 1729 Comox Avenue BCA"
+
                       required
                     />
                   </div>
@@ -174,7 +174,7 @@ export default function Projects() {
                       id="address"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="e.g., 1729 Comox Ave, V9M 3M1, BC"
+
                     />
                   </div>
                   <div className="grid gap-2">
@@ -183,7 +183,7 @@ export default function Projects() {
                       id="clientName"
                       value={formData.clientName}
                       onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                      placeholder="e.g., Town of Comox"
+
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -193,7 +193,7 @@ export default function Projects() {
                         id="propertyType"
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                        placeholder="e.g., Mixed Use"
+
                       />
                     </div>
                     <div className="grid gap-2">
@@ -202,7 +202,7 @@ export default function Projects() {
                         id="constructionType"
                         value={formData.constructionType}
                         onChange={(e) => setFormData({ ...formData, constructionType: e.target.value })}
-                        placeholder="e.g., Wood Framing"
+
                       />
                     </div>
                   </div>
@@ -214,7 +214,7 @@ export default function Projects() {
                         type="number"
                         value={formData.yearBuilt}
                         onChange={(e) => setFormData({ ...formData, yearBuilt: e.target.value })}
-                        placeholder="e.g., 1973"
+
                       />
                     </div>
                     <div className="grid gap-2">
@@ -224,7 +224,7 @@ export default function Projects() {
                         type="number"
                         value={formData.numberOfUnits}
                         onChange={(e) => setFormData({ ...formData, numberOfUnits: e.target.value })}
-                        placeholder="e.g., 1"
+
                       />
                     </div>
                     <div className="grid gap-2">
@@ -234,7 +234,7 @@ export default function Projects() {
                         type="number"
                         value={formData.numberOfStories}
                         onChange={(e) => setFormData({ ...formData, numberOfStories: e.target.value })}
-                        placeholder="e.g., 2"
+
                       />
                     </div>
                   </div>
@@ -244,7 +244,7 @@ export default function Projects() {
                       id="buildingCode"
                       value={formData.buildingCode}
                       onChange={(e) => setFormData({ ...formData, buildingCode: e.target.value })}
-                      placeholder="e.g., BC Building Code 2024"
+
                     />
                   </div>
                   <div className="grid gap-2">

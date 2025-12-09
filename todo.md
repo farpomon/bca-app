@@ -2586,3 +2586,8 @@
 - [x] Fix all TypeScript errors from nullable fields
 - [x] Test form submission with minimal data
 - [x] Create checkpoint with optional fields
+
+## Remove Placeholder Text from Assessment Form
+- [x] Remove all placeholder text (e.g., "recommendations", "observations") from project form
+- [x] Test form to ensure fields are empty
+- [x] Create checkpoint
