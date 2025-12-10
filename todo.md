@@ -2781,3 +2781,30 @@
 - [x] Handle duplicate project names on import - Imports create new projects
 - [x] Add progress indicators for export/import - Loading states added
 - [x] Write tests for export/import functionality
+
+## CSV/Excel Export Feature
+
+### Backend Implementation
+- [x] Install xlsx package for Excel generation
+- [x] Create CSV export utility for assessments
+- [x] Create CSV export utility for deficiencies
+- [x] Create Excel export utility with multiple sheets
+- [x] Add export format parameter to projects.export API - Added exportCSV and exportExcel endpoints
+- [x] Handle date formatting for CSV/Excel compatibility
+- [x] Include all relevant assessment fields (component, condition, costs, etc.)
+- [x] Include all relevant deficiency fields (description, priority, costs, etc.)
+
+### Frontend Implementation
+- [x] Add format selector dropdown to export button - Replaced with submenu
+- [x] Implement CSV download handler - Separate handlers for assessments and deficiencies
+- [x] Implement Excel download handler - Base64 decoding for binary data
+- [x] Add loading states during export generation - Built into async handlers
+- [x] Show success/error toast notifications
+- [x] Add file naming with project name and timestamp
+
+### Testing
+- [x] Test CSV export with sample data - All tests passing (6/6)
+- [x] Test Excel export with multiple sheets
+- [x] Verify data integrity in exported files
+- [x] Test with empty projects (no assessments/deficiencies)
+- [x] Write automated tests for export functions

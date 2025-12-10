@@ -164,6 +164,56 @@ export const appRouter = router({
         };
       }),
 
+    exportCSV: protectedProcedure
+      .input(z.object({ 
+        id: z.number(),
+        type: z.enum(["assessments", "deficiencies"]),
+      }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.id, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+        }
+
+        const { assessmentsToCSV, deficienciesToCSV } = await import('./export-utils');
+        
+        if (input.type === "assessments") {
+          const assessments = await db.getProjectAssessments(input.id);
+          const csv = assessmentsToCSV(assessments);
+          return { csv, filename: `${project.name}-assessments.csv` };
+        } else {
+          const deficiencies = await db.getProjectDeficiencies(input.id);
+          const csv = deficienciesToCSV(deficiencies);
+          return { csv, filename: `${project.name}-deficiencies.csv` };
+        }
+      }),
+
+    exportExcel: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.id, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+        }
+
+        const assessments = await db.getProjectAssessments(input.id);
+        const deficiencies = await db.getProjectDeficiencies(input.id);
+        
+        const { dataToExcel } = await import('./export-utils');
+        const buffer = dataToExcel({
+          projectName: project.name,
+          assessments,
+          deficiencies,
+        });
+        
+        // Convert buffer to base64 for transmission
+        const base64 = buffer.toString('base64');
+        return { 
+          data: base64, 
+          filename: `${project.name}-data.xlsx`,
+        };
+      }),
+
     import: protectedProcedure
       .input(z.object({
         data: z.object({
