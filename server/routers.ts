@@ -1395,21 +1395,38 @@ export const appRouter = router({
         mimeType: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { parseDocument } = await import('./ai-document-parser');
-        
-        // Fetch the file from storage
-        const response = await fetch(input.fileUrl);
-        if (!response.ok) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to fetch document' });
+        try {
+          console.log('[AI Import] Starting document parse:', { mimeType: input.mimeType, fileUrl: input.fileUrl.substring(0, 100) });
+          
+          const { parseDocument } = await import('./ai-document-parser');
+          
+          // Fetch the file from storage
+          const response = await fetch(input.fileUrl);
+          if (!response.ok) {
+            console.error('[AI Import] Failed to fetch document:', response.status, response.statusText);
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to fetch document from storage' });
+          }
+          
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          console.log('[AI Import] Document fetched, size:', buffer.length, 'bytes');
+          
+          // Parse and extract data
+          const extracted = await parseDocument(buffer, input.mimeType);
+          console.log('[AI Import] Parse successful:', {
+            assessments: extracted.assessments.length,
+            deficiencies: extracted.deficiencies.length,
+            photos: extracted.photos?.length || 0,
+          });
+          
+          return extracted;
+        } catch (error) {
+          console.error('[AI Import] Parse failed:', error);
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: error instanceof Error ? error.message : 'Failed to parse document',
+          });
         }
-        
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        
-        // Parse and extract data
-        const extracted = await parseDocument(buffer, input.mimeType);
-        
-        return extracted;
       }),
 
     // AI Document Import - Commit extracted data to database
