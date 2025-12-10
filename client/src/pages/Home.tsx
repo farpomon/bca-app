@@ -44,24 +44,62 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="container py-24 md:py-40">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Professional Building Condition Assessments
-          </h1>
-          <p className="mt-6 text-lg text-muted-foreground">
-            Streamline your building condition assessments with our comprehensive platform. 
-            Follow ASTM E2018-15 standards and UNIFORMAT II classification for consistent, 
-            professional reports.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild>
-              <a href={getLoginUrl()}>Get Started</a>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <a href="#features">Learn More</a>
-            </Button>
+      {/* Hero Section - Modern 2025 Design */}
+      <section className="container py-16 md:py-24">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Content (60%) */}
+          <div className="space-y-8">
+            <div className="inline-block">
+              <span className="text-sm font-semibold uppercase tracking-wider text-accent">Building Condition Assessment Software</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
+              Streamline Building Assessments
+            </h1>
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              Professional BCA platform following ASTM E2018-15 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button size="lg" className="text-base h-12 px-8" asChild>
+                <a href={getLoginUrl()}>Start Free Assessment</a>
+              </Button>
+              <Button size="lg" variant="outline" className="text-base h-12 px-8" asChild>
+                <a href="#features">See How It Works</a>
+              </Button>
+            </div>
+            {/* Social Proof */}
+            <div className="flex items-center gap-6 pt-4">
+              <div className="flex -space-x-2">
+                <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-sm font-semibold">A</div>
+                <div className="w-10 h-10 rounded-full bg-secondary/20 border-2 border-background flex items-center justify-center text-sm font-semibold">B</div>
+                <div className="w-10 h-10 rounded-full bg-accent/20 border-2 border-background flex items-center justify-center text-sm font-semibold">C</div>
+              </div>
+              <div className="text-sm">
+                <div className="font-semibold">Trusted by inspectors</div>
+                <div className="text-muted-foreground">Join professionals worldwide</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Visual (40%) */}
+          <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50">
+              {/* Product Screenshot Placeholder */}
+              <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center">
+                <div className="text-center space-y-4 p-8">
+                  <Building2 className="h-24 w-24 text-primary mx-auto" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-48 bg-primary/20 rounded mx-auto"></div>
+                    <div className="h-4 w-32 bg-secondary/20 rounded mx-auto"></div>
+                    <div className="h-4 w-40 bg-accent/20 rounded mx-auto"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Floating Stats */}
+            <div className="absolute -bottom-6 -left-6 bg-card border border-border/50 rounded-xl shadow-lg p-4 hidden md:block">
+              <div className="text-3xl font-bold text-primary">1,244</div>
+              <div className="text-sm text-muted-foreground">Projects Completed</div>
+            </div>
           </div>
         </div>
       </section>

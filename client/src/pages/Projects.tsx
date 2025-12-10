@@ -545,9 +545,9 @@ export default function Projects() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : projects && projects.length > 0 ? (
+        ) : filteredProjects && filteredProjects.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <Card
                 key={project.id}
                 className="professional-card hover-lift cursor-pointer group"
