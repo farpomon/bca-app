@@ -370,25 +370,15 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
             {/* Photos Preview */}
             {editedData.photos && editedData.photos.length > 0 && (
               <div className="space-y-3">
-                <h3 className="font-semibold">Extracted Photos</h3>
+                <h3 className="font-semibold">Extracted Photos ({editedData.photos.length})</h3>
                 <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto">
                   {editedData.photos.map((photo, index) => (
-                    <div key={index} className="border rounded-lg overflow-hidden">
-                      <img
-                        src={photo.url}
-                        alt={photo.caption || `Photo ${index + 1}`}
-                        className="w-full h-32 object-cover"
-                        onError={(e) => {
-                          console.error('Failed to load image:', photo.url);
-                          e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
-                        }}
-                      />
-                      {photo.caption && (
-                        <div className="p-2 bg-muted text-xs">
-                          <p className="line-clamp-2">{photo.caption}</p>
-                        </div>
-                      )}
-                    </div>
+                    <PhotoPreview
+                      key={index}
+                      url={photo.url}
+                      caption={photo.caption}
+                      index={index}
+                    />
                   ))}
                 </div>
               </div>
@@ -420,5 +410,73 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * Photo preview component with loading state and error handling
+ */
+function PhotoPreview({ url, caption, index }: { url: string; caption?: string | null; index: number }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const handleLoad = () => {
+    setLoading(false);
+    setError(false);
+  };
+
+  const handleError = () => {
+    console.error('Failed to load image:', url);
+    setLoading(false);
+    setError(true);
+  };
+
+  const handleRetry = () => {
+    setError(false);
+    setLoading(true);
+    setRetryCount(prev => prev + 1);
+  };
+
+  return (
+    <div className="border rounded-lg overflow-hidden bg-muted/50">
+      <div className="relative w-full h-32">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted animate-pulse">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {error ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted text-muted-foreground">
+            <AlertCircle className="h-6 w-6 mb-2" />
+            <p className="text-xs">Failed to load</p>
+            {retryCount < 3 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRetry}
+                className="mt-1 h-6 text-xs"
+              >
+                Retry
+              </Button>
+            )}
+          </div>
+        ) : (
+          <img
+            src={`${url}?retry=${retryCount}`}
+            alt={caption || `Photo ${index + 1}`}
+            className={`w-full h-32 object-cover transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
+            onLoad={handleLoad}
+            onError={handleError}
+            loading="lazy"
+          />
+        )}
+      </div>
+      {caption && (
+        <div className="p-2 bg-muted text-xs">
+          <p className="line-clamp-2">{caption}</p>
+        </div>
+      )}
+    </div>
   );
 }
