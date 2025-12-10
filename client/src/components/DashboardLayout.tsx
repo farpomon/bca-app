@@ -91,8 +91,11 @@ export default function DashboardLayout({
     );
   }
 
+  const isMobile = useIsMobile();
+
   return (
     <SidebarProvider
+      defaultOpen={!isMobile}
       style={
         {
           "--sidebar-width": `${sidebarWidth}px`,

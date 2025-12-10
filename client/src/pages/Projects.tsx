@@ -443,33 +443,37 @@ export default function Projects() {
         animate="animate"
         exit="exit"
       >
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-2">Projects</h1>
-            <p className="text-base text-muted-foreground font-normal">
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-2">Projects</h1>
+            <p className="text-sm md:text-base text-muted-foreground font-normal">
               Manage your building condition assessment projects
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 md:gap-3">
             <Button
               variant="outline"
               onClick={() => setImportDialogOpen(true)}
-              className="shadow-sm"
+              className="shadow-sm text-xs md:text-sm"
+              size="sm"
             >
-              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              Import JSON
+              <span className="hidden sm:inline">Import JSON</span>
+              <span className="sm:hidden">JSON</span>
             </Button>
             <Button
               variant="outline"
               onClick={() => setAIImportDialogOpen(true)}
-              className="shadow-sm border-primary/50 text-primary hover:bg-primary/10"
+              className="shadow-sm border-primary/50 text-primary hover:bg-primary/10 text-xs md:text-sm"
+              size="sm"
             >
-              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
-              AI Import from Document
+              <span className="hidden sm:inline">AI Import from Document</span>
+              <span className="sm:hidden">AI Import</span>
             </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -729,7 +733,7 @@ export default function Projects() {
           )}
 
           {/* Filters - Spacious Layout */}
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 md:items-center">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Filters:</span>
@@ -750,22 +754,22 @@ export default function Projects() {
                 </Select>
 
                 {/* Date Range Filters */}
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm text-muted-foreground">From:</Label>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <Label className="text-sm text-muted-foreground shrink-0">From:</Label>
                   <Input
                     type="date"
                     value={dateRangeFilter.start}
                     onChange={(e) => setDateRangeFilter({...dateRangeFilter, start: e.target.value})}
-                    className="w-[150px]"
+                    className="flex-1 md:w-[150px]"
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm text-muted-foreground">To:</Label>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <Label className="text-sm text-muted-foreground shrink-0">To:</Label>
                   <Input
                     type="date"
                     value={dateRangeFilter.end}
                     onChange={(e) => setDateRangeFilter({...dateRangeFilter, end: e.target.value})}
-                    className="w-[150px]"
+                    className="flex-1 md:w-[150px]"
                   />
                 </div>
 
