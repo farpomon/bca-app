@@ -12,10 +12,12 @@ export default function AuditTrailDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [limit, setLimit] = useState(100);
 
-  const { data: logs, isLoading, refetch } = trpc.audit.allLogs.useQuery(
-    { limit },
+  const { data: logsData, isLoading, refetch } = trpc.audit.list.useQuery(
+    { page: 1, pageSize: limit },
     { enabled: !!user && user.role === "admin" }
   );
+  
+  const logs = logsData?.logs;
 
   if (authLoading) {
     return (
@@ -130,9 +132,9 @@ export default function AuditTrailDashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {logs.map((log) => {
-                  const changes = JSON.parse(log.changes);
-                  const metadata = log.metadata ? JSON.parse(log.metadata) : {};
+                {logs.map((log: any) => {
+                  const changes = typeof log.changes === 'string' ? JSON.parse(log.changes) : log.changes;
+                  const metadata = log.metadata && typeof log.metadata === 'string' ? JSON.parse(log.metadata) : (log.metadata || {});
 
                   return (
                     <div
