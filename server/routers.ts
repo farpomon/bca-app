@@ -1383,9 +1383,141 @@ export const appRouter = router({
       }),
 
     fci: protectedProcedure
-      .input(z.object({ sectionId: z.number() }))
+      .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        return await db.getSectionFCI(input.sectionId);
+        return await db.calculateOverallBuildingCondition(input.projectId);
+      }),
+
+    // AI Document Import - Parse uploaded document
+    parseDocument: protectedProcedure
+      .input(z.object({
+        fileUrl: z.string(),
+        mimeType: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { parseDocument } = await import('./ai-document-parser');
+        
+        // Fetch the file from storage
+        const response = await fetch(input.fileUrl);
+        if (!response.ok) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to fetch document' });
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        // Parse and extract data
+        const extracted = await parseDocument(buffer, input.mimeType);
+        
+        return extracted;
+      }),
+
+    // AI Document Import - Commit extracted data to database
+    commitAIImport: protectedProcedure
+      .input(z.object({
+        project: z.object({
+          name: z.string(),
+          address: z.string().nullable().optional(),
+          clientName: z.string().nullable().optional(),
+          propertyType: z.string().nullable().optional(),
+          constructionType: z.string().nullable().optional(),
+          yearBuilt: z.number().nullable().optional(),
+          numberOfUnits: z.number().nullable().optional(),
+          numberOfStories: z.number().nullable().optional(),
+          observations: z.string().nullable().optional(),
+        }),
+        assessments: z.array(z.object({
+          componentCode: z.string(),
+          componentName: z.string(),
+          componentLocation: z.string().nullable().optional(),
+          condition: z.enum(['excellent', 'good', 'fair', 'poor', 'critical']),
+          conditionPercentage: z.number().nullable().optional(),
+          observations: z.string().nullable().optional(),
+          recommendations: z.string().nullable().optional(),
+          remainingUsefulLife: z.number().nullable().optional(),
+          expectedUsefulLife: z.number().nullable().optional(),
+          estimatedRepairCost: z.number().nullable().optional(),
+          replacementValue: z.number().nullable().optional(),
+        })),
+        deficiencies: z.array(z.object({
+          componentCode: z.string(),
+          title: z.string(),
+          description: z.string(),
+          location: z.string().nullable().optional(),
+          severity: z.enum(['low', 'medium', 'high', 'critical']),
+          priority: z.enum(['immediate', 'short_term', 'medium_term', 'long_term']),
+          estimatedCost: z.number().nullable().optional(),
+          recommendedAction: z.string().nullable().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Create project
+        const projectData = {
+          ...input.project,
+          userId: ctx.user.id,
+          status: 'draft' as const,
+        };
+        
+        const projectId = await db.createProject(projectData);
+        
+        // Create a default asset for the project
+        const assetId = await assetsDb.createAsset({
+          projectId,
+          name: input.project.name || 'Main Building',
+          assetType: 'Building',
+          status: 'active',
+        });
+        
+        // Create assessments and track their IDs by component code
+        const assessmentIdMap = new Map<string, number>();
+        
+        for (const assessment of input.assessments) {
+          // Map AI condition values to database enum
+          const conditionMap: Record<string, 'good' | 'fair' | 'poor' | 'not_assessed'> = {
+            'excellent': 'good',
+            'good': 'good',
+            'fair': 'fair',
+            'poor': 'poor',
+            'critical': 'poor',
+          };
+          
+          const assessmentId = await db.upsertAssessment({
+            projectId,
+            assetId,
+            componentCode: assessment.componentCode,
+            componentName: assessment.componentName,
+            componentLocation: assessment.componentLocation || null,
+            condition: conditionMap[assessment.condition] || 'not_assessed',
+            conditionPercentage: assessment.conditionPercentage?.toString() || null,
+            observations: assessment.observations || null,
+            recommendations: assessment.recommendations || null,
+            remainingUsefulLife: assessment.remainingUsefulLife || null,
+            expectedUsefulLife: assessment.expectedUsefulLife || null,
+            estimatedRepairCost: assessment.estimatedRepairCost || null,
+            replacementValue: assessment.replacementValue || null,
+            status: 'completed',
+            assessedAt: new Date(),
+          });
+          
+          assessmentIdMap.set(assessment.componentCode, assessmentId);
+        }
+        
+        // Create deficiencies linked to assessments
+        for (const deficiency of input.deficiencies) {
+          const assessmentId = assessmentIdMap.get(deficiency.componentCode);
+          
+          await db.createDeficiency({
+            projectId,
+            assessmentId: assessmentId || null,
+            ...deficiency,
+          });
+        }
+        
+        return {
+          projectId,
+          assessmentCount: input.assessments.length,
+          deficiencyCount: input.deficiencies.length,
+        };
       }),
   }),
 

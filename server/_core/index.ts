@@ -39,6 +39,10 @@ async function startServer() {
   
   // Audio upload endpoint
   app.post("/api/upload-audio", handleAudioUpload, uploadAudio);
+  
+  // Document upload endpoint for AI import
+  const { uploadMiddleware, handleUpload } = await import('./upload-handler');
+  app.post("/api/upload", uploadMiddleware, handleUpload);
   // tRPC API
   app.use(
     "/api/trpc",

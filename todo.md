@@ -2836,3 +2836,52 @@
 - [x] Test Excel file opens correctly with multiple sheets - Buffer validation
 - [x] Verify all project data is included and accurate - Comprehensive data checks
 - [x] Write automated tests for bulk export functionality - 8 tests covering all scenarios
+
+## AI Document Import Feature
+
+### Design & Planning
+- [x] Define extraction schema for project info, assessments, deficiencies
+- [x] Design AI prompt template for structured data extraction
+- [x] Plan validation rules for AI-extracted data - Confidence levels and warnings
+- [x] Design preview/review UI before committing to database
+- [x] Handle multiple document formats (PDF, DOCX, images of reports) - PDF and DOCX supported
+
+### Backend Implementation
+- [x] Add document upload endpoint with file validation - /api/upload with multer
+- [x] Implement PDF text extraction (using pdf-parse or similar) - Using pdfjs-dist
+- [x] Implement DOCX text extraction (using mammoth or similar) - Using mammoth
+- [x] Create Gemini prompt for BCA report parsing
+- [x] Implement AI extraction with structured JSON response - JSON schema validation
+- [x] Add data validation and cleaning logic - Condition mapping, type conversion
+- [x] Create preview endpoint that returns extracted data - projects.parseDocument
+- [x] Implement commit endpoint that saves to database - projects.commitAIImport
+- [x] Handle partial imports (some fields missing) - Nullable fields supported
+- [x] Add error handling for unparseable documents
+
+### AI Prompt Engineering
+- [x] Design prompt to extract project metadata (name, address, client, dates)
+- [x] Design prompt to extract assessments (components, conditions, costs)
+- [x] Design prompt to extract deficiencies (descriptions, severity, priorities)
+- [x] Include examples in prompt for better accuracy - Detailed instructions provided
+- [x] Handle various report formats and templates - Generic extraction approach
+- [x] Extract tables, lists, and structured data
+- [x] Preserve relationships (assessments → deficiencies) - Component code linking
+
+### Frontend Implementation
+- [x] Add "Import from Document" button to Projects page
+- [x] Create document upload dialog with drag-and-drop - AIImportDialog component
+- [x] Show upload progress indicator - Progress bar with percentage
+- [x] Display AI extraction preview with editable fields - Project info editable
+- [x] Allow users to review and modify extracted data - Input fields for key data
+- [x] Show confidence scores or warnings for uncertain data - Alert with warnings list
+- [x] Implement "Confirm Import" action - commitAIImport mutation
+- [x] Add success/error feedback with import summary - Toast with counts
+
+### Testing
+- [ ] Test with sample PDF BCA reports - Needs real document testing
+- [ ] Test with Word document reports - Needs real document testing
+- [ ] Test with poorly formatted documents
+- [ ] Test with partial data (missing sections)
+- [ ] Verify data accuracy and completeness
+- [ ] Test validation and error handling
+- [ ] Write automated tests for parsing logic
