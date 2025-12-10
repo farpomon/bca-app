@@ -2665,4 +2665,16 @@
 - [x] Update stat cards for light theme
 - [x] Test all pages with light theme
 - [x] Verify search and filter UI with light theme
-- [ ] Create checkpoint with light theme
+- [x] Create checkpoint with light theme
+
+## Minimalist Refactor with Framer Motion (Dec 9, 2025)
+
+- [x] Install framer-motion package
+- [x] Create animation utilities and variants
+- [x] Refactor cards to minimalist aesthetic with subtle borders
+- [x] Update spacing and whitespace for clean look
+- [x] Add Framer Motion to all buttons with scale hover effect
+- [x] Implement page fade-in animations
+- [x] Add smooth transitions to cards and components
+- [x] Test all animations across pages
+- [ ] Create checkpoint with minimalist design and animations

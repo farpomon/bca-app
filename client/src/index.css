@@ -59,7 +59,7 @@
   --chart-3: var(--color-blue-600);
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
+  --radius: 0.5rem;
   /* Light backgrounds */
   --background: oklch(1 0 0);
   --foreground: oklch(0.235 0.015 65);
@@ -214,26 +214,9 @@
     }
   }
 
-  /* Stats card enhancements */
+  /* Minimalist Stats Cards */
   .stat-card {
-    @apply relative overflow-hidden transition-all duration-200 hover:shadow-lg;
-  }
-
-  .stat-card::before {
-    content: '';
-    @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r;
-  }
-
-  .stat-card-primary::before {
-    @apply from-blue-500 to-blue-600;
-  }
-
-  .stat-card-success::before {
-    @apply from-green-500 to-emerald-600;
-  }
-
-  .stat-card-warning::before {
-    @apply from-amber-500 to-orange-600;
+    @apply relative;
   }
 
   /* Project card enhancements */

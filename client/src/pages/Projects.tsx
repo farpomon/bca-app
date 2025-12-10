@@ -17,6 +17,9 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { motion } from "framer-motion";
+import { pageVariants, containerVariants, cardVariants } from "@/lib/animations";
+import { AnimatedButton } from "@/components/AnimatedButton";
 
 export default function Projects() {
   const { user, loading: authLoading } = useAuth();
@@ -224,7 +227,13 @@ export default function Projects() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <motion.div
+        className="space-y-6"
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
@@ -234,10 +243,10 @@ export default function Projects() {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="btn-gradient shadow-md hover:shadow-lg">
+              <AnimatedButton className="btn-gradient shadow-md hover:shadow-lg">
                 <Plus className="mr-2 h-4 w-4" />
                 New Project
-              </Button>
+              </AnimatedButton>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleSubmit}>
@@ -665,7 +674,6 @@ export default function Projects() {
             </CardContent>
           </Card>
         )}
-      </div>
 
       {/* Edit Project Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -826,6 +834,7 @@ export default function Projects() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </motion.div>
     </DashboardLayout>
   );
 }
