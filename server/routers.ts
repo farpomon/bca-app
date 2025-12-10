@@ -1449,6 +1449,13 @@ export const appRouter = router({
           estimatedCost: z.number().nullable().optional(),
           recommendedAction: z.string().nullable().optional(),
         })),
+        photos: z.array(z.object({
+          url: z.string(),
+          fileKey: z.string(),
+          caption: z.string().nullable().optional(),
+          context: z.string().nullable().optional(),
+          componentCode: z.string().nullable().optional(), // Which component this photo relates to
+        })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Create project
@@ -1513,10 +1520,32 @@ export const appRouter = router({
           });
         }
         
+        // Create photos linked to assessments
+        let photoCount = 0;
+        if (input.photos && input.photos.length > 0) {
+          for (const photo of input.photos) {
+            // Find the assessment this photo relates to
+            const assessmentId = photo.componentCode 
+              ? assessmentIdMap.get(photo.componentCode)
+              : null;
+            
+            await db.createPhoto({
+              projectId,
+              assessmentId: assessmentId || null,
+              url: photo.url,
+              fileKey: photo.fileKey,
+              caption: photo.caption || null,
+            });
+            
+            photoCount++;
+          }
+        }
+        
         return {
           projectId,
           assessmentCount: input.assessments.length,
           deficiencyCount: input.deficiencies.length,
+          photoCount,
         };
       }),
   }),

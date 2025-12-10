@@ -50,6 +50,13 @@ type ExtractedData = {
     estimatedCost?: number | null;
     recommendedAction?: string | null;
   }>;
+  photos?: Array<{
+    url: string;
+    fileKey: string;
+    caption?: string | null;
+    context?: string | null;
+    componentCode?: string | null;
+  }>;
   confidence: "high" | "medium" | "low";
   warnings: string[];
 };
@@ -343,7 +350,7 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
             </div>
 
             {/* Summary */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+            <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
               <div>
                 <p className="text-sm text-muted-foreground">Assessments</p>
                 <p className="text-2xl font-bold">{editedData.assessments.length}</p>
@@ -352,7 +359,34 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
                 <p className="text-sm text-muted-foreground">Deficiencies</p>
                 <p className="text-2xl font-bold">{editedData.deficiencies.length}</p>
               </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Photos</p>
+                <p className="text-2xl font-bold">{editedData.photos?.length || 0}</p>
+              </div>
             </div>
+
+            {/* Photos Preview */}
+            {editedData.photos && editedData.photos.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold">Extracted Photos</h3>
+                <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+                  {editedData.photos.map((photo, index) => (
+                    <div key={index} className="border rounded-lg overflow-hidden">
+                      <img
+                        src={photo.url}
+                        alt={photo.caption || `Photo ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                      {photo.caption && (
+                        <div className="p-2 bg-muted text-xs">
+                          <p className="line-clamp-2">{photo.caption}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-3 justify-end">

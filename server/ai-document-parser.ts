@@ -1,9 +1,19 @@
 import mammoth from 'mammoth';
 import { invokeLLM } from './_core/llm';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { storagePut } from './storage';
+import { randomBytes } from 'crypto';
+
+type ExtractedImage = {
+  buffer: Buffer;
+  mimeType: string;
+  caption?: string;
+  pageNumber?: number;
+  context?: string; // Surrounding text for context
+};
 
 /**
- * Extract text from PDF buffer using pdf.js
+ * Extract text and images from PDF buffer using pdf.js
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
@@ -28,6 +38,57 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 }
 
 /**
+ * Extract images from PDF buffer
+ */
+export async function extractImagesFromPDF(buffer: Buffer): Promise<ExtractedImage[]> {
+  try {
+    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
+    const pdfDocument = await loadingTask.promise;
+    
+    const images: ExtractedImage[] = [];
+    
+    for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+      const page = await pdfDocument.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      
+      const operatorList = await page.getOperatorList();
+      
+      for (let i = 0; i < operatorList.fnArray.length; i++) {
+        if (operatorList.fnArray[i] === pdfjsLib.OPS.paintImageXObject) {
+          const imageName = operatorList.argsArray[i][0];
+          
+          try {
+            const image = await page.objs.get(imageName);
+            
+            if (image && image.data) {
+              // Convert image data to buffer
+              const imageBuffer = Buffer.from(image.data);
+              
+              images.push({
+                buffer: imageBuffer,
+                mimeType: 'image/png',
+                pageNumber: pageNum,
+                context: pageText.substring(0, 500), // First 500 chars of page as context
+              });
+            }
+          } catch (imgError) {
+            console.warn(`Failed to extract image ${imageName} from page ${pageNum}:`, imgError);
+          }
+        }
+      }
+    }
+    
+    return images;
+  } catch (error) {
+    console.error('Failed to extract images from PDF:', error);
+    return [];
+  }
+}
+
+/**
  * Extract text from Word document buffer
  */
 export async function extractTextFromWord(buffer: Buffer): Promise<string> {
@@ -37,6 +98,18 @@ export async function extractTextFromWord(buffer: Buffer): Promise<string> {
   } catch (error) {
     throw new Error(`Failed to parse Word document: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+/**
+ * Extract images from Word document buffer
+ * Note: mammoth doesn't provide easy image extraction API, so we return empty for now
+ * Users can convert Word to PDF first for image extraction
+ */
+export async function extractImagesFromWord(buffer: Buffer): Promise<ExtractedImage[]> {
+  // Word image extraction is complex and requires additional libraries
+  // For now, recommend users convert to PDF for image extraction
+  console.log('Word image extraction not yet implemented - convert to PDF for best results');
+  return [];
 }
 
 /**
@@ -213,6 +286,39 @@ Return ONLY valid JSON in this exact structure:
 }
 
 /**
+ * Upload extracted images to S3 and return photo metadata
+ */
+async function uploadExtractedImages(images: ExtractedImage[], projectPrefix: string): Promise<Array<{
+  url: string;
+  fileKey: string;
+  caption?: string;
+  context?: string;
+}>> {
+  const uploadedPhotos = [];
+  
+  for (let i = 0; i < images.length; i++) {
+    const image = images[i];
+    const randomSuffix = randomBytes(4).toString('hex');
+    const fileKey = `${projectPrefix}/photo-${i + 1}-${randomSuffix}.png`;
+    
+    try {
+      const { url } = await storagePut(fileKey, image.buffer, image.mimeType);
+      
+      uploadedPhotos.push({
+        url,
+        fileKey,
+        caption: image.caption,
+        context: image.context,
+      });
+    } catch (error) {
+      console.error(`Failed to upload image ${i + 1}:`, error);
+    }
+  }
+  
+  return uploadedPhotos;
+}
+
+/**
  * Main function to parse document and extract BCA data
  */
 export async function parseDocument(
@@ -224,20 +330,31 @@ export async function parseDocument(
   deficiencies: any[];
   confidence: 'high' | 'medium' | 'low';
   warnings: string[];
+  photos: Array<{
+    url: string;
+    fileKey: string;
+    caption?: string;
+    context?: string;
+  }>;
 }> {
   let documentText: string;
+  let images: ExtractedImage[] = [];
 
-  // Extract text based on file type
+  // Extract text and images based on file type
   if (mimeType === 'application/pdf') {
     documentText = await extractTextFromPDF(buffer);
+    images = await extractImagesFromPDF(buffer);
   } else if (
     mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     mimeType === 'application/msword'
   ) {
     documentText = await extractTextFromWord(buffer);
+    images = await extractImagesFromWord(buffer);
   } else {
     throw new Error(`Unsupported file type: ${mimeType}`);
   }
+
+  console.log(`Extracted ${images.length} images from document`);
 
   if (!documentText || documentText.trim().length < 100) {
     throw new Error('Document appears to be empty or too short to parse');
@@ -246,5 +363,12 @@ export async function parseDocument(
   // Use AI to extract structured data
   const extracted = await extractBCADataFromText(documentText);
 
-  return extracted;
+  // Upload extracted images to S3
+  const projectPrefix = `ai-imports/${Date.now()}-${randomBytes(4).toString('hex')}`;
+  const uploadedPhotos = await uploadExtractedImages(images, projectPrefix);
+
+  return {
+    ...extracted,
+    photos: uploadedPhotos,
+  };
 }

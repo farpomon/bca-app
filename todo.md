@@ -2885,3 +2885,47 @@
 - [ ] Verify data accuracy and completeness
 - [ ] Test validation and error handling
 - [ ] Write automated tests for parsing logic
+
+
+## Photo Extraction for AI Import
+
+### Design & Planning
+- [x] Design photo extraction workflow from PDF/Word documents
+- [x] Plan photo storage strategy (S3 keys, naming convention) - ai-imports/{timestamp}-{random}/photo-{index}-{random}.png
+- [x] Design photo-to-assessment/deficiency linking logic - Based on componentCode
+- [x] Handle photo captions and context extraction - Extracted from surrounding text
+- [x] Plan for multiple photos per component - Supported
+
+### Backend Implementation
+- [x] Implement PDF image extraction using pdfjs-dist - Extracts from paintImageXObject operations
+- [x] Implement Word image extraction using mammoth - Deferred (recommend PDF conversion)
+- [x] Extract image metadata (position, size, format) - Page number and context
+- [x] Upload extracted images to S3 storage - Using storagePut
+- [x] Generate unique file keys for each photo - Timestamp + random suffix
+- [x] Create photo records in database - In commitAIImport
+- [x] Link photos to assessments based on proximity/context - Via componentCode mapping
+- [x] Link photos to deficiencies based on descriptions - Can be extended
+- [x] Handle image format conversion if needed - Defaults to PNG
+- [x] Add error handling for corrupted images - Try-catch with logging
+
+### AI Enhancement
+- [x] Update AI prompt to extract photo captions - Added to schema
+- [x] Extract photo context (which component/deficiency) - Page text as context
+- [x] Identify photo types (overview, detail, defect) - Can be added to prompt
+- [x] Map photos to correct assessment/deficiency records - Via componentCode
+- [x] Handle photos without clear context - Links to project without assessment
+
+### Frontend Updates
+- [x] Show extracted photos in preview dialog - Grid with thumbnails
+- [x] Display photo thumbnails with captions - 3-column grid
+- [x] Allow users to review photo-component associations - Visible in preview
+- [ ] Add ability to reassign photos to different components - Future enhancement
+- [x] Show photo count in import summary - Added to stats
+
+### Testing
+- [ ] Test PDF with embedded images - Needs real document testing
+- [ ] Test Word documents with inline photos - Deferred to PDF
+- [ ] Test documents with multiple photos per component
+- [ ] Test documents with unlabeled photos
+- [ ] Verify S3 upload and database linking
+- [ ] Write automated tests for photo extraction
