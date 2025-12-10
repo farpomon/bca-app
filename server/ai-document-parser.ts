@@ -185,6 +185,7 @@ Return ONLY valid JSON in this exact structure:
 }`;
 
   try {
+    console.log('[AI Extraction] Sending request to Gemini...');
     const response = await invokeLLM({
       messages: [
         {
@@ -208,14 +209,14 @@ Return ONLY valid JSON in this exact structure:
                 type: 'object',
                 properties: {
                   name: { type: 'string' },
-                  address: { type: ['string', 'null'] },
-                  clientName: { type: ['string', 'null'] },
-                  propertyType: { type: ['string', 'null'] },
-                  constructionType: { type: ['string', 'null'] },
-                  yearBuilt: { type: ['number', 'null'] },
-                  numberOfUnits: { type: ['number', 'null'] },
-                  numberOfStories: { type: ['number', 'null'] },
-                  observations: { type: ['string', 'null'] },
+                  address: { type: 'string', nullable: true },
+                  clientName: { type: 'string', nullable: true },
+                  propertyType: { type: 'string', nullable: true },
+                  constructionType: { type: 'string', nullable: true },
+                  yearBuilt: { type: 'number', nullable: true },
+                  numberOfUnits: { type: 'number', nullable: true },
+                  numberOfStories: { type: 'number', nullable: true },
+                  observations: { type: 'string', nullable: true },
                 },
                 required: ['name'],
                 additionalProperties: false,
@@ -227,15 +228,15 @@ Return ONLY valid JSON in this exact structure:
                   properties: {
                     componentCode: { type: 'string' },
                     componentName: { type: 'string' },
-                    componentLocation: { type: ['string', 'null'] },
+                    componentLocation: { type: 'string', nullable: true },
                     condition: { type: 'string', enum: ['excellent', 'good', 'fair', 'poor', 'critical'] },
-                    conditionPercentage: { type: ['number', 'null'] },
-                    observations: { type: ['string', 'null'] },
-                    recommendations: { type: ['string', 'null'] },
-                    remainingUsefulLife: { type: ['number', 'null'] },
-                    expectedUsefulLife: { type: ['number', 'null'] },
-                    estimatedRepairCost: { type: ['number', 'null'] },
-                    replacementValue: { type: ['number', 'null'] },
+                    conditionPercentage: { type: 'number', nullable: true },
+                    observations: { type: 'string', nullable: true },
+                    recommendations: { type: 'string', nullable: true },
+                    remainingUsefulLife: { type: 'number', nullable: true },
+                    expectedUsefulLife: { type: 'number', nullable: true },
+                    estimatedRepairCost: { type: 'number', nullable: true },
+                    replacementValue: { type: 'number', nullable: true },
                   },
                   required: ['componentCode', 'componentName', 'condition'],
                   additionalProperties: false,
@@ -249,11 +250,11 @@ Return ONLY valid JSON in this exact structure:
                     componentCode: { type: 'string' },
                     title: { type: 'string' },
                     description: { type: 'string' },
-                    location: { type: ['string', 'null'] },
+                    location: { type: 'string', nullable: true },
                     severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
                     priority: { type: 'string', enum: ['immediate', 'short_term', 'medium_term', 'long_term'] },
-                    estimatedCost: { type: ['number', 'null'] },
-                    recommendedAction: { type: ['string', 'null'] },
+                    estimatedCost: { type: 'number', nullable: true },
+                    recommendedAction: { type: 'string', nullable: true },
                   },
                   required: ['componentCode', 'title', 'description', 'severity', 'priority'],
                   additionalProperties: false,
@@ -272,15 +273,26 @@ Return ONLY valid JSON in this exact structure:
       },
     });
 
-    const message = response.choices[0]?.message;
+    console.log('[AI Extraction] Response received');
+    console.log('[AI Extraction] Response structure:', JSON.stringify({
+      hasChoices: !!response.choices,
+      choicesLength: response.choices?.length,
+      firstChoice: response.choices?.[0] ? 'exists' : 'missing'
+    }));
+    
+    const message = response.choices?.[0]?.message;
     if (!message || !message.content) {
+      console.error('[AI Extraction] No message in response:', JSON.stringify(response, null, 2));
       throw new Error('No response from AI');
     }
 
+    console.log('[AI Extraction] Parsing content...');
     const content = typeof message.content === 'string' ? message.content : JSON.stringify(message.content);
     const extracted = JSON.parse(content);
+    console.log('[AI Extraction] Successfully extracted data');
     return extracted;
   } catch (error) {
+    console.error('[AI Extraction] Error details:', error);
     throw new Error(`AI extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
