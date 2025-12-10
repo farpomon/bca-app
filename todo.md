@@ -28,3 +28,16 @@
 - **Problem:** Used `type: ['string', 'null']` which is invalid for OpenAI JSON schema
 - **Solution:** Changed to `type: 'string', nullable: true` format
 - **Result:** AI extraction now works perfectly with 67-page BCA report
+
+## UI Integration Testing (Current)
+
+- [x] Check browser console for frontend errors - Found: No procedure found on path "projects.parseDocument"
+- [ ] Check server logs for backend errors
+- [x] Verify AIImportDialog is calling correct tRPC endpoints - Was calling projects.*, should be buildingSections.*
+- [x] Fix router path in AIImportDialog - Changed to buildingSections.parseDocument and buildingSections.commitAIImport
+- [x] Test file upload flow - Working! Uploaded and parsed successfully
+- [x] Test complete end-to-end workflow with real PDF - Extracted 42 assessments, 6 deficiencies, 6 photos
+- [ ] Fix photo display issue - Photos extracted but not showing in preview
+  - Added error logging to see which URLs are failing
+  - Added fallback placeholder image for failed loads
+  - Need to test again to see console errors

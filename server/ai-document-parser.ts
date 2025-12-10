@@ -316,6 +316,8 @@ async function uploadExtractedImages(images: ExtractedImage[], projectPrefix: st
     try {
       const { url } = await storagePut(fileKey, image.buffer, image.mimeType);
       
+      console.log(`[AI Import] Uploaded photo ${i + 1}:`, { url, fileKey });
+      
       uploadedPhotos.push({
         url,
         fileKey,
