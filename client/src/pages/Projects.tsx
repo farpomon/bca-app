@@ -133,6 +133,41 @@ export default function Projects() {
     bulkDeleteProjects.mutate({ ids: Array.from(selectedProjects) });
   };
 
+  const handleBulkExport = async () => {
+    try {
+      const ids = Array.from(selectedProjects);
+      const response = await fetch(`/api/trpc/projects.bulkExportExcel?input=${encodeURIComponent(JSON.stringify({ ids }))}`);
+      if (!response.ok) throw new Error('Bulk export failed');
+      const result = await response.json();
+      const { data: base64Data, filename } = result.result.data;
+      
+      // Convert base64 to blob
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`Successfully exported ${ids.length} project(s) to Excel`);
+    } catch (error) {
+      toast.error('Failed to export selected projects');
+    }
+  };
+
+  const bulkExportMutation = {
+    isPending: false, // Placeholder for loading state
+  };
+
    const handleExportProject = async (projectId: number) => {
     try {
       // Use fetch to call the tRPC endpoint directly
@@ -655,6 +690,21 @@ export default function Projects() {
                   Clear Selection
                 </Button>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkExport}
+                disabled={bulkExportMutation.isPending}
+              >
+                {bulkExportMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                )}
+                Export Selected
+              </Button>
               <Button
                 variant="destructive"
                 size="sm"

@@ -214,6 +214,51 @@ export const appRouter = router({
         };
       }),
 
+    bulkExportExcel: protectedProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .query(async ({ ctx, input }) => {
+        if (input.ids.length === 0) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'No projects selected' });
+        }
+
+        // Fetch all projects and their data
+        const projectsData = await Promise.all(
+          input.ids.map(async (id) => {
+            const project = await db.getProjectById(id, ctx.user.id);
+            if (!project) {
+              return null; // Skip projects user doesn't have access to
+            }
+
+            const assessments = await db.getProjectAssessments(id);
+            const deficiencies = await db.getProjectDeficiencies(id);
+
+            return {
+              project,
+              assessments,
+              deficiencies,
+            };
+          })
+        );
+
+        // Filter out null entries (projects user doesn't have access to)
+        const validProjects = projectsData.filter(p => p !== null);
+
+        if (validProjects.length === 0) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'No accessible projects found' });
+        }
+
+        const { bulkProjectsToExcel } = await import('./export-utils');
+        const buffer = bulkProjectsToExcel(validProjects);
+        
+        // Convert buffer to base64 for transmission
+        const base64 = buffer.toString('base64');
+        const timestamp = new Date().toISOString().split('T')[0];
+        return { 
+          data: base64, 
+          filename: `bulk-export-${validProjects.length}-projects-${timestamp}.xlsx`,
+        };
+      }),
+
     import: protectedProcedure
       .input(z.object({
         data: z.object({

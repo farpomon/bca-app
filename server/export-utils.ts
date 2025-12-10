@@ -178,3 +178,89 @@ export function dataToExcel(data: {
   const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
   return buffer;
 }
+
+/**
+ * Convert multiple projects to a single Excel workbook
+ * Each project gets its own sheet with assessments and deficiencies
+ */
+export function bulkProjectsToExcel(projects: Array<{
+  project: any;
+  assessments: any[];
+  deficiencies: any[];
+}>): Buffer {
+  const workbook = XLSX.utils.book_new();
+
+  // Create summary sheet
+  const summaryData = projects.map((p, index) => ({
+    "#": index + 1,
+    "Project Name": p.project.name || "",
+    "Status": p.project.status || "",
+    "Client": p.project.clientName || "",
+    "Address": p.project.address || "",
+    "Assessments": p.assessments.length,
+    "Deficiencies": p.deficiencies.length,
+    "Created": p.project.createdAt ? new Date(p.project.createdAt).toISOString().split('T')[0] : "",
+  }));
+  const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+  XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+
+  // Create sheets for each project
+  projects.forEach((p, index) => {
+    // Excel sheet names have a 31 character limit
+    const sheetName = `${index + 1}. ${p.project.name || 'Unnamed'}`.substring(0, 31);
+    
+    // Combine assessments and deficiencies for this project
+    const projectData = [
+      { "Type": "Project Info", "Field": "Name", "Value": p.project.name || "" },
+      { "Type": "Project Info", "Field": "Status", "Value": p.project.status || "" },
+      { "Type": "Project Info", "Field": "Client", "Value": p.project.clientName || "" },
+      { "Type": "Project Info", "Field": "Address", "Value": p.project.address || "" },
+      { "Type": "Project Info", "Field": "Property Type", "Value": p.project.propertyType || "" },
+      { "Type": "", "Field": "", "Value": "" }, // Empty row
+      { "Type": "Summary", "Field": "Total Assessments", "Value": p.assessments.length.toString() },
+      { "Type": "Summary", "Field": "Total Deficiencies", "Value": p.deficiencies.length.toString() },
+    ];
+
+    const projectSheet = XLSX.utils.json_to_sheet(projectData);
+    XLSX.utils.book_append_sheet(workbook, projectSheet, sheetName);
+
+    // Add assessments sheet if there are any
+    if (p.assessments.length > 0) {
+      const assessmentsData = p.assessments.map(a => ({
+        "Component Code": a.componentCode || "",
+        "Component Name": a.componentName || "",
+        "Location": a.componentLocation || "",
+        "Condition": a.condition || "",
+        "Status": a.status || "",
+        "Condition %": a.conditionPercentage || "",
+        "Observations": a.observations || "",
+        "Estimated Repair Cost": a.estimatedRepairCost || "",
+        "Replacement Value": a.replacementValue || "",
+      }));
+      const assessmentsSheet = XLSX.utils.json_to_sheet(assessmentsData);
+      const assessSheetName = `${index + 1}. Assessments`.substring(0, 31);
+      XLSX.utils.book_append_sheet(workbook, assessmentsSheet, assessSheetName);
+    }
+
+    // Add deficiencies sheet if there are any
+    if (p.deficiencies.length > 0) {
+      const deficienciesData = p.deficiencies.map(d => ({
+        "Component Code": d.componentCode || "",
+        "Title": d.title || "",
+        "Description": d.description || "",
+        "Severity": d.severity || "",
+        "Priority": d.priority || "",
+        "Location": d.location || "",
+        "Estimated Cost": d.estimatedCost || "",
+        "Recommended Action": d.recommendedAction || "",
+      }));
+      const deficienciesSheet = XLSX.utils.json_to_sheet(deficienciesData);
+      const defSheetName = `${index + 1}. Deficiencies`.substring(0, 31);
+      XLSX.utils.book_append_sheet(workbook, deficienciesSheet, defSheetName);
+    }
+  });
+
+  // Convert to buffer
+  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  return buffer;
+}
