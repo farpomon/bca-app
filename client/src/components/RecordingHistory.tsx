@@ -219,7 +219,7 @@ export function RecordingHistory({ onSelectRecording, context }: RecordingHistor
             {recordings.map((recording) => (
               <div
                 key={recording.id}
-                className={`p-4 modern-card smooth-transition ${
+                className={`p-4 modern-card transition-all duration-300 ${
                   selectedIds.has(recording.id) ? "ring-2 ring-primary bg-primary/5" : ""
                 }`}
               >

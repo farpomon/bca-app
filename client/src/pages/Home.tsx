@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header */}
-      <header className="glass border-b sticky top-0 z-50">
+      <header className="sticky top-0 z-50 border-b border-white/10" style={{background: 'linear-gradient(180deg, rgba(30, 42, 58, 0.95) 0%, rgba(30, 42, 58, 0.85) 100%)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)'}}>
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />

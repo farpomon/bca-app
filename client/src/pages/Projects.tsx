@@ -372,32 +372,32 @@ export default function Projects() {
         {/* FCI Dashboard Summary */}
         {projects && projects.length > 0 && (
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="stat-card stat-card-primary">
+            <Card className="professional-card stat-card stat-card-primary">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Total Projects</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold tracking-tight">{projects.length}</div>
+                <div className="metric-value">{projects.length}</div>
                 <p className="text-xs text-muted-foreground mt-1">Across all statuses</p>
               </CardContent>
             </Card>
-            <Card className="stat-card stat-card-warning">
+            <Card className="professional-card stat-card stat-card-warning">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Active Assessments</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold tracking-tight">
+                <div className="metric-value">
                   {projects.filter(p => p.status === 'in_progress').length}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Currently in progress</p>
               </CardContent>
             </Card>
-            <Card className="stat-card stat-card-success">
+            <Card className="professional-card stat-card stat-card-success">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Completed</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold tracking-tight">
+                <div className="metric-value">
                   {projects.filter(p => p.status === 'completed').length}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Finished assessments</p>
@@ -415,7 +415,7 @@ export default function Projects() {
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="glass-card hover-lift smooth-transition cursor-pointer group"
+                className="professional-card hover-lift cursor-pointer group"
                 onClick={() => setLocation(`/projects/${project.id}/assets`)}
               >
                 <CardHeader className="pb-4">

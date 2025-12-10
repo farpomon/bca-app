@@ -183,7 +183,7 @@ export default function Assessment() {
                   <Button
                     key={majorGroup.code}
                     variant={selectedComponent === majorGroup.code ? "default" : "outline"}
-                    className="w-full justify-start text-left h-auto py-4 glass-card hover-lift smooth-transition"
+                    className="w-full justify-start text-left h-auto py-4 glass-card hover-lift transition-all duration-300"
                     onClick={() => loadAssessment(majorGroup.code, majorGroup.name)}
                   >
                     <div className="flex items-center justify-between w-full">
