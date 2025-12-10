@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
 import { useState } from "react";
@@ -39,10 +39,60 @@ export default function Projects() {
   });
   const [showObservationsVoice, setShowObservationsVoice] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  // Filter and search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateRangeFilter, setDateRangeFilter] = useState<{start: string, end: string}>({start: "", end: ""});
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
   });
+
+  // Filter projects based on search and filters
+  const filteredProjects = projects?.filter((project) => {
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        project.name?.toLowerCase().includes(query) ||
+        project.address?.toLowerCase().includes(query) ||
+        project.clientName?.toLowerCase().includes(query) ||
+        project.buildingCode?.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== "all" && project.status !== statusFilter) {
+      return false;
+    }
+
+    // Date range filter
+    if (dateRangeFilter.start || dateRangeFilter.end) {
+      const projectDate = new Date(project.createdAt);
+      if (dateRangeFilter.start && projectDate < new Date(dateRangeFilter.start)) {
+        return false;
+      }
+      if (dateRangeFilter.end && projectDate > new Date(dateRangeFilter.end)) {
+        return false;
+      }
+    }
+
+    return true;
+  }) || [];
+
+  // Count active filters
+  const activeFiltersCount = 
+    (searchQuery ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (dateRangeFilter.start || dateRangeFilter.end ? 1 : 0);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setDateRangeFilter({start: "", end: ""});
+  };
 
   const updateProject = trpc.projects.update.useMutation({
     onSuccess: () => {
@@ -369,6 +419,92 @@ export default function Projects() {
           </Dialog>
         </div>
 
+        {/* Search and Filters */}
+        <Card className="professional-card">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search projects by name, address, client, or building code..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Filters Row */}
+              <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Filters:</span>
+                </div>
+
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Date Range Filters */}
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground">From:</Label>
+                  <Input
+                    type="date"
+                    value={dateRangeFilter.start}
+                    onChange={(e) => setDateRangeFilter({...dateRangeFilter, start: e.target.value})}
+                    className="w-[150px]"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground">To:</Label>
+                  <Input
+                    type="date"
+                    value={dateRangeFilter.end}
+                    onChange={(e) => setDateRangeFilter({...dateRangeFilter, end: e.target.value})}
+                    className="w-[150px]"
+                  />
+                </div>
+
+                {/* Clear Filters Button */}
+                {activeFiltersCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="gap-2"
+                  >
+                    <X className="h-3 w-3" />
+                    Clear {activeFiltersCount} {activeFiltersCount === 1 ? 'filter' : 'filters'}
+                  </Button>
+                )}
+
+                {/* Results Count */}
+                <div className="ml-auto text-sm text-muted-foreground">
+                  Showing {filteredProjects.length} of {projects?.length || 0} projects
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* FCI Dashboard Summary */}
         {projects && projects.length > 0 && (
           <div className="grid gap-6 md:grid-cols-3">
@@ -496,6 +632,22 @@ export default function Projects() {
               </Card>
             ))}
           </div>
+        ) : projects && projects.length > 0 ? (
+          <Card className="border-dashed border-2">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="p-4 rounded-full bg-muted mb-4">
+                <Filter className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No projects match your filters</h3>
+              <p className="text-muted-foreground text-center mb-6 max-w-md">
+                Try adjusting your search query or filter criteria to find what you're looking for
+              </p>
+              <Button onClick={clearFilters} variant="outline">
+                <X className="mr-2 h-4 w-4" />
+                Clear All Filters
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="border-dashed border-2">
             <CardContent className="flex flex-col items-center justify-center py-16">
