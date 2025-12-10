@@ -234,10 +234,10 @@ export default function Projects() {
         animate="animate"
         exit="exit"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-2">Projects</h1>
+            <p className="text-base text-muted-foreground font-normal">
               Manage your building condition assessment projects
             </p>
           </div>
@@ -429,30 +429,28 @@ export default function Projects() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="professional-card">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search projects by name, address, client, or building code..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+        <div className="space-y-6">
+          {/* Search Bar - Prominent */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 pr-12 h-12 text-base border-border/50 focus:border-primary transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
 
-              {/* Filters Row */}
-              <div className="flex flex-wrap gap-3 items-center">
+          {/* Filters - Spacious Layout */}
+          <div className="flex flex-wrap gap-4 items-center">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Filters:</span>
@@ -505,47 +503,39 @@ export default function Projects() {
                   </Button>
                 )}
 
-                {/* Results Count */}
-                <div className="ml-auto text-sm text-muted-foreground">
-                  Showing {filteredProjects.length} of {projects?.length || 0} projects
-                </div>
-              </div>
+            {/* Results Count */}
+            <div className="ml-auto text-sm text-muted-foreground font-medium">
+              Showing {filteredProjects.length} of {projects?.length || 0} projects
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* FCI Dashboard Summary */}
         {projects && projects.length > 0 && (
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="professional-card stat-card stat-card-primary">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Total Projects</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="metric-value">{projects.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">Across all statuses</p>
+            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground mb-3">Total Projects</p>
+                <div className="text-4xl font-semibold tracking-tight mb-1">{projects.length}</div>
+                <p className="text-sm text-muted-foreground">Across all statuses</p>
               </CardContent>
             </Card>
-            <Card className="professional-card stat-card stat-card-warning">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Active Assessments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="metric-value">
+            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground mb-3">Active Assessments</p>
+                <div className="text-4xl font-semibold tracking-tight mb-1">
                   {projects.filter(p => p.status === 'in_progress').length}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Currently in progress</p>
+                <p className="text-sm text-muted-foreground">Currently in progress</p>
               </CardContent>
             </Card>
-            <Card className="professional-card stat-card stat-card-success">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Completed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="metric-value">
+            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground mb-3">Completed</p>
+                <div className="text-4xl font-semibold tracking-tight mb-1">
                   {projects.filter(p => p.status === 'completed').length}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Finished assessments</p>
+                <p className="text-sm text-muted-foreground">Finished assessments</p>
               </CardContent>
             </Card>
           </div>
@@ -563,10 +553,10 @@ export default function Projects() {
                 className="professional-card hover-lift cursor-pointer group"
                 onClick={() => setLocation(`/projects/${project.id}/assets`)}
               >
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <Building2 className="h-6 w-6 text-primary" />
+                <CardHeader className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-2.5 rounded-lg bg-primary/10">
+                      <Building2 className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={getStatusColor(project.status)}>
@@ -616,12 +606,12 @@ export default function Projects() {
                       </DropdownMenu>
                     </div>
                   </div>
-                  <CardTitle className="mt-4 text-lg group-hover:text-primary transition-colors">{project.name}</CardTitle>
-                  <CardDescription>
-                    {project.clientName && <div>Client: {project.clientName}</div>}
-                  </CardDescription>
+                  <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors mb-1">{project.name}</CardTitle>
+                  {project.clientName && (
+                    <p className="text-sm text-muted-foreground">Client: {project.clientName}</p>
+                  )}
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="px-6 pb-6 pt-0">
                   <div className="space-y-2.5 text-sm text-muted-foreground">
                     {project.address && (
                       <div className="flex items-center gap-2">
