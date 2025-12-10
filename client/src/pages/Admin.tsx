@@ -86,7 +86,11 @@ export default function Admin() {
   }
 
   const handleToggleRole = (userId: number, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "user" : "admin";
+    // Cycle through roles: viewer → editor → project_manager → admin → viewer
+    const roleOrder: Array<"viewer" | "editor" | "project_manager" | "admin"> = ["viewer", "editor", "project_manager", "admin"];
+    const currentIndex = roleOrder.indexOf(currentRole as any);
+    const nextIndex = (currentIndex + 1) % roleOrder.length;
+    const newRole = roleOrder[nextIndex];
     updateRoleMutation.mutate({ userId, role: newRole });
   };
 

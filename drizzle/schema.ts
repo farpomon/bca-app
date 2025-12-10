@@ -9,7 +9,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["viewer", "editor", "project_manager", "admin"]).default("editor").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -1747,3 +1747,19 @@ export type GreenUpgrade = typeof greenUpgrades.$inferSelect;
 export type InsertGreenUpgrade = typeof greenUpgrades.$inferInsert;
 export type ESGScore = typeof esgScores.$inferSelect;
 export type InsertESGScore = typeof esgScores.$inferInsert;
+
+/**
+ * Project permissions - share projects with specific users
+ */
+export const projectPermissions = mysqlTable("project_permissions", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  userId: int("userId").notNull(), // User being granted permission
+  permission: mysqlEnum("permission", ["view", "edit"]).notNull(),
+  grantedBy: int("grantedBy").notNull(), // User who granted the permission
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProjectPermission = typeof projectPermissions.$inferSelect;
+export type InsertProjectPermission = typeof projectPermissions.$inferInsert;

@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import { DeviceProvider } from "./contexts/DeviceContext";
+import { SessionTimeoutProvider } from "./contexts/SessionTimeoutContext";
 import "./index.css";
 import "./mobile-compat.css";
 
@@ -58,7 +59,9 @@ createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <DeviceProvider>
-        <App />
+        <SessionTimeoutProvider>
+          <App />
+        </SessionTimeoutProvider>
       </DeviceProvider>
     </QueryClientProvider>
   </trpc.Provider>

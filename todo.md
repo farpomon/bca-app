@@ -2699,4 +2699,40 @@
 - [x] Update app color scheme based on research
 - [x] Create modern hero section for landing page
 - [x] Test filtering functionality
-- [ ] Create checkpoint with fixes and modern landing page
+- [x] Create checkpoint with fixes and modern landing page
+
+## Security Features Implementation (Dec 10, 2025)
+
+### Enhanced RBAC
+- [x] Update user role enum to include viewer, editor, project_manager
+- [x] Create permissions mapping for each role
+- [x] Update database schema with new roles
+- [x] Implement role-based middleware for tRPC procedures
+
+### Session Timeout & Auto-Logout
+- [x] Create session activity tracker context
+- [x] Implement 30-minute inactivity timer
+- [x] Add warning dialog at 28 minutes
+- [x] Implement auto-logout functionality
+- [x] Reset timer on user activity
+
+### Audit Logging
+- [x] Create audit_logs table in database schema (using existing audit_log table)
+- [x] Implement audit logging helper functions
+- [ ] Add audit logging to project create/update/delete operations
+- [ ] Create audit log viewer for admins
+- [ ] Add filtering and search for audit logs
+
+### Project-Level Permissions
+- [ ] Create project_permissions table for sharing
+- [ ] Add permission types (view, edit)
+- [ ] Implement share project functionality
+- [ ] Add UI for managing project permissions
+- [ ] Enforce permissions in tRPC procedures
+
+### Testing & Deployment
+- [ ] Write vitest tests for RBAC permissions
+- [ ] Test session timeout functionality
+- [ ] Test audit logging
+- [ ] Test project sharing permissions
+- [ ] Create checkpoint with security features
