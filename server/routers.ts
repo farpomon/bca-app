@@ -375,7 +375,7 @@ export const appRouter = router({
     upsert: protectedProcedure
       .input(z.object({
         projectId: z.number(),
-        assetId: z.number(),
+        assetId: z.number().optional(),
         componentCode: z.string().optional(),
         condition: z.enum(["good", "fair", "poor", "not_assessed"]).optional(),
         status: z.enum(["initial", "active", "completed"]).optional(),

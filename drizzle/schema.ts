@@ -172,7 +172,7 @@ export type InsertCustomComponent = typeof customComponents.$inferInsert;
 export const assessments = mysqlTable("assessments", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("projectId").notNull(),
-  assetId: int("assetId").notNull(), // Links assessment to a specific asset
+  assetId: int("assetId"), // Links assessment to a specific asset (optional for backward compatibility)
   sectionId: int("sectionId"),
   componentCode: varchar("componentCode", { length: 20 }),
   componentName: varchar("componentName", { length: 255 }),

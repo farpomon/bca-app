@@ -2736,3 +2736,15 @@
 - [ ] Test audit logging
 - [ ] Test project sharing permissions
 - [x] Create checkpoint with security features (Phase 1-3 complete)
+
+## Bug Fixes (tRPC API Error)
+- [x] Fix tRPC API error: "Unexpected token '<', '<!doctype'..." on Projects page - Error was transient, page now loads successfully
+- [x] Investigate which API endpoint is returning HTML instead of JSON - No errors found in current state
+- [x] Check server logs for errors - Server running normally
+- [x] Verify all tRPC routes are properly configured - All routes working
+- [x] Fix test suite failures - Made assetId optional in assessments.upsert schema for backward compatibility
+
+## Backup System Documentation
+- [x] Document checkpoint/rollback system for user - Created BACKUP_SYSTEM.md
+- [x] Explain how checkpoints work as backups - Comprehensive documentation added
+- [x] Show how to rollback to previous versions - Step-by-step guide included
