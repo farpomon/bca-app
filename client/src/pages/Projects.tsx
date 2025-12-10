@@ -47,6 +47,13 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateRangeFilter, setDateRangeFilter] = useState<{start: string, end: string}>({start: "", end: ""});
+  
+  // Bulk selection state
+  const [selectedProjects, setSelectedProjects] = useState<Set<number>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
@@ -54,6 +61,11 @@ export default function Projects() {
 
   // Filter projects based on search and filters
   const filteredProjects = projects?.filter((project) => {
+    // Hide archived projects by default unless showArchived is true
+    if (!showArchived && project.status === "archived") {
+      return false;
+    }
+    
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -97,6 +109,53 @@ export default function Projects() {
     setDateRangeFilter({start: "", end: ""});
   };
 
+  // Bulk selection helpers
+  const toggleProjectSelection = (projectId: number) => {
+    const newSelection = new Set(selectedProjects);
+    if (newSelection.has(projectId)) {
+      newSelection.delete(projectId);
+    } else {
+      newSelection.add(projectId);
+    }
+    setSelectedProjects(newSelection);
+  };
+
+  const selectAllProjects = () => {
+    const allIds = new Set(filteredProjects.map(p => p.id));
+    setSelectedProjects(allIds);
+  };
+
+  const clearSelection = () => {
+    setSelectedProjects(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    bulkDeleteProjects.mutate({ ids: Array.from(selectedProjects) });
+  };
+
+  const handleExportProject = async (projectId: number) => {
+    try {
+      // Use fetch to call the tRPC endpoint directly
+      const response = await fetch(`/api/trpc/projects.export?input=${encodeURIComponent(JSON.stringify({ id: projectId }))}`);
+      if (!response.ok) throw new Error('Export failed');
+      const result = await response.json();
+      const data = result.result.data;
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `project-${projectId}-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Project exported successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to export project");
+    }
+  };
+
   const updateProject = trpc.projects.update.useMutation({
     onSuccess: () => {
       toast.success("Project updated successfully");
@@ -120,6 +179,65 @@ export default function Projects() {
       toast.error(error.message || "Failed to delete project");
     },
   });
+
+  const bulkDeleteProjects = trpc.projects.bulkDelete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.count} project(s) deleted successfully`);
+      setBulkDeleteDialogOpen(false);
+      setSelectedProjects(new Set());
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete projects");
+    },
+  });
+
+  const archiveProject = trpc.projects.archive.useMutation({
+    onSuccess: () => {
+      toast.success("Project archived successfully");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to archive project");
+    },
+  });
+
+  const unarchiveProject = trpc.projects.unarchive.useMutation({
+    onSuccess: () => {
+      toast.success("Project unarchived successfully");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to unarchive project");
+    },
+  });
+
+  const importProject = trpc.projects.import.useMutation({
+    onSuccess: () => {
+      toast.success("Project imported successfully");
+      setImportDialogOpen(false);
+      setImportFile(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to import project");
+    },
+  });
+
+  const handleImport = async () => {
+    if (!importFile) {
+      toast.error("Please select a file to import");
+      return;
+    }
+
+    try {
+      const text = await importFile.text();
+      const data = JSON.parse(text);
+      importProject.mutate({ data });
+    } catch (error: any) {
+      toast.error("Invalid JSON file: " + error.message);
+    }
+  };
 
   const createProject = trpc.projects.create.useMutation({
     onSuccess: (data) => {
@@ -241,13 +359,24 @@ export default function Projects() {
               Manage your building condition assessment projects
             </p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <AnimatedButton className="btn-gradient shadow-md hover:shadow-lg">
-                <Plus className="mr-2 h-4 w-4" />
-                New Project
-              </AnimatedButton>
-            </DialogTrigger>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setImportDialogOpen(true)}
+              className="shadow-sm"
+            >
+              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Import Project
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <AnimatedButton className="btn-gradient shadow-md hover:shadow-lg">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Project
+                </AnimatedButton>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleSubmit}>
                 <DialogHeader>
@@ -426,6 +555,7 @@ export default function Projects() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -448,6 +578,39 @@ export default function Projects() {
               </button>
             )}
           </div>
+
+          {/* Bulk Actions Toolbar */}
+          {selectedProjects.size > 0 && (
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">
+                  {selectedProjects.size} project(s) selected
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAllProjects}
+                >
+                  Select All ({filteredProjects.length})
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSelection}
+                >
+                  Clear Selection
+                </Button>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setBulkDeleteDialogOpen(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Selected
+              </Button>
+            </div>
+          )}
 
           {/* Filters - Spacious Layout */}
           <div className="flex flex-wrap gap-4 items-center">
@@ -503,6 +666,20 @@ export default function Projects() {
                   </Button>
                 )}
 
+                {/* Show Archived Toggle */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="showArchived"
+                    checked={showArchived}
+                    onChange={(e) => setShowArchived(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="showArchived" className="text-sm cursor-pointer">
+                    Show Archived
+                  </Label>
+                </div>
+
             {/* Results Count */}
             <div className="ml-auto text-sm text-muted-foreground font-medium">
               Showing {filteredProjects.length} of {projects?.length || 0} projects
@@ -555,8 +732,20 @@ export default function Projects() {
               >
                 <CardHeader className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="p-2.5 rounded-lg bg-primary/10">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedProjects.has(project.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleProjectSelection(project.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded"
+                      />
+                      <div className="p-2.5 rounded-lg bg-primary/10">
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={getStatusColor(project.status)}>
@@ -591,6 +780,42 @@ export default function Projects() {
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleExportProject(project.id);
+                            }}
+                          >
+                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export
+                          </DropdownMenuItem>
+                          {project.status !== "archived" ? (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                archiveProject.mutate({ id: project.id });
+                              }}
+                            >
+                              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                              </svg>
+                              Archive
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                unarchiveProject.mutate({ id: project.id });
+                              }}
+                            >
+                              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                              </svg>
+                              Unarchive
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={(e) => {
@@ -824,6 +1049,76 @@ export default function Projects() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedProjects.size} Projects?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedProjects.size} project(s) and all associated assessments, deficiencies, and photos. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleBulkDelete}
+            >
+              {bulkDeleteProjects.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete {selectedProjects.size} Projects
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import Project Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Project</DialogTitle>
+            <DialogDescription>
+              Upload a JSON file exported from another BCA project
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="importFile">Select JSON File</Label>
+              <Input
+                id="importFile"
+                type="file"
+                accept=".json"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+              />
+            </div>
+            {importFile && (
+              <div className="text-sm text-muted-foreground">
+                Selected: {importFile.name} ({(importFile.size / 1024).toFixed(2)} KB)
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setImportDialogOpen(false);
+                setImportFile(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleImport}
+              disabled={!importFile || importProject.isPending}
+            >
+              {importProject.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Import
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </motion.div>
     </DashboardLayout>
   );

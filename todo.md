@@ -2748,3 +2748,36 @@
 - [x] Document checkpoint/rollback system for user - Created BACKUP_SYSTEM.md
 - [x] Explain how checkpoints work as backups - Comprehensive documentation added
 - [x] Show how to rollback to previous versions - Step-by-step guide included
+
+## Project Management Enhancements
+
+### Bulk Delete Feature
+- [x] Add bulk delete backend API (projects.bulkDelete)
+- [x] Add checkbox selection to project cards
+- [x] Add bulk action toolbar with delete button
+- [x] Implement confirmation dialog with project count
+- [x] Handle cascade delete for related data (assessments, photos, etc.)
+- [x] Add success/error toast notifications
+- [x] Write tests for bulk delete
+
+### Project Archiving System
+- [x] Update projects table status enum to include "archived" - Already existed
+- [x] Add archive/unarchive backend APIs
+- [x] Add "Archived" filter option to Projects page
+- [x] Add archive button to project dropdown menu
+- [x] Add unarchive functionality for archived projects
+- [x] Update project list queries to exclude archived by default
+- [x] Add "Show Archived" toggle in UI
+- [x] Write tests for archiving system
+
+### Project Export/Import
+- [x] Add export project backend API (exports full project with all data)
+- [x] Add import project backend API (validates and imports JSON)
+- [x] Add export button to project dropdown menu
+- [x] Add import button to Projects page header
+- [x] Implement file upload dialog for import
+- [x] Include all related data (assessments, deficiencies, photos, etc.)
+- [x] Add validation for import data format
+- [x] Handle duplicate project names on import - Imports create new projects
+- [x] Add progress indicators for export/import - Loading states added
+- [x] Write tests for export/import functionality

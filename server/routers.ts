@@ -113,6 +113,169 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    bulkDelete: protectedProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ ctx, input }) => {
+        // Delete all projects that belong to the user
+        for (const id of input.ids) {
+          await db.deleteProject(id, ctx.user.id);
+        }
+        return { success: true, count: input.ids.length };
+      }),
+
+    archive: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateProject(input.id, ctx.user.id, { status: "archived" });
+        return { success: true };
+      }),
+
+    unarchive: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateProject(input.id, ctx.user.id, { status: "draft" });
+        return { success: true };
+      }),
+
+    export: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const project = await db.getProjectById(input.id, ctx.user.id);
+        if (!project) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+        }
+        
+        // Get all related data
+        const assessments = await db.getProjectAssessments(input.id);
+        const deficiencies = await db.getProjectDeficiencies(input.id);
+        const photos = await db.getProjectPhotos(input.id);
+        const assets = await assetsDb.getProjectAssets(input.id);
+        const sections = await db.getBuildingSections(input.id);
+        
+        return {
+          version: "1.0",
+          exportedAt: new Date().toISOString(),
+          project,
+          assessments,
+          deficiencies,
+          photos,
+          assets,
+          sections,
+        };
+      }),
+
+    import: protectedProcedure
+      .input(z.object({
+        data: z.object({
+          version: z.string(),
+          project: z.any(),
+          assessments: z.array(z.any()).optional(),
+          deficiencies: z.array(z.any()).optional(),
+          photos: z.array(z.any()).optional(),
+          assets: z.array(z.any()).optional(),
+          sections: z.array(z.any()).optional(),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { data } = input;
+        
+        // Create project with new userId
+        const projectData = {
+          ...data.project,
+          userId: ctx.user.id,
+          id: undefined, // Remove old ID
+          createdAt: undefined,
+          updatedAt: undefined,
+        };
+        
+        const newProjectId = await db.createProject(projectData);
+        
+        // Import assets first (if any)
+        const assetIdMap = new Map<number, number>();
+        if (data.assets && data.assets.length > 0) {
+          for (const asset of data.assets) {
+            const oldAssetId = asset.id;
+            const newAssetId = await assetsDb.createAsset({
+              ...asset,
+              projectId: newProjectId,
+              id: undefined,
+              createdAt: undefined,
+              updatedAt: undefined,
+            });
+            assetIdMap.set(oldAssetId, newAssetId);
+          }
+        }
+        
+        // Import sections (if any)
+        const sectionIdMap = new Map<number, number>();
+        if (data.sections && data.sections.length > 0) {
+          for (const section of data.sections) {
+            const oldSectionId = section.id;
+            const newSectionId = await db.createBuildingSection({
+              ...section,
+              projectId: newProjectId,
+              id: undefined,
+              createdAt: undefined,
+              updatedAt: undefined,
+            });
+            sectionIdMap.set(oldSectionId, newSectionId);
+          }
+        }
+        
+        // Import assessments
+        const assessmentIdMap = new Map<number, number>();
+        if (data.assessments && data.assessments.length > 0) {
+          for (const assessment of data.assessments) {
+            const oldAssessmentId = assessment.id;
+            const oldAssetId = assessment.assetId;
+            const oldSectionId = assessment.sectionId;
+            
+            const newAssessmentId = await db.upsertAssessment({
+              ...assessment,
+              projectId: newProjectId,
+              assetId: oldAssetId ? assetIdMap.get(oldAssetId) : undefined,
+              sectionId: oldSectionId ? sectionIdMap.get(oldSectionId) : undefined,
+              id: undefined,
+              createdAt: undefined,
+              updatedAt: undefined,
+              assessedAt: undefined,
+            });
+            assessmentIdMap.set(oldAssessmentId, newAssessmentId);
+          }
+        }
+        
+        // Import deficiencies
+        if (data.deficiencies && data.deficiencies.length > 0) {
+          for (const deficiency of data.deficiencies) {
+            const oldAssessmentId = deficiency.assessmentId;
+            await db.createDeficiency({
+              ...deficiency,
+              projectId: newProjectId,
+              assessmentId: oldAssessmentId ? assessmentIdMap.get(oldAssessmentId) : undefined,
+              id: undefined,
+              createdAt: undefined,
+              updatedAt: undefined,
+            });
+          }
+        }
+        
+        // Import photos (note: S3 URLs remain the same)
+        if (data.photos && data.photos.length > 0) {
+          for (const photo of data.photos) {
+            const oldAssessmentId = photo.assessmentId;
+            await db.createPhoto({
+              ...photo,
+              projectId: newProjectId,
+              assessmentId: oldAssessmentId ? assessmentIdMap.get(oldAssessmentId) : undefined,
+              id: undefined,
+              createdAt: undefined,
+            });
+          }
+        }
+        
+        return { success: true, projectId: newProjectId };
+      }),
+
     stats: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
