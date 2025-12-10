@@ -178,68 +178,24 @@ export default function Assessment() {
               </div>
             </CardHeader>
             <CardContent>
-              <Accordion type="single" collapsible className="w-full">
+              <div className="grid gap-3">
                 {componentsByLevel.level1.map((majorGroup) => (
-                  <AccordionItem key={majorGroup.code} value={majorGroup.code}>
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center justify-between w-full pr-4">
-                        <span className="font-semibold">
-                          {majorGroup.code} - {majorGroup.name}
-                        </span>
+                  <Button
+                    key={majorGroup.code}
+                    variant={selectedComponent === majorGroup.code ? "default" : "outline"}
+                    className="w-full justify-start text-left h-auto py-4 glass-card hover-lift smooth-transition"
+                    onClick={() => loadAssessment(majorGroup.code, majorGroup.name)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div>
+                        <div className="font-semibold text-base">{majorGroup.code}</div>
+                        <div className="text-sm text-muted-foreground">{majorGroup.name}</div>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <Accordion type="single" collapsible className="w-full pl-4">
-                        {componentsByLevel.level2
-                          .filter(group => group.parentCode === majorGroup.code)
-                          .map((group) => (
-                            <AccordionItem key={group.code} value={group.code}>
-                              <AccordionTrigger className="hover:no-underline text-sm">
-                                <div className="flex items-center justify-between w-full pr-4">
-                                  <span>
-                                    {group.code} - {group.name}
-                                  </span>
-                                  {getConditionBadge(group.code)}
-                                </div>
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <div className="space-y-2 pl-4">
-                                  {componentsByLevel.level3
-                                    .filter(element => element.parentCode === group.code)
-                                    .map((element) => (
-                                      <Button
-                                        key={element.code}
-                                        variant={selectedComponent === element.code ? "default" : "outline"}
-                                        className="w-full justify-start text-left h-auto py-2"
-                                        onClick={() => loadAssessment(element.code, element.name)}
-                                      >
-                                        <div className="flex items-center justify-between w-full">
-                                          <div className="text-xs">
-                                            <div className="font-medium">{element.code}</div>
-                                            <div className="text-muted-foreground">{element.name}</div>
-                                          </div>
-                                          {getConditionBadge(element.code)}
-                                        </div>
-                                      </Button>
-                                    ))}
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start text-left mt-2 text-muted-foreground hover:text-foreground"
-                                    onClick={() => setCustomComponentDialogOpen(true)}
-                                  >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Custom Component
-                                  </Button>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          ))}
-                      </Accordion>
-                    </AccordionContent>
-                  </AccordionItem>
+                      {getConditionBadge(majorGroup.code)}
+                    </div>
+                  </Button>
                 ))}
-              </Accordion>
+              </div>
             </CardContent>
           </Card>
 

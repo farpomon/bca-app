@@ -2607,3 +2607,27 @@
 - [x] Fix callback mechanism to populate text into target field
 - [x] Test voice recording text insertion
 - [x] Create checkpoint with fix
+
+## Multi-Select Voice Recordings Feature
+- [x] Update RecordingHistory component to support multi-select with checkboxes
+- [x] Add visual indication for selected recordings
+- [x] Add "Combine & Insert" button for selected recordings
+- [x] Update VoiceRecorder to handle combined text insertion
+- [x] Test multi-select functionality
+- [x] Create checkpoint
+
+## UI Redesign - Glassmorphism & Modern Design
+- [ ] Update global CSS with glassmorphism utilities
+- [ ] Refine color palette for professional look
+- [ ] Add frosted glass effects to cards and dialogs
+- [ ] Enhance typography and spacing
+- [ ] Add smooth animations and transitions
+- [ ] Update key components with modern styling
+- [ ] Test design across different pages
+- [ ] Create checkpoint
+
+## UI Simplification and Design Updates (Dec 9, 2025)
+
+- [x] Simplify custom component data entry - show only A-G groups without sub-components
+- [x] Complete glassmorphism design system across all components
+- [x] Implement multi-select voice recordings with combine functionality

@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="glass border-b sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
@@ -45,7 +45,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container py-20 md:py-32">
+      <section className="container py-24 md:py-40">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             Professional Building Condition Assessments
@@ -79,7 +79,7 @@ export default function Home() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
+            <Card className="glass-card hover-lift smooth-transition">
               <CardHeader>
                 <ClipboardCheck className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>UNIFORMAT II Classification</CardTitle>
@@ -89,7 +89,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card>
+            <Card className="glass-card hover-lift smooth-transition">
               <CardHeader>
                 <FileText className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Professional Reports</CardTitle>
@@ -99,7 +99,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card>
+            <Card className="glass-card hover-lift smooth-transition">
               <CardHeader>
                 <TrendingUp className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Cost Estimation</CardTitle>
@@ -109,7 +109,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card>
+            <Card className="glass-card hover-lift smooth-transition">
               <CardHeader>
                 <CheckCircle2 className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Condition Tracking</CardTitle>
@@ -119,7 +119,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card>
+            <Card className="glass-card hover-lift smooth-transition">
               <CardHeader>
                 <Shield className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Standards Compliant</CardTitle>
@@ -129,7 +129,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card>
+            <Card className="glass-card hover-lift smooth-transition">
               <CardHeader>
                 <Clock className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Photo Documentation</CardTitle>

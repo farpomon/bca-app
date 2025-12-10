@@ -415,7 +415,7 @@ export default function Projects() {
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="project-card cursor-pointer group"
+                className="glass-card hover-lift smooth-transition cursor-pointer group"
                 onClick={() => setLocation(`/projects/${project.id}/assets`)}
               >
                 <CardHeader className="pb-4">

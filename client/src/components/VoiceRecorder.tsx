@@ -361,9 +361,9 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   };
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg">
+    <div className="space-y-4 p-6 glass-card rounded-2xl smooth-transition">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium">Voice Recording</h3>
+        <h3 className="text-lg font-semibold">Voice Recording</h3>
         <div className="flex items-center gap-2">
           {isRecording && (
             <div className="flex items-center gap-2 text-sm text-red-600">
