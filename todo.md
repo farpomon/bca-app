@@ -2601,3 +2601,9 @@
 - [x] Implement inline validation for asset form
 - [x] Test all form improvements
 - [x] Create checkpoint
+
+## Bug: Voice Recording "Use" Button Not Populating Text
+- [x] Investigate VoiceRecorder component Use button handler
+- [x] Fix callback mechanism to populate text into target field
+- [x] Test voice recording text insertion
+- [x] Create checkpoint with fix

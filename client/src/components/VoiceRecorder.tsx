@@ -357,6 +357,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const handleSelectFromHistory = (text: string) => {
     setTranscribedText(text);
     setShowHistory(false);
+    onTranscriptionComplete(text);
   };
 
   return (
