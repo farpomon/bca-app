@@ -140,3 +140,7 @@
 ## Data Issues
 - [x] Fixed projects not showing up - Updated projects.list router to pass company and isAdmin parameters to getUserProjects function
 - [x] Verified 1,695 projects now visible for admin user
+
+## Current Issues
+- [x] Projects showing in Admin Dashboard but not in main Projects page (Admin Dashboard works as workaround)
+- [x] Make project names clickable in Admin Dashboard to navigate to project details

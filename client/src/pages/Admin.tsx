@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { Link } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -501,7 +502,11 @@ export default function Admin() {
                   <TableBody>
                     {projectsQuery.data.map((project) => (
                       <TableRow key={project.id}>
-                        <TableCell className="font-medium">{project.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <Link href={`/projects/${project.id}`} className="text-primary hover:underline">
+                            {project.name}
+                          </Link>
+                        </TableCell>
                         <TableCell>{project.address || "—"}</TableCell>
                         <TableCell>
                           <Badge

@@ -60,6 +60,10 @@ export default function Projects() {
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
   });
+  
+  console.log("[Projects Page] Projects data:", projects?.length || 0, "projects");
+  console.log("[Projects Page] IsLoading:", isLoading);
+  console.log("[Projects Page] User:", user?.email);
 
   // Filter projects based on search and filters
   const filteredProjects = projects?.filter((project) => {
