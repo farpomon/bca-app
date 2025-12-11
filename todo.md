@@ -118,3 +118,5 @@
 
 ## UI Improvements
 - [x] Remove info icons from Create New Project form
+- [x] Restore expandable accordion functionality for UNIFORMAT II component groups in Assessment page
+- [x] Users can click on major groups (A, B, C, D, E, F, G) to expand and see sub-components (Level 2 and Level 3)

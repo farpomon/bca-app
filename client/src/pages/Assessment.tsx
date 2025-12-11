@@ -178,24 +178,79 @@ export default function Assessment() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3">
-                {componentsByLevel.level1.map((majorGroup) => (
-                  <Button
-                    key={majorGroup.code}
-                    variant={selectedComponent === majorGroup.code ? "default" : "outline"}
-                    className="w-full justify-start text-left h-auto py-4 glass-card hover-lift transition-all duration-300"
-                    onClick={() => loadAssessment(majorGroup.code, majorGroup.name)}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div>
-                        <div className="font-semibold text-base">{majorGroup.code}</div>
-                        <div className="text-sm text-muted-foreground">{majorGroup.name}</div>
-                      </div>
-                      {getConditionBadge(majorGroup.code)}
-                    </div>
-                  </Button>
-                ))}
-              </div>
+              <Accordion type="multiple" className="w-full">
+                {componentsByLevel.level1.map((majorGroup) => {
+                  // Get level 2 components that belong to this major group
+                  const level2Components = componentsByLevel.level2.filter(
+                    c => c.code.startsWith(majorGroup.code)
+                  );
+                  
+                  return (
+                    <AccordionItem key={majorGroup.code} value={majorGroup.code}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center justify-between w-full pr-4">
+                          <div className="flex items-center gap-3">
+                            <div className="font-semibold text-lg">{majorGroup.code}</div>
+                            <div className="text-sm text-muted-foreground">{majorGroup.name}</div>
+                          </div>
+                          {getConditionBadge(majorGroup.code)}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2 pl-4">
+                          {/* Level 2 components */}
+                          {level2Components.map((level2) => {
+                            // Get level 3 components that belong to this level 2 component
+                            const level3Components = componentsByLevel.level3.filter(
+                              c => c.code.startsWith(level2.code)
+                            );
+                            
+                            return (
+                              <div key={level2.code} className="space-y-1">
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-start text-left h-auto py-2 hover:bg-accent"
+                                  onClick={() => loadAssessment(level2.code, level2.name)}
+                                >
+                                  <div className="flex items-center justify-between w-full">
+                                    <div>
+                                      <div className="font-medium text-sm">{level2.code}</div>
+                                      <div className="text-xs text-muted-foreground">{level2.name}</div>
+                                    </div>
+                                    {getConditionBadge(level2.code)}
+                                  </div>
+                                </Button>
+                                
+                                {/* Level 3 components */}
+                                {level3Components.length > 0 && (
+                                  <div className="pl-4 space-y-1">
+                                    {level3Components.map((level3) => (
+                                      <Button
+                                        key={level3.code}
+                                        variant="ghost"
+                                        className="w-full justify-start text-left h-auto py-2 hover:bg-accent"
+                                        onClick={() => loadAssessment(level3.code, level3.name)}
+                                      >
+                                        <div className="flex items-center justify-between w-full">
+                                          <div>
+                                            <div className="font-medium text-xs">{level3.code}</div>
+                                            <div className="text-xs text-muted-foreground">{level3.name}</div>
+                                          </div>
+                                          {getConditionBadge(level3.code)}
+                                        </div>
+                                      </Button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
             </CardContent>
           </Card>
 
