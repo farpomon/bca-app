@@ -56,7 +56,7 @@ export default function Home() {
               Streamline Building Assessments
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Professional BCA platform following ASTM E2018-15 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
+              Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="text-base h-12 px-8" asChild>
@@ -132,7 +132,7 @@ export default function Home() {
                 <FileText className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Professional Reports</CardTitle>
                 <CardDescription>
-                  Generate comprehensive BCA reports following ASTM E2018-15 standards
+                  Generate comprehensive BCA reports following ASTM E2018 standards
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -162,7 +162,7 @@ export default function Home() {
                 <Shield className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Standards Compliant</CardTitle>
                 <CardDescription>
-                  Follow NRC protocols and ASTM E2018-15 methodology
+                  Follow NRC protocols and ASTM E2018 methodology
                 </CardDescription>
               </CardHeader>
             </Card>

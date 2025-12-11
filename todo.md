@@ -161,3 +161,7 @@
 - [x] Increased context from 300 to 800 characters for better classification
 - [x] Added comprehensive keyword lists for each building system
 - [x] Added reasoning field to AI response for transparency
+
+## Landing Page Updates
+- [x] Remove code edition references (e.g., ASTM E2018-15 → ASTM E2018)
+- [x] Update all standard references to show only base code without edition year suffix
