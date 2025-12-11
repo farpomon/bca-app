@@ -536,7 +536,7 @@ export function AssessmentDialog({
             {showObservationsVoice && (
               <VoiceRecorder
                 onTranscriptionComplete={(text) => {
-                  setObservations(observations + (observations ? "\n\n" : "") + text);
+                  setObservations(prev => prev + (prev ? "\n\n" : "") + text);
                   setShowObservationsVoice(false);
                 }}
                 onCancel={() => setShowObservationsVoice(false)}
@@ -566,7 +566,7 @@ export function AssessmentDialog({
             {showRecommendationsVoice && (
               <VoiceRecorder
                 onTranscriptionComplete={(text) => {
-                  setRecommendations(recommendations + (recommendations ? "\n\n" : "") + text);
+                  setRecommendations(prev => prev + (prev ? "\n\n" : "") + text);
                   setShowRecommendationsVoice(false);
                 }}
                 onCancel={() => setShowRecommendationsVoice(false)}
