@@ -64,3 +64,31 @@
 - [x] Test Projects page on mobile viewport - Layout responsive and working
 - [x] Test AI Import dialog on mobile - Dialog is responsive by default
 - [x] Ensure all pages work on mobile and desktop - Responsive design implemented
+
+
+## AI Import Cost Extraction Analysis (Current)
+
+- [x] Check current AI extraction schema for cost fields - Schema includes estimatedRepairCost and replacementValue
+- [x] Review AI prompt to ensure it asks for repair/replacement costs - Prompt correctly asks for costs
+- [x] Test extraction with BCS2047 document - Extracted correctly (nulls are expected)
+- [x] Root cause identified - BAI documents don't include costs, only Depreciation Reports do
+- [ ] Decide on solution approach:
+  - Option 1: Request Depreciation Report from user (has cost tables)
+  - Option 2: Allow manual cost entry after AI import
+  - Option 3: Add cost estimation feature based on component type/condition
+- [ ] Implement chosen solution
+- [ ] Test with document that includes costs
+
+
+## Photo Extraction and Display Fix (Current)
+
+- [x] Check why 132 photos are extracted but fail to load - Complex: PDFs use JPEG2000, JBIG2, and other formats
+- [x] Investigate image format from PDF extraction - pdf.js doesn't provide decoded images easily
+- [x] Attempted fixes:
+  - Tried sharp with raw pixel data (size mismatch)
+  - Tried sharp with compressed data (unsupported format)
+  - Tried canvas rendering (requires native dependencies)
+- [x] Decision: Skip photo extraction for now (too complex with PDF formats)
+- [x] Implemented: Return empty array from extractImagesFromPDF
+- [ ] Future enhancement: Add manual photo upload feature after project creation
+- [ ] Future enhancement: Consider external service for robust PDF image extraction

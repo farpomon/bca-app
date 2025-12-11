@@ -3,6 +3,7 @@ import { invokeLLM } from './_core/llm';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { storagePut } from './storage';
 import { randomBytes } from 'crypto';
+import sharp from 'sharp';
 
 type ExtractedImage = {
   buffer: Buffer;
@@ -39,53 +40,19 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 
 /**
  * Extract images from PDF buffer
+ * NOTE: Currently disabled due to complexity of PDF image formats (JPEG2000, JBIG2, etc.)
+ * Users should upload photos separately after project creation
  */
 export async function extractImagesFromPDF(buffer: Buffer): Promise<ExtractedImage[]> {
-  try {
-    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
-    const pdfDocument = await loadingTask.promise;
-    
-    const images: ExtractedImage[] = [];
-    
-    for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-      const page = await pdfDocument.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ');
-      
-      const operatorList = await page.getOperatorList();
-      
-      for (let i = 0; i < operatorList.fnArray.length; i++) {
-        if (operatorList.fnArray[i] === pdfjsLib.OPS.paintImageXObject) {
-          const imageName = operatorList.argsArray[i][0];
-          
-          try {
-            const image = await page.objs.get(imageName);
-            
-            if (image && image.data) {
-              // Convert image data to buffer
-              const imageBuffer = Buffer.from(image.data);
-              
-              images.push({
-                buffer: imageBuffer,
-                mimeType: 'image/png',
-                pageNumber: pageNum,
-                context: pageText.substring(0, 500), // First 500 chars of page as context
-              });
-            }
-          } catch (imgError) {
-            console.warn(`Failed to extract image ${imageName} from page ${pageNum}:`, imgError);
-          }
-        }
-      }
-    }
-    
-    return images;
-  } catch (error) {
-    console.error('Failed to extract images from PDF:', error);
-    return [];
-  }
+  // TODO: Implement robust image extraction
+  // Current issue: pdf.js returns images in various compressed formats that require
+  // complex decoding. Options:
+  // 1. Use external service for image extraction
+  // 2. Render full pages as images instead
+  // 3. Skip extraction and let users upload photos manually
+  
+  console.log('[PDF Image Extraction] Skipped - users should upload photos separately');
+  return [];
 }
 
 /**
