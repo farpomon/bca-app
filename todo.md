@@ -136,3 +136,7 @@
 
 ## Critical Bugs
 - [x] Fix logout error - Added redirect to home page after logout to prevent accessing protected pages
+
+## Data Issues
+- [x] Fixed projects not showing up - Updated projects.list router to pass company and isAdmin parameters to getUserProjects function
+- [x] Verified 1,695 projects now visible for admin user

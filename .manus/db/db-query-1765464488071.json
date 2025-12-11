@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as project_count FROM projects p JOIN users u ON p.userId = u.id WHERE u.email = 'luisrubiof@gmail.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as project_count FROM projects p JOIN users u ON p.userId = u.id WHERE u.email = 'luisrubiof@gmail.com';",
+  "rows": [
+    {
+      "project_count": "1453"
+    }
+  ],
+  "messages": [],
+  "stdout": "project_count\n1453\n",
+  "stderr": "",
+  "execution_time_ms": 117
+}

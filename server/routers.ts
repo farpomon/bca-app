@@ -54,7 +54,8 @@ export const appRouter = router({
 
   projects: router({
     list: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getUserProjects(ctx.user.id);
+      const isAdmin = ctx.user.role === "admin";
+      return await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin);
     }),
 
     get: protectedProcedure
