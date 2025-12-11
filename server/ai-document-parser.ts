@@ -39,49 +39,78 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Render each PDF page as a full-page image
+ * Render each PDF page as a full-page image using pdf-poppler
  * This preserves all context (text, tables, diagrams, photos) on each page
  */
 export async function renderPDFPagesToImages(buffer: Buffer): Promise<ExtractedImage[]> {
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const os = await import('os');
+  // @ts-ignore - pdf-poppler has no type definitions
+  const poppler = await import('pdf-poppler');
+  
   try {
+    // Create temp directory for PDF and output images
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pdf-render-'));
+    const pdfPath = path.join(tempDir, 'input.pdf');
+    
+    // Write PDF to temp file
+    await fs.writeFile(pdfPath, buffer);
+    
+    console.log(`[PDF Page Rendering] Starting render using pdf-poppler`);
+    
+    // Convert PDF to images using poppler
+    const options = {
+      format: 'jpeg',
+      out_dir: tempDir,
+      out_prefix: 'page',
+      page: null, // Convert all pages
+      scale: 2048, // High resolution
+    };
+    
+    await poppler.convert(pdfPath, options);
+    
+    // Read all generated images
+    const files = await fs.readdir(tempDir);
+    const imageFiles = files
+      .filter(f => f.startsWith('page') && f.endsWith('.jpg'))
+      .sort((a, b) => {
+        const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+        const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+        return numA - numB;
+      });
+    
+    console.log(`[PDF Page Rendering] Found ${imageFiles.length} rendered pages`);
+    
+    // Extract text for context
     const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
     const pdfDocument = await loadingTask.promise;
+    
     const pageImages: ExtractedImage[] = [];
     
-    console.log(`[PDF Page Rendering] Starting render of ${pdfDocument.numPages} pages`);
-    
-    for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-      const page = await pdfDocument.getPage(pageNum);
+    for (let i = 0; i < imageFiles.length; i++) {
+      const imageFile = imageFiles[i];
+      const imagePath = path.join(tempDir, imageFile);
+      const imageBuffer = await fs.readFile(imagePath);
       
-      // Get page dimensions
-      const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for better quality
-      
-      // Create canvas
-      const { createCanvas } = await import('canvas');
-      const canvas = createCanvas(viewport.width, viewport.height);
-      const context = canvas.getContext('2d');
-      
-      // Render PDF page to canvas
-      await page.render({
-        canvasContext: context as any,
-        viewport: viewport,
-        canvas: canvas as any,
-      }).promise;
-      
-      // Convert canvas to PNG buffer
-      const pngBuffer = canvas.toBuffer('image/png');
-      
-      // Compress with sharp for smaller file size
-      const compressedBuffer = await sharp(pngBuffer)
+      // Compress with sharp
+      const compressedBuffer = await sharp(imageBuffer)
         .jpeg({ quality: 85 })
         .toBuffer();
       
       // Extract text from this page for context
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ')
-        .substring(0, 800); // First 800 chars for better context
+      const pageNum = i + 1;
+      let pageText = '';
+      try {
+        const page = await pdfDocument.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ')
+          .substring(0, 800);
+      } catch (err) {
+        console.warn(`[PDF Page Rendering] Could not extract text from page ${pageNum}`);
+      }
       
       pageImages.push({
         buffer: compressedBuffer,
@@ -91,8 +120,11 @@ export async function renderPDFPagesToImages(buffer: Buffer): Promise<ExtractedI
         caption: `Page ${pageNum}`,
       });
       
-      console.log(`[PDF Page Rendering] Rendered page ${pageNum}/${pdfDocument.numPages}`);
+      console.log(`[PDF Page Rendering] Processed page ${pageNum}/${imageFiles.length}`);
     }
+    
+    // Cleanup temp directory
+    await fs.rm(tempDir, { recursive: true, force: true });
     
     return pageImages;
   } catch (error) {
@@ -320,95 +352,170 @@ Return ONLY valid JSON in this exact structure:
 }
 
 /**
- * Classify page images by UNIFORMAT II sub-section using AI
+ * Classify page images by UNIFORMAT II sub-section using AI Vision
+ * Uploads images temporarily to S3 and uses Gemini Vision to analyze them
  */
 async function classifyPagesBySubSection(
   pageImages: ExtractedImage[]
 ): Promise<Array<ExtractedImage & { componentCode?: string }>> {
   if (pageImages.length === 0) return [];
   
-  console.log(`[AI Classification] Classifying ${pageImages.length} pages by sub-section`);
+  console.log(`[AI Classification] Classifying ${pageImages.length} pages using Vision API`);
   
-  // Build context for each page
-  const pagesContext = pageImages.map((img, idx) => ({
-    pageNumber: img.pageNumber || idx + 1,
-    context: (img.context || '').substring(0, 800), // More context for better classification
-  }));
+  // Upload images to S3 temporarily for vision analysis
+  const tempPrefix = `temp-classification/${Date.now()}-${randomBytes(4).toString('hex')}`;
+  const uploadedImages: Array<{ pageNumber: number; url: string; context: string }> = [];
   
-  const prompt = `You are analyzing a Building Condition Assessment (BCA) report to classify each page by UNIFORMAT II component code.
+  for (let i = 0; i < pageImages.length; i++) {
+    const img = pageImages[i];
+    const pageNum = img.pageNumber || i + 1;
+    const { url } = await storagePut(
+      `${tempPrefix}/page-${pageNum}.jpg`,
+      img.buffer,
+      img.mimeType
+    );
+    uploadedImages.push({
+      pageNumber: pageNum,
+      url,
+      context: (img.context || '').substring(0, 500),
+    });
+    console.log(`[AI Classification] Uploaded page ${pageNum} for analysis`);
+  }
+  
+  // Classify in batches of 5 pages to avoid token limits
+  const batchSize = 5;
+  const allClassifications: any[] = [];
+  
+  for (let i = 0; i < uploadedImages.length; i += batchSize) {
+    const batch = uploadedImages.slice(i, i + batchSize);
+    
+    // Build multimodal message with images and text
+    const content: any[] = [
+      {
+        type: 'text',
+        text: `Analyze these BCA report pages and classify each by UNIFORMAT II component code.
 
 **UNIFORMAT II Level 2 Codes:**
 - A10: Foundations
-- A20: Basement Construction
+- A20: Basement Construction  
 - B10: Superstructure (framing, structural walls)
-- B20: Exterior Enclosure (walls, cladding, exterior finishes)
-- B30: Roofing (membrane, shingles, flashing, drainage)
-- C10: Interior Construction (partitions, doors)
-- C20: Stairs (interior/exterior stairs)
-- C30: Interior Finishes (flooring, wall finishes, ceilings)
-- D10: Conveying Systems (elevators, escalators)
-- D20: Plumbing (water distribution, fixtures, drainage)
-- D30: HVAC (heating, cooling, ventilation)
+- B20: Exterior Enclosure (walls, windows, doors, cladding)
+- B30: Roofing (membrane, shingles, flashing, drainage, skylights)
+- C10: Interior Construction (partitions, interior doors)
+- C20: Stairs
+- C30: Interior Finishes (flooring, wall finishes, ceilings, paint)
+- D10: Conveying (elevators, escalators)
+- D20: Plumbing (pipes, fixtures, toilets, sinks, water heater, drainage)
+- D30: HVAC (heating, cooling, ventilation, AC units, furnace, boiler)
 - D40: Fire Protection (sprinklers, alarms, extinguishers)
-- D50: Electrical (service, distribution, lighting)
-- E10: Equipment (kitchen, laundry, specialty equipment)
-- E20: Furnishings (cabinets, millwork, accessories)
-- F10: Special Construction (demolition, hazmat)
-- G10-G40: Site Work (landscaping, paving, site utilities)
+- D50: Electrical (panels, wiring, lighting, outlets)
+- E10: Equipment (kitchen, laundry)
+- E20: Furnishings (cabinets, millwork, washroom accessories)
+- F10: Special Construction
+- G10-G40: Site Work (landscaping, paving, walkways, ramps, bike racks)
 
 **Instructions:**
-1. Look for component codes in the text (e.g., "B.7", "D.2", "C.10")
-2. Look for component names (e.g., "SBS Membrane Roofing", "Plumbing Fixtures", "HVAC")
-3. Look for keywords indicating building systems:
-   - Roofing: membrane, shingles, flashing, drainage, roof deck
-   - Plumbing: pipes, fixtures, toilets, sinks, water heater
-   - HVAC: heating, cooling, ventilation, air conditioning, furnace, boiler
-   - Electrical: wiring, panels, lighting, outlets
-   - Enclosure: walls, windows, doors, cladding, siding
-   - Interior: flooring, ceiling, paint, finishes, partitions
-   - Site: landscaping, paving, walkways, parking
-4. Photos typically show the component being discussed on that page
-5. If a page discusses multiple components, choose the primary/dominant one
-6. If uncertain, return null for componentCode
-
-**Pages to classify:**
-${JSON.stringify(pagesContext, null, 2)}
+1. Look at the photos/images on each page - they show the building component
+2. Read the text for component codes (e.g., "B.7", "D.2") and names ("SBS Membrane Roofing", "Plumbing Fixtures")
+3. Match what you see in photos to the appropriate UNIFORMAT code
+4. If a page has multiple components, choose the primary one
+5. Return null if it's a cover page, table of contents, or unclear
 
 **Return JSON array:**
-[{"pageNumber": number, "componentCode": "B30" | "D20" | "D30" | etc. | null, "confidence": "high" | "medium" | "low", "reasoning": "brief explanation"}]`;
-  
-  try {
-    const response = await invokeLLM({
-      messages: [
-        { role: 'system', content: 'You are a UNIFORMAT II expert. Return valid JSON only.' },
-        { role: 'user', content: prompt },
-      ],
-    });
+[{"pageNumber": number, "componentCode": "B30" | "D20" | etc. | null, "confidence": "high" | "medium" | "low", "reasoning": "what I see in the image"}]`
+      }
+    ];
     
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      console.warn('[AI Classification] No response');
-      return pageImages;
+    // Add each page image
+    for (const page of batch) {
+      content.push({
+        type: 'text',
+        text: `\n\nPage ${page.pageNumber} - Text context: ${page.context}`
+      });
+      content.push({
+        type: 'image_url',
+        image_url: {
+          url: page.url,
+          detail: 'high'
+        }
+      });
     }
     
-    const classifications = JSON.parse(String(content));
+    const prompt = `Analyze the ${batch.length} pages above and return classifications.`;
     
-    return pageImages.map((img, idx) => {
-      const classification = classifications.find(
-        (c: any) => c.pageNumber === (img.pageNumber || idx + 1)
-      );
+    try {
+      console.log(`[AI Classification] Analyzing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(uploadedImages.length / batchSize)}`);
       
-      console.log(`[AI Classification] Page ${img.pageNumber}: ${classification?.componentCode || 'unclassified'}`);
+      const response = await invokeLLM({
+        messages: [
+          { role: 'system', content: 'You are a UNIFORMAT II expert analyzing BCA report pages. Return valid JSON only.' },
+          { role: 'user', content },
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'page_classifications',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                classifications: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      pageNumber: { type: 'number' },
+                      componentCode: { type: ['string', 'null'] },
+                      confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+                      reasoning: { type: 'string' }
+                    },
+                    required: ['pageNumber', 'componentCode', 'confidence', 'reasoning'],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ['classifications'],
+              additionalProperties: false
+            }
+          }
+        }
+      });
       
-      return {
-        ...img,
-        componentCode: classification?.componentCode || null,
-      };
-    });
-  } catch (error) {
-    console.error('[AI Classification] Failed:', error);
-    return pageImages;
+      const responseContent = response.choices[0]?.message?.content;
+      if (!responseContent) {
+        console.warn(`[AI Classification] No response for batch ${Math.floor(i / batchSize) + 1}`);
+        continue;
+      }
+      
+      const parsed = JSON.parse(String(responseContent));
+      const batchClassifications = parsed.classifications || [];
+      allClassifications.push(...batchClassifications);
+      
+      console.log(`[AI Classification] Batch ${Math.floor(i / batchSize) + 1} complete: ${batchClassifications.length} pages classified`);
+    } catch (error) {
+      console.error(`[AI Classification] Batch ${Math.floor(i / batchSize) + 1} failed:`, error);
+      // Continue with next batch
+    }
   }
+  
+  // Map classifications back to page images
+  const result = pageImages.map((img, idx) => {
+    const classification = allClassifications.find(
+      (c: any) => c.pageNumber === (img.pageNumber || idx + 1)
+    );
+    
+    if (classification) {
+      console.log(`[AI Classification] Page ${img.pageNumber}: ${classification.componentCode || 'unclassified'} (${classification.confidence}) - ${classification.reasoning}`);
+    }
+    
+    return {
+      ...img,
+      componentCode: classification?.componentCode || null,
+    };
+  });
+  
+  console.log(`[AI Classification] Complete: ${allClassifications.length}/${pageImages.length} pages classified`);
+  return result;
 }
 
 /**

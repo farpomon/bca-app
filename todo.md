@@ -165,3 +165,12 @@
 ## Landing Page Updates
 - [x] Remove code edition references (e.g., ASTM E2018-15 → ASTM E2018)
 - [x] Update all standard references to show only base code without edition year suffix
+
+## AI Import Error Fixes
+- [x] Investigate "failed to parse" error in AI import (canvas rendering issue)
+- [x] Replace broken canvas-based PDF rendering with pdf-poppler
+- [x] Use Google Gemini Vision API to analyze page images directly
+- [x] Implement multimodal classification (image + text) for better accuracy
+- [x] Upload page images to S3 for vision analysis
+- [x] Process pages in batches of 5 to avoid token limits
+- [x] Add structured JSON schema for classification results
