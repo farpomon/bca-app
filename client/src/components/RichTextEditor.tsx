@@ -13,7 +13,7 @@ import {
   Redo,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface RichTextEditorProps {
   content: string;
@@ -56,6 +56,13 @@ export function RichTextEditor({
       },
     },
   });
+
+  // Sync editor content when the content prop changes externally
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
 
   const setLink = useCallback(() => {
     if (!editor) return;

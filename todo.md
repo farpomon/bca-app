@@ -191,6 +191,22 @@
 - [ ] Add download/view functionality for uploaded documents
 - [ ] Add delete document functionality
 
+## Voice Input Bug Fix
+- [x] Investigate why voice transcriptions don't appear in form fields
+- [x] Fix VoiceRecorder callback integration
+- [x] Fix RichTextEditor to sync with external content changes
+- [x] Test voice input on all fields (observations, recommendations, component name, location)
+- [x] Verify transcription text is properly inserted into fields
+
+## Assessment Document Upload Feature
+- [x] Create assessment_documents table in database schema
+- [x] Add backend API endpoints for document upload/list/delete
+- [ ] Build DocumentUpload component with drag-and-drop support
+- [ ] Integrate document upload into AssessmentDialog
+- [ ] Add document list display in assessment view
+- [ ] Add download/view functionality for uploaded documents
+- [ ] Test with PDF and Word documents
+
 ## Deployment Fixes
 - [x] Remove pdf-poppler dependency causing node-gyp errors
 - [x] Remove canvas package completely from dependencies

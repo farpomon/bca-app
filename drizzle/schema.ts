@@ -1817,3 +1817,24 @@ export const accessRequests = mysqlTable("access_requests", {
 
 export type AccessRequest = typeof accessRequests.$inferSelect;
 export type InsertAccessRequest = typeof accessRequests.$inferInsert;
+
+/**
+ * Assessment documents - PDF/Word documents attached to assessments
+ * Allows users to upload source documents (BCA reports, inspection reports, etc.)
+ */
+export const assessmentDocuments = mysqlTable("assessment_documents", {
+  id: int("id").autoincrement().primaryKey(),
+  assessmentId: int("assessmentId").notNull(),
+  projectId: int("projectId").notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileKey: varchar("fileKey", { length: 500 }).notNull(),
+  url: text("url").notNull(),
+  mimeType: varchar("mimeType", { length: 100 }).notNull(),
+  fileSize: int("fileSize").notNull(), // in bytes
+  uploadedBy: int("uploadedBy").notNull(), // userId who uploaded
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AssessmentDocument = typeof assessmentDocuments.$inferSelect;
+export type InsertAssessmentDocument = typeof assessmentDocuments.$inferInsert;

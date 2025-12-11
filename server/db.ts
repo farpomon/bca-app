@@ -33,7 +33,9 @@ import {
   deteriorationCurves,
   componentDeteriorationConfig,
   predictionHistory,
-  ciFciSnapshots
+  ciFciSnapshots,
+  assessmentDocuments,
+  InsertAssessmentDocument
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1992,4 +1994,66 @@ export async function getCiFciSnapshots(projectId: number, level?: string) {
     .from(ciFciSnapshots)
     .where(and(...conditions))
     .orderBy(desc(ciFciSnapshots.calculatedAt));
+}
+
+// ============================================================================
+// Assessment Documents Functions
+// ============================================================================
+
+export async function createAssessmentDocument(document: InsertAssessmentDocument) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(assessmentDocuments).values(document);
+  return result;
+}
+
+export async function getAssessmentDocuments(assessmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(assessmentDocuments)
+    .where(eq(assessmentDocuments.assessmentId, assessmentId))
+    .orderBy(desc(assessmentDocuments.createdAt));
+}
+
+export async function getProjectDocuments(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(assessmentDocuments)
+    .where(eq(assessmentDocuments.projectId, projectId))
+    .orderBy(desc(assessmentDocuments.createdAt));
+}
+
+export async function deleteAssessmentDocument(documentId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verify the user owns the document (via project ownership)
+  const doc = await db
+    .select()
+    .from(assessmentDocuments)
+    .where(eq(assessmentDocuments.id, documentId))
+    .limit(1);
+    
+  if (!doc[0]) throw new Error("Document not found");
+  
+  // Check project ownership
+  const project = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.id, doc[0].projectId))
+    .limit(1);
+    
+  if (!project[0] || project[0].userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+  
+  await db.delete(assessmentDocuments).where(eq(assessmentDocuments.id, documentId));
+  return { success: true };
 }
