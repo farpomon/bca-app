@@ -150,3 +150,8 @@
 - [x] Update VoiceRecorder to show original vs enhanced transcription
 - [x] Add user choice between original and enhanced version ("Use Enhanced" or "Use Original" buttons)
 - [x] Track transcription history to preserve all versions (original + enhanced) via IndexedDB
+
+## AI Import Enhancements
+- [x] Change AI import to save entire PDF/Word pages as images instead of extracting individual photos
+- [x] Associate each page image with the appropriate UNIFORMAT II sub-section using AI classification
+- [x] Preserve full page context (text, tables, diagrams around photos)

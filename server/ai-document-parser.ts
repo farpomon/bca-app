@@ -39,20 +39,66 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Extract images from PDF buffer
- * NOTE: Currently disabled due to complexity of PDF image formats (JPEG2000, JBIG2, etc.)
- * Users should upload photos separately after project creation
+ * Render each PDF page as a full-page image
+ * This preserves all context (text, tables, diagrams, photos) on each page
  */
-export async function extractImagesFromPDF(buffer: Buffer): Promise<ExtractedImage[]> {
-  // TODO: Implement robust image extraction
-  // Current issue: pdf.js returns images in various compressed formats that require
-  // complex decoding. Options:
-  // 1. Use external service for image extraction
-  // 2. Render full pages as images instead
-  // 3. Skip extraction and let users upload photos manually
-  
-  console.log('[PDF Image Extraction] Skipped - users should upload photos separately');
-  return [];
+export async function renderPDFPagesToImages(buffer: Buffer): Promise<ExtractedImage[]> {
+  try {
+    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
+    const pdfDocument = await loadingTask.promise;
+    const pageImages: ExtractedImage[] = [];
+    
+    console.log(`[PDF Page Rendering] Starting render of ${pdfDocument.numPages} pages`);
+    
+    for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+      const page = await pdfDocument.getPage(pageNum);
+      
+      // Get page dimensions
+      const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for better quality
+      
+      // Create canvas
+      const { createCanvas } = await import('canvas');
+      const canvas = createCanvas(viewport.width, viewport.height);
+      const context = canvas.getContext('2d');
+      
+      // Render PDF page to canvas
+      await page.render({
+        canvasContext: context as any,
+        viewport: viewport,
+        canvas: canvas as any,
+      }).promise;
+      
+      // Convert canvas to PNG buffer
+      const pngBuffer = canvas.toBuffer('image/png');
+      
+      // Compress with sharp for smaller file size
+      const compressedBuffer = await sharp(pngBuffer)
+        .jpeg({ quality: 85 })
+        .toBuffer();
+      
+      // Extract text from this page for context
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+        .substring(0, 500); // First 500 chars for context
+      
+      pageImages.push({
+        buffer: compressedBuffer,
+        mimeType: 'image/jpeg',
+        pageNumber: pageNum,
+        context: pageText,
+        caption: `Page ${pageNum}`,
+      });
+      
+      console.log(`[PDF Page Rendering] Rendered page ${pageNum}/${pdfDocument.numPages}`);
+    }
+    
+    return pageImages;
+  } catch (error) {
+    console.error('[PDF Page Rendering] Failed:', error);
+    throw new Error(`Failed to render PDF pages: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**
@@ -274,13 +320,74 @@ Return ONLY valid JSON in this exact structure:
 }
 
 /**
+ * Classify page images by UNIFORMAT II sub-section using AI
+ */
+async function classifyPagesBySubSection(
+  pageImages: ExtractedImage[]
+): Promise<Array<ExtractedImage & { componentCode?: string }>> {
+  if (pageImages.length === 0) return [];
+  
+  console.log(`[AI Classification] Classifying ${pageImages.length} pages by sub-section`);
+  
+  // Build context for each page
+  const pagesContext = pageImages.map((img, idx) => ({
+    pageNumber: img.pageNumber || idx + 1,
+    context: (img.context || '').substring(0, 300), // Limit context length
+  }));
+  
+  const prompt = `Analyze these BCA report pages and assign each to a UNIFORMAT II component code.
+
+Use Level 2 codes: A10 (Foundations), A20 (Basement), B10 (Superstructure), B20 (Exterior Enclosure), B30 (Roofing), C10 (Interior Construction), C20 (Stairs), C30 (Interior Finishes), D10 (Conveying), D20 (Plumbing), D30 (HVAC), D40 (Fire Protection), D50 (Electrical), E10 (Equipment), E20 (Furnishings), F10 (Special Construction), G10-G40 (Site).
+
+Pages:
+${JSON.stringify(pagesContext, null, 2)}
+
+Return JSON array:
+[{"pageNumber": number, "componentCode": "string" or null, "confidence": "high|medium|low"}]`;
+  
+  try {
+    const response = await invokeLLM({
+      messages: [
+        { role: 'system', content: 'You are a UNIFORMAT II expert. Return valid JSON only.' },
+        { role: 'user', content: prompt },
+      ],
+    });
+    
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      console.warn('[AI Classification] No response');
+      return pageImages;
+    }
+    
+    const classifications = JSON.parse(String(content));
+    
+    return pageImages.map((img, idx) => {
+      const classification = classifications.find(
+        (c: any) => c.pageNumber === (img.pageNumber || idx + 1)
+      );
+      
+      console.log(`[AI Classification] Page ${img.pageNumber}: ${classification?.componentCode || 'unclassified'}`);
+      
+      return {
+        ...img,
+        componentCode: classification?.componentCode || null,
+      };
+    });
+  } catch (error) {
+    console.error('[AI Classification] Failed:', error);
+    return pageImages;
+  }
+}
+
+/**
  * Upload extracted images to S3 and return photo metadata
  */
-async function uploadExtractedImages(images: ExtractedImage[], projectPrefix: string): Promise<Array<{
+async function uploadExtractedImages(images: Array<ExtractedImage & { componentCode?: string }>, projectPrefix: string): Promise<Array<{
   url: string;
   fileKey: string;
   caption?: string;
   context?: string;
+  componentCode?: string;
 }>> {
   const uploadedPhotos = [];
   
@@ -299,6 +406,7 @@ async function uploadExtractedImages(images: ExtractedImage[], projectPrefix: st
         fileKey,
         caption: image.caption,
         context: image.context,
+        componentCode: image.componentCode,
       });
     } catch (error) {
       console.error(`Failed to upload image ${i + 1}:`, error);
@@ -333,7 +441,7 @@ export async function parseDocument(
   // Extract text and images based on file type
   if (mimeType === 'application/pdf') {
     documentText = await extractTextFromPDF(buffer);
-    images = await extractImagesFromPDF(buffer);
+    images = await renderPDFPagesToImages(buffer);
   } else if (
     mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     mimeType === 'application/msword'
@@ -344,7 +452,7 @@ export async function parseDocument(
     throw new Error(`Unsupported file type: ${mimeType}`);
   }
 
-  console.log(`Extracted ${images.length} images from document`);
+  console.log(`Extracted ${images.length} page images from document`);
 
   if (!documentText || documentText.trim().length < 100) {
     throw new Error('Document appears to be empty or too short to parse');
@@ -353,9 +461,12 @@ export async function parseDocument(
   // Use AI to extract structured data
   const extracted = await extractBCADataFromText(documentText);
 
+  // Classify pages by UNIFORMAT II sub-section
+  const classifiedImages = await classifyPagesBySubSection(images);
+
   // Upload extracted images to S3
   const projectPrefix = `ai-imports/${Date.now()}-${randomBytes(4).toString('hex')}`;
-  const uploadedPhotos = await uploadExtractedImages(images, projectPrefix);
+  const uploadedPhotos = await uploadExtractedImages(classifiedImages, projectPrefix);
 
   return {
     ...extracted,
