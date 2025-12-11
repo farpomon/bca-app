@@ -174,3 +174,19 @@
 - [x] Upload page images to S3 for vision analysis
 - [x] Process pages in batches of 5 to avoid token limits
 - [x] Add structured JSON schema for classification results
+
+## Mobile Assessment Page Enhancements
+- [x] Show assessment summary in UNIFORMAT section headers (e.g., "3 Good, 2 Fair, 1 Poor")
+- [x] Make Assessment Progress section expandable
+- [x] Show list of components when clicking on condition boxes (Good/Fair/Poor)
+- [x] Make components in the list clickable to open assessment dialog
+- [x] Add hover effects to condition boxes for better UX
+
+## Asset Document Management
+- [ ] Create database schema for asset documents (assetDocuments table)
+- [ ] Add document upload API endpoint (accepts PDF/Word files)
+- [ ] Store documents in S3 with proper file keys
+- [ ] Create UI for uploading documents to assets
+- [ ] Display list of uploaded documents for each asset
+- [ ] Add download/view functionality for uploaded documents
+- [ ] Add delete document functionality

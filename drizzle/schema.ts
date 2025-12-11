@@ -118,6 +118,28 @@ export type Asset = typeof assets.$inferSelect;
 export type InsertAsset = typeof assets.$inferInsert;
 
 /**
+ * Asset documents - stores PDF/Word files uploaded for each asset
+ */
+export const assetDocuments = mysqlTable("asset_documents", {
+  id: int("id").autoincrement().primaryKey(),
+  assetId: int("assetId").notNull(),
+  projectId: int("projectId").notNull(),
+  userId: int("userId").notNull(), // User who uploaded the document
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(), // S3 file key
+  fileUrl: text("fileUrl").notNull(), // S3 public URL
+  fileSize: int("fileSize").notNull(), // File size in bytes
+  mimeType: varchar("mimeType", { length: 100 }).notNull(), // e.g., "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  description: text("description"), // Optional description of the document
+  uploadedAt: timestamp("uploadedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AssetDocument = typeof assetDocuments.$inferSelect;
+export type InsertAssetDocument = typeof assetDocuments.$inferInsert;
+
+/**
  * Building sections - represents extensions, additions, or distinct areas within a project
  */
 export const buildingSections = mysqlTable("building_sections", {
