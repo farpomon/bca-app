@@ -116,6 +116,8 @@ export function AssessmentDialog({
   const [validationOverrides, setValidationOverrides] = useState<Map<number, string>>(new Map());
   const [showObservationsVoice, setShowObservationsVoice] = useState(false);
   const [showRecommendationsVoice, setShowRecommendationsVoice] = useState(false);
+  const [showComponentNameVoice, setShowComponentNameVoice] = useState(false);
+  const [showComponentLocationVoice, setShowComponentLocationVoice] = useState(false);
 
   const upsertAssessment = trpc.assessments.upsert.useMutation();
   const checkValidation = trpc.validation.check.useMutation();
@@ -394,9 +396,31 @@ export function AssessmentDialog({
 
         <div className="space-y-4 py-4">
           {/* Component Name and Location */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="componentName">Component Name</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="componentName">Component Name</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowComponentNameVoice(!showComponentNameVoice)}
+                  className="gap-2"
+                >
+                  <Mic className="w-4 h-4" />
+                  {showComponentNameVoice ? "Hide" : "Voice"}
+                </Button>
+              </div>
+              {showComponentNameVoice && (
+                <VoiceRecorder
+                  onTranscriptionComplete={(text) => {
+                    setComponentNameField(prev => prev + (prev ? " " : "") + text);
+                    setShowComponentNameVoice(false);
+                  }}
+                  onCancel={() => setShowComponentNameVoice(false)}
+                  context="Component Name"
+                />
+              )}
               <Input
                 id="componentName"
                 type="text"
@@ -406,7 +430,29 @@ export function AssessmentDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="componentLocation">Component Location</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="componentLocation">Component Location</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowComponentLocationVoice(!showComponentLocationVoice)}
+                  className="gap-2"
+                >
+                  <Mic className="w-4 h-4" />
+                  {showComponentLocationVoice ? "Hide" : "Voice"}
+                </Button>
+              </div>
+              {showComponentLocationVoice && (
+                <VoiceRecorder
+                  onTranscriptionComplete={(text) => {
+                    setComponentLocationField(prev => prev + (prev ? " " : "") + text);
+                    setShowComponentLocationVoice(false);
+                  }}
+                  onCancel={() => setShowComponentLocationVoice(false)}
+                  context="Component Location"
+                />
+              )}
               <Input
                 id="componentLocation"
                 type="text"

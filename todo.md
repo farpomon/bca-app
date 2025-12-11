@@ -124,3 +124,7 @@
 
 ## Bug Fixes
 - [x] Fix voice-to-text transcription not saving to the corresponding field in assessment form (fixed stale closure issue by using functional state updates)
+
+## Feature Enhancements
+- [x] Add voice input to Component Name field
+- [x] Add voice input to Component Location field
