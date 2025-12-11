@@ -13,8 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,10 @@ import { useState } from "react";
 export default function Admin() {
   const { user, loading } = useAuth();
   const [selectedTab, setSelectedTab] = useState("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [companyFilter, setCompanyFilter] = useState<string>("all");
 
   // Queries
   const statsQuery = trpc.admin.getSystemStats.useQuery(undefined, {
@@ -50,6 +55,16 @@ export default function Admin() {
     },
     onError: (error) => {
       toast.error(`Failed to update role: ${error.message}`);
+    },
+  });
+
+  const updateAccountStatusMutation = trpc.users.updateAccountStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Account status updated successfully");
+      usersQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update account status: ${error.message}`);
     },
   });
 
@@ -94,6 +109,42 @@ export default function Admin() {
 
   const handleRoleChange = (userId: number, newRole: "viewer" | "editor" | "project_manager" | "admin") => {
     updateRoleMutation.mutate({ userId, role: newRole });
+  };
+
+  const handleAccountStatusChange = (userId: number, newStatus: "pending" | "active" | "trial" | "suspended") => {
+    updateAccountStatusMutation.mutate({ userId, accountStatus: newStatus });
+  };
+
+  // Filter users based on search and filters
+  const filteredUsers = usersQuery.data?.filter((u) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.company?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRole = roleFilter === "all" || u.role === roleFilter;
+    const matchesStatus = statusFilter === "all" || u.accountStatus === statusFilter;
+    const matchesCompany = companyFilter === "all" || u.company === companyFilter;
+
+    return matchesSearch && matchesRole && matchesStatus && matchesCompany;
+  }) || [];
+
+  // Get unique companies for filter
+  const companies = Array.from(new Set(usersQuery.data?.map((u) => u.company).filter(Boolean))) as string[];
+
+  // Count active filters
+  const activeFiltersCount =
+    (roleFilter !== "all" ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (companyFilter !== "all" ? 1 : 0) +
+    (searchQuery !== "" ? 1 : 0);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setRoleFilter("all");
+    setStatusFilter("all");
+    setCompanyFilter("all");
   };
 
   const handleDeleteUser = (userId: number, userName: string | null) => {
@@ -232,6 +283,70 @@ export default function Admin() {
                   <Loader2 className="w-6 h-6 animate-spin" />
                 </div>
               ) : usersQuery.data ? (
+                <>
+                  {/* Search and Filters */}
+                  <div className="space-y-4 mb-6">
+                    <div className="flex gap-3 items-center flex-wrap">
+                      <div className="relative flex-1 min-w-[250px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search by name, email, or company..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-9"
+                        />
+                      </div>
+                      <Select value={roleFilter} onValueChange={setRoleFilter}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Roles</SelectItem>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="project_manager">Project Manager</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="trial">Trial</SelectItem>
+                          <SelectItem value="suspended">Suspended</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {companies.length > 0 && (
+                        <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filter by company" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Companies</SelectItem>
+                            {companies.map((company) => (
+                              <SelectItem key={company} value={company}>
+                                {company}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {activeFiltersCount > 0 && (
+                        <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
+                          <X className="h-4 w-4" />
+                          Clear {activeFiltersCount} {activeFiltersCount === 1 ? "filter" : "filters"}
+                        </Button>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Showing {filteredUsers.length} of {usersQuery.data.length} users
+                    </div>
+                  </div>
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -246,7 +361,7 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {usersQuery.data.map((u) => (
+                    {filteredUsers.map((u) => (
                       <TableRow key={u.id}>
                         <TableCell className="font-medium">{u.name || "—"}</TableCell>
                         <TableCell>{u.email || "—"}</TableCell>
@@ -276,22 +391,43 @@ export default function Admin() {
                           {u.lastSignedIn ? new Date(u.lastSignedIn).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2 items-center">
-                            <Select
-                              value={u.role}
-                              onValueChange={(value) => handleRoleChange(u.id, value as any)}
-                              disabled={updateRoleMutation.isPending || u.id === user.id}
-                            >
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="viewer">Viewer</SelectItem>
-                                <SelectItem value="editor">Editor</SelectItem>
-                                <SelectItem value="project_manager">Project Manager</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
+                          <div className="flex gap-2 items-center flex-wrap">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs text-muted-foreground">Role</label>
+                              <Select
+                                value={u.role}
+                                onValueChange={(value) => handleRoleChange(u.id, value as any)}
+                                disabled={updateRoleMutation.isPending || u.id === user.id}
+                              >
+                                <SelectTrigger className="w-[160px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="viewer">Viewer</SelectItem>
+                                  <SelectItem value="editor">Editor</SelectItem>
+                                  <SelectItem value="project_manager">Project Manager</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs text-muted-foreground">Status</label>
+                              <Select
+                                value={u.accountStatus}
+                                onValueChange={(value) => handleAccountStatusChange(u.id, value as any)}
+                                disabled={updateAccountStatusMutation.isPending}
+                              >
+                                <SelectTrigger className="w-[140px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="active">Active</SelectItem>
+                                  <SelectItem value="trial">Trial</SelectItem>
+                                  <SelectItem value="suspended">Suspended</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                             {u.id !== user.id && (
                               <Button
                                 variant="ghost"
@@ -309,6 +445,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                </>
               ) : null}
             </CardContent>
           </Card>

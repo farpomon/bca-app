@@ -123,39 +123,66 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // Projects
-export async function getUserProjects(userId: number, includeDeleted: boolean = false) {
+export async function getUserProjects(userId: number, includeDeleted: boolean = false, userCompany?: string | null, isAdmin: boolean = false) {
   const db = await getDb();
   if (!db) return [];
   
-  // Exclude deleted projects by default
-  const whereConditions = includeDeleted
-    ? eq(projects.userId, userId)
-    : and(eq(projects.userId, userId), ne(projects.status, "deleted"));
+  // Build where conditions with company isolation
+  let whereConditions;
   
-  return await db
-    .select()
-    .from(projects)
-    .where(whereConditions)
-    .orderBy(desc(projects.updatedAt));
+  if (isAdmin) {
+    // Admins can see all projects
+    whereConditions = includeDeleted
+      ? undefined
+      : ne(projects.status, "deleted");
+  } else {
+    // Non-admins can only see their company's projects
+    if (!userCompany) {
+      // If user has no company assigned, they can't see any projects
+      return [];
+    }
+    
+    whereConditions = includeDeleted
+      ? eq(projects.company, userCompany)
+      : and(eq(projects.company, userCompany), ne(projects.status, "deleted"));
+  }
+  
+  const query = db.select().from(projects);
+  
+  return whereConditions
+    ? await query.where(whereConditions).orderBy(desc(projects.updatedAt))
+    : await query.orderBy(desc(projects.updatedAt));
 }
 
-export async function getDeletedProjects(userId: number) {
+export async function getDeletedProjects(userId: number, userCompany?: string | null, isAdmin: boolean = false) {
   const db = await getDb();
   if (!db) return [];
   
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   
-  return await db
-    .select()
-    .from(projects)
-    .where(
-      and(
-        eq(projects.userId, userId),
+  // Build where conditions with company isolation
+  const whereConditions = isAdmin
+    ? and(
         eq(projects.status, "deleted"),
         gte(projects.deletedAt, ninetyDaysAgo)
       )
-    )
+    : userCompany
+    ? and(
+        eq(projects.company, userCompany),
+        eq(projects.status, "deleted"),
+        gte(projects.deletedAt, ninetyDaysAgo)
+      )
+    : and(
+        eq(projects.userId, userId),
+        eq(projects.status, "deleted"),
+        gte(projects.deletedAt, ninetyDaysAgo)
+      );
+  
+  return await db
+    .select()
+    .from(projects)
+    .where(whereConditions)
     .orderBy(desc(projects.deletedAt));
 }
 
