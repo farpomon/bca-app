@@ -193,6 +193,9 @@
 
 ## Deployment Fixes
 - [x] Remove pdf-poppler dependency causing node-gyp errors
+- [x] Remove canvas package completely from dependencies
+- [x] Remove canvas from onlyBuiltDependencies in package.json
 - [x] Disable AI import temporarily to fix deployment
 - [x] Server compiles and runs successfully without native dependencies
+- [x] Verified no canvas dependencies remain
 - [ ] Re-implement AI import using cloud-based PDF processing service (future enhancement)
