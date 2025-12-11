@@ -155,3 +155,9 @@
 - [x] Change AI import to save entire PDF/Word pages as images instead of extracting individual photos
 - [x] Associate each page image with the appropriate UNIFORMAT II sub-section using AI classification
 - [x] Preserve full page context (text, tables, diagrams around photos)
+- [x] Fix AI classification prompt to correctly parse pages with photos
+- [x] Improve prompt with better instructions for photo captions and visual content
+- [x] Add examples of how to extract component codes from photo descriptions
+- [x] Increased context from 300 to 800 characters for better classification
+- [x] Added comprehensive keyword lists for each building system
+- [x] Added reasoning field to AI response for transparency

@@ -81,7 +81,7 @@ export async function renderPDFPagesToImages(buffer: Buffer): Promise<ExtractedI
       const pageText = textContent.items
         .map((item: any) => item.str)
         .join(' ')
-        .substring(0, 500); // First 500 chars for context
+        .substring(0, 800); // First 800 chars for better context
       
       pageImages.push({
         buffer: compressedBuffer,
@@ -332,18 +332,50 @@ async function classifyPagesBySubSection(
   // Build context for each page
   const pagesContext = pageImages.map((img, idx) => ({
     pageNumber: img.pageNumber || idx + 1,
-    context: (img.context || '').substring(0, 300), // Limit context length
+    context: (img.context || '').substring(0, 800), // More context for better classification
   }));
   
-  const prompt = `Analyze these BCA report pages and assign each to a UNIFORMAT II component code.
+  const prompt = `You are analyzing a Building Condition Assessment (BCA) report to classify each page by UNIFORMAT II component code.
 
-Use Level 2 codes: A10 (Foundations), A20 (Basement), B10 (Superstructure), B20 (Exterior Enclosure), B30 (Roofing), C10 (Interior Construction), C20 (Stairs), C30 (Interior Finishes), D10 (Conveying), D20 (Plumbing), D30 (HVAC), D40 (Fire Protection), D50 (Electrical), E10 (Equipment), E20 (Furnishings), F10 (Special Construction), G10-G40 (Site).
+**UNIFORMAT II Level 2 Codes:**
+- A10: Foundations
+- A20: Basement Construction
+- B10: Superstructure (framing, structural walls)
+- B20: Exterior Enclosure (walls, cladding, exterior finishes)
+- B30: Roofing (membrane, shingles, flashing, drainage)
+- C10: Interior Construction (partitions, doors)
+- C20: Stairs (interior/exterior stairs)
+- C30: Interior Finishes (flooring, wall finishes, ceilings)
+- D10: Conveying Systems (elevators, escalators)
+- D20: Plumbing (water distribution, fixtures, drainage)
+- D30: HVAC (heating, cooling, ventilation)
+- D40: Fire Protection (sprinklers, alarms, extinguishers)
+- D50: Electrical (service, distribution, lighting)
+- E10: Equipment (kitchen, laundry, specialty equipment)
+- E20: Furnishings (cabinets, millwork, accessories)
+- F10: Special Construction (demolition, hazmat)
+- G10-G40: Site Work (landscaping, paving, site utilities)
 
-Pages:
+**Instructions:**
+1. Look for component codes in the text (e.g., "B.7", "D.2", "C.10")
+2. Look for component names (e.g., "SBS Membrane Roofing", "Plumbing Fixtures", "HVAC")
+3. Look for keywords indicating building systems:
+   - Roofing: membrane, shingles, flashing, drainage, roof deck
+   - Plumbing: pipes, fixtures, toilets, sinks, water heater
+   - HVAC: heating, cooling, ventilation, air conditioning, furnace, boiler
+   - Electrical: wiring, panels, lighting, outlets
+   - Enclosure: walls, windows, doors, cladding, siding
+   - Interior: flooring, ceiling, paint, finishes, partitions
+   - Site: landscaping, paving, walkways, parking
+4. Photos typically show the component being discussed on that page
+5. If a page discusses multiple components, choose the primary/dominant one
+6. If uncertain, return null for componentCode
+
+**Pages to classify:**
 ${JSON.stringify(pagesContext, null, 2)}
 
-Return JSON array:
-[{"pageNumber": number, "componentCode": "string" or null, "confidence": "high|medium|low"}]`;
+**Return JSON array:**
+[{"pageNumber": number, "componentCode": "B30" | "D20" | "D30" | etc. | null, "confidence": "high" | "medium" | "low", "reasoning": "brief explanation"}]`;
   
   try {
     const response = await invokeLLM({
