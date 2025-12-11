@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import ApproveRequestDialog from "@/components/ApproveRequestDialog";
+import RejectRequestDialog from "@/components/RejectRequestDialog";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -32,6 +34,9 @@ export default function Admin() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
 
   // Queries
   const statsQuery = trpc.admin.getSystemStats.useQuery(undefined, {
@@ -41,6 +46,16 @@ export default function Admin() {
   const usersQuery = trpc.users.list.useQuery(undefined, {
     enabled: user?.role === "admin" && selectedTab === "users",
   });
+
+  const pendingCountQuery = trpc.accessRequests.getPendingCount.useQuery(undefined, {
+    enabled: user?.role === "admin",
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const accessRequestsQuery = trpc.accessRequests.list.useQuery(
+    { status: "all" },
+    { enabled: user?.role === "admin" && selectedTab === "access-requests" }
+  );
   
   const projectsQuery = trpc.admin.getAllProjects.useQuery(
     { limit: 50, offset: 0 },
@@ -177,6 +192,15 @@ export default function Admin() {
           <TabsTrigger value="projects" className="gap-2">
             <FolderKanban className="w-4 h-4" />
             Projects
+          </TabsTrigger>
+          <TabsTrigger value="access-requests" className="gap-2">
+            <UserPlus className="w-4 h-4" />
+            Access Requests
+            {pendingCountQuery.data && pendingCountQuery.data.count > 0 && (
+              <Badge variant="destructive" className="ml-1">
+                {pendingCountQuery.data.count}
+              </Badge>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -506,7 +530,125 @@ export default function Admin() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Access Requests Tab */}
+        <TabsContent value="access-requests" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Access Requests</CardTitle>
+              <CardDescription>Review and manage user access requests</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {accessRequestsQuery.isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : accessRequestsQuery.data && accessRequestsQuery.data.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>City</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {accessRequestsQuery.data.map((req) => (
+                      <TableRow key={req.id}>
+                        <TableCell className="font-medium">{req.fullName}</TableCell>
+                        <TableCell>{req.email}</TableCell>
+                        <TableCell>{req.companyName}</TableCell>
+                        <TableCell>{req.city}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              req.status === "pending"
+                                ? "secondary"
+                                : req.status === "approved"
+                                ? "default"
+                                : "destructive"
+                            }
+                          >
+                            {req.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(req.submittedAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          {req.status === "pending" && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedRequest(req);
+                                  setApproveDialogOpen(true);
+                                }}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  setSelectedRequest(req);
+                                  setRejectDialogOpen(true);
+                                }}
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                          {req.status !== "pending" && (
+                            <span className="text-sm text-muted-foreground">
+                              {req.status === "approved" ? "Approved" : "Rejected"} on{" "}
+                              {req.reviewedAt ? new Date(req.reviewedAt).toLocaleDateString() : "—"}
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No access requests found
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Approval Dialog */}
+      {selectedRequest && (
+        <ApproveRequestDialog
+          request={selectedRequest}
+          open={approveDialogOpen}
+          onOpenChange={setApproveDialogOpen}
+          onSuccess={() => {
+            accessRequestsQuery.refetch();
+            pendingCountQuery.refetch();
+          }}
+        />
+      )}
+
+      {/* Reject Dialog */}
+      {selectedRequest && (
+        <RejectRequestDialog
+          request={selectedRequest}
+          open={rejectDialogOpen}
+          onOpenChange={setRejectDialogOpen}
+          onSuccess={() => {
+            accessRequestsQuery.refetch();
+            pendingCountQuery.refetch();
+          }}
+        />
+      )}
     </div>
     </DashboardLayout>
   );

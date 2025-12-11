@@ -15,30 +15,36 @@
 - [x] Register accessRequests router in main router
 
 ### Phase 2: New User Request Access Flow
-- [ ] Create RequestAccessDialog component
-  - [ ] Form fields: Full Name, Email, Company, City, Phone, Reason
-  - [ ] Validation and submission
-- [ ] Create PendingApproval page
-  - [ ] Show "Request submitted" message
-  - [ ] Display request status
-  - [ ] Show estimated review time
-- [ ] Update auth flow to check approval status
-  - [ ] Redirect unapproved users to request form or pending page
-  - [ ] Allow approved users to proceed
+- [x] Create RequestAccessForm component
+  - [x] Form fields: Full Name, Email, Company, City, Phone, Reason
+  - [x] Validation and submission
+  - [x] Show on first login for unapproved users
+- [x] Create PendingApproval page
+  - [x] Show "Request submitted" message
+  - [x] Display request status and submission date
+  - [x] Show estimated review time (24-48 hours)
+  - [x] Refresh button to check status
+  - [x] Auto-refresh every 30 seconds
+- [x] Add PendingApproval route to App.tsx
+- [ ] Update useAuth hook to check approval status (pending)
+  - [ ] Check if user has company assigned
+  - [ ] Redirect unapproved users to request/pending page
+  - [ ] Allow approved users to proceed normally
 
 ### Phase 3: Admin Approval Dashboard
-- [ ] Add "Access Requests" tab to Admin section
-- [ ] Create pending requests table
-  - [ ] Display: Name, Email, Company, City, Phone, Reason, Date
-  - [ ] Actions: Approve, Reject buttons
-- [ ] Create ApproveUserDialog
-  - [ ] Editable: Company Name, City, Role, Account Status
-  - [ ] Admin notes field
-  - [ ] Confirm button
-- [ ] Create RejectUserDialog
-  - [ ] Rejection reason field
-  - [ ] Send notification
-- [ ] Show pending count badge on Admin nav
+- [x] Add "Access Requests" tab to Admin section
+- [x] Create pending requests table
+  - [x] Display: Name, Email, Company, City, Status, Submitted Date
+  - [x] Actions: Approve, Reject buttons for pending requests
+- [x] Create ApproveRequestDialog
+  - [x] Editable: Company Name, City, Role, Account Status
+  - [x] Trial days field (if trial status)
+  - [x] Admin notes field
+  - [x] Confirm button
+- [x] Create RejectRequestDialog
+  - [x] Rejection reason field (shown to user)
+  - [x] Admin notes field (internal)
+- [x] Show pending count badge on Admin nav with auto-refresh
 
 ### Phase 4: Multi-Tenant Data Isolation
 - [x] Update project queries to filter by company

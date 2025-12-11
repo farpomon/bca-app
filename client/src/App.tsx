@@ -24,11 +24,13 @@ import Model3DViewer from "./pages/Model3DViewer";
 import PortfolioBIDashboard from "./pages/PortfolioBIDashboard";
 import Admin from "./pages/Admin";
 import DeletedProjects from "./pages/DeletedProjects";
+import PendingApproval from "./pages/PendingApproval";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/pending-approval"} component={PendingApproval} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/deleted-projects"} component={DeletedProjects} />
       <Route path={"/projects"} component={Projects} />
