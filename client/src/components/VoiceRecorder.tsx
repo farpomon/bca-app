@@ -8,6 +8,7 @@ import { saveRecording } from "@/lib/voiceRecordingHistory";
 import { RecordingHistory } from "./RecordingHistory";
 import { useAudioFeedback } from "@/hooks/useAudioFeedback";
 import { OfflineQueueWidget } from "./OfflineQueueWidget";
+import { useOfflineRecordingQueue } from "@/hooks/useOfflineRecordingQueue";
 import { Volume2, VolumeX } from "lucide-react";
 
 interface VoiceRecorderProps {
@@ -38,6 +39,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   
   const transcribeMutation = trpc.media.transcribeAudio.useMutation();
   const { playFeedback, isEnabled: audioFeedbackEnabled, toggleAudioFeedback } = useAudioFeedback();
+  const { isOnline, addToQueue } = useOfflineRecordingQueue();
 
   useEffect(() => {
     // Detect browser
@@ -239,6 +241,15 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
         return;
       }
       
+      // Check if online - if not, save to offline queue
+      if (!isOnline) {
+        await addToQueue(blob, context);
+        toast.info("Saved offline. Will transcribe when connection returns.", { duration: 4000 });
+        playFeedback("RECORDING_SAVED_OFFLINE");
+        setIsProcessing(false);
+        return;
+      }
+      
       // Upload to S3 first
       const formData = new FormData();
       formData.append("file", blob, `voice-${Date.now()}.webm`);
@@ -268,6 +279,19 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
       
     } catch (error: any) {
       console.error("Transcription error:", error);
+      
+      // Check if it's a network error - save offline
+      if (!navigator.onLine || error.message?.includes("network") || error.message?.includes("fetch")) {
+        try {
+          await addToQueue(blob, context);
+          toast.info("Network error. Saved offline for later transcription.", { duration: 4000 });
+          playFeedback("RECORDING_SAVED_OFFLINE");
+          setIsProcessing(false);
+          return;
+        } catch (queueError) {
+          console.error("Failed to save offline:", queueError);
+        }
+      }
       
       // Provide more specific error messages
       let errorMessage = "Failed to transcribe audio. ";

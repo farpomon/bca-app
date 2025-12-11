@@ -22,6 +22,7 @@ export const audioRouter = router({
           "MICROPHONE_DENIED",
           "MICROPHONE_READY",
           "ASSESSMENT_SAVED",
+          "RECORDING_SAVED_OFFLINE",
         ]),
       })
     )

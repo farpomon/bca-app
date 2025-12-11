@@ -112,4 +112,5 @@ export const AUDIO_MESSAGES = {
   MICROPHONE_DENIED: "Microphone access denied. Please enable microphone permissions in your browser settings",
   MICROPHONE_READY: "Microphone is ready. Tap the button to start recording",
   ASSESSMENT_SAVED: "Assessment saved successfully",
+  RECORDING_SAVED_OFFLINE: "Recording saved offline. Will transcribe when connection returns",
 } as const;

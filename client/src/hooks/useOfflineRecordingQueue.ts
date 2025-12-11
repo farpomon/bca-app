@@ -10,12 +10,16 @@ import {
   type QueuedRecording,
 } from "@/lib/offlineRecordingQueue";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import { saveRecording } from "@/lib/voiceRecordingHistory";
 
 export function useOfflineRecordingQueue() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [queuedRecordings, setQueuedRecordings] = useState<QueuedRecording[]>([]);
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
   const [stats, setStats] = useState({ total: 0, pending: 0, failed: 0 });
+  
+  const transcribeMutation = trpc.media.transcribeAudio.useMutation();
 
   // Initialize DB and load recordings
   useEffect(() => {
@@ -82,30 +86,35 @@ export function useOfflineRecordingQueue() {
     try {
       await updateRecordingStatus(recording.id, "uploading");
       
-      // Upload to S3
-      const fileName = `recording-${recording.timestamp}.webm`;
-      const fileKey = `recordings/${fileName}`;
-      
-      // Convert blob to buffer for upload
-      const arrayBuffer = await recording.blob.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      
-      // Note: storagePut is a server-side function, we need to upload via API
-      // For now, create a FormData and use fetch to upload
+      // Upload to S3 via API
+      const fileName = `voice-${recording.timestamp}.webm`;
       const formData = new FormData();
       formData.append("file", recording.blob, fileName);
-      formData.append("context", recording.context);
       
-      // This would need a proper upload endpoint
-      // For now, we'll return a placeholder URL
-      const url = URL.createObjectURL(recording.blob);
+      const uploadResponse = await fetch("/api/upload-audio", {
+        method: "POST",
+        body: formData,
+      });
       
-      return url;
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload audio");
+      }
+      
+      const { url } = await uploadResponse.json();
+      
+      // Transcribe the uploaded audio
+      const result = await transcribeMutation.mutateAsync({ audioUrl: url });
+      
+      // Save to history
+      const duration = (Date.now() - recording.timestamp) / 1000;
+      saveRecording(result.text, duration, recording.context);
+      
+      return result.text;
     } catch (error) {
       await updateRecordingStatus(recording.id, "failed", error instanceof Error ? error.message : "Upload failed");
       throw error;
     }
-  }, []);
+  }, [transcribeMutation]);
 
   const processQueue = useCallback(async () => {
     if (isProcessingQueue || !isOnline) return;

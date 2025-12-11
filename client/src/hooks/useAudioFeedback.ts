@@ -13,7 +13,8 @@ type FeedbackMessage =
   | "TRANSCRIPTION_ERROR"
   | "MICROPHONE_DENIED"
   | "MICROPHONE_READY"
-  | "ASSESSMENT_SAVED";
+  | "ASSESSMENT_SAVED"
+  | "RECORDING_SAVED_OFFLINE";
 
 export function useAudioFeedback() {
   const [isPlaying, setIsPlaying] = useState(false);

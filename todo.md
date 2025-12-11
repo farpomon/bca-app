@@ -128,3 +128,11 @@
 ## Feature Enhancements
 - [x] Add voice input to Component Name field
 - [x] Add voice input to Component Location field
+
+## Offline Capabilities
+- [x] Save voice recordings locally when offline (using IndexedDB)
+- [x] Auto-transcribe saved recordings when connection is restored
+- [x] Show offline recording queue status to user (OfflineQueueWidget)
+
+## Critical Bugs
+- [x] Fix logout error - Added redirect to home page after logout to prevent accessing protected pages
