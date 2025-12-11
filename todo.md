@@ -190,3 +190,9 @@
 - [ ] Display list of uploaded documents for each asset
 - [ ] Add download/view functionality for uploaded documents
 - [ ] Add delete document functionality
+
+## Deployment Fixes
+- [x] Remove pdf-poppler dependency causing node-gyp errors
+- [x] Disable AI import temporarily to fix deployment
+- [x] Server compiles and runs successfully without native dependencies
+- [ ] Re-implement AI import using cloud-based PDF processing service (future enhancement)

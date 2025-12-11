@@ -1512,13 +1512,19 @@ export const appRouter = router({
         return await db.calculateOverallBuildingCondition(input.projectId);
       }),
 
-    // AI Document Import - Parse uploaded document
+    // AI Document Import - Temporarily disabled due to deployment issues
+    // TODO: Re-implement using cloud-based PDF processing
     parseDocument: protectedProcedure
       .input(z.object({
         fileUrl: z.string(),
         mimeType: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
+        throw new TRPCError({
+          code: 'NOT_IMPLEMENTED',
+          message: 'AI document import is temporarily unavailable due to technical limitations. Please use manual data entry.'
+        });
+        /* Disabled - requires cloud PDF processing
         try {
           console.log('[AI Import] Starting document parse:', { mimeType: input.mimeType, fileUrl: input.fileUrl.substring(0, 100) });
           
@@ -1551,6 +1557,7 @@ export const appRouter = router({
             message: error instanceof Error ? error.message : 'Failed to parse document',
           });
         }
+        */
       }),
 
     // AI Document Import - Commit extracted data to database

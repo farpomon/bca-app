@@ -214,9 +214,6 @@ importers:
       openai:
         specifier: ^4.67.0
         version: 4.104.0(ws@8.18.3)(zod@4.1.12)
-      pdf-poppler:
-        specifier: ^0.2.3
-        version: 0.2.3
       pdfjs-dist:
         specifier: ^5.4.449
         version: 5.4.449
@@ -4961,9 +4958,6 @@ packages:
   pathval@2.0.1:
     resolution: {integrity: sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==}
     engines: {node: '>= 14.16'}
-
-  pdf-poppler@0.2.3:
-    resolution: {integrity: sha512-nUczP3M/W4c8/3F6il0LmkxkF33qTKQyxeBmUnPbQLxxhtBX42zfpZqnLysomvMdb756qVR7n5kvNr+LzisXQw==}
 
   pdfjs-dist@5.4.449:
     resolution: {integrity: sha512-CegnUaT0QwAyQMS+7o2POr4wWUNNe8VaKKlcuoRHeYo98cVnqPpwOXNSx6Trl6szH02JrRcsPgletV6GmF3LtQ==}
@@ -11404,8 +11398,6 @@ snapshots:
   pathe@2.0.3: {}
 
   pathval@2.0.1: {}
-
-  pdf-poppler@0.2.3: {}
 
   pdfjs-dist@5.4.449:
     optionalDependencies:
