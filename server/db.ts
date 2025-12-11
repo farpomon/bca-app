@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, sql, like, or, isNull } from "drizzle-orm";
+import { eq, and, desc, asc, sql, like, or, isNull, ne, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
@@ -123,15 +123,40 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // Projects
-export async function getUserProjects(userId: number) {
+export async function getUserProjects(userId: number, includeDeleted: boolean = false) {
   const db = await getDb();
   if (!db) return [];
+  
+  // Exclude deleted projects by default
+  const whereConditions = includeDeleted
+    ? eq(projects.userId, userId)
+    : and(eq(projects.userId, userId), ne(projects.status, "deleted"));
   
   return await db
     .select()
     .from(projects)
-    .where(eq(projects.userId, userId))
+    .where(whereConditions)
     .orderBy(desc(projects.updatedAt));
+}
+
+export async function getDeletedProjects(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  
+  return await db
+    .select()
+    .from(projects)
+    .where(
+      and(
+        eq(projects.userId, userId),
+        eq(projects.status, "deleted"),
+        gte(projects.deletedAt, ninetyDaysAgo)
+      )
+    )
+    .orderBy(desc(projects.deletedAt));
 }
 
 export async function getProjectById(projectId: number, userId: number) {
@@ -169,6 +194,37 @@ export async function deleteProject(projectId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  // Soft delete: set status to 'deleted' and record deletion time
+  await db
+    .update(projects)
+    .set({
+      status: "deleted",
+      deletedAt: new Date(),
+      deletedBy: userId,
+    })
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+}
+
+export async function restoreProject(projectId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Restore: set status back to draft and clear deletion fields
+  await db
+    .update(projects)
+    .set({
+      status: "draft",
+      deletedAt: null,
+      deletedBy: null,
+    })
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+}
+
+export async function permanentlyDeleteProject(projectId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Hard delete: actually remove from database
   await db
     .delete(projects)
     .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));

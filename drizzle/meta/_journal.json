@@ -253,6 +253,13 @@
       "when": 1765390342877,
       "tag": "0035_chief_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1765415793402,
+      "tag": "0036_yielding_iron_man",
+      "breakpoints": true
     }
   ]
 }

@@ -126,6 +126,18 @@ export const appRouter = router({
         return { success: true, count: input.ids.length };
       }),
 
+    restore: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.restoreProject(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    listDeleted: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getDeletedProjects(ctx.user.id);
+      }),
+
     archive: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {

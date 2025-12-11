@@ -150,3 +150,112 @@
 - [ ] Test with real Depreciation Report (requires user to provide document)
   - [ ] Verify cost extraction accuracy
   - [ ] Verify FCI calculations work with extracted costs
+
+
+## Registration Approval System (SaaS Onboarding)
+
+### Phase 1: Database Schema & Backend API
+- [ ] Create access_requests table
+  - [ ] Fields: id, userId, openId, fullName, email, companyName, city, phoneNumber, useCase, status, submittedAt, reviewedAt, reviewedBy, adminNotes
+  - [ ] Status enum: pending, approved, rejected
+- [ ] Add company and city columns to users table
+- [ ] Add company column to projects table
+- [ ] Create accessRequests tRPC router
+  - [ ] submit - Create new access request
+  - [ ] list - Get all requests (admin only)
+  - [ ] approve - Approve request and set user profile (admin only)
+  - [ ] reject - Reject request with reason (admin only)
+  - [ ] getMyRequest - Check current user's request status
+
+### Phase 2: Registration Request Form & Pending User UX
+- [ ] Create RequestAccessDialog component
+  - [ ] Form fields: Full Name, Email, Company Name, City, Phone, Use Case
+  - [ ] Submit button and validation
+- [ ] Create PendingApproval page
+  - [ ] Show "Request submitted" message
+  - [ ] Display estimated review time
+  - [ ] Show request status
+- [ ] Update auth flow to check approval status
+  - [ ] Redirect unapproved users to PendingApproval page
+  - [ ] Show RequestAccessDialog for first-time users
+
+### Phase 3: Admin Approval Dashboard
+- [ ] Create AccessRequests admin page
+  - [ ] Table showing all pending requests
+  - [ ] Display: Name, Email, Company, City, Phone, Use Case, Submitted Date
+  - [ ] Actions: Approve, Reject, View Details
+- [ ] Create ApproveUserDialog component
+  - [ ] Editable fields: Company Name, City, Role, Account Status
+  - [ ] Admin notes field
+  - [ ] Confirm approval button
+- [ ] Create RejectUserDialog component
+  - [ ] Rejection reason field
+  - [ ] Send notification to user
+- [ ] Add "Access Requests" tab to Admin section
+  - [ ] Badge showing pending count
+
+### Phase 4: Company Profiles & Project Association
+- [ ] Update user profile display
+  - [ ] Show company name in sidebar
+  - [ ] Show city/region in profile
+- [ ] Update project creation
+  - [ ] Auto-assign company from user profile
+  - [ ] Display company name on project cards
+- [ ] Add company filter to Projects page
+  - [ ] Filter dropdown with all companies
+  - [ ] Admin can see all companies
+  - [ ] Users see only their company
+- [ ] Update project permissions
+  - [ ] Company-based access control
+  - [ ] Admin can see all projects
+
+### Phase 5: Testing & Documentation
+- [ ] Test complete registration flow
+  - [ ] New user submits request
+  - [ ] Admin approves with company/role
+  - [ ] User logs in and sees company profile
+  - [ ] Projects are associated with company
+- [ ] Write vitest tests for access requests
+- [ ] Update audit logging for approvals/rejections
+- [ ] Create checkpoint
+
+
+## Soft Delete with 90-Day Recovery
+
+### Phase 1: Database Schema
+- [x] Add "deleted" status to projects status enum
+- [x] Add deletedAt timestamp column to projects table
+- [x] Add deletedBy column to track who deleted the project
+
+### Phase 2: Backend API
+- [x] Update projects.delete mutation to soft delete
+  - [x] Set status to "deleted"
+  - [x] Set deletedAt to current timestamp
+  - [x] Set deletedBy to current user ID
+- [x] Create projects.restore mutation
+  - [x] Restore status to previous value (or "draft")
+  - [x] Clear deletedAt and deletedBy
+- [x] Update projects.list to exclude deleted projects by default
+- [x] Create projects.listDeleted to show deleted projects
+- [x] Add filter to show projects deleted within 90 days
+
+### Phase 3: UI Components
+- [x] Update project deletion to show soft delete confirmation
+- [x] Create "Deleted Projects" view/tab
+  - [x] Show deleted projects with deletion date
+  - [x] Show days remaining until permanent deletion
+  - [x] Restore button for each project
+- [ ] Add "Show Deleted" toggle to Projects page (optional)
+- [ ] Update project cards to show "Deleted" badge (optional)
+
+### Phase 4: Automatic Cleanup
+- [x] Create cleanup function for projects > 90 days old
+- [x] Add admin endpoint to trigger cleanup manually
+- [ ] Add cron job or scheduled task (optional for now)
+- [x] Document manual cleanup process
+
+### Phase 5: Testing
+- [x] Test soft delete flow
+- [x] Test restore flow
+- [x] Test 90-day calculation
+- [x] Create checkpoint

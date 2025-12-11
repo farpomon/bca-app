@@ -10,6 +10,10 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["viewer", "editor", "project_manager", "admin"]).default("editor").notNull(),
+  company: varchar("company", { length: 255 }),
+  city: varchar("city", { length: 255 }),
+  accountStatus: mysqlEnum("accountStatus", ["pending", "active", "trial", "suspended"]).default("pending").notNull(),
+  trialEndsAt: timestamp("trialEndsAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -52,7 +56,7 @@ export const projects = mysqlTable("projects", {
   buildingCode: varchar("buildingCode", { length: 100 }),
   assessmentDate: timestamp("assessmentDate"),
   observations: text("observations"),
-  status: mysqlEnum("status", ["draft", "in_progress", "completed", "archived"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "in_progress", "completed", "archived", "deleted"]).default("draft").notNull(),
   overallConditionScore: int("overallConditionScore"), // Calculated overall building condition score
   overallFciScore: int("overallFciScore"), // Overall Facility Condition Index (0-100)
   overallConditionRating: varchar("overallConditionRating", { length: 50 }), // e.g., "Good", "Fair", "Poor"
@@ -76,6 +80,11 @@ export const projects = mysqlTable("projects", {
   facilityType: varchar("facilityType", { length: 100 }), // e.g., "Recreation Center", "Office Building"
   occupancyStatus: mysqlEnum("occupancyStatus", ["occupied", "vacant", "partial"]),
   criticalityLevel: mysqlEnum("criticalityLevel", ["critical", "important", "standard"]),
+  company: varchar("company", { length: 255 }), // Company that created this project
+  
+  // Soft delete fields
+  deletedAt: timestamp("deletedAt"),
+  deletedBy: int("deletedBy"),
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -1763,3 +1772,26 @@ export const projectPermissions = mysqlTable("project_permissions", {
 
 export type ProjectPermission = typeof projectPermissions.$inferSelect;
 export type InsertProjectPermission = typeof projectPermissions.$inferInsert;
+
+/**
+ * Access requests - pending user registration requests
+ */
+export const accessRequests = mysqlTable("access_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  openId: varchar("openId", { length: 64 }).notNull(), // From OAuth
+  fullName: varchar("fullName", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  companyName: varchar("companyName", { length: 255 }).notNull(),
+  city: varchar("city", { length: 255 }).notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 50 }),
+  useCase: text("useCase"), // Why they need access
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  reviewedAt: timestamp("reviewedAt"),
+  reviewedBy: int("reviewedBy"), // Admin user ID who reviewed
+  adminNotes: text("adminNotes"), // Internal notes from admin
+  rejectionReason: text("rejectionReason"), // Reason for rejection (shown to user)
+});
+
+export type AccessRequest = typeof accessRequests.$inferSelect;
+export type InsertAccessRequest = typeof accessRequests.$inferInsert;

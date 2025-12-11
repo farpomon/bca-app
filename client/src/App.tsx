@@ -23,12 +23,14 @@ import LPOptimizationDashboard from "./pages/LPOptimizationDashboard";
 import Model3DViewer from "./pages/Model3DViewer";
 import PortfolioBIDashboard from "./pages/PortfolioBIDashboard";
 import Admin from "./pages/Admin";
+import DeletedProjects from "./pages/DeletedProjects";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/deleted-projects"} component={DeletedProjects} />
       <Route path={"/projects"} component={Projects} />
       <Route path={"/projects/:id/dashboard"} component={ProjectDashboard} />
       <Route path={"/projects/:id/assets"} component={AssetsList} />

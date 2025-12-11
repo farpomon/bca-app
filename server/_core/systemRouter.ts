@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
+import { cleanupOldDeletedProjects, getProjectsToCleanupCount } from "../cleanup";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -26,4 +27,13 @@ export const systemRouter = router({
         success: delivered,
       } as const;
     }),
+
+  cleanupDeletedProjects: adminProcedure.mutation(async () => {
+    return await cleanupOldDeletedProjects();
+  }),
+
+  getCleanupCount: adminProcedure.query(async () => {
+    const count = await getProjectsToCleanupCount();
+    return { count };
+  }),
 });
