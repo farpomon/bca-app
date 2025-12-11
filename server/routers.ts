@@ -17,6 +17,7 @@ import { adminRouter } from "./routers/admin.router";
 import { vocabularyRouter } from "./routers/vocabulary.router";
 import { sharingRouter } from "./routers/sharing.router";
 import { auditRouter } from "./routers/audit.router";
+import { usersRouter } from "./routers/users.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -37,6 +38,7 @@ export const appRouter = router({
   vocabulary: vocabularyRouter,
   sharing: sharingRouter,
   audit: auditRouter,
+  users: usersRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

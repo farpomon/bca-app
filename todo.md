@@ -259,3 +259,28 @@
 - [x] Test restore flow
 - [x] Test 90-day calculation
 - [x] Create checkpoint
+
+
+## Admin User Management
+
+### Phase 1: Backend API
+- [x] Create users.list tRPC query (admin only)
+  - [x] Return all users with id, name, email, role, company, city, accountStatus
+- [x] Create users.updateRole tRPC mutation (admin only)
+  - [x] Update user role (viewer, editor, project_manager, admin)
+  - [x] Validate admin permissions
+  - [x] Prevent self-demotion
+
+### Phase 2: UI Components
+- [x] Add "User Management" tab to Admin page
+- [x] Create user list table
+  - [x] Display: Name, Email, Company, City, Current Role, Account Status
+  - [x] Role dropdown for each user
+  - [x] Auto-save on change
+- [x] Disable dropdown for current user (prevent self-demotion)
+- [x] Show success/error toasts
+
+### Phase 3: Testing
+- [x] Test role update flow
+- [x] Test admin-only access
+- [x] Create checkpoint

@@ -13,8 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 
 export default function Admin() {
@@ -26,7 +33,7 @@ export default function Admin() {
     enabled: user?.role === "admin",
   });
   
-  const usersQuery = trpc.admin.getAllUsers.useQuery(undefined, {
+  const usersQuery = trpc.users.list.useQuery(undefined, {
     enabled: user?.role === "admin" && selectedTab === "users",
   });
   
@@ -36,7 +43,7 @@ export default function Admin() {
   );
 
   // Mutations
-  const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
+  const updateRoleMutation = trpc.users.updateRole.useMutation({
     onSuccess: () => {
       toast.success("User role updated successfully");
       usersQuery.refetch();
@@ -85,12 +92,7 @@ export default function Admin() {
     );
   }
 
-  const handleToggleRole = (userId: number, currentRole: string) => {
-    // Cycle through roles: viewer → editor → project_manager → admin → viewer
-    const roleOrder: Array<"viewer" | "editor" | "project_manager" | "admin"> = ["viewer", "editor", "project_manager", "admin"];
-    const currentIndex = roleOrder.indexOf(currentRole as any);
-    const nextIndex = (currentIndex + 1) % roleOrder.length;
-    const newRole = roleOrder[nextIndex];
+  const handleRoleChange = (userId: number, newRole: "viewer" | "editor" | "project_manager" | "admin") => {
     updateRoleMutation.mutate({ userId, role: newRole });
   };
 
@@ -235,8 +237,10 @@ export default function Admin() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>City</TableHead>
                       <TableHead>Role</TableHead>
-                      <TableHead>Login Method</TableHead>
+                      <TableHead>Account Status</TableHead>
                       <TableHead>Last Sign In</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -246,31 +250,55 @@ export default function Admin() {
                       <TableRow key={u.id}>
                         <TableCell className="font-medium">{u.name || "—"}</TableCell>
                         <TableCell>{u.email || "—"}</TableCell>
+                        <TableCell>{u.company || "—"}</TableCell>
+                        <TableCell>{u.city || "—"}</TableCell>
                         <TableCell>
                           <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                            {u.role}
+                            {u.role.replace("_", " ")}
                           </Badge>
                         </TableCell>
-                        <TableCell>{u.loginMethod || "—"}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              u.accountStatus === "active"
+                                ? "default"
+                                : u.accountStatus === "trial"
+                                ? "secondary"
+                                : u.accountStatus === "suspended"
+                                ? "destructive"
+                                : "outline"
+                            }
+                          >
+                            {u.accountStatus}
+                          </Badge>
+                        </TableCell>
                         <TableCell>
                           {u.lastSignedIn ? new Date(u.lastSignedIn).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleToggleRole(u.id, u.role)}
-                              disabled={updateRoleMutation.isPending}
+                          <div className="flex gap-2 items-center">
+                            <Select
+                              value={u.role}
+                              onValueChange={(value) => handleRoleChange(u.id, value as any)}
+                              disabled={updateRoleMutation.isPending || u.id === user.id}
                             >
-                              {u.role === "admin" ? "Demote" : "Promote"}
-                            </Button>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="viewer">Viewer</SelectItem>
+                                <SelectItem value="editor">Editor</SelectItem>
+                                <SelectItem value="project_manager">Project Manager</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
                             {u.id !== user.id && (
                               <Button
-                                variant="destructive"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteUser(u.id, u.name)}
                                 disabled={deleteUserMutation.isPending}
+                                className="text-destructive hover:text-destructive"
                               >
                                 Delete
                               </Button>
