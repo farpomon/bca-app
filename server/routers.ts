@@ -20,6 +20,9 @@ import { auditRouter } from "./routers/audit.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
+import { getDb } from "./db";
+import { assessments } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 import * as assetsDb from "./db-assets";
 import * as customComponentsDb from "./db-custom-components";
 import * as dashboardData from "./dashboardData";
@@ -995,6 +998,107 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deleteCostEstimate(input.id);
         return { success: true };
+      }),
+
+    // Estimate costs for assessments without cost data
+    estimateForProject: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { estimateBatchCosts } = await import('./costEstimationService');
+        
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
+        if (!project) throw new Error("Project not found");
+        
+        // Get all assessments for the project
+        const assessments = await db.getProjectAssessments(input.projectId);
+        
+        // Filter assessments without cost data
+        const assessmentsNeedingEstimates = assessments.filter(
+          a => !a.estimatedRepairCost || !a.replacementValue
+        );
+        
+        if (assessmentsNeedingEstimates.length === 0) {
+          return { 
+            message: 'All assessments already have cost data',
+            estimatedCount: 0,
+            estimates: []
+          };
+        }
+        
+        // Estimate costs
+        const estimates = estimateBatchCosts(
+          assessmentsNeedingEstimates.map(a => ({
+            componentCode: a.componentCode || 'B20',
+            componentName: a.componentName || 'Component',
+            condition: a.condition || 'fair',
+            quantity: 1000, // Default 1000 SF
+            usefulLife: 25, // Default 25 years
+          }))
+        );
+        
+        // Update assessments with estimated costs
+        let updatedCount = 0;
+        for (let i = 0; i < assessmentsNeedingEstimates.length; i++) {
+          const assessment = assessmentsNeedingEstimates[i];
+          const estimate = estimates[i];
+          
+          if (assessment && estimate) {
+            await db.upsertAssessment({
+              ...assessment,
+              estimatedRepairCost: estimate.estimatedRepairCost,
+              replacementValue: estimate.replacementValue,
+              remainingUsefulLife: estimate.remainingUsefulLife,
+            });
+            updatedCount++;
+          }
+        }
+        
+        return {
+          message: `Estimated costs for ${updatedCount} assessments`,
+          estimatedCount: updatedCount,
+          estimates: estimates.map((est, i) => ({
+            ...est,
+            assessmentId: assessmentsNeedingEstimates[i]?.id,
+          })),
+        };
+      }),
+
+    // Estimate cost for a single assessment
+    estimateForAssessment: protectedProcedure
+      .input(z.object({
+        assessmentId: z.number(),
+        componentCode: z.string(),
+        componentName: z.string(),
+        condition: z.string(),
+        quantity: z.number().optional(),
+        usefulLife: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { estimateComponentCost } = await import('./costEstimationService');
+        
+        const estimate = estimateComponentCost(
+          input.componentCode,
+          input.componentName,
+          input.condition,
+          input.quantity,
+          input.usefulLife
+        );
+        
+        // Update the assessment costs directly
+        const dbInstance = await getDb();
+        if (!dbInstance) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        await dbInstance
+          .update(assessments)
+          .set({
+            estimatedRepairCost: estimate.estimatedRepairCost,
+            replacementValue: estimate.replacementValue,
+            remainingUsefulLife: estimate.remainingUsefulLife,
+            updatedAt: new Date(),
+          })
+          .where(eq(assessments.id, input.assessmentId));
+        
+        return estimate;
       }),
   }),
 

@@ -118,6 +118,17 @@ export default function ProjectDetail() {
     },
   });
 
+  const estimateCosts = trpc.costEstimates.estimateForProject.useMutation({
+    onSuccess: (result: any) => {
+      toast.success(result.message);
+      // Refetch data to show updated costs
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast.error('Failed to estimate costs: ' + error.message);
+    },
+  });
+
   const bulkUpdateStatus = trpc.assessments.bulkUpdateStatus.useMutation({
     onSuccess: () => {
       toast.success("Assessment statuses updated successfully");
@@ -388,6 +399,22 @@ export default function ProjectDetail() {
           </TabsContent>
 
           <TabsContent value="assessments">
+            {/* Header with Estimate Costs button */}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Assessments</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (confirm('Estimate costs for all assessments without cost data? This will use industry-standard pricing.')) {
+                    estimateCosts.mutate({ projectId });
+                  }
+                }}
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                Estimate Missing Costs
+              </Button>
+            </div>
             {/* Status Filter Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card 

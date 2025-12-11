@@ -99,10 +99,19 @@ IMPORTANT INSTRUCTIONS:
 3. For deficiencies, look for issues, problems, repairs needed
 4. Preserve relationships: which deficiencies belong to which components
 5. Extract dates in ISO format (YYYY-MM-DD)
-6. Extract costs as numbers (remove currency symbols)
+6. Extract costs as numbers (remove currency symbols, commas, and convert to numeric)
 7. Map condition descriptions to: "excellent", "good", "fair", "poor", "critical"
 8. Map severity to: "low", "medium", "high", "critical"
 9. Map priority to: "immediate", "short_term", "medium_term", "long_term"
+10. COST EXTRACTION: Look for cost tables, financial summaries, and cost projections
+    - Search for "Repair Cost", "Replacement Cost", "Replacement Value", "Cost Estimate" columns
+    - Match costs to their corresponding components by code or name
+    - Extract both immediate repair costs and long-term replacement values
+    - If a document has separate cost tables, extract all cost data
+11. DOCUMENT TYPE DETECTION:
+    - Building Asset Inventory (BAI): Focus on component inventory and conditions
+    - Depreciation Report: Extract cost tables, financial projections, and FCI calculations
+    - Handle both document types appropriately
 
 DOCUMENT TEXT:
 ${documentText.substring(0, 50000)} 

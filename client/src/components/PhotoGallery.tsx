@@ -19,9 +19,11 @@ interface PhotoGalleryProps {
 
 export default function PhotoGallery({ projectId, deficiencyId, componentCode }: PhotoGalleryProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [caption, setCaption] = useState("");
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: boolean}>({});
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerImage, setViewerImage] = useState<string>("");
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -35,14 +37,6 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
   );
 
   const uploadPhoto = trpc.photos.upload.useMutation({
-    onSuccess: () => {
-      toast.success("Photo uploaded successfully");
-      setUploadDialogOpen(false);
-      setSelectedFile(null);
-      setCaption("");
-      setPreviewUrl(null);
-      refetch();
-    },
     onError: (error) => {
       toast.error("Failed to upload photo: " + error.message);
     },
@@ -59,51 +53,124 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    handleFiles(files);
+  };
 
-    // Check file size (16MB limit)
-    if (file.size > 16 * 1024 * 1024) {
-      toast.error("File size must be less than 16MB");
-      return;
-    }
+  const handleFiles = (files: File[]) => {
+    const validFiles = files.filter(file => {
+      // Check file size (16MB limit)
+      if (file.size > 16 * 1024 * 1024) {
+        toast.error(`${file.name}: File size must be less than 16MB`);
+        return false;
+      }
 
-    // Check file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Only image files are allowed");
-      return;
-    }
+      // Check file type
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name}: Only image files are allowed`);
+        return false;
+      }
 
-    setSelectedFile(file);
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setSelectedFiles(prev => [...prev, ...validFiles]);
     
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Create previews
+    validFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrls(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+    setUploadDialogOpen(true);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) {
-      toast.error("Please select a file");
+    if (selectedFiles.length === 0) {
+      toast.error("Please select at least one file");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = (reader.result as string).split(",")[1];
-      uploadPhoto.mutate({
-        projectId,
-        deficiencyId,
-        componentCode,
-        fileData: base64!,
-        fileName: selectedFile.name,
-        mimeType: selectedFile.type,
-        caption: caption || undefined,
-      });
-    };
-    reader.readAsDataURL(selectedFile);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const file of selectedFiles) {
+      try {
+        setUploadProgress(prev => ({ ...prev, [file.name]: true }));
+        
+        const reader = new FileReader();
+        await new Promise<void>((resolve, reject) => {
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(",")[1];
+            uploadPhoto.mutate({
+              projectId,
+              deficiencyId,
+              componentCode,
+              fileData: base64!,
+              fileName: file.name,
+              mimeType: file.type,
+              caption: caption || undefined,
+            }, {
+              onSuccess: () => {
+                successCount++;
+                setUploadProgress(prev => ({ ...prev, [file.name]: false }));
+                resolve();
+              },
+              onError: () => {
+                failCount++;
+                setUploadProgress(prev => ({ ...prev, [file.name]: false }));
+                reject();
+              }
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      } catch (error) {
+        // Error already counted in failCount
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`${successCount} photo(s) uploaded successfully`);
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} photo(s) failed to upload`);
+    }
+
+    // Reset state
+    setUploadDialogOpen(false);
+    setSelectedFiles([]);
+    setCaption("");
+    setPreviewUrls([]);
+    setUploadProgress({});
+    refetch();
   };
 
   const filteredPhotos = deficiencyId
@@ -138,25 +205,69 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="photo">Photo File</Label>
-                  <Input
-                    id="photo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                  />
+                  <Label htmlFor="photo">Photo Files</Label>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Drag and drop photos here, or click to browse
+                    </p>
+                    <Input
+                      id="photo"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('photo')?.click()}
+                    >
+                      Browse Files
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Maximum file size: 16MB. Supported formats: JPG, PNG, GIF, WebP
+                    Maximum file size: 16MB per file. Supported formats: JPG, PNG, GIF, WebP
                   </p>
                 </div>
 
-                {previewUrl && (
-                  <div className="border rounded-lg p-2">
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="w-full h-48 object-contain"
-                    />
+                {previewUrls.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Selected Photos ({selectedFiles.length})</Label>
+                    <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                      {previewUrls.map((url, index) => (
+                        <div key={index} className="relative border rounded-lg p-1 group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeFile(index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          {uploadProgress[selectedFiles[index]?.name] && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded">
+                              <Loader2 className="h-6 w-6 text-white animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -176,19 +287,20 @@ export default function PhotoGallery({ projectId, deficiencyId, componentCode }:
                   variant="outline"
                   onClick={() => {
                     setUploadDialogOpen(false);
-                    setSelectedFile(null);
+                    setSelectedFiles([]);
                     setCaption("");
-                    setPreviewUrl(null);
+                    setPreviewUrls([]);
+                    setUploadProgress({});
                   }}
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleUpload}
-                  disabled={!selectedFile || uploadPhoto.isPending}
+                  disabled={selectedFiles.length === 0 || uploadPhoto.isPending}
                 >
                   {uploadPhoto.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Upload
+                  Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
                 </Button>
               </DialogFooter>
             </DialogContent>

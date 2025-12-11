@@ -92,3 +92,61 @@
 - [x] Implemented: Return empty array from extractImagesFromPDF
 - [ ] Future enhancement: Add manual photo upload feature after project creation
 - [ ] Future enhancement: Consider external service for robust PDF image extraction
+
+
+## Feature 1: Manual Photo Upload (Complete)
+
+- [x] Design photo management UI
+  - [x] Enhanced PhotoGallery component with drag-and-drop
+  - [x] Photo grid/list view already exists
+  - [x] Drag-and-drop upload zone added
+  - [x] Upload progress indicators added
+- [x] Implement backend photo upload
+  - [x] uploadPhoto tRPC mutation already exists
+  - [x] S3 upload with storagePut already working
+  - [x] Photos linked to assessments/components
+- [x] Add photo management to project detail page
+  - [x] Photos tab already exists in ProjectDetail
+  - [x] Bulk upload now supported (multiple file selection)
+  - [x] Photo deletion already working
+  - [x] Photo caption editing supported
+  - [x] Photos can be linked to specific components
+
+## Feature 2: Cost Estimation Engine (Complete)
+
+- [x] Research industry cost standards (RS Means) - Created simplified database
+- [x] Create cost estimation database/lookup
+  - [x] Component type to base cost mapping (UNIFORMAT II codes)
+  - [x] Condition multipliers (excellent=1.0, good=0.75, fair=0.5, poor=0.25)
+  - [x] Regional cost adjustments (Vancouver, BC = 1.15x)
+- [x] Implement estimation algorithm
+  - [x] Created costEstimationService.ts with full logic
+  - [x] estimateForProject tRPC procedure - batch estimates all assessments
+  - [x] estimateForAssessment tRPC procedure - single assessment
+  - [x] Calculate repair costs based on condition
+  - [x] Calculate replacement values based on component type
+  - [x] Apply useful life calculations
+- [x] Add UI for cost estimation
+  - [x] "Estimate Missing Costs" button in Assessments tab
+  - [x] Confirmation dialog before applying
+  - [x] Auto-reload to show updated costs
+  - [x] Costs can be manually overridden after estimation
+
+## Feature 3: Depreciation Report Support (Complete)
+
+- [x] Analyze Depreciation Report structure
+  - [x] Identified cost table formats (Repair Cost, Replacement Value columns)
+  - [x] Financial summary sections documented
+  - [x] FCI calculations noted
+- [x] Enhance AI prompt for cost extraction
+  - [x] Added detailed instructions to look for cost tables
+  - [x] Added instructions to extract financial summaries
+  - [x] Handle both BAI and Depreciation Report formats
+  - [x] Added cost matching logic (by component code or name)
+- [x] AI parser now extracts cost tables
+  - [x] Parses tabular cost data from text
+  - [x] Matches costs to components automatically
+  - [x] Extracts both repair and replacement costs
+- [ ] Test with real Depreciation Report (requires user to provide document)
+  - [ ] Verify cost extraction accuracy
+  - [ ] Verify FCI calculations work with extracted costs
