@@ -2,16 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
+
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { trpc } from "@/lib/trpc";
-import { Loader2, ArrowLeft, Save, Plus } from "lucide-react";
+import { Loader2, ArrowLeft, Plus } from "lucide-react";
 import { useParams, useLocation } from "wouter";
-import { toast } from "sonner";
+
 import { useState, useMemo } from "react";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { AddCustomComponentDialog } from "@/components/AddCustomComponentDialog";
@@ -45,25 +43,8 @@ export default function Assessment() {
   const [selectedComponentName, setSelectedComponentName] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [customComponentDialogOpen, setCustomComponentDialogOpen] = useState(false);
-  const [condition, setCondition] = useState<string>("not_assessed");
-  const [observations, setObservations] = useState("");
-  const [remainingUsefulLife, setRemainingUsefulLife] = useState("");
-  const [expectedUsefulLife, setExpectedUsefulLife] = useState("");
 
-  const upsertAssessment = trpc.assessments.upsert.useMutation({
-    onSuccess: () => {
-      toast.success("Assessment saved successfully");
-      refetchAssessments();
-      // Reset form
-      setCondition("not_assessed");
-      setObservations("");
-      setRemainingUsefulLife("");
-      setExpectedUsefulLife("");
-    },
-    onError: (error) => {
-      toast.error("Failed to save assessment: " + error.message);
-    },
-  });
+
 
   // Group components by level
   const componentsByLevel = useMemo(() => {
@@ -82,22 +63,7 @@ export default function Assessment() {
     return new Map(existingAssessments.map(a => [a.componentCode, a]));
   }, [existingAssessments]);
 
-  const handleSaveAssessment = () => {
-    if (!selectedComponent) {
-      toast.error("Please select a component");
-      return;
-    }
 
-    upsertAssessment.mutate({
-      projectId,
-      assetId: assetIdNum,
-      componentCode: selectedComponent,
-      condition: condition as "good" | "fair" | "poor" | "not_assessed",
-      observations: observations || undefined,
-      remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
-      expectedUsefulLife: expectedUsefulLife ? parseInt(expectedUsefulLife) : undefined,
-    });
-  };
 
   const loadAssessment = (componentCode: string, componentName: string) => {
     setSelectedComponent(componentCode);
@@ -156,9 +122,8 @@ export default function Assessment() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
-          {/* Left: Component Selection */}
-          <Card>
+        {/* Component Selection - Full Width */}
+        <Card>
             <CardHeader className="pb-3 md:pb-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -252,102 +217,7 @@ export default function Assessment() {
                 })}
               </Accordion>
             </CardContent>
-          </Card>
-
-          {/* Right: Assessment Form */}
-          <Card>
-            <CardHeader className="pb-3 md:pb-6">
-              <CardTitle className="text-lg md:text-xl">Component Assessment</CardTitle>
-              <CardDescription className="text-sm">
-                {selectedComponent 
-                  ? `Assessing component: ${selectedComponent}`
-                  : "Select a component from the left to begin assessment"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 md:space-y-4 px-3 md:px-6">
-              {selectedComponent ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="condition">Condition Rating *</Label>
-                    <Select value={condition} onValueChange={setCondition}>
-                      <SelectTrigger id="condition">
-                        <SelectValue placeholder="Select condition" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="fair">Fair</SelectItem>
-                        <SelectItem value="poor">Poor</SelectItem>
-                        <SelectItem value="not_assessed">Not Assessed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="observations">Observations</Label>
-                    <Textarea
-                      id="observations"
-                      value={observations}
-                      onChange={(e) => setObservations(e.target.value)}
-                      placeholder="Describe the current condition, any visible defects, maintenance history, etc."
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="remainingUsefulLife">Remaining Useful Life (years)</Label>
-                      <Input
-                        id="remainingUsefulLife"
-                        type="number"
-                        value={remainingUsefulLife}
-                        onChange={(e) => setRemainingUsefulLife(e.target.value)}
-                        placeholder="e.g., 10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="expectedUsefulLife">Expected Useful Life (years)</Label>
-                      <Input
-                        id="expectedUsefulLife"
-                        type="number"
-                        value={expectedUsefulLife}
-                        onChange={(e) => setExpectedUsefulLife(e.target.value)}
-                        placeholder="e.g., 25"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                    <Button 
-                      onClick={handleSaveAssessment} 
-                      disabled={upsertAssessment.isPending}
-                      className="flex-1"
-                    >
-                      {upsertAssessment.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Assessment
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => setLocation(`/projects/${projectId}`)}
-                    >
-                      Done
-                    </Button>
-                  </div>
-
-                  <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      After saving, you can add deficiencies for this component from the project detail page.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  Select a component from the left panel to begin assessment
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        </Card>
 
         {/* Assessment Progress */}
         <Card>
