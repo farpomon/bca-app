@@ -15,13 +15,17 @@ interface VoiceRecorderProps {
   onTranscriptionComplete: (text: string) => void;
   onCancel?: () => void;
   context?: string; // e.g., "Assessment", "Project Notes"
+  fieldType?: "observations" | "recommendations"; // For AI enhancement
 }
 
-export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "Assessment" }: VoiceRecorderProps) {
+export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "Assessment", fieldType }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [transcribedText, setTranscribedText] = useState("");
+  const [enhancedText, setEnhancedText] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [showEnhanced, setShowEnhanced] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [permissionState, setPermissionState] = useState<"idle" | "requesting" | "granted" | "denied">("idle");
   const [micTested, setMicTested] = useState(false);
@@ -38,6 +42,7 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const animationFrameRef = useRef<number | null>(null);
   
   const transcribeMutation = trpc.media.transcribeAudio.useMutation();
+  const enhanceMutation = trpc.audio.enhanceTranscription.useMutation();
   const { playFeedback, isEnabled: audioFeedbackEnabled, toggleAudioFeedback } = useAudioFeedback();
   const { isOnline, addToQueue } = useOfflineRecordingQueue();
 
@@ -315,9 +320,34 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
     }
   };
 
-  const handleConfirm = () => {
-    if (transcribedText) {
-      onTranscriptionComplete(transcribedText);
+  const handleEnhance = async () => {
+    if (!transcribedText || !fieldType) return;
+    
+    setIsEnhancing(true);
+    try {
+      const result = await enhanceMutation.mutateAsync({
+        originalText: transcribedText,
+        fieldType,
+      });
+      
+      if (result.success && result.enhancedText) {
+        setEnhancedText(String(result.enhancedText));
+        toast.success("Text enhanced with AI");
+      } else {
+        toast.error("Failed to enhance text");
+      }
+    } catch (error) {
+      console.error("Enhancement error:", error);
+      toast.error("Failed to enhance text");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const handleConfirm = (useEnhanced: boolean = false) => {
+    const textToUse = useEnhanced && enhancedText ? enhancedText : transcribedText;
+    if (textToUse) {
+      onTranscriptionComplete(textToUse);
       handleReset();
     }
   };
@@ -325,6 +355,8 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
   const handleReset = () => {
     setAudioBlob(null);
     setTranscribedText("");
+    setEnhancedText("");
+    setIsEnhancing(false);
     setRecordingTime(0);
     chunksRef.current = [];
   };
@@ -532,8 +564,22 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
 
       {transcribedText && (
         <div className="space-y-3">
+          {/* Original Transcription */}
           <div className="p-3 bg-muted rounded-md">
-            <p className="text-sm font-medium mb-2">Transcribed Text:</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">Original Transcription:</p>
+              {fieldType && !enhancedText && !isEnhancing && (
+                <Button 
+                  onClick={handleEnhance} 
+                  variant="outline" 
+                  size="sm"
+                  className="gap-2"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Enhance with AI
+                </Button>
+              )}
+            </div>
             <textarea
               value={transcribedText}
               onChange={(e) => setTranscribedText(e.target.value)}
@@ -541,11 +587,44 @@ export function VoiceRecorder({ onTranscriptionComplete, onCancel, context = "As
               placeholder="Edit transcription if needed..."
             />
           </div>
+
+          {/* AI Enhancement Loading */}
+          {isEnhancing && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Enhancing with AI...
+            </div>
+          )}
+
+          {/* Enhanced Version */}
+          {enhancedText && (
+            <div className="p-3 bg-primary/5 border border-primary/20 rounded-md">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-primary">AI-Enhanced Version:</p>
+                <Badge variant="secondary" className="gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Professional
+                </Badge>
+              </div>
+              <textarea
+                value={enhancedText}
+                onChange={(e) => setEnhancedText(e.target.value)}
+                className="w-full min-h-[100px] p-2 text-sm bg-background border rounded resize-none"
+                placeholder="AI-enhanced text..."
+              />
+            </div>
+          )}
           
-          <div className="flex gap-2">
-            <Button onClick={handleConfirm} variant="default" className="gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {enhancedText && (
+              <Button onClick={() => handleConfirm(true)} variant="default" className="gap-2">
+                <Check className="w-4 h-4" />
+                Use Enhanced
+              </Button>
+            )}
+            <Button onClick={() => handleConfirm(false)} variant={enhancedText ? "outline" : "default"} className="gap-2">
               <Check className="w-4 h-4" />
-              Use This Text
+              Use Original
             </Button>
             <Button onClick={handleReset} variant="outline" className="gap-2">
               <X className="w-4 h-4" />

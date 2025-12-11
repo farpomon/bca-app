@@ -586,6 +586,7 @@ export function AssessmentDialog({
                   setShowObservationsVoice(false);
                 }}
                 onCancel={() => setShowObservationsVoice(false)}
+                fieldType="observations"
               />
             )}
             <RichTextEditor
@@ -616,6 +617,7 @@ export function AssessmentDialog({
                   setShowRecommendationsVoice(false);
                 }}
                 onCancel={() => setShowRecommendationsVoice(false)}
+                fieldType="recommendations"
               />
             )}
             <RichTextEditor

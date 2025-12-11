@@ -144,3 +144,9 @@
 ## Current Issues
 - [x] Projects showing in Admin Dashboard but not in main Projects page (Admin Dashboard works as workaround)
 - [x] Make project names clickable in Admin Dashboard to navigate to project details
+
+## AI Enhancement Features
+- [x] Create backend tRPC procedure for AI text enhancement using BCA industry best practices
+- [x] Update VoiceRecorder to show original vs enhanced transcription
+- [x] Add user choice between original and enhanced version ("Use Enhanced" or "Use Original" buttons)
+- [x] Track transcription history to preserve all versions (original + enhanced) via IndexedDB

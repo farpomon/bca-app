@@ -78,4 +78,47 @@ export const audioRouter = router({
         };
       }
     }),
+
+  /**
+   * Enhance transcribed text with AI using building assessment best practices
+   */
+  enhanceTranscription: publicProcedure
+    .input(
+      z.object({
+        originalText: z.string().min(1),
+        fieldType: z.enum(["observations", "recommendations"]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { invokeLLM } = await import("../_core/llm");
+      
+      const systemPrompt = input.fieldType === "observations"
+        ? `You are a professional building condition assessor. Rewrite the following observation notes to be clear, professional, and follow industry best practices. Use proper technical terminology from UNIFORMAT II standards. Keep the meaning intact but improve clarity, grammar, and professional tone. Be concise and specific.`
+        : `You are a professional building condition assessor. Rewrite the following recommendations to be actionable, professional, and follow industry best practices. Use proper technical terminology. Prioritize safety and compliance. Be specific about required actions and timeframes where applicable.`;
+
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: input.originalText },
+          ],
+        });
+
+        const enhancedText = response.choices[0]?.message?.content || input.originalText;
+
+        return {
+          success: true,
+          originalText: input.originalText,
+          enhancedText,
+        };
+      } catch (error) {
+        console.error("[AI Enhancement] Error:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+          originalText: input.originalText,
+          enhancedText: input.originalText, // Fallback to original
+        };
+      }
+    }),
 });
