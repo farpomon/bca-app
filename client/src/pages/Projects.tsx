@@ -492,9 +492,8 @@ export default function Projects() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name" className="flex items-center">
+                    <Label htmlFor="name">
                       Project Name *
-                      <FieldTooltip content="Example: 1729 Comox Avenue BCA, City Hall Building Assessment" />
                     </Label>
                     <Input
                       id="name"
@@ -505,9 +504,8 @@ export default function Projects() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="address" className="flex items-center">
+                    <Label htmlFor="address">
                       Property Address
-                      <FieldTooltip content="Example: 1729 Comox Ave, V9M 3M1, BC" />
                     </Label>
                     <Input
                       id="address"
@@ -517,9 +515,8 @@ export default function Projects() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="clientName" className="flex items-center">
+                    <Label htmlFor="clientName">
                       Client Name
-                      <FieldTooltip content="Example: Town of Comox, ABC Property Management" />
                     </Label>
                     <Input
                       id="clientName"
@@ -530,9 +527,8 @@ export default function Projects() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="propertyType" className="flex items-center">
+                      <Label htmlFor="propertyType">
                         Property Type
-                        <FieldTooltip content="Example: Mixed Use, Residential, Commercial, Industrial" />
                       </Label>
                       <Input
                         id="propertyType"
@@ -542,9 +538,8 @@ export default function Projects() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="constructionType" className="flex items-center">
+                      <Label htmlFor="constructionType">
                         Construction Type
-                        <FieldTooltip content="Example: Wood Framing, Steel Frame, Concrete, Masonry" />
                       </Label>
                       <Input
                         id="constructionType"
@@ -556,9 +551,8 @@ export default function Projects() {
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="yearBuilt" className="flex items-center">
+                      <Label htmlFor="yearBuilt">
                         Year Built
-                        <FieldTooltip content="Example: 1973, 2005" />
                       </Label>
                       <Input
                         id="yearBuilt"

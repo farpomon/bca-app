@@ -114,3 +114,7 @@
 - [x] Add "Clear Filters" button
 - [ ] Create activity_logs table (pending)
 - [ ] Create user activity log UI (pending)
+
+
+## UI Improvements
+- [x] Remove info icons from Create New Project form
