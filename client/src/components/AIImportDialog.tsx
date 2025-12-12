@@ -57,8 +57,8 @@ type ExtractedData = {
     context?: string | null;
     componentCode?: string | null;
   }>;
-  confidence: "high" | "medium" | "low";
-  warnings: string[];
+  confidence?: "high" | "medium" | "low";
+  warnings?: string[];
 };
 
 export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialogProps) {

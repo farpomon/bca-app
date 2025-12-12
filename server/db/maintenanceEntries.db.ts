@@ -38,7 +38,7 @@ export async function getMaintenanceEntries(filters: {
     conditions.push(eq(maintenanceEntries.status, filters.status as any));
   }
   if (filters.isRecurring !== undefined) {
-    conditions.push(eq(maintenanceEntries.isRecurring, filters.isRecurring));
+    conditions.push(eq(maintenanceEntries.isRecurring, filters.isRecurring ? 1 : 0));
   }
 
   const query = db.select().from(maintenanceEntries);
@@ -196,7 +196,7 @@ export async function getRecurringMaintenance(projectId: number, dueSoon?: boole
 
   const conditions = [
     eq(maintenanceEntries.projectId, projectId),
-    eq(maintenanceEntries.isRecurring, true),
+    eq(maintenanceEntries.isRecurring, 1),
   ];
 
   if (dueSoon) {

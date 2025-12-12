@@ -9,7 +9,7 @@ import { invokeLLM } from "./_core/llm";
 import type { Assessment } from "../drizzle/schema";
 
 export interface HistoricalDataPoint {
-  assessmentDate: Date;
+  assessmentDate: string | Date; // ISO string or Date object
   condition: number; // Percentage
   age: number; // Years since installation
   observations?: string;

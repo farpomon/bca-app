@@ -53,7 +53,7 @@ export async function getActiveProjectModel(projectId: number) {
     .where(
       and(
         eq(facilityModels.projectId, projectId),
-        eq(facilityModels.isActive, true)
+        eq(facilityModels.isActive, 1)
       )
     )
     .orderBy(desc(facilityModels.version))

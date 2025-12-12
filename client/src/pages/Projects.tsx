@@ -107,8 +107,7 @@ export default function Projects() {
       const matchesSearch = 
         project.name?.toLowerCase().includes(query) ||
         project.address?.toLowerCase().includes(query) ||
-        project.clientName?.toLowerCase().includes(query) ||
-        project.buildingCode?.toLowerCase().includes(query);
+        project.clientName?.toLowerCase().includes(query);
       if (!matchesSearch) return false;
     }
 
@@ -157,9 +156,9 @@ export default function Projects() {
           aValue = new Date(a.updatedAt).getTime();
           bValue = new Date(b.updatedAt).getTime();
           break;
-        case 'buildingCode':
-          aValue = a.buildingCode?.toLowerCase() || '';
-          bValue = b.buildingCode?.toLowerCase() || '';
+        case 'buildingCodeId':
+          aValue = String(a.buildingCodeId || '');
+          bValue = String(b.buildingCodeId || '');
           break;
         case 'address':
           aValue = a.address?.toLowerCase() || '';
@@ -865,10 +864,10 @@ export default function Projects() {
                         )}
                       </div>
                     </SelectItem>
-                    <SelectItem value="buildingCode">
+                    <SelectItem value="buildingCodeId">
                       <div className="flex items-center gap-2">
                         <span>Building Code</span>
-                        {sortBy === 'buildingCode' && (
+                        {sortBy === 'buildingCodeId' && (
                           sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
                         )}
                       </div>
@@ -1049,7 +1048,7 @@ export default function Projects() {
                                 yearBuilt: project.yearBuilt?.toString() || "",
                                 numberOfUnits: project.numberOfUnits?.toString() || "",
                                 numberOfStories: project.numberOfStories?.toString() || "",
-                                buildingCode: project.buildingCode || "",
+                                buildingCodeId: project.buildingCodeId ?? undefined,
                                 observations: project.observations || "",
                               });
                               setEditDialogOpen(true);
@@ -1325,10 +1324,9 @@ export default function Projects() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-buildingCode">Building Code</Label>
-                <Input
-                  id="edit-buildingCode"
-                  value={formData.buildingCode}
-                  onChange={(e) => setFormData({ ...formData, buildingCode: e.target.value })}
+                <BuildingCodeSelect
+                  value={formData.buildingCodeId}
+                  onChange={(value) => setFormData({ ...formData, buildingCodeId: value })}
                 />
               </div>
             </div>

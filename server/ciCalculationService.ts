@@ -19,7 +19,7 @@ export interface ComponentCI {
   componentName: string;
   ci: number;
   weight: number; // Replacement value or area
-  assessmentDate: Date;
+  assessmentDate: string | Date; // ISO string or Date object
 }
 
 export interface SystemCI {
@@ -33,7 +33,7 @@ export interface CalculationResult {
   ci: number;
   components: ComponentCI[];
   calculationMethod: string;
-  calculatedAt: Date;
+  calculatedAt: string | Date; // ISO string or Date object
 }
 
 /**

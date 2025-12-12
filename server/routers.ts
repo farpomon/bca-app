@@ -113,6 +113,7 @@ export const appRouter = router({
           ...input,
           userId: ctx.user.id,
           status: "draft",
+          assessmentDate: input.assessmentDate?.toISOString(),
         }, ctx.user.company);
         return { id: projectId };
       }),
@@ -135,7 +136,11 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         const isAdmin = ctx.user.role === 'admin';
-        await db.updateProject(id, ctx.user.id, data, ctx.user.company, isAdmin);
+        const updateData = {
+          ...data,
+          assessmentDate: data.assessmentDate?.toISOString(),
+        };
+        await db.updateProject(id, ctx.user.id, updateData, ctx.user.company, isAdmin);
         return { success: true };
       }),
 
@@ -1407,6 +1412,7 @@ export const appRouter = router({
             ...input,
             scaleItems: JSON.stringify(input.scaleItems),
             createdBy: ctx.user.id,
+            isDefault: input.isDefault ? 1 : 0,
           });
 
           return { id: scaleId };
@@ -1431,10 +1437,14 @@ export const appRouter = router({
           }
 
           const { id, ...updates } = input;
-          await db.updateRatingScale(id, {
+          const dbUpdates: any = {
             ...updates,
             scaleItems: updates.scaleItems ? JSON.stringify(updates.scaleItems) : undefined,
-          });
+          };
+          if ('isDefault' in updates) {
+            dbUpdates.isDefault = updates.isDefault ? 1 : 0;
+          }
+          await db.updateRatingScale(id, dbUpdates);
 
           return { success: true };
         }),
@@ -1480,7 +1490,10 @@ export const appRouter = router({
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
 
-          await db.upsertProjectRatingConfig(input);
+          await db.upsertProjectRatingConfig({
+            ...input,
+            useWeightedAverage: input.useWeightedAverage ? 1 : 0,
+          });
           return { success: true };
         }),
 
@@ -1586,11 +1599,6 @@ export const appRouter = router({
         mimeType: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
-        throw new TRPCError({
-          code: 'NOT_IMPLEMENTED',
-          message: 'AI document import is temporarily unavailable due to technical limitations. Please use manual data entry.'
-        });
-        /* Disabled - requires cloud PDF processing
         try {
           console.log('[AI Import] Starting document parse:', { mimeType: input.mimeType, fileUrl: input.fileUrl.substring(0, 100) });
           
@@ -1612,7 +1620,6 @@ export const appRouter = router({
           console.log('[AI Import] Parse successful:', {
             assessments: extracted.assessments.length,
             deficiencies: extracted.deficiencies.length,
-            photos: extracted.photos?.length || 0,
           });
           
           return extracted;
@@ -1623,7 +1630,6 @@ export const appRouter = router({
             message: error instanceof Error ? error.message : 'Failed to parse document',
           });
         }
-        */
       }),
 
     // AI Document Import - Commit extracted data to database
@@ -2521,7 +2527,7 @@ export const appRouter = router({
           fci: fciResult.fci.toString(),
           deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
           currentReplacementValue: fciResult.currentReplacementValue.toString(),
-          lastCalculatedAt: new Date(),
+          lastCalculatedAt: new Date().toISOString(),
         });
         
         await db.saveCiFciSnapshot({

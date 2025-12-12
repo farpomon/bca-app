@@ -163,23 +163,24 @@ export async function getDeletedProjects(userId: number, userCompany?: string | 
   
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const ninetyDaysAgoStr = ninetyDaysAgo.toISOString();
   
   // Build where conditions with company isolation
   const whereConditions = isAdmin
     ? and(
         eq(projects.status, "deleted"),
-        gte(projects.deletedAt, ninetyDaysAgo)
+        gte(projects.deletedAt, ninetyDaysAgoStr)
       )
     : userCompany
     ? and(
         eq(projects.company, userCompany),
         eq(projects.status, "deleted"),
-        gte(projects.deletedAt, ninetyDaysAgo)
+        gte(projects.deletedAt, ninetyDaysAgoStr)
       )
     : and(
         eq(projects.userId, userId),
         eq(projects.status, "deleted"),
-        gte(projects.deletedAt, ninetyDaysAgo)
+        gte(projects.deletedAt, ninetyDaysAgoStr)
       );
   
   return await db
@@ -620,7 +621,10 @@ export async function createHierarchyTemplate(template: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(hierarchyTemplates).values(template);
+  const result = await db.insert(hierarchyTemplates).values({
+    ...template,
+    isDefault: template.isDefault ? 1 : 0
+  });
   return result;
 }
 
@@ -656,9 +660,14 @@ export async function updateHierarchyTemplate(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  const dbUpdates: any = { ...updates };
+  if ('isDefault' in updates) {
+    dbUpdates.isDefault = updates.isDefault ? 1 : 0;
+  }
+
   await db
     .update(hierarchyTemplates)
-    .set(updates)
+    .set(dbUpdates)
     .where(eq(hierarchyTemplates.id, id));
 }
 

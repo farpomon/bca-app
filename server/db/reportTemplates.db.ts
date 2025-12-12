@@ -19,7 +19,7 @@ export async function getReportTemplates(userId: number, projectId?: number) {
   if (!db) return [];
 
   const conditions = [
-    eq(reportTemplates.isGlobal, true),
+    eq(reportTemplates.isGlobal, 1),
     eq(reportTemplates.userId, userId),
   ];
 

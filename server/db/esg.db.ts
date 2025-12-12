@@ -32,8 +32,8 @@ export async function getUtilityConsumption(
   if (!db) return [];
   
   const conditions = [eq(utilityConsumption.projectId, projectId)];
-  if (startDate) conditions.push(gte(utilityConsumption.recordDate, startDate));
-  if (endDate) conditions.push(lte(utilityConsumption.recordDate, endDate));
+  if (startDate) conditions.push(gte(utilityConsumption.recordDate, startDate.toISOString()));
+  if (endDate) conditions.push(lte(utilityConsumption.recordDate, endDate.toISOString()));
   
   return db.select().from(utilityConsumption).where(and(...conditions)).orderBy(desc(utilityConsumption.recordDate));
 }
@@ -55,8 +55,8 @@ export async function getWasteTracking(
   if (!db) return [];
   
   const conditions = [eq(wasteTracking.projectId, projectId)];
-  if (startDate) conditions.push(gte(wasteTracking.recordDate, startDate));
-  if (endDate) conditions.push(lte(wasteTracking.recordDate, endDate));
+  if (startDate) conditions.push(gte(wasteTracking.recordDate, startDate.toISOString()));
+  if (endDate) conditions.push(lte(wasteTracking.recordDate, endDate.toISOString()));
   
   return db.select().from(wasteTracking).where(and(...conditions)).orderBy(desc(wasteTracking.recordDate));
 }
@@ -78,8 +78,8 @@ export async function getEmissionsData(
   if (!db) return [];
   
   const conditions = [eq(emissionsData.projectId, projectId)];
-  if (startDate) conditions.push(gte(emissionsData.recordDate, startDate));
-  if (endDate) conditions.push(lte(emissionsData.recordDate, endDate));
+  if (startDate) conditions.push(gte(emissionsData.recordDate, startDate.toISOString()));
+  if (endDate) conditions.push(lte(emissionsData.recordDate, endDate.toISOString()));
   
   return db.select().from(emissionsData).where(and(...conditions)).orderBy(desc(emissionsData.recordDate));
 }

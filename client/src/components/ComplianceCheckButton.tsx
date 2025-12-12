@@ -27,14 +27,14 @@ export function ComplianceCheckButton({
   const [showResults, setShowResults] = useState(false);
   const [complianceResult, setComplianceResult] = useState<any>(null);
 
-  const checkCompliance = trpc.complianceCheck.checkAssessmentCompliance.useMutation({
-    onSuccess: (data) => {
+  const checkCompliance = (trpc.complianceCheck as any).checkAssessmentCompliance.useMutation({
+    onSuccess: (data: any) => {
       setComplianceResult(data);
       setShowResults(true);
       toast.success("Compliance check completed");
       onComplianceChecked?.();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.message || "Failed to check compliance");
     },
   });

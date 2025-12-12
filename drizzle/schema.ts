@@ -1399,3 +1399,30 @@ export type InsertPrioritizationCriteria = typeof prioritizationCriteria.$inferI
 
 export type ProjectScore = typeof projectScores.$inferSelect;
 export type InsertProjectScore = typeof projectScores.$inferInsert;
+
+export type RiskAssessment = typeof riskAssessments.$inferSelect;
+export type InsertRiskAssessment = typeof riskAssessments.$inferInsert;
+
+export type PofFactor = typeof pofFactors.$inferSelect;
+export type InsertPofFactor = typeof pofFactors.$inferInsert;
+
+export type CofFactor = typeof cofFactors.$inferSelect;
+export type InsertCofFactor = typeof cofFactors.$inferInsert;
+
+export type CriticalEquipment = typeof criticalEquipment.$inferSelect;
+export type InsertCriticalEquipment = typeof criticalEquipment.$inferInsert;
+
+export type RiskMitigationAction = typeof riskMitigationActions.$inferSelect;
+export type InsertRiskMitigationAction = typeof riskMitigationActions.$inferInsert;
+
+export type CapitalBudgetCycle = typeof capitalBudgetCycles.$inferSelect;
+export type InsertCapitalBudgetCycle = typeof capitalBudgetCycles.$inferInsert;
+
+export type BudgetAllocation = typeof budgetAllocations.$inferSelect;
+export type InsertBudgetAllocation = typeof budgetAllocations.$inferInsert;
+
+export type RenovationCost = typeof renovationCosts.$inferSelect;
+export type InsertRenovationCost = typeof renovationCosts.$inferInsert;
+
+export type ReportHistory = typeof reportHistory.$inferSelect;
+export type InsertReportHistory = typeof reportHistory.$inferInsert;

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { BuildingCodeDisplay } from "@/components/BuildingCodeDisplay";
+import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target } from "lucide-react";
 import { useParams, useLocation } from "wouter";
@@ -48,7 +49,7 @@ export default function ProjectDetail() {
     yearBuilt: "",
     numberOfUnits: "",
     numberOfStories: "",
-    buildingCode: "",
+    buildingCodeId: undefined as number | undefined,
   });
   const [deficiencyForm, setDeficiencyForm] = useState({
     assessmentId: 0,
@@ -174,7 +175,7 @@ export default function ProjectDetail() {
         yearBuilt: project.yearBuilt?.toString() || "",
         numberOfUnits: project.numberOfUnits?.toString() || "",
         numberOfStories: project.numberOfStories?.toString() || "",
-        buildingCode: project.buildingCode || "",
+        buildingCodeId: project.buildingCodeId ?? undefined,
       });
       setProjectEditDialogOpen(true);
     }
@@ -192,7 +193,7 @@ export default function ProjectDetail() {
       yearBuilt: projectForm.yearBuilt ? parseInt(projectForm.yearBuilt) : undefined,
       numberOfUnits: projectForm.numberOfUnits ? parseInt(projectForm.numberOfUnits) : undefined,
       numberOfStories: projectForm.numberOfStories ? parseInt(projectForm.numberOfStories) : undefined,
-      buildingCode: projectForm.buildingCode || undefined,
+      buildingCodeId: projectForm.buildingCodeId,
     });
   };
 
@@ -584,7 +585,7 @@ export default function ProjectDetail() {
                           <ComplianceCheckButton
                             assessmentId={assessment.id}
                             projectId={projectId}
-                            onComplianceChecked={() => refetch()}
+                            onComplianceChecked={() => utils.projects.get.invalidate({ id: projectId })}
                           />
                           <Button
                             variant="ghost"
@@ -889,10 +890,9 @@ export default function ProjectDetail() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="buildingCode">Building Code</Label>
-                  <Input
-                    id="buildingCode"
-                    value={projectForm.buildingCode}
-                    onChange={(e) => setProjectForm({ ...projectForm, buildingCode: e.target.value })}
+                  <BuildingCodeSelect
+                    value={projectForm.buildingCodeId}
+                    onChange={(value) => setProjectForm({ ...projectForm, buildingCodeId: value })}
                   />
                 </div>
               </div>

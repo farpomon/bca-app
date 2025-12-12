@@ -161,7 +161,7 @@ export const accessRequestsRouter = router({
             city: input.city,
             role: input.role,
             accountStatus: input.accountStatus,
-            trialEndsAt: trialEndsAt,
+            trialEndsAt: trialEndsAt?.toISOString() || null,
             updatedAt: new Date().toISOString(),
           })
           .where(eq(users.openId, accessRequest.openId));
@@ -175,7 +175,7 @@ export const accessRequestsRouter = router({
           city: input.city,
           role: input.role,
           accountStatus: input.accountStatus,
-          trialEndsAt: trialEndsAt,
+          trialEndsAt: trialEndsAt?.toISOString() || null,
         });
       }
 

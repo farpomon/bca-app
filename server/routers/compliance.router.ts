@@ -311,7 +311,7 @@ export const complianceRouter = router({
     const recentAuditLogsResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(auditLog)
-      .where(gte(auditLog.createdAt, thirtyDaysAgo));
+      .where(gte(auditLog.createdAt, thirtyDaysAgo.toISOString()));
     const recentAuditLogs = recentAuditLogsResult[0]?.count || 0;
 
     return {

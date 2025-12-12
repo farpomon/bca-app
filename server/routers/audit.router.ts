@@ -374,7 +374,7 @@ export const auditRouter = router({
 
       const rows = logs.map((log) => [
         log.id,
-        log.createdAt.toISOString(),
+        new Date(log.createdAt).toISOString(),
         log.userId,
         log.userName || "",
         log.userEmail || "",

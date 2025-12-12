@@ -204,7 +204,7 @@ export const riskRouter = router({
       await updateRiskAssessment(input.id, {
         status: input.status,
         reviewedBy: input.reviewedBy,
-        reviewedAt: input.status === "approved" ? new Date() : undefined,
+        reviewedAt: input.status === "approved" ? new Date().toISOString() : undefined,
       });
       
       return { success: true };

@@ -103,7 +103,7 @@ export const facilityRouter = router({
         description: input.description,
         category: input.category,
         fiscalYear: input.fiscalYear,
-        dateCompleted: input.dateCompleted,
+        dateCompleted: input.dateCompleted?.toISOString(),
         notes: input.notes,
       });
 
@@ -138,7 +138,11 @@ export const facilityRouter = router({
     )
     .mutation(async ({ input }) => {
       const { id, ...updateData } = input;
-      await updateRenovationCost(id, updateData);
+      const dbUpdateData = {
+        ...updateData,
+        dateCompleted: updateData.dateCompleted?.toISOString(),
+      };
+      await updateRenovationCost(id, dbUpdateData);
       return { success: true };
     }),
 

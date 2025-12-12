@@ -9,7 +9,7 @@ import { TRPCError } from "@trpc/server";
  * AI-powered analysis of assessments against selected building codes
  */
 
-export const complianceCheckRouter = router({
+export const complianceCheckRouter: ReturnType<typeof router> = router({
   /**
    * Check a single assessment for building code compliance
    */
@@ -178,7 +178,11 @@ If the assessment is compliant, return an empty issues array. If you need more i
           },
         });
 
-        const complianceResult = JSON.parse(response.choices[0].message.content);
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid AI response' });
+        }
+        const complianceResult = JSON.parse(content);
 
         // Update assessment with compliance results
         await db.updateAssessmentCompliance(input.assessmentId, {
@@ -219,7 +223,7 @@ If the assessment is compliant, return an empty issues array. If you need more i
 
       for (const assessmentId of input.assessmentIds) {
         try {
-          const result = await complianceCheckRouter.createCaller(ctx).checkAssessmentCompliance({
+          const result = await (complianceCheckRouter as any).createCaller(ctx).checkAssessmentCompliance({
             assessmentId,
           });
           results.push({ assessmentId, ...result });

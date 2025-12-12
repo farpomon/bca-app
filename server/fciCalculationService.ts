@@ -18,7 +18,7 @@ export interface FCIResult {
   currentReplacementValue: number;
   rating: string;
   calculationMethod: string;
-  calculatedAt: Date;
+  calculatedAt: string | Date; // ISO string or Date object
 }
 
 /**

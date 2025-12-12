@@ -24,7 +24,7 @@ export function generateDeficienciesCSV(deficiencies: Deficiency[]): string {
     d.status,
     d.recommendedAction || "",
     d.estimatedCost ? `$${(d.estimatedCost / 100).toFixed(2)}` : "",
-    d.createdAt.toLocaleDateString(),
+    new Date(d.createdAt).toLocaleDateString(),
   ]);
 
   const csvContent = [
@@ -51,7 +51,7 @@ export function generateAssessmentsCSV(assessments: Assessment[]): string {
     a.observations || "",
     a.remainingUsefulLife?.toString() || "",
     a.expectedUsefulLife?.toString() || "",
-    a.createdAt.toLocaleDateString(),
+    new Date(a.createdAt).toLocaleDateString(),
   ]);
 
   const csvContent = [

@@ -46,7 +46,7 @@ export default function DeletedProjects() {
     setSelectedProject(null);
   };
 
-  const getDaysRemaining = (deletedAt: Date | null) => {
+  const getDaysRemaining = (deletedAt: string | null) => {
     if (!deletedAt) return 0;
     const now = new Date();
     const deleted = new Date(deletedAt);

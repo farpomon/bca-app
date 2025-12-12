@@ -17,12 +17,13 @@ export async function cleanupOldDeletedProjects() {
     // Calculate the cutoff date (90 days ago)
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const ninetyDaysAgoStr = ninetyDaysAgo.toISOString();
 
     // Find projects that are deleted and older than 90 days
     const projectsToDelete = await db
       .select()
       .from(projects)
-      .where(and(eq(projects.status, "deleted"), lt(projects.deletedAt, ninetyDaysAgo)));
+      .where(and(eq(projects.status, "deleted"), lt(projects.deletedAt, ninetyDaysAgoStr)));
 
     if (projectsToDelete.length === 0) {
       console.log("[Cleanup] No projects to clean up");
@@ -52,11 +53,12 @@ export async function getProjectsToCleanupCount() {
 
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const ninetyDaysAgoStr = ninetyDaysAgo.toISOString();
 
   const projectsToDelete = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.status, "deleted"), lt(projects.deletedAt, ninetyDaysAgo)));
+    .where(and(eq(projects.status, "deleted"), lt(projects.deletedAt, ninetyDaysAgoStr)));
 
   return projectsToDelete.length;
 }
