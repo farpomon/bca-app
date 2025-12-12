@@ -169,7 +169,7 @@ export const dataSecurityRouter = router({
           completedAt: new Date().toISOString(),
           verificationHash: input.verificationHash,
           backupPurgeStatus: input.backupPurgeCompleted ? "completed" : "failed",
-          backupPurgeCompletedAt: input.backupPurgeCompleted ? new Date() : null,
+          backupPurgeCompletedAt: input.backupPurgeCompleted ? new Date().toISOString() : null,
           notes: input.notes,
         })
         .where(eq(dataDisposalRequests.id, input.requestId));
