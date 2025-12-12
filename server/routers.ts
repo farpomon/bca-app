@@ -868,6 +868,12 @@ export const appRouter = router({
         return await db.getDeficiencyPhotos(input.deficiencyId);
       }),
 
+    byAssessment: protectedProcedure
+      .input(z.object({ assessmentId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAssessmentPhotos(input.assessmentId);
+      }),
+
     upload: protectedProcedure
       .input(z.object({
         projectId: z.number(),

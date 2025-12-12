@@ -289,3 +289,97 @@
 - [x] Document key management and ownership
 - [x] Create admin guide for data retention and disposal
 - [x] Add security settings page
+
+
+## Enterprise Authentication & Access Control (City Requirements)
+
+### SAML 2.0 / Active Directory Integration
+- [ ] Install passport-saml package for SAML 2.0 authentication
+- [ ] Create SAML configuration endpoint for City's Identity Provider metadata
+- [ ] Implement SAML authentication strategy with Active Directory integration
+- [ ] Add SAML callback route for SSO login flow
+- [ ] Create SAML metadata endpoint for Service Provider configuration
+- [ ] Add environment variables for SAML configuration (IdP URL, certificate, entity ID)
+- [ ] Test SAML login flow with mock IdP
+- [ ] Add fallback to Manus OAuth for non-City users
+
+### Granular RBAC Enhancement (Read-Only vs Read-Write)
+- [ ] Add granular permissions table (resource, action, role mapping)
+- [ ] Define permission constants (read, write, delete, approve, admin)
+- [ ] Create permission checking middleware for tRPC procedures
+- [ ] Update existing procedures with permission enforcement
+- [ ] Add read-only mode for viewer role (no create/update/delete)
+- [ ] Add read-write mode for editor role (create/update own resources)
+- [ ] Add project manager permissions (manage team projects)
+- [ ] Add admin permissions (full system access)
+- [ ] Add permission inheritance (roles inherit lower permissions)
+
+### Permission Management UI
+- [ ] Create permission management page in Admin section
+- [ ] Add role permission matrix UI (grid showing role vs permissions)
+- [ ] Add user permission override UI (grant specific permissions to users)
+- [ ] Add audit log for permission changes
+- [ ] Add permission testing tool for admins
+- [ ] Show user's effective permissions in profile
+
+### Testing & Documentation
+- [ ] Write tests for SAML authentication flow
+- [ ] Write tests for permission enforcement
+- [ ] Write tests for role-based access control
+- [ ] Create SAML integration documentation for IT department
+- [ ] Document permission model and role capabilities
+- [ ] Create user guide for access control
+
+
+## Comprehensive Audit Trail System (City Requirements)
+
+### Authentication Event Logging
+- [ ] Log successful login attempts (user, timestamp, IP, method: SAML/OAuth)
+- [ ] Log unsuccessful login attempts (username, timestamp, IP, reason)
+- [ ] Log SAML authentication events (assertion received, user mapped, errors)
+- [ ] Log logout events (user, timestamp, session duration)
+- [ ] Log session timeout events
+- [ ] Log password reset attempts (if applicable)
+- [ ] Log account lockout events (after failed attempts)
+
+### System Configuration Change Logging
+- [ ] Log user role changes (who changed, target user, old role, new role)
+- [ ] Log permission changes (resource, action, granted/revoked)
+- [ ] Log system settings changes (setting name, old value, new value)
+- [ ] Log SAML configuration changes
+- [ ] Log data retention policy changes
+- [ ] Log encryption key rotation events
+- [ ] Log backup/restore operations
+
+### Data Modification Logging (Already Exists - Enhance)
+- [x] Log project create/update/delete operations
+- [x] Log assessment create/update/delete operations
+- [x] Log data export operations
+- [ ] Add IP address to existing audit logs
+- [ ] Add session ID to existing audit logs
+- [ ] Add user agent to existing audit logs
+
+### Audit Log Retrieval & Reporting
+- [ ] Create audit log search API with filters (user, action, date range, resource type)
+- [ ] Add audit log export to CSV/Excel for security audits
+- [ ] Create audit log retention policy (7 years minimum)
+- [ ] Add audit log integrity verification (hash chain)
+- [ ] Create security audit report generator
+- [ ] Add real-time audit log monitoring dashboard
+
+### Testing & Compliance
+- [ ] Test all authentication event logging
+- [ ] Test system configuration change logging
+- [ ] Verify audit logs are immutable (append-only)
+- [ ] Test audit log retrieval and filtering
+- [ ] Verify audit logs meet compliance requirements
+- [ ] Create audit log documentation for security team
+
+
+## Photo Upload Display Bug (URGENT)
+- [x] Investigate why uploaded photos don't display after saving assessment
+- [x] Check if photos are being saved to S3 correctly
+- [x] Check if photo URLs are being saved to database
+- [x] Check if photo display component is loading saved photos
+- [x] Fix photo persistence and display issue - Added byAssessment endpoint and ExistingPhotosDisplay component
+- [x] Test photo upload and display flow end-to-end

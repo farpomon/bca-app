@@ -7,10 +7,71 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Upload, X, Sparkles, Mic } from "lucide-react";
+import { Loader2, Upload, X, Sparkles, Mic, Trash2 } from "lucide-react";
 import { ValidationWarning } from "@/components/ValidationWarning";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
+
+// Component to display existing photos for an assessment
+function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
+  const { data: photos, isLoading, refetch } = trpc.photos.byAssessment.useQuery({ assessmentId });
+  const deletePhoto = trpc.photos.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Photo deleted successfully");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete photo: " + error.message);
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!photos || photos.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground p-4 border rounded-lg text-center">
+        No photos uploaded yet
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {photos.map((photo) => (
+        <div key={photo.id} className="relative group border rounded-lg overflow-hidden">
+          <img
+            src={photo.url}
+            alt={photo.caption || "Assessment photo"}
+            className="w-full h-32 object-cover"
+          />
+          <Button
+            variant="destructive"
+            size="icon"
+            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+            onClick={() => {
+              if (confirm("Delete this photo?")) {
+                deletePhoto.mutate({ id: photo.id });
+              }
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          {photo.caption && (
+            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate">
+              {photo.caption}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface AssessmentDialogProps {
   open: boolean;
@@ -20,6 +81,7 @@ interface AssessmentDialogProps {
   componentCode: string;
   componentName: string;
   existingAssessment?: {
+    id?: number;
     condition: string;
     conditionPercentage?: string | null;
     componentName?: string | null;
@@ -625,6 +687,14 @@ export function AssessmentDialog({
               onChange={setRecommendations}
             />
           </div>
+
+          {/* Existing Photos */}
+          {existingAssessment?.id && (
+            <div className="space-y-2">
+              <Label>Existing Photos</Label>
+              <ExistingPhotosDisplay assessmentId={existingAssessment.id} />
+            </div>
+          )}
 
           {/* Photo Upload */}
           <div className="space-y-2">
