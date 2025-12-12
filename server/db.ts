@@ -189,40 +189,88 @@ export async function getDeletedProjects(userId: number, userCompany?: string | 
     .orderBy(desc(projects.deletedAt));
 }
 
-export async function getProjectById(projectId: number, userId: number) {
+export async function getProjectById(projectId: number, userId: number, userCompany?: string | null, isAdmin?: boolean) {
   const db = await getDb();
   if (!db) return undefined;
   
+  // Get project first
   const result = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+    .where(eq(projects.id, projectId))
     .limit(1);
   
-  return result.length > 0 ? result[0] : undefined;
+  if (result.length === 0) return undefined;
+  
+  const project = result[0];
+  
+  // Admin can see all projects
+  if (isAdmin) return project;
+  
+  // Non-admin users can only see projects from their company
+  if (userCompany && project.company !== userCompany) {
+    console.warn(`[Security] User ${userId} from company "${userCompany}" attempted to access project ${projectId} from company "${project.company}"`);
+    return undefined;
+  }
+  
+  return project;
 }
 
-export async function createProject(data: InsertProject) {
+/**
+ * Helper function to verify that a project belongs to the user's company.
+ * Admins bypass this check.
+ * Throws an error if access is denied.
+ */
+export async function verifyProjectAccess(projectId: number, userId: number, userCompany?: string | null, isAdmin?: boolean): Promise<void> {
+  const project = await getProjectById(projectId, userId, userCompany, isAdmin);
+  if (!project) {
+    throw new Error("Project not found or access denied");
+  }
+}
+
+export async function createProject(data: InsertProject, userCompany?: string | null) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(projects).values(data);
+  // Auto-assign user's company to the project
+  const projectData = {
+    ...data,
+    company: userCompany || data.company,
+  };
+  
+  const result = await db.insert(projects).values(projectData);
   return result[0].insertId;
 }
 
-export async function updateProject(projectId: number, userId: number, data: Partial<InsertProject>) {
+export async function updateProject(projectId: number, userId: number, data: Partial<InsertProject>, userCompany?: string | null, isAdmin?: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  
+  // Verify company ownership before update (unless admin)
+  if (!isAdmin && userCompany) {
+    const project = await getProjectById(projectId, userId, userCompany, false);
+    if (!project) {
+      throw new Error("Project not found or access denied");
+    }
+  }
   
   await db
     .update(projects)
     .set({ ...data, updatedAt: new Date().toISOString() })
-    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+    .where(eq(projects.id, projectId));
 }
 
-export async function deleteProject(projectId: number, userId: number) {
+export async function deleteProject(projectId: number, userId: number, userCompany?: string | null, isAdmin?: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  
+  // Verify company ownership before delete (unless admin)
+  if (!isAdmin && userCompany) {
+    const project = await getProjectById(projectId, userId, userCompany, false);
+    if (!project) {
+      throw new Error("Project not found or access denied");
+    }
+  }
   
   // Soft delete: set status to 'deleted' and record deletion time
   await db

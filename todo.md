@@ -696,3 +696,62 @@
 - [ ] Implement manual retry for failed syncs
 - [ ] Add SAP sync metrics to admin dashboard
 
+
+## TypeScript Error Fixes (In Progress)
+
+### Completed
+- [x] Fix role enum mismatch - Added 'viewer', 'editor', 'project_manager' to users table
+- [x] Fix boolean to number conversions for tinyint fields:
+  - [x] isDefault in rating_scales and deterioration_curves
+  - [x] isActive in facility_models
+  - [x] isShared in model_viewpoints and dashboard_configs
+  - [x] isRecurring in maintenance_entries
+  - [x] isRenewable in utility_consumption
+- [x] Remove non-existent fields (grantedBy, updatedAt) from projectPermissions
+- [x] Date to ISO string conversions in:
+  - [x] maintenance.router.ts (create and update mutations)
+  - [x] esg.router.ts (recordWaste, recordUtilityConsumption, recordGreenUpgrade)
+  - [x] facility.router.ts (updateLifecycle)
+  - [x] audit.router.ts (all date range queries)
+  - [x] compliance.router.ts (date range queries)
+  - [x] risk.router.ts (dueDate, completedDate)
+- [x] Reduced TypeScript errors from 99 to 61
+
+### Remaining (61 errors)
+- [ ] Fix Drizzle ORM type mismatches with Date comparisons in audit_log queries
+- [ ] Additional boolean-to-number conversions in other routers
+- [ ] Schema type compatibility issues
+- [ ] Complex type inference issues with Drizzle ORM
+
+
+## Multi-Tenant Data Isolation (HIGH PRIORITY - In Progress)
+
+### Phase 1: Core Project Isolation ✅ COMPLETED
+- [x] Update `getProjectById` to verify company ownership (admin bypass)
+- [x] Update `createProject` to auto-assign user's company
+- [x] Update `updateProject` to verify company ownership before update
+- [x] Update `deleteProject` to verify company ownership before delete
+- [x] Update all project router endpoints to pass company and isAdmin:
+  - [x] get (getProjectById)
+  - [x] create (createProject)
+  - [x] update (updateProject)
+  - [x] delete (deleteProject)
+  - [x] unarchive (updateProject)
+  - [x] export (getProjectById)
+  - [x] exportCSV (getProjectById)
+  - [x] exportExcel (getProjectById)
+
+### Phase 2: Assessment & Asset Isolation ✅ COMPLETED
+- [x] Update assessment queries to filter by project's company (52 router calls updated)
+- [x] Update deficiency queries to filter by project's company
+- [x] Update building component queries to filter by project's company
+- [x] Update photo queries to filter by project's company
+- [x] Update cost estimate queries to filter by project's company
+- [x] All routers now call getProjectById with company and isAdmin parameters
+
+### Phase 3: Bulk Operations ✅ COMPLETED
+- [x] Update bulkDelete to verify company ownership for each project
+- [x] Update bulkArchive to verify company ownership
+- [x] Update bulkRestore to verify company ownership
+- [x] All bulk operations now use updated getProjectById with multi-tenant checks
+

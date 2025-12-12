@@ -272,10 +272,9 @@ export const appRouter = router({
         }
 
         // Fetch all projects and their data
-        const isAdmin = ctx.user.role === 'admin';
         const projectsData = await Promise.all(
           input.ids.map(async (id) => {
-            const project = await db.getProjectById(id, ctx.user.id, ctx.user.company, isAdmin);
+            const project = await db.getProjectById(id, ctx.user.id);
             if (!project) {
               return null; // Skip projects user doesn't have access to
             }
@@ -425,8 +424,7 @@ export const appRouter = router({
     stats: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectStats(input.projectId);
       }),
@@ -434,8 +432,7 @@ export const appRouter = router({
     fci: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectFCI(input.projectId);
       }),
@@ -443,8 +440,7 @@ export const appRouter = router({
     financialPlanning: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         const { getFinancialPlanningData } = await import("./dashboardData");
         return await getFinancialPlanningData(input.projectId);
@@ -453,8 +449,7 @@ export const appRouter = router({
     conditionMatrix: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         const { getConditionMatrixData } = await import("./dashboardData");
         return await getConditionMatrixData(input.projectId);
@@ -463,8 +458,7 @@ export const appRouter = router({
     annualCostBreakdown: protectedProcedure
       .input(z.object({ projectId: z.number(), years: z.number().optional() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         const { getAnnualCostBreakdown } = await import("./dashboardData");
         return await getAnnualCostBreakdown(input.projectId, input.years);
@@ -473,8 +467,7 @@ export const appRouter = router({
     overallCondition: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.calculateOverallBuildingCondition(input.projectId);
       }),
@@ -484,8 +477,7 @@ export const appRouter = router({
     list: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
@@ -495,8 +487,7 @@ export const appRouter = router({
     get: protectedProcedure
       .input(z.object({ id: z.number(), projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
@@ -522,8 +513,7 @@ export const appRouter = router({
         status: z.enum(["active", "inactive", "demolished"]).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
@@ -547,8 +537,7 @@ export const appRouter = router({
         status: z.enum(["active", "inactive", "demolished"]).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
@@ -560,8 +549,7 @@ export const appRouter = router({
     delete: protectedProcedure
       .input(z.object({ id: z.number(), projectId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
@@ -656,8 +644,7 @@ export const appRouter = router({
         status: z.enum(["initial", "active", "completed"]).optional()
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectAssessmentsByStatus(input.projectId, input.status);
       }),
@@ -665,8 +652,7 @@ export const appRouter = router({
     statusCounts: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getAssessmentStatusCounts(input.projectId);
       }),
@@ -678,8 +664,7 @@ export const appRouter = router({
         status: z.enum(["initial", "active", "completed"])
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.bulkUpdateAssessmentStatus(input.assessmentIds, input.status);
       }),
@@ -690,8 +675,7 @@ export const appRouter = router({
         componentCode: z.string() 
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getAssessmentByComponent(input.projectId, input.componentCode);
       }),
@@ -719,8 +703,7 @@ export const appRouter = router({
         validationWarnings: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         // Get existing assessment to detect changes
@@ -830,8 +813,7 @@ export const appRouter = router({
     list: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectDeficiencies(input.projectId);
       }),
@@ -856,8 +838,7 @@ export const appRouter = router({
         estimatedCost: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         const deficiencyId = await db.createDeficiency({
@@ -897,8 +878,7 @@ export const appRouter = router({
     list: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectPhotos(input.projectId);
       }),
@@ -932,8 +912,7 @@ export const appRouter = router({
         performOCR: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         // Decode base64 and upload to S3
@@ -1018,8 +997,7 @@ export const appRouter = router({
     list: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectCostEstimates(input.projectId);
       }),
@@ -1044,8 +1022,7 @@ export const appRouter = router({
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         const costEstimateId = await db.createCostEstimate(input);
@@ -1082,8 +1059,7 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { estimateBatchCosts } = await import('./costEstimationService');
         
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         // Get all assessments for the project
@@ -1183,8 +1159,7 @@ export const appRouter = router({
     generate: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         const assessments = await db.getProjectAssessments(input.projectId);
@@ -1312,8 +1287,7 @@ export const appRouter = router({
       get: protectedProcedure
         .input(z.object({ projectId: z.number() }))
         .query(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
@@ -1331,8 +1305,7 @@ export const appRouter = router({
           enabledComponents: z.array(z.string()).optional(),
         }))
         .mutation(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
@@ -1352,8 +1325,7 @@ export const appRouter = router({
       delete: protectedProcedure
         .input(z.object({ projectId: z.number() }))
         .mutation(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
@@ -1456,8 +1428,7 @@ export const appRouter = router({
       get: protectedProcedure
         .input(z.object({ projectId: z.number() }))
         .query(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
@@ -1474,8 +1445,7 @@ export const appRouter = router({
           useWeightedAverage: z.boolean().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
@@ -1487,8 +1457,7 @@ export const appRouter = router({
       delete: protectedProcedure
         .input(z.object({ projectId: z.number() }))
         .mutation(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
           }
@@ -1503,8 +1472,7 @@ export const appRouter = router({
     list: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getBuildingSections(input.projectId);
       }),
@@ -1529,8 +1497,7 @@ export const appRouter = router({
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         const sectionId = await db.createBuildingSection(input);
         const section = await db.getBuildingSectionById(sectionId);
@@ -1816,8 +1783,7 @@ export const appRouter = router({
     overrides: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getValidationOverrides(input.projectId);
       }),
@@ -1831,8 +1797,7 @@ export const appRouter = router({
       byProject: protectedProcedure
         .input(z.object({ projectId: z.number() }))
         .query(async ({ ctx, input }) => {
-          const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+          const project = await db.getProjectById(input.projectId, ctx.user.id);
           if (!project) throw new Error("Project not found");
           return await db.getValidationRules(input.projectId);
         }),
@@ -1942,8 +1907,7 @@ export const appRouter = router({
         fileName: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         // Decode base64 file data
@@ -2054,8 +2018,7 @@ export const appRouter = router({
     projectSubmissions: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         return await db.getConsultantSubmissionsByProject(input.projectId);
@@ -2186,8 +2149,7 @@ export const appRouter = router({
         componentCode: z.string(),
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getComponentHistory(input.projectId, input.componentCode);
       }),
@@ -2199,8 +2161,7 @@ export const appRouter = router({
         limit: z.number().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getProjectHistory(input.projectId, input.limit);
       }),
@@ -2217,8 +2178,7 @@ export const appRouter = router({
         limit: z.number().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.searchComponentHistory(input);
       }),
@@ -2247,8 +2207,7 @@ export const appRouter = router({
         method: z.enum(["curve", "ml", "hybrid"]).default("curve"),
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         const { predictDeteriorationML } = await import("./mlPredictionService");
@@ -2337,8 +2296,7 @@ export const appRouter = router({
         method: z.enum(["curve", "ml", "hybrid"]).default("hybrid"),
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         const { predictDeteriorationML, determineRiskLevel } = await import("./mlPredictionService");
@@ -2444,8 +2402,7 @@ export const appRouter = router({
         componentCode: z.string(),
       }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         return await db.getPredictionHistory(input.projectId, input.componentCode);
       }),
@@ -2455,8 +2412,7 @@ export const appRouter = router({
     deficiencies: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         const deficiencies = await db.getProjectDeficiencies(input.projectId);
@@ -2468,8 +2424,7 @@ export const appRouter = router({
     assessments: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         const assessments = await db.getProjectAssessments(input.projectId);
@@ -2481,8 +2436,7 @@ export const appRouter = router({
     costs: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
 
         const deficiencies = await db.getProjectDeficiencies(input.projectId);
@@ -2496,8 +2450,7 @@ export const appRouter = router({
     getSnapshots: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         return await db.getCiFciSnapshots(input.projectId);
@@ -2506,8 +2459,7 @@ export const appRouter = router({
     recalculate: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        const project = await db.getProjectById(input.projectId, ctx.user.id);
         if (!project) throw new Error("Project not found");
         
         const { calculateBuildingCI } = await import("./ciCalculationService");
