@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
@@ -38,7 +39,7 @@ export default function Projects() {
     yearBuilt: "",
     numberOfUnits: "",
     numberOfStories: "",
-    buildingCode: "",
+    buildingCodeId: undefined as number | undefined,
     observations: "",
   });
   const [showObservationsVoice, setShowObservationsVoice] = useState(false);
@@ -347,7 +348,7 @@ export default function Projects() {
         yearBuilt: "",
         numberOfUnits: "",
         numberOfStories: "",
-        buildingCode: "",
+        buildingCodeId: undefined as number | undefined,
         observations: "",
       });
       refetch();
@@ -407,7 +408,7 @@ export default function Projects() {
       yearBuilt: formData.yearBuilt ? parseInt(formData.yearBuilt) : undefined,
       numberOfUnits: formData.numberOfUnits ? parseInt(formData.numberOfUnits) : undefined,
       numberOfStories: formData.numberOfStories ? parseInt(formData.numberOfStories) : undefined,
-      buildingCode: formData.buildingCode || undefined,
+      buildingCodeId: formData.buildingCodeId,
     });
   };
 
@@ -607,11 +608,9 @@ export default function Projects() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="buildingCode">Building Code</Label>
-                    <Input
-                      id="buildingCode"
-                      value={formData.buildingCode}
-                      onChange={(e) => setFormData({ ...formData, buildingCode: e.target.value })}
-
+                    <BuildingCodeSelect
+                      value={formData.buildingCodeId}
+                      onChange={(value) => setFormData({ ...formData, buildingCodeId: value })}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -1074,7 +1073,7 @@ export default function Projects() {
                 yearBuilt: formData.yearBuilt ? parseInt(formData.yearBuilt) : undefined,
                 numberOfUnits: formData.numberOfUnits ? parseInt(formData.numberOfUnits) : undefined,
                 numberOfStories: formData.numberOfStories ? parseInt(formData.numberOfStories) : undefined,
-                buildingCode: formData.buildingCode || undefined,
+                buildingCodeId: formData.buildingCodeId,
               });
             }}
           >

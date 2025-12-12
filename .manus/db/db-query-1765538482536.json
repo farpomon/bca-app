@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO building_codes (code, title, edition, jurisdiction, year, pageCount, isActive) VALUES\n('NBC_2020', 'National Building Code of Canada 2020', '2020 Edition', 'Canada', 2020, 1528, 1),\n('BCBC_2024', 'British Columbia Building Code 2024', '2024 Edition, Revision 1', 'British Columbia', 2024, 1906, 1),\n('NBC_2023_AB', 'National Building Code – 2023 Alberta Edition', '2023 Alberta Edition', 'Alberta', 2023, 1570, 1)\nON DUPLICATE KEY UPDATE\n  title = VALUES(title),\n  edition = VALUES(edition),\n  jurisdiction = VALUES(jurisdiction),\n  year = VALUES(year),\n  pageCount = VALUES(pageCount);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute INSERT INTO building_codes (code, title, edition, jurisdiction, year, pageCount, isActive) VALUES\n('NBC_2020', 'National Building Code of Canada 2020', '2020 Edition', 'Canada', 2020, 1528, 1),\n('BCBC_2024', 'British Columbia Building Code 2024', '2024 Edition, Revision 1', 'British Columbia', 2024, 1906, 1),\n('NBC_2023_AB', 'National Building Code – 2023 Alberta Edition', '2023 Alberta Edition', 'Alberta', 2023, 1570, 1)\nON DUPLICATE KEY UPDATE\n  title = VALUES(title),\n  edition = VALUES(edition),\n  jurisdiction = VALUES(jurisdiction),\n  year = VALUES(year),\n  pageCount = VALUES(pageCount);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 81
+}

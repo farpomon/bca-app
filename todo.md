@@ -577,3 +577,17 @@
 - [x] Strip HTML from originalText before sending to AI
 - [x] Test AI enhancement with HTML content
 - [x] Verify enhanced text is clean and professional
+
+
+## Feature: Building Code Dropdown & Document Comparison
+
+- [x] Extract titles from uploaded building code PDFs
+- [x] Upload building code PDFs to S3 storage (stored locally for now)
+- [x] Create building_codes table in database schema
+- [x] Add buildingCodeId field to projects table
+- [x] Seed building codes data (National Building Code 2020, BC Building Code 2024, Alberta Edition 2023)
+- [x] Update project creation form to use dropdown for building code selection
+- [x] Display selected building code in project details with link to PDF
+- [x] Add building code reference to assessment workflow (buildingCodeId available in project)
+- [ ] Enable code-specific compliance checking in assessments (future: AI-powered comparison)
+- [x] Test building code selection and storage

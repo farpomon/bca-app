@@ -58,6 +58,17 @@ export const appRouter = router({
     }),
   }),
 
+  buildingCodes: router({
+    list: publicProcedure.query(async () => {
+      return await db.getAllBuildingCodes();
+    }),
+    get: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getBuildingCodeById(input.id);
+      }),
+  }),
+
   projects: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const isAdmin = ctx.user.role === "admin";
@@ -90,7 +101,7 @@ export const appRouter = router({
         yearBuilt: z.number().optional(),
         numberOfUnits: z.number().optional(),
         numberOfStories: z.number().optional(),
-        buildingCode: z.string().optional(),
+        buildingCodeId: z.number().optional(),
         assessmentDate: z.date().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -113,7 +124,7 @@ export const appRouter = router({
         yearBuilt: z.number().optional(),
         numberOfUnits: z.number().optional(),
         numberOfStories: z.number().optional(),
-        buildingCode: z.string().optional(),
+        buildingCodeId: z.number().optional(),
         assessmentDate: z.date().optional(),
         status: z.enum(["draft", "in_progress", "completed", "archived"]).optional(),
       }))

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
+import { BuildingCodeDisplay } from "@/components/BuildingCodeDisplay";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -388,7 +389,7 @@ export default function ProjectDetail() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">Building Code</div>
-                  <div>{project.buildingCode || "Not specified"}</div>
+                  <BuildingCodeDisplay buildingCodeId={project.buildingCodeId} />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">Status</div>

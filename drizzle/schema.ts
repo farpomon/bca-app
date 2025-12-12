@@ -908,6 +908,20 @@ export const projectVersions = mysqlTable("project_versions", {
 	index("idx_project").on(table.projectId),
 ]);
 
+export const buildingCodes = mysqlTable("building_codes", {
+	id: int().autoincrement().notNull(),
+	code: varchar({ length: 100 }).notNull().unique(),
+	title: varchar({ length: 255 }).notNull(),
+	edition: varchar({ length: 100 }),
+	jurisdiction: varchar({ length: 100 }),
+	year: int(),
+	documentUrl: text(),
+	documentKey: varchar({ length: 500 }),
+	pageCount: int(),
+	isActive: int().default(1).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
+
 export const projects = mysqlTable("projects", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
@@ -919,7 +933,7 @@ export const projects = mysqlTable("projects", {
 	yearBuilt: int(),
 	numberOfUnits: int(),
 	numberOfStories: int(),
-	buildingCode: varchar({ length: 100 }),
+	buildingCodeId: int().references(() => buildingCodes.id, { onDelete: "set null" }),
 	assessmentDate: timestamp({ mode: 'string' }),
 	observations: text(),
 	status: mysqlEnum(['draft','in_progress','completed','archived','deleted']).default('draft').notNull(),

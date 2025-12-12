@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
   projects,
+  buildingCodes,
   buildingComponents,
   assessments,
   deficiencies,
@@ -2056,4 +2057,33 @@ export async function deleteAssessmentDocument(documentId: number, userId: numbe
   
   await db.delete(assessmentDocuments).where(eq(assessmentDocuments.id, documentId));
   return { success: true };
+}
+
+
+// ============================================================================
+// Building Codes
+// ============================================================================
+
+export async function getAllBuildingCodes() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(buildingCodes)
+    .where(eq(buildingCodes.isActive, 1))
+    .orderBy(buildingCodes.title);
+}
+
+export async function getBuildingCodeById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db
+    .select()
+    .from(buildingCodes)
+    .where(eq(buildingCodes.id, id))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
 }
