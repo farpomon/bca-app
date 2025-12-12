@@ -559,3 +559,13 @@
 - [x] Fix the issue in server/routers/dataSecurity.router.ts
 - [x] Test Data Security page loads without errors (build succeeds)
 - [x] Verify all data security features work correctly
+
+
+## Bug Fix: Text-to-Speech HTML Tag Removal
+
+- [x] Locate where text-to-speech is being called (audio router)
+- [x] Identify where HTML tags like `<p>` are being passed to TTS
+- [x] Implement HTML tag stripping function (strip all HTML tags)
+- [x] Apply HTML stripping to all TTS text before sending to ElevenLabs API
+- [x] Test with sample HTML content to verify tags are removed
+- [x] Verify TTS audio plays cleanly without reading HTML tags
