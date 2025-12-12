@@ -691,7 +691,7 @@ export const appRouter = router({
         
         const assessmentId = await db.upsertAssessment({
           ...input,
-          assessedAt: new Date(),
+          assessedAt: new Date().toISOString(),
         });
         
         // Log to component history
@@ -765,7 +765,7 @@ export const appRouter = router({
             fci: fciResult.fci.toString(),
             deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
             currentReplacementValue: fciResult.currentReplacementValue.toString(),
-            lastCalculatedAt: new Date(),
+            lastCalculatedAt: new Date().toISOString(),
           });
           
           // Save snapshot for historical tracking
@@ -1126,7 +1126,7 @@ export const appRouter = router({
             estimatedRepairCost: estimate.estimatedRepairCost,
             replacementValue: estimate.replacementValue,
             remainingUsefulLife: estimate.remainingUsefulLife,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(assessments.id, input.assessmentId));
         
@@ -1663,7 +1663,7 @@ export const appRouter = router({
             estimatedRepairCost: assessment.estimatedRepairCost || null,
             replacementValue: assessment.replacementValue || null,
             status: 'completed',
-            assessedAt: new Date(),
+            assessedAt: new Date().toISOString(),
           });
           
           assessmentIdMap.set(assessment.componentCode, assessmentId);
@@ -2063,7 +2063,7 @@ export const appRouter = router({
                 estimatedRepairCost: data.estimatedRepairCost,
                 replacementValue: data.replacementValue,
                 actionYear: data.actionYear,
-                assessedAt: new Date(),
+                assessedAt: new Date().toISOString(),
               });
 
               await db.linkSubmissionItemToFinalizedRecord(item.id, "assessment", assessmentId);

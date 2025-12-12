@@ -53,7 +53,7 @@ export const usersRouter = router({
         .update(users)
         .set({
           role: input.role,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(users.id, input.userId));
 
@@ -82,7 +82,7 @@ export const usersRouter = router({
         .update(users)
         .set({
           accountStatus: input.accountStatus,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(users.id, input.userId));
 

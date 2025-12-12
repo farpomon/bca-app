@@ -1364,3 +1364,21 @@ export type InsertGreenUpgrade = typeof greenUpgrades.$inferInsert;
 
 export type ESGScore = typeof esgScores.$inferSelect;
 export type InsertESGScore = typeof esgScores.$inferInsert;
+
+export type MaintenanceEntry = typeof maintenanceEntries.$inferSelect;
+export type InsertMaintenanceEntry = typeof maintenanceEntries.$inferInsert;
+
+export type FacilityModel = typeof facilityModels.$inferSelect;
+export type InsertFacilityModel = typeof facilityModels.$inferInsert;
+
+export type ModelAnnotation = typeof modelAnnotations.$inferSelect;
+export type InsertModelAnnotation = typeof modelAnnotations.$inferInsert;
+
+export type ModelViewpoint = typeof modelViewpoints.$inferSelect;
+export type InsertModelViewpoint = typeof modelViewpoints.$inferInsert;
+
+export type PrioritizationCriteria = typeof prioritizationCriteria.$inferSelect;
+export type InsertPrioritizationCriteria = typeof prioritizationCriteria.$inferInsert;
+
+export type ProjectScore = typeof projectScores.$inferSelect;
+export type InsertProjectScore = typeof projectScores.$inferInsert;

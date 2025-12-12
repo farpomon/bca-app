@@ -96,11 +96,11 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     }
 
     if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
+      values.lastSignedIn = new Date().toISOString();
     }
 
     if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
+      updateSet.lastSignedIn = new Date().toISOString();
     }
 
     await db.insert(users).values(values).onDuplicateKeyUpdate({
@@ -215,7 +215,7 @@ export async function updateProject(projectId: number, userId: number, data: Par
   
   await db
     .update(projects)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: new Date().toISOString() })
     .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
 }
 
@@ -228,7 +228,7 @@ export async function deleteProject(projectId: number, userId: number) {
     .update(projects)
     .set({
       status: "deleted",
-      deletedAt: new Date(),
+      deletedAt: new Date().toISOString(),
       deletedBy: userId,
     })
     .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
@@ -328,7 +328,7 @@ export async function upsertAssessment(data: InsertAssessment) {
   if (existing) {
     await db
       .update(assessments)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...data, updatedAt: new Date().toISOString() })
       .where(eq(assessments.id, existing.id));
     return existing.id;
   } else {
@@ -376,7 +376,7 @@ export async function updateDeficiency(deficiencyId: number, data: Partial<Inser
   
   await db
     .update(deficiencies)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: new Date().toISOString() })
     .where(eq(deficiencies.id, deficiencyId));
 }
 
@@ -473,7 +473,7 @@ export async function updateCostEstimate(costEstimateId: number, data: Partial<I
   
   await db
     .update(costEstimates)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: new Date().toISOString() })
     .where(eq(costEstimates.id, costEstimateId));
 }
 
@@ -827,7 +827,7 @@ export async function calculateOverallBuildingCondition(projectId: number) {
       overallConditionScore: Math.round(avgScore * 100) / 100,
       overallFciScore: fciScore ? Math.round(fciScore) : null,
       overallConditionRating: overallRating,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     })
     .where(eq(projects.id, projectId));
 
@@ -1102,7 +1102,7 @@ export async function updateBuildingSection(sectionId: number, data: any) {
   if (!db) throw new Error("Database not available");
   
   const { buildingSections } = await import("../drizzle/schema");
-  await db.update(buildingSections).set({ ...data, updatedAt: new Date() }).where(eq(buildingSections.id, sectionId));
+  await db.update(buildingSections).set({ ...data, updatedAt: new Date().toISOString() }).where(eq(buildingSections.id, sectionId));
 }
 
 export async function deleteBuildingSection(sectionId: number) {
@@ -1541,7 +1541,7 @@ export async function updateSubmissionStatus(submissionId: number, status: strin
 
   const updates: any = {
     status,
-    reviewedAt: new Date(),
+    reviewedAt: new Date().toISOString(),
   };
 
   if (reviewedBy) {
@@ -1566,7 +1566,7 @@ export async function finalizeSubmission(submissionId: number, finalizedBy: numb
     .update(consultantSubmissions)
     .set({
       status: "finalized",
-      finalizedAt: new Date(),
+      finalizedAt: new Date().toISOString(),
       finalizedBy,
     })
     .where(eq(consultantSubmissions.id, submissionId));
@@ -1927,8 +1927,8 @@ export async function getProjectComponents(projectId: number) {
     unit: null,
     installYear: null,
     expectedServiceLife: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }));
 
   return components;

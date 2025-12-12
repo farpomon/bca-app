@@ -36,8 +36,8 @@ export const prioritizationRouter = router({
         weight: String(input.weight),
         scoringGuideline: input.scoringGuideline,
         displayOrder: input.displayOrder,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
 
       // Normalize weights after adding new criteria
@@ -219,8 +219,8 @@ export const prioritizationRouter = router({
         totalBudget: input.totalBudget !== undefined ? String(input.totalBudget) : undefined,
         status: "planning",
         createdBy: ctx.user.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
 
       return { cycleId };
@@ -281,8 +281,8 @@ export const prioritizationRouter = router({
         justification: input.justification,
         strategicAlignment: input.strategicAlignment,
         status: "proposed",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
 
       return { allocationId };

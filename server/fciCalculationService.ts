@@ -88,7 +88,7 @@ export async function calculateFCI(projectId: number): Promise<FCIResult> {
     currentReplacementValue,
     rating: getFCIRating(fci),
     calculationMethod: "deferred_maintenance_ratio",
-    calculatedAt: new Date(),
+    calculatedAt: new Date().toISOString(),
   };
 }
 
@@ -135,6 +135,6 @@ export async function calculatePortfolioFCI(projectIds: number[]): Promise<FCIRe
     currentReplacementValue: totalReplacementValue,
     rating: getFCIRating(fci),
     calculationMethod: "portfolio_aggregate",
-    calculatedAt: new Date(),
+    calculatedAt: new Date().toISOString(),
   };
 }

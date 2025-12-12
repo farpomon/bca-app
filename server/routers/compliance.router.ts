@@ -211,7 +211,7 @@ export const complianceRouter = router({
           .set({
             status: "rejected",
             processedBy: ctx.user.id,
-            processedAt: new Date(),
+            processedAt: new Date().toISOString(),
             rejectionReason: input.rejectionReason || null,
           })
           .where(eq(dataAccessRequests.id, input.requestId));
@@ -222,7 +222,7 @@ export const complianceRouter = router({
           .set({
             status: "processing",
             processedBy: ctx.user.id,
-            processedAt: new Date(),
+            processedAt: new Date().toISOString(),
           })
           .where(eq(dataAccessRequests.id, input.requestId));
       }

@@ -126,7 +126,7 @@ export async function calculateBuildingCI(projectId: number): Promise<Calculatio
       ci: 50,
       components: [],
       calculationMethod: "default",
-      calculatedAt: new Date(),
+      calculatedAt: new Date().toISOString(),
     };
   }
   
@@ -156,7 +156,7 @@ export async function calculateBuildingCI(projectId: number): Promise<Calculatio
     ci: Math.round(buildingCI * 100) / 100,
     components,
     calculationMethod: "weighted_avg_by_replacement_cost",
-    calculatedAt: new Date(),
+    calculatedAt: new Date().toISOString(),
   };
 }
 

@@ -119,7 +119,7 @@ export const dataSecurityRouter = router({
         .set({
           status: "approved",
           approvedBy: ctx.user.id,
-          approvedAt: new Date(),
+          approvedAt: new Date().toISOString(),
           disposalMethod: input.disposalMethod,
         })
         .where(eq(dataDisposalRequests.id, input.requestId));
@@ -142,7 +142,7 @@ export const dataSecurityRouter = router({
         .set({
           status: "rejected",
           approvedBy: ctx.user.id,
-          approvedAt: new Date(),
+          approvedAt: new Date().toISOString(),
           notes: input.reason,
         })
         .where(eq(dataDisposalRequests.id, input.requestId));
@@ -166,7 +166,7 @@ export const dataSecurityRouter = router({
         .update(dataDisposalRequests)
         .set({
           status: "completed",
-          completedAt: new Date(),
+          completedAt: new Date().toISOString(),
           verificationHash: input.verificationHash,
           backupPurgeStatus: input.backupPurgeCompleted ? "completed" : "failed",
           backupPurgeCompletedAt: input.backupPurgeCompleted ? new Date() : null,

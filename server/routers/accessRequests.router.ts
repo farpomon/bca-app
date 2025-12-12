@@ -162,7 +162,7 @@ export const accessRequestsRouter = router({
             role: input.role,
             accountStatus: input.accountStatus,
             trialEndsAt: trialEndsAt,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(users.openId, accessRequest.openId));
       } else {
@@ -184,7 +184,7 @@ export const accessRequestsRouter = router({
         .update(accessRequests)
         .set({
           status: "approved",
-          reviewedAt: new Date(),
+          reviewedAt: new Date().toISOString(),
           reviewedBy: ctx.user.id,
           adminNotes: input.adminNotes || null,
         })
@@ -231,7 +231,7 @@ export const accessRequestsRouter = router({
         .update(accessRequests)
         .set({
           status: "rejected",
-          reviewedAt: new Date(),
+          reviewedAt: new Date().toISOString(),
           reviewedBy: ctx.user.id,
           rejectionReason: input.rejectionReason,
           adminNotes: input.adminNotes || null,

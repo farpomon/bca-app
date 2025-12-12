@@ -178,7 +178,7 @@ export const esgRouter = router({
       // Store scores
       await esgDb.recordESGScore({
         projectId: input.projectId,
-        scoreDate: new Date(),
+        scoreDate: new Date().toISOString(),
         energyScore: scores.energyScore.toString(),
         waterScore: scores.waterScore.toString(),
         wasteScore: scores.wasteScore.toString(),

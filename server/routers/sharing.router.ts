@@ -63,7 +63,7 @@ export const sharingRouter = router({
           .update(projectPermissions)
           .set({
             permission: input.permission,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(projectPermissions.id, existing.id));
       } else {
