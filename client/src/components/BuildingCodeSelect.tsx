@@ -27,8 +27,15 @@ export function BuildingCodeSelect({ value, onChange }: BuildingCodeSelectProps)
 
   return (
     <Select
-      value={value?.toString() || "none"}
-      onValueChange={(val) => onChange(val === "none" ? undefined : parseInt(val))}
+      value={value !== undefined ? value.toString() : "none"}
+      onValueChange={(val) => {
+        if (val === "none") {
+          onChange(undefined);
+        } else {
+          const parsed = parseInt(val, 10);
+          onChange(isNaN(parsed) ? undefined : parsed);
+        }
+      }}
     >
       <SelectTrigger>
         <SelectValue placeholder="Select a building code" />

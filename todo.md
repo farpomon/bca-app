@@ -260,7 +260,8 @@
 ## Bug Fixes - Building Codes Dropdown
 - [x] Fix building codes dropdown not working in project creation form
 - [x] Verify building codes are loading from database
-- [x] Test dropdown selection and saving to project
+- [x] Fix NaN validation error when no building code is selected
+- [x] Test project creation with and without building code selection
 
 ## Data Security & Encryption Requirements
 
