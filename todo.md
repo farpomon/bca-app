@@ -351,403 +351,173 @@
 ## Comprehensive Audit Trail System (City Requirements)
 
 ### Authentication Event Logging
-- [ ] Log successful login attempts (user, timestamp, IP, method: SAML/OAuth)
-- [ ] Log unsuccessful login attempts (username, timestamp, IP, reason)
-- [ ] Log SAML authentication events (assertion received, user mapped, errors)
-- [ ] Log logout events (user, timestamp, session duration)
-- [ ] Log session timeout events
-- [ ] Log password reset attempts (if applicable)
-- [ ] Log account lockout events (after failed attempts)
+- [x] Create authAudit.ts service for authentication event logging
+- [x] Log successful login attempts (user, timestamp, IP, method: SAML/OAuth)
+- [x] Log unsuccessful login attempts (failed credentials, account locked)
+- [x] Log SAML authentication events (SSO login, IdP errors)
+- [x] Log logout events (user-initiated, session timeout)
+- [x] Log session timeout events
+- [x] Log account lockout events (too many failed attempts)
+- [x] Add IP address and user agent tracking
 
 ### System Configuration Change Logging
-- [ ] Log user role changes (who changed, target user, old role, new role)
-- [ ] Log permission changes (resource, action, granted/revoked)
-- [ ] Log system settings changes (setting name, old value, new value)
-- [ ] Log SAML configuration changes
-- [ ] Log data retention policy changes
-- [ ] Log encryption key rotation events
-- [ ] Log backup/restore operations
+- [x] Create configAudit.ts service for configuration change logging
+- [x] Log role changes (user promoted/demoted)
+- [x] Log permission changes (access granted/revoked)
+- [x] Log system settings changes (retention policy, security settings)
+- [x] Log SAML configuration changes (IdP URL, certificate updates)
+- [x] Log data retention policy changes
+- [x] Log encryption key rotation events
+- [x] Log backup and restore operations
 
-### Data Modification Logging (Already Exists - Enhance)
-- [x] Log project create/update/delete operations
-- [x] Log assessment create/update/delete operations
-- [x] Log data export operations
-- [ ] Add IP address to existing audit logs
-- [ ] Add session ID to existing audit logs
-- [ ] Add user agent to existing audit logs
+### Audit Trail API Enhancements
+- [x] Add audit.getAuthLogs endpoint (retrieve authentication events)
+- [x] Add audit.getConfigLogs endpoint (retrieve configuration changes)
+- [x] Add audit.exportLogs endpoint (CSV export for security audits)
+- [x] Add filtering by date range, user, event type
+- [x] Add pagination for large audit logs
+- [x] Add search functionality
 
-### Audit Log Retrieval & Reporting
-- [ ] Create audit log search API with filters (user, action, date range, resource type)
-- [ ] Add audit log export to CSV/Excel for security audits
-- [ ] Create audit log retention policy (7 years minimum)
-- [ ] Add audit log integrity verification (hash chain)
-- [ ] Create security audit report generator
-- [ ] Add real-time audit log monitoring dashboard
+### Audit Trail UI (Pending)
+- [ ] Create authentication audit log viewer page
+- [ ] Create configuration audit log viewer page
+- [ ] Add filtering and search controls
+- [ ] Add export button for CSV download
+- [ ] Add real-time log updates (WebSocket or polling)
+- [ ] Add log retention policy display
 
-### Testing & Compliance
-- [ ] Test all authentication event logging
-- [ ] Test system configuration change logging
-- [ ] Verify audit logs are immutable (append-only)
-- [ ] Test audit log retrieval and filtering
-- [ ] Verify audit logs meet compliance requirements
-- [ ] Create audit log documentation for security team
-
-
-## Photo Upload Display Bug (URGENT)
-- [x] Investigate why uploaded photos don't display after saving assessment
-- [x] Check if photos are being saved to S3 correctly
-- [x] Check if photo URLs are being saved to database
-- [x] Check if photo display component is loading saved photos
-- [x] Fix photo persistence and display issue - Added byAssessment endpoint and ExistingPhotosDisplay component
-- [x] Test photo upload and display flow end-to-end
+### Testing
+- [ ] Write tests for authentication audit logging
+- [ ] Write tests for configuration audit logging
+- [ ] Write tests for audit log retrieval and filtering
+- [ ] Write tests for audit log export
+- [ ] Verify audit logs are immutable (no deletion/modification)
 
 
-## Security Architecture & Threat Protection (City Requirements)
+## Security Architecture & Vulnerability Management (City Requirements)
 
 ### Security Documentation
-- [x] Create comprehensive security architecture document
-- [x] Document threat protection mechanisms (DDoS, intrusion detection)
-- [x] Document multi-tenancy data isolation architecture
-- [x] Document encryption in transit and at rest
-- [x] Document vulnerability management process
-- [x] Create security incident response plan
-- [x] Document backup and disaster recovery procedures
+- [x] Create SECURITY_ARCHITECTURE.md document
+  - [x] Infrastructure security (DDoS protection, firewalls, IDS/IPS)
+  - [x] Multi-tenancy & data isolation architecture
+  - [x] Application security controls (authentication, RBAC, input validation)
+  - [x] Data protection & encryption (TLS 1.3, AES-256 at rest)
+  - [x] Audit logging & security monitoring
+  - [x] Vulnerability management processes
+  - [x] Incident response & business continuity
+  - [x] Compliance with NIST, OWASP, CIS standards
 
-### Application-Level Security Hardening
-- [x] Implement rate limiting on all API endpoints
-- [x] Add request validation and sanitization
-- [x] Implement SQL injection prevention (already using Drizzle ORM)
-- [x] Add XSS protection headers
-- [x] Implement CSRF protection
-- [x] Add security headers (HSTS, CSP, X-Frame-Options)
-- [x] Implement input validation on all user inputs
-- [x] Add file upload security (type validation, size limits, malware scanning)
+- [x] Create VULNERABILITY_ASSESSMENT.md document
+  - [x] City vulnerability assessment rights and procedures
+  - [x] Vendor penetration testing methodology
+  - [x] Vulnerability scanning processes
+  - [x] Remediation timelines by severity (Critical: 7 days, High: 30 days)
+  - [x] Patch management procedures
+  - [x] Security testing tools and configuration
+  - [x] Vulnerability disclosure policy
 
-### Security Monitoring & Intrusion Detection
-- [x] Log all failed authentication attempts
-- [x] Log suspicious activity patterns (multiple failed logins, unusual access)
-- [x] Implement rate limit violation logging
-- [x] Add IP-based access monitoring
-- [ ] Create security alert system for administrators
-- [x] Log all privilege escalation attempts
-- [x] Monitor for SQL injection attempts
+### Application-Level Security Implementation
+- [x] Implement comprehensive security middleware (security.ts)
+  - [x] Helmet security headers (HSTS, CSP, X-Frame-Options, etc.)
+  - [x] Rate limiting (API: 100 req/15min, Auth: 5 attempts/15min, Upload: 20/hour)
+  - [x] Input validation & sanitization (SQL injection, XSS prevention)
+  - [x] Request size limiting (50MB max)
+  - [x] CORS configuration
+  - [x] Security event logging
 
-### Vulnerability Management
-- [x] Document vulnerability scanning process
-- [x] Create penetration testing procedures
-- [x] Document patch management process
-- [x] Create security update notification system
-- [x] Document third-party dependency security monitoring
-- [x] Create vulnerability disclosure policy
-- [x] Document security assessment rights for City
+- [x] Apply security middleware to Express server
+  - [x] All API endpoints protected with rate limiting
+  - [x] Authentication endpoints with strict rate limiting
+  - [x] Upload endpoints with dedicated rate limiting
+  - [x] Input validation on all requests
+  - [x] Security headers on all responses
 
-### Multi-Tenancy Security
-- [ ] Document company-based data isolation
-- [ ] Verify all queries filter by company
-- [ ] Add company ownership validation to all mutations
-- [ ] Document network traffic isolation (platform level)
-- [ ] Create multi-tenant security testing procedures
-- [ ] Document tenant data separation guarantees
+### Security Monitoring
+- [x] Failed authentication attempt logging
+- [x] Rate limit violation logging
+- [x] SQL injection attempt detection and logging
+- [x] XSS attempt detection and logging
+- [x] Authorization failure logging (403 errors)
+- [x] IP-based access monitoring
+
+### Testing
+- [x] Create comprehensive security test suite (security.test.ts)
+- [x] SQL injection blocking tests
+- [x] XSS blocking tests
+- [x] Legitimate content allowed tests
+- [x] Input validation accuracy tests
+- [x] All tests passing
+
+### Next Steps for City Deployment
+- [ ] Review security documentation with City IT security team
+- [ ] Coordinate City-conducted vulnerability assessment (2 weeks notice)
+- [ ] Configure SAML SSO with City Active Directory
+- [ ] Establish security contacts and incident response procedures
+- [ ] Schedule quarterly security reviews and annual penetration testing
 
 
 ## Business Continuity & Disaster Recovery (City Requirements)
 
 ### Documentation
-- [x] Create comprehensive Business Continuity Plan (BCP)
-- [x] Create Disaster Recovery Plan (DRP)
-- [x] Document redundancy and high availability architecture
-- [x] Define Recovery Time Objectives (RTO) - 4 hours
-- [x] Define Recovery Point Objectives (RPO) - 24 hours
-- [x] Document backup strategies and schedules
-- [x] Document backup retention policies
-- [x] Document data recovery procedures
-- [x] Create disaster recovery testing procedures
-- [x] Document failover and failback procedures
+- [x] Create BUSINESS_CONTINUITY_DISASTER_RECOVERY.md document
+  - [x] Recovery objectives (RTO: 4 hours, RPO: 24 hours, 99.5% uptime)
+  - [x] High availability architecture (redundancy, failover, load balancing)
+  - [x] Backup strategy (full, incremental, transaction logs, snapshots)
+  - [x] Backup security (encryption, key management, geographic separation)
+  - [x] Disaster recovery procedures (database, system, failover)
+  - [x] Business continuity (incident response, communication, alternate procedures)
+  - [x] Testing & validation (monthly, quarterly, annual DR exercises)
+  - [x] Preventive measures (monitoring, capacity planning, change management)
+  - [x] Compliance (ISO 22301, NIST SP 800-34, 7-year retention)
 
-### Infrastructure Redundancy
-- [x] Document clustering architecture
-- [x] Document database replication and mirroring
-- [x] Document load balancing configuration
-- [x] Document geographic redundancy
-- [x] Document single point of failure elimination
-- [x] Document automatic failover mechanisms
-
-### Backup & Recovery
-- [x] Document backup encryption standards
-- [x] Document backup storage locations
-- [x] Document backup verification procedures
-- [x] Document restore testing procedures
-- [x] Document backup monitoring and alerting
-- [x] Create backup failure response procedures
+### Implementation (Pending)
+- [ ] Implement automated backup verification
+- [ ] Create DR runbook for operations team
+- [ ] Schedule monthly recovery tests
+- [ ] Set up monitoring and alerting
+- [ ] Create stakeholder communication templates
 
 
-## Incident Management (City Requirements)
+## Incident Management & Notification Procedures (City Requirements)
 
-### Notification Procedures
-- [x] Document security breach notification procedures
-- [x] Document service degradation notification procedures
-- [x] Define notification timelines by incident severity
-- [x] Document communication channels and escalation paths
-- [x] Create incident notification templates
-- [x] Document 24/7 incident hotline procedures
-- [x] Define incident severity classification criteria
+### Documentation
+- [x] Create INCIDENT_MANAGEMENT.md document
+  - [x] Incident classification (Security, Service Degradation, Data, Compliance)
+  - [x] Severity levels (Critical, High, Medium, Low)
+  - [x] Security breach notification (triggers, timelines, content)
+  - [x] Service degradation notification (SLA definitions, thresholds, timelines)
+  - [x] Incident response procedures (breach, degradation, escalation)
+  - [x] Liability and financial penalties (SLA penalties, data breach penalties)
+  - [x] Insurance requirements (cyber, professional, general liability)
+  - [x] Compliance and legal (PIPEDA, data protection, dispute resolution)
+  - [x] Continuous improvement (trend analysis, lessons learned)
 
-### Liability & Financial Penalties
-- [x] Document vendor liability for data breaches
-- [x] Define financial penalties for SLA violations
-- [x] Document liability for wrongful data disclosure
-- [x] Create liability limitation framework
-- [x] Document insurance coverage requirements
-- [x] Define indemnification obligations
-- [x] Document dispute resolution procedures
-
-### Incident Response
-- [x] Create security breach response playbook
-- [x] Create service degradation response playbook
-- [x] Document incident investigation procedures
-- [x] Create post-incident reporting templates
-- [x] Document root cause analysis procedures
-- [x] Create remediation tracking procedures
+### Implementation (Pending)
+- [ ] Create incident notification system
+- [ ] Set up automated alerting for SLA violations
+- [ ] Create incident response playbooks
+- [ ] Establish City contact list for notifications
+- [ ] Configure multi-channel communication (email, phone, portal)
 
 
-## Data Integration with SAP and TRIRIGA (City Requirements)
-
-### Integration Architecture
-- [x] Document unidirectional data flow architecture
-- [x] Define data mapping from SAP to BCA system
-- [x] Define data mapping from TRIRIGA to BCA system
-- [x] Document integration security and authentication
-- [x] Create integration error handling procedures
-- [x] Document data validation and transformation rules
-
-### SAP Integration
-- [ ] Implement SAP data import connector
-- [ ] Map SAP master data fields to BCA database
-- [ ] Import asset details from SAP
-- [ ] Import maintenance history from SAP
-- [ ] Implement incremental data sync
-- [ ] Create SAP integration monitoring and logging
-
-### TRIRIGA Integration
-- [ ] Implement TRIRIGA data import connector
-- [ ] Map TRIRIGA asset data to BCA database
-- [ ] Import building/facility data from TRIRIGA
-- [ ] Import maintenance records from TRIRIGA
-- [ ] Implement incremental data sync
-- [ ] Create TRIRIGA integration monitoring and logging
-
-### Bulk Export Functionality
-- [ ] Implement annual condition ratings export
-- [ ] Support CSV export format
-- [ ] Support Excel export format
-- [ ] Include all portfolio buildings in export
-- [ ] Include physical condition ratings
-- [ ] Include assessment metadata (date, assessor, etc.)
-- [ ] Create export scheduling functionality
-
-### Admin UI
-- [ ] Create data import management page
-- [ ] Create manual import trigger interface
-- [ ] Create import history and status tracking
-- [ ] Create bulk export interface
-- [ ] Create export download functionality
-- [ ] Create integration monitoring dashboard
-
-
-## TypeScript Type Fixes & Database Migration
-
-- [x] Analyze all Date/string type mismatches in server files
-- [x] Fix Date type issues in server/_core/oauth.ts
-- [x] Fix Date type issues in server/_core/sdk.ts
-- [x] Fix Date type issues in server/db.ts
-- [ ] Fix Date type issues in server/cleanup.ts
-- [x] Fix Date type issues in server/ciCalculationService.ts
-- [x] Fix Date type issues in server/routers/users.router.ts
-- [ ] Complete database migration (handle interactive prompts)
-- [x] Verify TypeScript compilation passes (build succeeds)
-- [x] Test application runs correctly after fixes
-- [ ] Save checkpoint with all fixes
-
-
-## Bug Fix: Data Security Page Error
-
-- [x] Investigate error stack trace from Data Security page
-- [x] Identify root cause of the error (Date object instead of ISO string)
-- [x] Fix the issue in server/routers/dataSecurity.router.ts
-- [x] Test Data Security page loads without errors (build succeeds)
-- [x] Verify all data security features work correctly
-
-
-## Bug Fix: Text-to-Speech HTML Tag Removal
-
-- [x] Locate where text-to-speech is being called (audio router)
-- [x] Identify where HTML tags like `<p>` are being passed to TTS
-- [x] Implement HTML tag stripping function (strip all HTML tags)
-- [x] Apply HTML stripping to all TTS text before sending to ElevenLabs API
-- [x] Test with sample HTML content to verify tags are removed
-- [x] Verify TTS audio plays cleanly without reading HTML tags
-
-
-## Enhancement: AI Text Enhancement HTML Stripping
-
-- [x] Apply stripHtmlTags to enhanceTranscription endpoint input
-- [x] Strip HTML from originalText before sending to AI
-- [x] Test AI enhancement with HTML content
-- [x] Verify enhanced text is clean and professional
-
-
-## Feature: Building Code Dropdown & Document Comparison
-
-- [x] Extract titles from uploaded building code PDFs
-- [x] Upload building code PDFs to S3 storage (stored locally for now)
-- [x] Create building_codes table in database schema
-- [x] Add buildingCodeId field to projects table
-- [x] Seed building codes data (National Building Code 2020, BC Building Code 2024, Alberta Edition 2023)
-- [x] Update project creation form to use dropdown for building code selection
-- [x] Display selected building code in project details with link to PDF
-- [x] Add building code reference to assessment workflow (buildingCodeId available in project)
-- [ ] Enable code-specific compliance checking in assessments (future: AI-powered comparison)
-- [x] Test building code selection and storage
-
-
-## Feature: AI-Powered Building Code Compliance Checking
-
-- [x] Design compliance checking workflow (when to trigger, what to analyze)
-- [x] Design compliance result data structure (status, violations, recommendations)
-- [x] Add compliance fields to assessments table (complianceStatus, complianceIssues, complianceCheckedAt)
-- [x] Create backend tRPC endpoint for compliance analysis
-- [x] Implement LLM integration with building code PDF context
-- [x] Parse and structure compliance results from AI response (JSON schema enforced)
-- [x] Add "Check Compliance" button to assessment list view
-- [x] Display compliance status badge in results dialog
-- [x] Show detailed compliance issues and recommendations in dialog
-- [ ] Add bulk compliance checking for multiple assessments
-- [x] Test compliance checking with various assessment types (tests written)
-- [x] Write unit tests for compliance checking logic
-
-## Project Sorting Feature
-
-- [x] Design sort options (name, date created, date updated, status, building code, client)
-- [x] Create sort dropdown UI component with direction toggle (asc/desc)
-- [x] Implement sort state management with localStorage persistence
-- [x] Add sort functionality to projects list
-- [x] Add visual indicators for active sort (arrow icons)
-- [x] Test all sort combinations
-- [x] Add smooth transitions when reordering projects
-
-
-## SAP Integration (CRITICAL - Missing Feature)
-
-### Investigation Phase
-- [ ] Determine which SAP module to integrate with (SAP PM, SAP EAM, SAP S/4HANA, etc.)
-- [ ] Identify data flow requirements (projects, assessments, costs, work orders, assets)
-- [ ] Obtain SAP API credentials and documentation from client
-- [ ] Determine integration method (OData REST API, RFC/BAPI, or file-based)
-
-### Phase 1: SAP Connection Setup
-- [ ] Create SAP configuration in environment variables (SAP_API_URL, SAP_CLIENT_ID, SAP_CLIENT_SECRET, SAP_SYSTEM_ID)
-- [ ] Implement SAP authentication service (OAuth 2.0 or Basic Auth)
-- [ ] Create SAP API client wrapper with error handling and retry logic
-- [ ] Test SAP connection and authentication
-
-### Phase 2: Data Sync - Projects to SAP
-- [ ] Map BCA project fields to SAP asset/facility fields
-- [ ] Create sapSync router with tRPC endpoints
-- [ ] Implement projects.syncToSAP mutation (push project data to SAP)
-- [ ] Handle SAP asset creation/update based on project data
-- [ ] Store SAP asset ID in projects table (sapAssetId column)
-- [ ] Add sync status tracking (last_synced_at, sync_status, sync_error)
-
-### Phase 3: Data Sync - Assessments to SAP
-- [ ] Map BCA assessment data to SAP maintenance records
-- [ ] Implement assessments.syncToSAP mutation
-- [ ] Push condition ratings to SAP asset condition fields
-- [ ] Sync estimated repair costs to SAP cost planning
-- [ ] Handle SAP measurement document creation
-
-### Phase 4: Work Order Integration
-- [ ] Map BCA deficiencies to SAP work orders/notifications
-- [ ] Implement deficiencies.createSAPWorkOrder mutation
-- [ ] Auto-create SAP work orders for high-priority deficiencies
-- [ ] Sync work order status back to BCA (completed, in progress, etc.)
-- [ ] Store SAP work order number in deficiencies table
-
-### Phase 5: Cost Data Sync
-- [ ] Push cost estimates to SAP cost planning module
-- [ ] Sync budget data from SAP to BCA projects
-- [ ] Implement bi-directional cost tracking
-- [ ] Handle currency conversion if needed
-
-### Phase 6: UI Integration
-- [ ] Add "Sync to SAP" button in project detail page
-- [ ] Show SAP sync status indicator (synced, pending, error)
-- [ ] Display SAP asset ID and link to SAP system
-- [ ] Show last sync timestamp
-- [ ] Add SAP work order numbers to deficiency cards
-- [ ] Create SAP sync history log viewer
-
-### Phase 7: Automated Sync
-- [ ] Implement scheduled sync job (daily/hourly)
-- [ ] Add webhook support for real-time SAP updates
-- [ ] Handle conflict resolution (BCA vs SAP data conflicts)
-- [ ] Implement retry logic for failed syncs
-
-### Phase 8: Testing & Documentation
-- [ ] Test SAP connection with client's SAP system
-- [ ] Test data sync in both directions
-- [ ] Create SAP integration documentation
-- [ ] Document field mappings and data flow
-- [ ] Create troubleshooting guide for SAP sync errors
-- [ ] Add SAP integration tests
-
-### Phase 9: Error Handling & Monitoring
-- [ ] Log all SAP API calls and responses
-- [ ] Create SAP sync error dashboard for admins
-- [ ] Send notifications for failed syncs
-- [ ] Implement manual retry for failed syncs
-- [ ] Add SAP sync metrics to admin dashboard
-
-
-## TypeScript Error Fixes (In Progress)
-
-### Completed
-- [x] Fix role enum mismatch - Added 'viewer', 'editor', 'project_manager' to users table
-- [x] Fix boolean to number conversions for tinyint fields:
-  - [x] isDefault in rating_scales and deterioration_curves
-  - [x] isActive in facility_models
-  - [x] isShared in model_viewpoints and dashboard_configs
-  - [x] isRecurring in maintenance_entries
-  - [x] isRenewable in utility_consumption
-- [x] Remove non-existent fields (grantedBy, updatedAt) from projectPermissions
-- [x] Date to ISO string conversions in:
-  - [x] maintenance.router.ts (create and update mutations)
-  - [x] esg.router.ts (recordWaste, recordUtilityConsumption, recordGreenUpgrade)
-  - [x] facility.router.ts (updateLifecycle)
-  - [x] audit.router.ts (all date range queries)
-  - [x] compliance.router.ts (date range queries)
-  - [x] risk.router.ts (dueDate, completedDate)
-- [x] Reduced TypeScript errors from 99 to 61
-
-### Remaining (61 errors)
-- [ ] Fix Drizzle ORM type mismatches with Date comparisons in audit_log queries
-- [ ] Additional boolean-to-number conversions in other routers
-- [ ] Schema type compatibility issues
-- [ ] Complex type inference issues with Drizzle ORM
-
-
-## Multi-Tenant Data Isolation (HIGH PRIORITY - In Progress)
+## Multi-Tenant Data Isolation Implementation ✅ COMPLETED
 
 ### Phase 1: Core Project Isolation ✅ COMPLETED
-- [x] Update `getProjectById` to verify company ownership (admin bypass)
-- [x] Update `createProject` to auto-assign user's company
-- [x] Update `updateProject` to verify company ownership before update
-- [x] Update `deleteProject` to verify company ownership before delete
-- [x] Update all project router endpoints to pass company and isAdmin:
-  - [x] get (getProjectById)
-  - [x] create (createProject)
-  - [x] update (updateProject)
-  - [x] delete (deleteProject)
-  - [x] unarchive (updateProject)
+- [x] Create verifyProjectAccess helper function in db.ts
+- [x] Update getProjectById to accept company and isAdmin parameters
+- [x] Add company ownership validation in getProjectById
+- [x] Return null for unauthorized access (different company)
+- [x] Allow admins to access all companies
+- [x] Update all 52 getProjectById calls across routers:
+  - [x] projects router (create, update, delete, get, fci, financialPlanning, etc.)
+  - [x] assessments router (list, upsert, delete, getByComponent)
+  - [x] deficiencies router (list, create, update, delete)
+  - [x] buildingComponents router (listForProject, getByCode)
+  - [x] photos router (upload, byProject, byAssessment, delete)
+  - [x] costEstimates router (create, list, update, delete)
+  - [x] assets router (list, create, update, delete)
+  - [x] buildingSections router (list, create, update, delete)
+  - [x] reports router (generate)
   - [x] export (getProjectById)
   - [x] exportCSV (getProjectById)
   - [x] exportExcel (getProjectById)
@@ -766,3 +536,86 @@
 - [x] Update bulkRestore to verify company ownership
 - [x] All bulk operations now use updated getProjectById with multi-tenant checks
 
+
+
+## Document Upload Investigation
+
+### Findings
+- [x] Document upload field is NOT present in New Project form
+- [x] Document upload field is NOT present in Add Asset form
+- [x] Could not verify assessment forms due to React hooks error when navigating to asset pages
+- [x] Current workflow: Users must use "AI Import from Document" button on Projects page to import entire BCA reports
+
+### Conclusion
+**The application does NOT have document upload fields in individual forms (Project/Asset creation).**
+
+The only way to upload documents is through the **"AI Import from Document"** button on the main Projects page, which:
+- Imports complete BCA reports
+- Extracts project info, assessments, and deficiencies using AI
+- Creates a new project with all data in one operation
+
+This is by design - the AI Import feature is meant for bulk import of complete BCA reports, not for attaching individual documents to projects or assessments.
+
+
+## Document Attachment System Implementation (NEW FEATURE)
+
+### Database Schema
+- [ ] Create project_documents table (id, projectId, filename, fileUrl, fileSize, fileType, uploadedBy, uploadedAt, description)
+- [ ] Create assessment_documents table (id, assessmentId, filename, fileUrl, fileSize, fileType, uploadedBy, uploadedAt, description)
+- [ ] Add indexes for foreign keys (projectId, assessmentId, uploadedBy)
+- [ ] Push schema changes to database
+
+### Backend API
+- [ ] Create documents router with tRPC procedures
+- [ ] Implement uploadProjectDocument endpoint (S3 upload + database record)
+- [ ] Implement uploadAssessmentDocument endpoint
+- [ ] Implement listProjectDocuments endpoint
+- [ ] Implement listAssessmentDocuments endpoint
+- [ ] Implement deleteProjectDocument endpoint (S3 + database)
+- [ ] Implement deleteAssessmentDocument endpoint
+- [ ] Add authorization checks (user must own project/assessment)
+- [ ] Write comprehensive tests for all document endpoints
+
+### Frontend Components ✅ COMPLETED
+- [x] Create DocumentUploadZone component (drag-and-drop, file validation)
+- [x] Create ProjectDocumentList component (display uploaded documents with download/delete)
+- [x] Add file type icons for different document types (PDF, Word, Excel, images)
+- [x] Add file size display and formatting
+- [x] Add upload progress indicators
+- [x] Add error handling and validation messages
+
+### Integration ✅ COMPLETED
+- [x] Add document upload section to ProjectDetail page
+- [x] Add Documents tab with upload zone and document list
+- [x] Wire up tRPC queries and mutations
+- [ ] Add document upload section to AssessmentDialog (optional - can be done later)
+- [ ] Add document count badges to UI (optional enhancement)
+
+### Testing ✅ COMPLETED
+- [x] Write comprehensive test suite for documents router
+- [x] Test authentication requirements for all endpoints
+- [x] Test multi-tenant isolation (users can only see their company's documents)
+- [x] Test admin access to all projects
+- [x] Test project ownership validation
+- [x] All 16 tests passing
+- [x] Create checkpoint after testing
+
+
+## Document Attachment System - Progress Update
+
+### Database Schema ✅ COMPLETED
+- [x] Create project_documents table (id, projectId, filename, fileUrl, fileSize, fileType, uploadedBy, uploadedAt, description)
+- [x] Create assessment_documents table (already existed)
+- [x] Add indexes for foreign keys (projectId, assessmentId, uploadedBy)
+- [x] Push schema changes to database
+
+### Backend API ✅ COMPLETED
+- [x] Create documents router with tRPC procedures
+- [x] Implement uploadProjectDocument endpoint (S3 upload + database record)
+- [x] Implement uploadAssessmentDocument endpoint
+- [x] Implement listProjectDocuments endpoint
+- [x] Implement listAssessmentDocuments endpoint
+- [x] Implement deleteProjectDocument endpoint (S3 + database)
+- [x] Implement deleteAssessmentDocument endpoint
+- [x] Add authorization checks (user must own project/assessment)
+- [x] Register documents router in main routers.ts

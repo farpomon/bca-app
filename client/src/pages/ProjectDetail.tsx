@@ -14,6 +14,8 @@ import { trpc } from "@/lib/trpc";
 import { BuildingCodeDisplay } from "@/components/BuildingCodeDisplay";
 import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
+import { DocumentUploadZone } from "@/components/DocumentUploadZone";
+import { ProjectDocumentList } from "@/components/ProjectDocumentList";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -88,6 +90,10 @@ export default function ProjectDetail() {
     { projectId },
     { enabled: !!user && !isNaN(projectId) }
   );
+  const { data: documents, isLoading: documentsLoading } = trpc.documents.listProjectDocuments.useQuery(
+    { projectId },
+    { enabled: !!user && !isNaN(projectId) }
+  );
 
   const createDeficiency = trpc.deficiencies.create.useMutation({
     onSuccess: () => {
@@ -118,6 +124,26 @@ export default function ProjectDetail() {
     },
     onError: (error) => {
       toast.error("Failed to delete deficiency: " + error.message);
+    },
+  });
+
+  const uploadDocument = trpc.documents.uploadProjectDocument.useMutation({
+    onSuccess: () => {
+      toast.success("Document uploaded successfully");
+      utils.documents.listProjectDocuments.invalidate({ projectId });
+    },
+    onError: (error) => {
+      toast.error("Failed to upload document: " + error.message);
+    },
+  });
+
+  const deleteDocument = trpc.documents.deleteProjectDocument.useMutation({
+    onSuccess: () => {
+      toast.success("Document deleted successfully");
+      utils.documents.listProjectDocuments.invalidate({ projectId });
+    },
+    onError: (error) => {
+      toast.error("Failed to delete document: " + error.message);
     },
   });
 
@@ -353,6 +379,7 @@ export default function ProjectDetail() {
             <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
             <TabsTrigger value="ratings">Ratings</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="space-y-4">
@@ -820,6 +847,45 @@ export default function ProjectDetail() {
 
           <TabsContent value="report">
             <ReportTab projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Documents</CardTitle>
+                <CardDescription>
+                  Upload and manage reference documents for this project (PDFs, Word docs, Excel files, images)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <DocumentUploadZone
+                  onUpload={async (file) => {
+                    const reader = new FileReader();
+                    reader.onload = async () => {
+                      const base64Data = reader.result?.toString().split(',')[1];
+                      if (base64Data) {
+                        await uploadDocument.mutateAsync({
+                          projectId,
+                          fileName: file.name,
+                          fileData: base64Data,
+                          mimeType: file.type,
+                          fileSize: file.size,
+                        });
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  disabled={uploadDocument.isPending}
+                />
+                <ProjectDocumentList
+                  documents={documents || []}
+                  onDelete={async (documentId) => {
+                    await deleteDocument.mutateAsync({ documentId, projectId });
+                  }}
+                  isLoading={documentsLoading}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

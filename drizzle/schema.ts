@@ -913,6 +913,23 @@ export const projectVersions = mysqlTable("project_versions", {
 	index("idx_project").on(table.projectId),
 ]);
 
+export const projectDocuments = mysqlTable("project_documents", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	fileName: varchar({ length: 255 }).notNull(),
+	fileKey: varchar({ length: 500 }).notNull(),
+	url: text().notNull(),
+	mimeType: varchar({ length: 100 }).notNull(),
+	fileSize: int().notNull(),
+	uploadedBy: int().notNull(),
+	description: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_project_documents_projectId").on(table.projectId),
+	index("idx_project_documents_uploadedBy").on(table.uploadedBy),
+]);
+
 export const buildingCodes = mysqlTable("building_codes", {
 	id: int().autoincrement().notNull(),
 	code: varchar({ length: 100 }).notNull().unique(),
@@ -1426,3 +1443,6 @@ export type InsertRenovationCost = typeof renovationCosts.$inferInsert;
 
 export type ReportHistory = typeof reportHistory.$inferSelect;
 export type InsertReportHistory = typeof reportHistory.$inferInsert;
+
+export type ProjectDocument = typeof projectDocuments.$inferSelect;
+export type InsertProjectDocument = typeof projectDocuments.$inferInsert;

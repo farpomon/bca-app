@@ -21,6 +21,7 @@ import { auditRouter } from "./routers/audit.router";
 import { usersRouter } from "./routers/users.router";
 import { accessRequestsRouter } from "./routers/accessRequests.router";
 import { assessmentDocumentsRouter } from "./routers/assessmentDocuments.router";
+import { documentsRouter } from "./routers/documents.router";
 import { complianceRouter } from "./routers/compliance.router";
 import { dataSecurityRouter } from "./routers/dataSecurity.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
@@ -46,6 +47,7 @@ export const appRouter = router({
   users: usersRouter,
   accessRequests: accessRequestsRouter,
   assessmentDocuments: assessmentDocumentsRouter,
+  documents: documentsRouter,
   compliance: complianceRouter,
   dataSecurity: dataSecurityRouter,
   auth: router({
