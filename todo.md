@@ -257,6 +257,11 @@
 - [x] Fix voice transcription not working for component name field (Input field issue)
 - [x] Test both fixes thoroughly
 
+## Bug Fixes - Building Codes Dropdown
+- [x] Fix building codes dropdown not working in project creation form
+- [x] Verify building codes are loading from database
+- [x] Test dropdown selection and saving to project
+
 ## Data Security & Encryption Requirements
 
 ### Phase 1: Encryption Documentation & Data Ownership

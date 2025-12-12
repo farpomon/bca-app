@@ -27,14 +27,14 @@ export function BuildingCodeSelect({ value, onChange }: BuildingCodeSelectProps)
 
   return (
     <Select
-      value={value?.toString() || ""}
-      onValueChange={(val) => onChange(val ? parseInt(val) : undefined)}
+      value={value?.toString() || "none"}
+      onValueChange={(val) => onChange(val === "none" ? undefined : parseInt(val))}
     >
       <SelectTrigger>
         <SelectValue placeholder="Select a building code" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="">None</SelectItem>
+        <SelectItem value="none">None</SelectItem>
         {buildingCodes?.map((code) => (
           <SelectItem key={code.id} value={code.id.toString()}>
             {code.title}
