@@ -27,6 +27,7 @@ import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
 import PrivacySettings from "./pages/PrivacySettings";
+import DataSecurity from "./pages/DataSecurity";
 
 function Router() {
   return (
@@ -53,6 +54,7 @@ function Router() {
       <Route path={"/projects/:id/3d-model"} component={Model3DViewer} />
       <Route path={"/portfolio-analytics"} component={PortfolioBIDashboard} />
       <Route path={"/admin/compliance"} component={ComplianceDashboard} />
+      <Route path={"/admin/data-security"} component={DataSecurity} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />

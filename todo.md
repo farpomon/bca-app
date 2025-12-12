@@ -256,3 +256,36 @@
 - [x] Fix assessment progress to display actual component names instead of "Unknown Component"
 - [x] Fix voice transcription not working for component name field (Input field issue)
 - [x] Test both fixes thoroughly
+
+## Data Security & Encryption Requirements
+
+### Phase 1: Encryption Documentation & Data Ownership
+- [x] Document encryption in transit (TLS 1.3)
+- [x] Document encryption at rest (database and S3)
+- [x] Document encryption key management (Manus platform)
+- [x] Add data ownership declaration in system settings
+- [x] Create data ownership documentation page
+- [x] Add "City data ownership" banner/notice in admin
+
+### Phase 2: Data Retention Policies
+- [x] Create data_retention_policies table
+- [x] Implement 7-year default retention policy
+- [x] Add retention policy configuration UI (admin)
+- [x] Add retention policy enforcement logic
+- [x] Display retention policy in compliance dashboard
+- [x] Add retention policy to audit logs
+
+### Phase 3: Secure Data Disposal
+- [x] Create data_disposal_requests table
+- [x] Build secure data purge API endpoints
+- [x] Implement backup purge tracking
+- [x] Add data disposal request workflow (admin)
+- [x] Create data disposal audit trail
+- [x] Add "Request Data Deletion" feature for projects
+
+### Phase 4: Security Documentation
+- [x] Update compliance documentation with encryption details
+- [x] Add data security information page
+- [x] Document key management and ownership
+- [x] Create admin guide for data retention and disposal
+- [x] Add security settings page

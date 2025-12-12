@@ -21,6 +21,7 @@ import { usersRouter } from "./routers/users.router";
 import { accessRequestsRouter } from "./routers/accessRequests.router";
 import { assessmentDocumentsRouter } from "./routers/assessmentDocuments.router";
 import { complianceRouter } from "./routers/compliance.router";
+import { dataSecurityRouter } from "./routers/dataSecurity.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -45,6 +46,7 @@ export const appRouter = router({
   accessRequests: accessRequestsRouter,
   assessmentDocuments: assessmentDocumentsRouter,
   compliance: complianceRouter,
+  dataSecurity: dataSecurityRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

@@ -82,6 +82,32 @@ export default function ComplianceDocumentation() {
         </div>
       </Card>
 
+      {/* Data Ownership */}
+      <Card className="p-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+          <Shield className="h-6 w-6 text-blue-600" />
+          Data Ownership Declaration
+        </h2>
+        <div className="space-y-3 text-sm">
+          <p className="font-semibold text-lg text-blue-900 dark:text-blue-100">
+            The City retains sole ownership of all data stored in this system.
+          </p>
+          <p className="text-blue-800 dark:text-blue-200">
+            All building condition assessment data, user information, project records, photos, documents, and associated metadata remain the exclusive property of the City. The Manus platform acts solely as a service provider and data processor.
+          </p>
+          <div className="mt-4 space-y-2">
+            <p className="font-medium text-blue-900 dark:text-blue-100">Data Usage Restrictions:</p>
+            <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200 ml-4">
+              <li>City data is used exclusively for providing the building condition assessment service</li>
+              <li>No data is sold, shared with third parties, or used for marketing purposes</li>
+              <li>Data can be exported at any time in standard formats (JSON, CSV, PDF)</li>
+              <li>Data can be permanently deleted upon request with verification</li>
+              <li>All encryption keys are owned by the City and managed by the platform</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
+
       {/* Data Residency */}
       <Card className="p-6">
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">

@@ -1902,3 +1902,65 @@ export const dataAccessRequests = mysqlTable("data_access_requests", {
 
 export type DataAccessRequest = typeof dataAccessRequests.$inferSelect;
 export type InsertDataAccessRequest = typeof dataAccessRequests.$inferInsert;
+
+/**
+ * Data retention policies - Define how long different data types are kept
+ */
+export const dataRetentionPolicies = mysqlTable("data_retention_policies", {
+  id: int("id").autoincrement().primaryKey(),
+  policyName: varchar("policyName", { length: 255 }).notNull(),
+  dataType: varchar("dataType", { length: 100 }).notNull(), // e.g., "projects", "assessments", "audit_logs"
+  retentionPeriodYears: int("retentionPeriodYears").notNull(), // Default 7 years
+  description: text("description"),
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DataRetentionPolicy = typeof dataRetentionPolicies.$inferSelect;
+export type InsertDataRetentionPolicy = typeof dataRetentionPolicies.$inferInsert;
+
+/**
+ * Data disposal requests - Track secure data deletion and purging
+ */
+export const dataDisposalRequests = mysqlTable("data_disposal_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  requestType: mysqlEnum("requestType", ["project", "user_data", "audit_logs", "backups", "full_account"]).notNull(),
+  targetId: int("targetId"), // ID of project, user, etc. being deleted
+  targetType: varchar("targetType", { length: 100 }), // e.g., "project", "user"
+  requestedBy: int("requestedBy").notNull(),
+  approvedBy: int("approvedBy"),
+  status: mysqlEnum("status", ["pending", "approved", "in_progress", "completed", "rejected"]).default("pending").notNull(),
+  reason: text("reason"),
+  disposalMethod: varchar("disposalMethod", { length: 100 }), // e.g., "secure_delete", "overwrite", "crypto_erase"
+  backupPurgeStatus: mysqlEnum("backupPurgeStatus", ["not_started", "in_progress", "completed", "failed"]).default("not_started"),
+  backupPurgeCompletedAt: timestamp("backupPurgeCompletedAt"),
+  verificationHash: varchar("verificationHash", { length: 255 }), // Hash to verify deletion
+  requestedAt: timestamp("requestedAt").defaultNow().notNull(),
+  approvedAt: timestamp("approvedAt"),
+  completedAt: timestamp("completedAt"),
+  notes: text("notes"),
+});
+
+export type DataDisposalRequest = typeof dataDisposalRequests.$inferSelect;
+export type InsertDataDisposalRequest = typeof dataDisposalRequests.$inferInsert;
+
+/**
+ * Encryption key metadata - Track encryption keys (actual keys stored securely by platform)
+ */
+export const encryptionKeyMetadata = mysqlTable("encryption_key_metadata", {
+  id: int("id").autoincrement().primaryKey(),
+  keyIdentifier: varchar("keyIdentifier", { length: 255 }).notNull().unique(),
+  keyType: mysqlEnum("keyType", ["data_encryption", "backup_encryption", "transport"]).notNull(),
+  keyOwner: varchar("keyOwner", { length: 255 }).notNull(), // e.g., "City of [Name]"
+  algorithm: varchar("algorithm", { length: 100 }).notNull(), // e.g., "AES-256-GCM"
+  keyStatus: mysqlEnum("keyStatus", ["active", "rotated", "revoked"]).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  rotatedAt: timestamp("rotatedAt"),
+  expiresAt: timestamp("expiresAt"),
+  notes: text("notes"),
+});
+
+export type EncryptionKeyMetadata = typeof encryptionKeyMetadata.$inferSelect;
+export type InsertEncryptionKeyMetadata = typeof encryptionKeyMetadata.$inferInsert;

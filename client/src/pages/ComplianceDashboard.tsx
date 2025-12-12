@@ -41,10 +41,16 @@ export default function ComplianceDashboard() {
             FOIP compliance, data residency, and audit tracking
           </p>
         </div>
-        <Button variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export Compliance Report
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => window.location.href = '/admin/data-security'}>
+            <Shield className="h-4 w-4" />
+            Data Security
+          </Button>
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export Compliance Report
+          </Button>
+        </div>
       </div>
 
       {/* Key Metrics */}
