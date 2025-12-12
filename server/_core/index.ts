@@ -8,6 +8,16 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { handleAudioUpload, uploadAudio } from "../audioUpload";
 import { serveStatic, setupVite } from "./vite";
+import {
+  configureSecurityHeaders,
+  apiRateLimiter,
+  authRateLimiter,
+  uploadRateLimiter,
+  validateInput,
+  logSecurityEvents,
+  configureCORS,
+  limitRequestSize,
+} from "./security";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -31,19 +41,31 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // Security middleware - MUST be first
+  app.use(configureSecurityHeaders());
+  app.use(configureCORS());
+  app.use(logSecurityEvents);
+  app.use(limitRequestSize(50)); // 50MB max request size
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  // OAuth callback under /api/oauth/callback
+  
+  // Input validation middleware
+  app.use(validateInput);
+  // OAuth callback under /api/oauth/callback (with rate limiting)
+  app.use("/api/oauth", authRateLimiter);
   registerOAuthRoutes(app);
   
-  // Audio upload endpoint
-  app.post("/api/upload-audio", handleAudioUpload, uploadAudio);
+  // Audio upload endpoint (with rate limiting)
+  app.post("/api/upload-audio", uploadRateLimiter, handleAudioUpload, uploadAudio);
   
-  // Document upload endpoint for AI import
+  // Document upload endpoint for AI import (with rate limiting)
   const { uploadMiddleware, handleUpload } = await import('./upload-handler');
-  app.post("/api/upload", uploadMiddleware, handleUpload);
-  // tRPC API
+  app.post("/api/upload", uploadRateLimiter, uploadMiddleware, handleUpload);
+  // tRPC API (with rate limiting)
+  app.use("/api/trpc", apiRateLimiter);
   app.use(
     "/api/trpc",
     createExpressMiddleware({
