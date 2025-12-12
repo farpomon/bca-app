@@ -569,3 +569,11 @@
 - [x] Apply HTML stripping to all TTS text before sending to ElevenLabs API
 - [x] Test with sample HTML content to verify tags are removed
 - [x] Verify TTS audio plays cleanly without reading HTML tags
+
+
+## Enhancement: AI Text Enhancement HTML Stripping
+
+- [x] Apply stripHtmlTags to enhanceTranscription endpoint input
+- [x] Strip HTML from originalText before sending to AI
+- [x] Test AI enhancement with HTML content
+- [x] Verify enhanced text is clean and professional

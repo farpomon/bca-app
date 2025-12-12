@@ -110,6 +110,9 @@ export const audioRouter = router({
     .mutation(async ({ input }) => {
       const { invokeLLM } = await import("../_core/llm");
       
+      // Strip HTML tags from input before processing
+      const cleanText = stripHtmlTags(input.originalText);
+      
       const systemPrompt = input.fieldType === "observations"
         ? `You are a professional building condition assessor. Rewrite the following observation notes to be clear, professional, and follow industry best practices. Use proper technical terminology from UNIFORMAT II standards. Keep the meaning intact but improve clarity, grammar, and professional tone. Be concise and specific.`
         : `You are a professional building condition assessor. Rewrite the following recommendations to be actionable, professional, and follow industry best practices. Use proper technical terminology. Prioritize safety and compliance. Be specific about required actions and timeframes where applicable.`;
@@ -118,7 +121,7 @@ export const audioRouter = router({
         const response = await invokeLLM({
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: input.originalText },
+            { role: "user", content: cleanText },
           ],
         });
 
@@ -126,7 +129,7 @@ export const audioRouter = router({
 
         return {
           success: true,
-          originalText: input.originalText,
+          originalText: cleanText, // Return cleaned version
           enhancedText,
         };
       } catch (error) {
@@ -134,8 +137,8 @@ export const audioRouter = router({
         return {
           success: false,
           error: error instanceof Error ? error.message : "Unknown error",
-          originalText: input.originalText,
-          enhancedText: input.originalText, // Fallback to original
+          originalText: cleanText,
+          enhancedText: cleanText, // Fallback to cleaned version
         };
       }
     }),
