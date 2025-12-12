@@ -591,3 +591,19 @@
 - [x] Add building code reference to assessment workflow (buildingCodeId available in project)
 - [ ] Enable code-specific compliance checking in assessments (future: AI-powered comparison)
 - [x] Test building code selection and storage
+
+
+## Feature: AI-Powered Building Code Compliance Checking
+
+- [x] Design compliance checking workflow (when to trigger, what to analyze)
+- [x] Design compliance result data structure (status, violations, recommendations)
+- [x] Add compliance fields to assessments table (complianceStatus, complianceIssues, complianceCheckedAt)
+- [x] Create backend tRPC endpoint for compliance analysis
+- [x] Implement LLM integration with building code PDF context
+- [x] Parse and structure compliance results from AI response (JSON schema enforced)
+- [x] Add "Check Compliance" button to assessment list view
+- [x] Display compliance status badge in results dialog
+- [x] Show detailed compliance issues and recommendations in dialog
+- [ ] Add bulk compliance checking for multiple assessments
+- [x] Test compliance checking with various assessment types (tests written)
+- [x] Write unit tests for compliance checking logic

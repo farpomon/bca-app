@@ -75,6 +75,11 @@ export const assessments = mysqlTable("assessments", {
 	validationWarnings: text(),
 	componentName: varchar({ length: 255 }),
 	componentLocation: varchar({ length: 255 }),
+	complianceStatus: varchar({ length: 50 }),
+	complianceIssues: text(),
+	complianceRecommendations: text(),
+	complianceCheckedAt: timestamp({ mode: 'string' }),
+	complianceCheckedBy: int(),
 });
 
 export const assets = mysqlTable("assets", {
@@ -1044,9 +1049,7 @@ export const reportSchedules = mysqlTable("report_schedules", {
 	recipientEmails: text().notNull(),
 	active: int().default(1).notNull(),
 	lastRun: timestamp({ mode: 'string' }),
-	nextRun: timestamp({ mode: 'string' }),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
 export const reportSections = mysqlTable("report_sections", {

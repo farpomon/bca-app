@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { complianceCheckRouter } from "./routers/compliance.check.router";
 import { optimizationRouter } from "./routers/optimization.router";
 import { prioritizationRouter } from "./routers/prioritization.router";
 import { riskRouter } from "./routers/risk.router";
@@ -57,6 +58,8 @@ export const appRouter = router({
       } as const;
     }),
   }),
+
+  complianceCheck: complianceCheckRouter,
 
   buildingCodes: router({
     list: publicProcedure.query(async () => {

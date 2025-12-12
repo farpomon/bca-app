@@ -2087,3 +2087,37 @@ export async function getBuildingCodeById(id: number) {
   
   return result.length > 0 ? result[0] : undefined;
 }
+
+
+export async function updateAssessmentCompliance(
+  assessmentId: number,
+  complianceData: {
+    complianceStatus: string;
+    complianceIssues: string;
+    complianceRecommendations: string;
+    complianceCheckedAt: string;
+    complianceCheckedBy: number;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(assessments)
+    .set(complianceData)
+    .where(eq(assessments.id, assessmentId));
+}
+
+
+export async function getAssessmentById(assessmentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db
+    .select()
+    .from(assessments)
+    .where(eq(assessments.id, assessmentId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}

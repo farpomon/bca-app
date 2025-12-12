@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { BuildingCodeDisplay } from "@/components/BuildingCodeDisplay";
+import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -580,6 +581,11 @@ export default function ProjectDetail() {
                           }>
                             {assessment.condition}
                           </Badge>
+                          <ComplianceCheckButton
+                            assessmentId={assessment.id}
+                            projectId={projectId}
+                            onComplianceChecked={() => refetch()}
+                          />
                           <Button
                             variant="ghost"
                             size="sm"
