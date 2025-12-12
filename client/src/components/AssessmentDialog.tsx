@@ -11,6 +11,8 @@ import { Loader2, Upload, X, Sparkles, Mic, Trash2 } from "lucide-react";
 import { ValidationWarning } from "@/components/ValidationWarning";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { DocumentUploadZone } from "@/components/DocumentUploadZone";
+import { DocumentList } from "@/components/DocumentList";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
@@ -185,6 +187,8 @@ export function AssessmentDialog({
   const checkValidation = trpc.validation.check.useMutation();
   const logOverride = trpc.validation.logOverride.useMutation();
 
+  const utils = trpc.useUtils();
+
   const uploadPhoto = trpc.photos.upload.useMutation({
     onSuccess: () => {
       toast.success("Assessment and photo saved successfully");
@@ -195,6 +199,18 @@ export function AssessmentDialog({
     onError: (error) => {
       toast.error("Failed to upload photo: " + error.message);
       setUploadingPhoto(false);
+    },
+  });
+
+  const uploadAssessmentDocument = trpc.documents.uploadAssessmentDocument.useMutation({
+    onSuccess: () => {
+      toast.success("Document uploaded successfully");
+      if (existingAssessment?.id) {
+        utils.assessmentDocuments.list.invalidate({ assessmentId: existingAssessment.id });
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to upload document: " + error.message);
     },
   });
 
@@ -693,6 +709,41 @@ export function AssessmentDialog({
             <div className="space-y-2">
               <Label>Existing Photos</Label>
               <ExistingPhotosDisplay assessmentId={existingAssessment.id} />
+            </div>
+          )}
+
+          {/* Existing Documents */}
+          {existingAssessment?.id && (
+            <div className="space-y-2">
+              <Label>Attached Documents</Label>
+              <DocumentList assessmentId={existingAssessment.id} />
+            </div>
+          )}
+
+          {/* Document Upload */}
+          {existingAssessment?.id && (
+            <div className="space-y-2">
+              <Label>Upload Document (Optional)</Label>
+              <DocumentUploadZone
+                onUpload={async (file) => {
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const base64Data = reader.result?.toString().split(',')[1];
+                    if (base64Data && existingAssessment.id) {
+                      await uploadAssessmentDocument.mutateAsync({
+                        assessmentId: existingAssessment.id,
+                        projectId,
+                        fileName: file.name,
+                        fileData: base64Data,
+                        mimeType: file.type,
+                        fileSize: file.size,
+                      });
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }}
+                disabled={uploadAssessmentDocument.isPending}
+              />
             </div>
           )}
 

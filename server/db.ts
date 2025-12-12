@@ -36,7 +36,8 @@ import {
   predictionHistory,
   ciFciSnapshots,
   assessmentDocuments,
-  InsertAssessmentDocument
+  InsertAssessmentDocument,
+  projectDocuments
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -559,10 +560,17 @@ export async function getProjectStats(projectId: number) {
     .from(deficiencies)
     .where(eq(deficiencies.projectId, projectId));
   
+  // Count project documents
+  const [documentCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(projectDocuments)
+    .where(eq(projectDocuments.projectId, projectId));
+  
   return {
     deficiencies: deficiencyCount?.count || 0,
     assessments: assessmentCount?.count || 0,
     photos: photoCount?.count || 0,
+    documents: documentCount?.count || 0,
     totalEstimatedCost: totalCost?.total || 0,
   };
 }

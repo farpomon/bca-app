@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
-import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown, FileText } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
 import { useState, useEffect, useMemo } from "react";
@@ -22,6 +22,20 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { motion } from "framer-motion";
 import { pageVariants, containerVariants, cardVariants } from "@/lib/animations";
 import { AnimatedButton } from "@/components/AnimatedButton";
+
+// Component to display document count badge
+function ProjectDocumentBadge({ projectId }: { projectId: number }) {
+  const { data: stats } = trpc.projects.stats.useQuery({ projectId });
+  
+  if (!stats || stats.documents === 0) return null;
+  
+  return (
+    <Badge variant="outline" className="gap-1">
+      <FileText className="h-3 w-3" />
+      {stats.documents}
+    </Badge>
+  );
+}
 
 export default function Projects() {
   const { user, loading: authLoading } = useAuth();
@@ -1028,6 +1042,7 @@ export default function Projects() {
                       <Badge className={getStatusColor(project.status)}>
                         {getStatusLabel(project.status)}
                       </Badge>
+                      <ProjectDocumentBadge projectId={project.id} />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button variant="ghost" size="icon" className="h-8 w-8">

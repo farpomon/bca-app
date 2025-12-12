@@ -619,3 +619,20 @@ This is by design - the AI Import feature is meant for bulk import of complete B
 - [x] Implement deleteAssessmentDocument endpoint
 - [x] Add authorization checks (user must own project/assessment)
 - [x] Register documents router in main routers.ts
+
+
+## Document Attachment Enhancements
+
+### Assessment Document Upload ✅ COMPLETED
+- [x] Modify AssessmentDialog to include document upload section
+- [x] Add DocumentUploadZone component to assessment form
+- [x] Add DocumentList component to show assessment documents
+- [x] Wire up assessment document upload/delete mutations
+- [x] Document upload only available for existing assessments (edit mode)
+
+### Document Count Badges ✅ COMPLETED
+- [x] Add document count query to project stats
+- [x] Display document count badge on project cards
+- [x] Display document count badge on Documents tab
+- [x] Add visual indicator for projects with documents
+- [x] Badge only shows when documents > 0

@@ -379,7 +379,14 @@ export default function ProjectDetail() {
             <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
             <TabsTrigger value="ratings">Ratings</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="documents" className="gap-2">
+              Documents
+              {stats && stats.documents > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {stats.documents}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="space-y-4">
