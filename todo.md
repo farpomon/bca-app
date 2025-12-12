@@ -613,3 +613,13 @@
 - [ ] Add bulk compliance checking for multiple assessments
 - [x] Test compliance checking with various assessment types (tests written)
 - [x] Write unit tests for compliance checking logic
+
+## Project Sorting Feature
+
+- [x] Design sort options (name, date created, date updated, status, building code, client)
+- [x] Create sort dropdown UI component with direction toggle (asc/desc)
+- [x] Implement sort state management with localStorage persistence
+- [x] Add sort functionality to projects list
+- [x] Add visual indicators for active sort (arrow icons)
+- [x] Test all sort combinations
+- [x] Add smooth transitions when reordering projects

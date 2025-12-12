@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
-import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu";
@@ -50,6 +51,30 @@ export default function Projects() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateRangeFilter, setDateRangeFilter] = useState<{start: string, end: string}>({start: "", end: ""});
   
+  // Sort state with localStorage persistence
+  const [sortBy, setSortBy] = useState<string>(() => {
+    return localStorage.getItem('projectsSortBy') || 'updatedAt';
+  });
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(() => {
+    return (localStorage.getItem('projectsSortDirection') as 'asc' | 'desc') || 'desc';
+  });
+  
+  // Persist sort preferences
+  useEffect(() => {
+    localStorage.setItem('projectsSortBy', sortBy);
+    localStorage.setItem('projectsSortDirection', sortDirection);
+  }, [sortBy, sortDirection]);
+  
+  // Toggle sort direction or change sort field
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortDirection('asc');
+    }
+  };
+  
   // Bulk selection state
   const [selectedProjects, setSelectedProjects] = useState<Set<number>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
@@ -66,8 +91,12 @@ export default function Projects() {
   console.log("[Projects Page] IsLoading:", isLoading);
   console.log("[Projects Page] User:", user?.email);
 
-  // Filter projects based on search and filters
-  const filteredProjects = projects?.filter((project) => {
+  // Filter and sort projects
+  const filteredAndSortedProjects = useMemo(() => {
+    if (!projects) return [];
+    
+    // First filter
+    let filtered = projects.filter((project) => {
     // Hide archived projects by default unless showArchived is true
     if (!showArchived && project.status === "archived") {
       return false;
@@ -101,7 +130,54 @@ export default function Projects() {
     }
 
     return true;
-  }) || [];
+    });
+    
+    // Then sort
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'clientName':
+          aValue = a.clientName?.toLowerCase() || '';
+          bValue = b.clientName?.toLowerCase() || '';
+          break;
+        case 'status':
+          aValue = a.status || '';
+          bValue = b.status || '';
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        case 'updatedAt':
+          aValue = new Date(a.updatedAt).getTime();
+          bValue = new Date(b.updatedAt).getTime();
+          break;
+        case 'buildingCode':
+          aValue = a.buildingCode?.toLowerCase() || '';
+          bValue = b.buildingCode?.toLowerCase() || '';
+          break;
+        case 'address':
+          aValue = a.address?.toLowerCase() || '';
+          bValue = b.address?.toLowerCase() || '';
+          break;
+        default:
+          aValue = new Date(a.updatedAt).getTime();
+          bValue = new Date(b.updatedAt).getTime();
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [projects, searchQuery, statusFilter, dateRangeFilter, showArchived, sortBy, sortDirection]);
 
   // Count active filters
   const activeFiltersCount = 
@@ -128,7 +204,7 @@ export default function Projects() {
   };
 
   const selectAllProjects = () => {
-    const allIds = new Set(filteredProjects.map(p => p.id));
+    const allIds = new Set(filteredAndSortedProjects.map(p => p.id));
     setSelectedProjects(allIds);
   };
 
@@ -693,7 +769,7 @@ export default function Projects() {
                   size="sm"
                   onClick={selectAllProjects}
                 >
-                  Select All ({filteredProjects.length})
+                  Select All ({filteredAndSortedProjects.length})
                 </Button>
                 <Button
                   variant="outline"
@@ -729,8 +805,94 @@ export default function Projects() {
             </div>
           )}
 
-          {/* Filters - Spacious Layout */}
+          {/* Sort and Filters - Spacious Layout */}
           <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 md:items-center">
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Sort by:</span>
+                </div>
+                
+                <Select value={sortBy} onValueChange={(value) => handleSort(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="updatedAt">
+                      <div className="flex items-center gap-2">
+                        <span>Last Updated</span>
+                        {sortBy === 'updatedAt' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="createdAt">
+                      <div className="flex items-center gap-2">
+                        <span>Date Created</span>
+                        {sortBy === 'createdAt' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="name">
+                      <div className="flex items-center gap-2">
+                        <span>Project Name</span>
+                        {sortBy === 'name' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="clientName">
+                      <div className="flex items-center gap-2">
+                        <span>Client Name</span>
+                        {sortBy === 'clientName' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="status">
+                      <div className="flex items-center gap-2">
+                        <span>Status</span>
+                        {sortBy === 'status' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="address">
+                      <div className="flex items-center gap-2">
+                        <span>Address</span>
+                        {sortBy === 'address' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="buildingCode">
+                      <div className="flex items-center gap-2">
+                        <span>Building Code</span>
+                        {sortBy === 'buildingCode' && (
+                          sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {/* Sort Direction Toggle */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                  className="gap-2"
+                >
+                  {sortDirection === 'asc' ? (
+                    <><ArrowUp className="h-4 w-4" /> Ascending</>
+                  ) : (
+                    <><ArrowDown className="h-4 w-4" /> Descending</>
+                  )}
+                </Button>
+                
+                <div className="h-6 w-px bg-border" />
+
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Filters:</span>
@@ -799,7 +961,7 @@ export default function Projects() {
 
             {/* Results Count */}
             <div className="ml-auto text-sm text-muted-foreground font-medium">
-              Showing {filteredProjects.length} of {projects?.length || 0} projects
+              Showing {filteredAndSortedProjects.length} of {projects?.length || 0} projects
             </div>
           </div>
         </div>
@@ -839,9 +1001,9 @@ export default function Projects() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : filteredProjects && filteredProjects.length > 0 ? (
+        ) : filteredAndSortedProjects && filteredAndSortedProjects.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProjects.map((project) => (
+            {filteredAndSortedProjects.map((project) => (
               <Card
                 key={project.id}
                 className="professional-card hover-lift cursor-pointer group"
