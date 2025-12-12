@@ -160,10 +160,28 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
       setStep("preview");
       
       toast.success("Document parsed successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload/parse error:", error);
-      toast.error("Failed to parse document. Please try again.");
+      
+      // Extract error message from tRPC error
+      let errorMessage = "Failed to parse document. Please try again.";
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      // Show detailed error to user
+      toast.error(errorMessage, {
+        duration: 6000,
+        description: "Please check the document format and try again."
+      });
+      
       setStep("upload");
+      setFile(null); // Clear file on error
     }
   };
 
@@ -185,9 +203,21 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
       setFile(null);
       setExtractedData(null);
       setEditedData(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Import error:", error);
-      toast.error("Failed to import project. Please try again.");
+      
+      // Extract error message
+      let errorMessage = "Failed to import project. Please try again.";
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.data?.message) {
+        errorMessage = error.data.message;
+      }
+      
+      toast.error(errorMessage, {
+        duration: 5000
+      });
     }
   };
 

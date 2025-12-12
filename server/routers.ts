@@ -1602,13 +1602,26 @@ export const appRouter = router({
         try {
           console.log('[AI Import] Starting document parse:', { mimeType: input.mimeType, fileUrl: input.fileUrl.substring(0, 100) });
           
-          const { parseDocument } = await import('./ai-document-parser');
+          const { parseDocument, ValidationError, DocumentParsingError, AIExtractionError } = await import('./ai-document-parser');
           
           // Fetch the file from storage
-          const response = await fetch(input.fileUrl);
+          let response;
+          try {
+            response = await fetch(input.fileUrl);
+          } catch (fetchError) {
+            console.error('[AI Import] Network error fetching document:', fetchError);
+            throw new TRPCError({ 
+              code: 'BAD_REQUEST', 
+              message: 'Failed to download document. Please check your internet connection and try again.' 
+            });
+          }
+          
           if (!response.ok) {
             console.error('[AI Import] Failed to fetch document:', response.status, response.statusText);
-            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to fetch document from storage' });
+            throw new TRPCError({ 
+              code: 'BAD_REQUEST', 
+              message: `Failed to fetch document from storage (HTTP ${response.status})` 
+            });
           }
           
           const arrayBuffer = await response.arrayBuffer();
@@ -1625,9 +1638,41 @@ export const appRouter = router({
           return extracted;
         } catch (error) {
           console.error('[AI Import] Parse failed:', error);
+          
+          // Import error types dynamically
+          const { ValidationError, DocumentParsingError, AIExtractionError } = await import('./ai-document-parser');
+          
+          // Handle specific error types with appropriate messages
+          if (error instanceof ValidationError) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: error.message,
+            });
+          }
+          
+          if (error instanceof DocumentParsingError) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: `Document parsing error: ${error.message}`,
+            });
+          }
+          
+          if (error instanceof AIExtractionError) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `AI extraction error: ${error.message}`,
+            });
+          }
+          
+          // Handle TRPC errors
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          
+          // Handle unexpected errors
           throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
-            message: error instanceof Error ? error.message : 'Failed to parse document',
+            message: error instanceof Error ? error.message : 'An unexpected error occurred while processing the document',
           });
         }
       }),

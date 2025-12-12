@@ -141,6 +141,17 @@
 - [x] Fixed projects not showing up - Updated projects.list router to pass company and isAdmin parameters to getUserProjects function
 - [x] Verified 1,695 projects now visible for admin user
 
+## Current Tasks
+
+### AI Document Parsing Error Handling
+- [x] Add comprehensive error handling to AI document parser
+  - [x] Add try-catch blocks with specific error types (PDF parsing, AI extraction, network errors)
+  - [x] Return detailed error messages for different failure scenarios
+  - [x] Add file size validation (max 10MB)
+  - [x] Add file type validation (PDF/Word only)
+  - [x] Update frontend to display parsing errors to users
+  - [x] Add error logging for debugging
+
 ## Current Issues
 - [x] Projects showing in Admin Dashboard but not in main Projects page (Admin Dashboard works as workaround)
 - [x] Make project names clickable in Admin Dashboard to navigate to project details

@@ -2,28 +2,88 @@ import mammoth from 'mammoth';
 import { invokeLLM } from './_core/llm';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
+// Custom error types for better error handling
+export class DocumentParsingError extends Error {
+  constructor(message: string, public readonly cause?: Error) {
+    super(message);
+    this.name = 'DocumentParsingError';
+  }
+}
+
+export class AIExtractionError extends Error {
+  constructor(message: string, public readonly cause?: Error) {
+    super(message);
+    this.name = 'AIExtractionError';
+  }
+}
+
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+// Constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const SUPPORTED_MIME_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+
 /**
  * Extract text from PDF buffer using pdf.js
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
+    console.log(`[PDF Parser] Starting PDF text extraction, size: ${buffer.length} bytes`);
+    
+    if (buffer.length === 0) {
+      throw new DocumentParsingError('PDF file is empty');
+    }
+    
     const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
     const pdfDocument = await loadingTask.promise;
     
+    if (!pdfDocument || pdfDocument.numPages === 0) {
+      throw new DocumentParsingError('PDF has no pages or is corrupted');
+    }
+    
+    console.log(`[PDF Parser] PDF has ${pdfDocument.numPages} pages`);
     let fullText = '';
     
     for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-      const page = await pdfDocument.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ');
-      fullText += `\n\n=== PAGE ${pageNum} ===\n${pageText}`;
+      try {
+        const page = await pdfDocument.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += `\n\n=== PAGE ${pageNum} ===\n${pageText}`;
+      } catch (pageError) {
+        console.error(`[PDF Parser] Error extracting page ${pageNum}:`, pageError);
+        throw new DocumentParsingError(
+          `Failed to extract text from page ${pageNum}`,
+          pageError instanceof Error ? pageError : undefined
+        );
+      }
     }
     
+    if (fullText.trim().length === 0) {
+      throw new DocumentParsingError('PDF contains no extractable text. The document may be scanned or image-based.');
+    }
+    
+    console.log(`[PDF Parser] Successfully extracted ${fullText.length} characters`);
     return fullText;
   } catch (error) {
-    throw new Error(`Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof DocumentParsingError) {
+      throw error;
+    }
+    console.error('[PDF Parser] Unexpected error:', error);
+    throw new DocumentParsingError(
+      `Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
+    );
   }
 }
 
@@ -32,10 +92,33 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
  */
 export async function extractTextFromWord(buffer: Buffer): Promise<string> {
   try {
+    console.log(`[Word Parser] Starting Word text extraction, size: ${buffer.length} bytes`);
+    
+    if (buffer.length === 0) {
+      throw new DocumentParsingError('Word document is empty');
+    }
+    
     const result = await mammoth.extractRawText({ buffer });
+    
+    if (!result || !result.value) {
+      throw new DocumentParsingError('Failed to extract text from Word document');
+    }
+    
+    if (result.value.trim().length === 0) {
+      throw new DocumentParsingError('Word document contains no extractable text');
+    }
+    
+    console.log(`[Word Parser] Successfully extracted ${result.value.length} characters`);
     return result.value;
   } catch (error) {
-    throw new Error(`Failed to parse Word document: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof DocumentParsingError) {
+      throw error;
+    }
+    console.error('[Word Parser] Unexpected error:', error);
+    throw new DocumentParsingError(
+      `Failed to parse Word document: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
+    );
   }
 }
 
@@ -169,6 +252,7 @@ Respond with a JSON object following this exact structure:
 }`;
 
   try {
+    console.log('[AI Parser] Calling LLM for data extraction...');
     const response = await invokeLLM({
       messages: [
         { role: 'system', content: 'You are an expert building condition assessment analyst. Extract structured data from BCA reports.' },
@@ -250,16 +334,41 @@ Respond with a JSON object following this exact structure:
 
     const content = response.choices[0]?.message?.content;
     if (!content || typeof content !== 'string') {
-      throw new Error('No valid response from AI');
+      throw new AIExtractionError('No valid response from AI. The AI service may be unavailable.');
     }
 
-    const extracted = JSON.parse(content);
-    console.log(`[AI Parser] Extracted ${extracted.assessments.length} assessments and ${extracted.deficiencies.length} deficiencies`);
+    let extracted;
+    try {
+      extracted = JSON.parse(content);
+    } catch (parseError) {
+      console.error('[AI Parser] Failed to parse AI response:', content);
+      throw new AIExtractionError(
+        'AI returned invalid JSON response',
+        parseError instanceof Error ? parseError : undefined
+      );
+    }
+    
+    // Validate extracted data structure
+    if (!extracted.project || !extracted.assessments || !extracted.deficiencies) {
+      throw new AIExtractionError('AI response missing required fields (project, assessments, or deficiencies)');
+    }
+    
+    if (!Array.isArray(extracted.assessments) || !Array.isArray(extracted.deficiencies)) {
+      throw new AIExtractionError('AI response has invalid data structure');
+    }
+    
+    console.log(`[AI Parser] Successfully extracted ${extracted.assessments.length} assessments and ${extracted.deficiencies.length} deficiencies`);
     
     return extracted;
   } catch (error) {
-    console.error('[AI Parser] Failed:', error);
-    throw new Error(`AI extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof AIExtractionError) {
+      throw error;
+    }
+    console.error('[AI Parser] Unexpected error during AI extraction:', error);
+    throw new AIExtractionError(
+      `AI extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
+    );
   }
 }
 
@@ -274,26 +383,103 @@ export async function parseDocument(
   assessments: any[];
   deficiencies: any[];
 }> {
-  console.log(`[AI Parser] Starting parse for ${mimeType}, size: ${buffer.length} bytes`);
-  
-  // Extract text based on document type
-  let text: string;
-  if (mimeType === 'application/pdf') {
-    text = await extractTextFromPDF(buffer);
-  } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-    text = await extractTextFromWord(buffer);
-  } else {
-    throw new Error(`Unsupported document type: ${mimeType}`);
+  try {
+    console.log(`[AI Parser] Starting parse for ${mimeType}, size: ${buffer.length} bytes`);
+    
+    // Validate file size
+    if (buffer.length === 0) {
+      throw new ValidationError('File is empty');
+    }
+    
+    if (buffer.length > MAX_FILE_SIZE) {
+      throw new ValidationError(
+        `File size (${(buffer.length / 1024 / 1024).toFixed(2)}MB) exceeds maximum allowed size (10MB)`
+      );
+    }
+    
+    // Validate MIME type
+    if (!SUPPORTED_MIME_TYPES.includes(mimeType)) {
+      throw new ValidationError(
+        `Unsupported document type: ${mimeType}. Only PDF and Word documents (.docx) are supported.`
+      );
+    }
+    
+    // Extract text based on document type
+    let text: string;
+    try {
+      if (mimeType === 'application/pdf') {
+        text = await extractTextFromPDF(buffer);
+      } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        text = await extractTextFromWord(buffer);
+      } else {
+        throw new ValidationError(`Unsupported document type: ${mimeType}`);
+      }
+    } catch (error) {
+      if (error instanceof DocumentParsingError || error instanceof ValidationError) {
+        throw error;
+      }
+      throw new DocumentParsingError(
+        'Failed to extract text from document',
+        error instanceof Error ? error : undefined
+      );
+    }
+    
+    console.log(`[AI Parser] Extracted ${text.length} characters of text`);
+    
+    if (text.length < 100) {
+      throw new ValidationError(
+        'Document contains insufficient text for analysis. Please ensure the document contains a building condition assessment report.'
+      );
+    }
+    
+    // Use AI to extract structured data
+    let extracted;
+    try {
+      extracted = await extractBCADataWithAI(text);
+    } catch (error) {
+      if (error instanceof AIExtractionError) {
+        throw error;
+      }
+      throw new AIExtractionError(
+        'Failed to analyze document with AI',
+        error instanceof Error ? error : undefined
+      );
+    }
+    
+    // Final validation
+    if (!extracted.project?.name) {
+      throw new AIExtractionError(
+        'Could not identify a project name in the document. Please ensure this is a building condition assessment report.'
+      );
+    }
+    
+    console.log('[AI Parser] Document parsing completed successfully');
+    return {
+      project: extracted.project,
+      assessments: extracted.assessments,
+      deficiencies: extracted.deficiencies
+    };
+  } catch (error) {
+    // Log the error for debugging
+    console.error('[AI Parser] Document parsing failed:', {
+      errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      mimeType,
+      bufferSize: buffer.length
+    });
+    
+    // Re-throw with appropriate error type
+    if (
+      error instanceof ValidationError ||
+      error instanceof DocumentParsingError ||
+      error instanceof AIExtractionError
+    ) {
+      throw error;
+    }
+    
+    // Wrap unexpected errors
+    throw new Error(
+      `Unexpected error during document parsing: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
-  
-  console.log(`[AI Parser] Extracted ${text.length} characters of text`);
-  
-  // Use AI to extract structured data
-  const extracted = await extractBCADataWithAI(text);
-  
-  return {
-    project: extracted.project,
-    assessments: extracted.assessments,
-    deficiencies: extracted.deficiencies
-  };
 }
