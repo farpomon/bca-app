@@ -47,11 +47,11 @@ export const auditRouter = router({
       }
       
       if (input.startDate) {
-        conditions.push(gte(auditLog.createdAt, input.startDate));
+        conditions.push(gte(auditLog.createdAt, input.startDate.toISOString()));
       }
       
       if (input.endDate) {
-        conditions.push(lte(auditLog.createdAt, input.endDate));
+        conditions.push(lte(auditLog.createdAt, input.endDate.toISOString()));
       }
 
       // Get logs with user information
@@ -169,11 +169,11 @@ export const auditRouter = router({
       }
       
       if (input.startDate) {
-        conditions.push(gte(auditLog.createdAt, input.startDate));
+        conditions.push(gte(auditLog.createdAt, input.startDate.toISOString()));
       }
       
       if (input.endDate) {
-        conditions.push(lte(auditLog.createdAt, input.endDate));
+        conditions.push(lte(auditLog.createdAt, input.endDate.toISOString()));
       }
 
       // Get authentication logs with user information
@@ -255,11 +255,11 @@ export const auditRouter = router({
       }
       
       if (input.startDate) {
-        conditions.push(gte(auditLog.createdAt, input.startDate));
+        conditions.push(gte(auditLog.createdAt, input.startDate.toISOString()));
       }
       
       if (input.endDate) {
-        conditions.push(lte(auditLog.createdAt, input.endDate));
+        conditions.push(lte(auditLog.createdAt, input.endDate.toISOString()));
       }
 
       // Get config logs
@@ -328,11 +328,11 @@ export const auditRouter = router({
       }
       
       if (input.startDate) {
-        conditions.push(gte(auditLog.createdAt, input.startDate));
+        conditions.push(gte(auditLog.createdAt, input.startDate.toISOString()));
       }
       
       if (input.endDate) {
-        conditions.push(lte(auditLog.createdAt, input.endDate));
+        conditions.push(lte(auditLog.createdAt, input.endDate.toISOString()));
       }
 
       // Get all matching logs

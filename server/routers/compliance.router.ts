@@ -255,8 +255,8 @@ export const complianceRouter = router({
       if (input.entityType) conditions.push(eq(auditLog.entityType, input.entityType));
       if (input.userId) conditions.push(eq(auditLog.userId, input.userId));
       if (input.action) conditions.push(eq(auditLog.action, input.action));
-      if (input.startDate) conditions.push(gte(auditLog.createdAt, input.startDate));
-      if (input.endDate) conditions.push(lte(auditLog.createdAt, input.endDate));
+      if (input.startDate) conditions.push(gte(auditLog.createdAt, input.startDate.toISOString()));
+      if (input.endDate) conditions.push(lte(auditLog.createdAt, input.endDate.toISOString()));
 
       const logs = await db
         .select({

@@ -19,7 +19,11 @@ export const esgRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      await esgDb.recordUtilityConsumption(input);
+      await esgDb.recordUtilityConsumption({
+        ...input,
+        recordDate: input.recordDate.toISOString(),
+        isRenewable: input.isRenewable ? 1 : 0,
+      });
       return { success: true };
     }),
 
@@ -46,7 +50,10 @@ export const esgRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      await esgDb.recordWaste(input);
+      await esgDb.recordWaste({
+        ...input,
+        recordDate: input.recordDate.toISOString(),
+      });
       return { success: true };
     }),
 
@@ -77,7 +84,7 @@ export const esgRouter = router({
         type: u.utilityType,
         consumption: parseFloat(u.consumption),
         unit: u.unit,
-        isRenewable: u.isRenewable || false,
+        isRenewable: u.isRenewable ? true : false,
       }));
       
       const waste = wasteData.map(w => ({
@@ -103,7 +110,7 @@ export const esgRouter = router({
       for (const emission of footprint.breakdown) {
         await esgDb.recordEmissions({
           projectId: input.projectId,
-          recordDate: footprint.calculationDate,
+          recordDate: footprint.calculationDate.toISOString(),
           scope: emission.scope,
           emissionSource: emission.source,
           co2Equivalent: emission.co2Equivalent.toString(),
@@ -264,7 +271,8 @@ export const esgRouter = router({
       
       await esgDb.recordGreenUpgrade({
         ...input,
-        co2ReductionMT: co2Reduction > 0 ? co2Reduction.toString() : undefined,
+        installDate: input.installDate?.toISOString(),
+        co2ReductionMt: co2Reduction > 0 ? co2Reduction.toString() : undefined,
         paybackPeriod,
       });
       

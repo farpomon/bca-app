@@ -303,7 +303,7 @@ export const riskRouter = router({
         actionType: input.actionType,
         priority: input.priority,
         assignedTo: input.assignedTo,
-        dueDate: input.dueDate,
+        dueDate: input.dueDate?.toISOString(),
         estimatedCost: input.estimatedCost?.toString(),
         expectedRiskReduction: input.expectedRiskReduction?.toString(),
         notes: input.notes,
@@ -330,7 +330,7 @@ export const riskRouter = router({
     .mutation(async ({ input }) => {
       await updateMitigationAction(input.id, {
         status: input.status,
-        completedDate: input.completedDate,
+        completedDate: input.completedDate?.toISOString(),
         actualCost: input.actualCost?.toString(),
         actualRiskReduction: input.actualRiskReduction?.toString(),
         effectiveness: input.effectiveness,

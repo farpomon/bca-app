@@ -40,7 +40,7 @@ export const modelsRouter = router({
         fileSize,
         format: input.format,
         version: 1,
-        isActive: true,
+        isActive: 1,
         metadata: input.metadata,
         uploadedBy: ctx.user.id,
       });
@@ -85,8 +85,13 @@ export const modelsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { id, ...updates } = input;
-      await modelsDb.updateFacilityModel(id, updates);
+      const { id, isActive, ...updates } = input;
+      // Convert boolean isActive to number (tinyint)
+      const dbUpdates: any = {
+        ...updates,
+        ...(isActive !== undefined && { isActive: isActive ? 1 : 0 }),
+      };
+      await modelsDb.updateFacilityModel(id, dbUpdates);
       return { success: true };
     }),
 
@@ -193,6 +198,7 @@ export const modelsRouter = router({
           ...input,
           cameraZoom: input.cameraZoom?.toString(),
           createdBy: ctx.user.id,
+          isShared: input.isShared ? 1 : 0,
         });
         return { success: true };
       }),

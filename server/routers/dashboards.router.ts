@@ -66,7 +66,7 @@ export const dashboardsRouter = router({
       if (input.isDefault) {
         await db
           .update(dashboardConfigs)
-          .set({ isDefault: false })
+          .set({ isDefault: 0 })
           .where(eq(dashboardConfigs.userId, ctx.user.id));
       }
 
@@ -76,8 +76,8 @@ export const dashboardsRouter = router({
         description: input.description,
         layout: input.layout,
         filters: input.filters,
-        isDefault: input.isDefault || false,
-        isShared: input.isShared || false,
+        isDefault: input.isDefault ? 1 : 0,
+        isShared: input.isShared ? 1 : 0,
       });
 
       return { success: true };
@@ -111,7 +111,7 @@ export const dashboardsRouter = router({
       .where(
         and(
           eq(dashboardConfigs.userId, ctx.user.id),
-          eq(dashboardConfigs.isDefault, true)
+          eq(dashboardConfigs.isDefault, 1)
         )
       )
       .limit(1);

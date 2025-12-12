@@ -40,7 +40,7 @@ export const facilityRouter = router({
         .update(projects)
         .set({
           designLife: input.designLife,
-          endOfLifeDate: input.endOfLifeDate,
+          endOfLifeDate: input.endOfLifeDate?.toISOString(),
         })
         .where(eq(projects.id, input.projectId));
 

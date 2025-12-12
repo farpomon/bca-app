@@ -86,6 +86,16 @@ export const maintenanceRouter = router({
         estimatedCost: input.estimatedCost?.toString(),
         actualCost: input.actualCost?.toString(),
         attachments: input.attachments ? JSON.stringify(input.attachments) : undefined,
+        // Convert boolean to number (tinyint)
+        isRecurring: input.isRecurring ? 1 : 0,
+        // Convert Date objects to ISO strings
+        dateIdentified: input.dateIdentified?.toISOString(),
+        dateScheduled: input.dateScheduled?.toISOString(),
+        dateStarted: input.dateStarted?.toISOString(),
+        dateCompleted: input.dateCompleted?.toISOString(),
+        nextDueDate: input.nextDueDate?.toISOString(),
+        lastCompletedDate: input.lastCompletedDate?.toISOString(),
+        warrantyExpiry: input.warrantyExpiry?.toISOString(),
         createdBy: ctx.user.id,
       });
 
@@ -161,6 +171,16 @@ export const maintenanceRouter = router({
         estimatedCost: data.estimatedCost?.toString(),
         actualCost: data.actualCost?.toString(),
         attachments: data.attachments ? JSON.stringify(data.attachments) : undefined,
+        // Convert boolean to number (tinyint)
+        isRecurring: data.isRecurring !== undefined ? (data.isRecurring ? 1 : 0) : undefined,
+        // Convert Date objects to ISO strings
+        dateIdentified: data.dateIdentified?.toISOString(),
+        dateScheduled: data.dateScheduled?.toISOString(),
+        dateStarted: data.dateStarted?.toISOString(),
+        dateCompleted: data.dateCompleted?.toISOString(),
+        nextDueDate: data.nextDueDate?.toISOString(),
+        lastCompletedDate: data.lastCompletedDate?.toISOString(),
+        warrantyExpiry: data.warrantyExpiry?.toISOString(),
       });
 
       // Update cumulative cost if status changed to completed

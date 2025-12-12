@@ -1,4 +1,3 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { AIImportDialog } from "@/components/AIImportDialog";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";

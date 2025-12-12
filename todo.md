@@ -623,3 +623,76 @@
 - [x] Add visual indicators for active sort (arrow icons)
 - [x] Test all sort combinations
 - [x] Add smooth transitions when reordering projects
+
+
+## SAP Integration (CRITICAL - Missing Feature)
+
+### Investigation Phase
+- [ ] Determine which SAP module to integrate with (SAP PM, SAP EAM, SAP S/4HANA, etc.)
+- [ ] Identify data flow requirements (projects, assessments, costs, work orders, assets)
+- [ ] Obtain SAP API credentials and documentation from client
+- [ ] Determine integration method (OData REST API, RFC/BAPI, or file-based)
+
+### Phase 1: SAP Connection Setup
+- [ ] Create SAP configuration in environment variables (SAP_API_URL, SAP_CLIENT_ID, SAP_CLIENT_SECRET, SAP_SYSTEM_ID)
+- [ ] Implement SAP authentication service (OAuth 2.0 or Basic Auth)
+- [ ] Create SAP API client wrapper with error handling and retry logic
+- [ ] Test SAP connection and authentication
+
+### Phase 2: Data Sync - Projects to SAP
+- [ ] Map BCA project fields to SAP asset/facility fields
+- [ ] Create sapSync router with tRPC endpoints
+- [ ] Implement projects.syncToSAP mutation (push project data to SAP)
+- [ ] Handle SAP asset creation/update based on project data
+- [ ] Store SAP asset ID in projects table (sapAssetId column)
+- [ ] Add sync status tracking (last_synced_at, sync_status, sync_error)
+
+### Phase 3: Data Sync - Assessments to SAP
+- [ ] Map BCA assessment data to SAP maintenance records
+- [ ] Implement assessments.syncToSAP mutation
+- [ ] Push condition ratings to SAP asset condition fields
+- [ ] Sync estimated repair costs to SAP cost planning
+- [ ] Handle SAP measurement document creation
+
+### Phase 4: Work Order Integration
+- [ ] Map BCA deficiencies to SAP work orders/notifications
+- [ ] Implement deficiencies.createSAPWorkOrder mutation
+- [ ] Auto-create SAP work orders for high-priority deficiencies
+- [ ] Sync work order status back to BCA (completed, in progress, etc.)
+- [ ] Store SAP work order number in deficiencies table
+
+### Phase 5: Cost Data Sync
+- [ ] Push cost estimates to SAP cost planning module
+- [ ] Sync budget data from SAP to BCA projects
+- [ ] Implement bi-directional cost tracking
+- [ ] Handle currency conversion if needed
+
+### Phase 6: UI Integration
+- [ ] Add "Sync to SAP" button in project detail page
+- [ ] Show SAP sync status indicator (synced, pending, error)
+- [ ] Display SAP asset ID and link to SAP system
+- [ ] Show last sync timestamp
+- [ ] Add SAP work order numbers to deficiency cards
+- [ ] Create SAP sync history log viewer
+
+### Phase 7: Automated Sync
+- [ ] Implement scheduled sync job (daily/hourly)
+- [ ] Add webhook support for real-time SAP updates
+- [ ] Handle conflict resolution (BCA vs SAP data conflicts)
+- [ ] Implement retry logic for failed syncs
+
+### Phase 8: Testing & Documentation
+- [ ] Test SAP connection with client's SAP system
+- [ ] Test data sync in both directions
+- [ ] Create SAP integration documentation
+- [ ] Document field mappings and data flow
+- [ ] Create troubleshooting guide for SAP sync errors
+- [ ] Add SAP integration tests
+
+### Phase 9: Error Handling & Monitoring
+- [ ] Log all SAP API calls and responses
+- [ ] Create SAP sync error dashboard for admins
+- [ ] Send notifications for failed syncs
+- [ ] Implement manual retry for failed syncs
+- [ ] Add SAP sync metrics to admin dashboard
+

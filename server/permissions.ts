@@ -4,7 +4,7 @@
  * Defines what each role can do in the system
  */
 
-export type UserRole = "viewer" | "editor" | "project_manager" | "admin";
+export type UserRole = "user" | "viewer" | "editor" | "project_manager" | "admin";
 
 export type Permission =
   | "project.view"
@@ -25,6 +25,14 @@ export type Permission =
  * Permission mapping for each role
  */
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  user: [
+    "project.view",
+    "project.create",
+    "project.edit",
+    "assessment.view",
+    "assessment.create",
+    "assessment.edit",
+  ],
   viewer: [
     "project.view",
     "assessment.view",

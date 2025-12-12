@@ -590,7 +590,7 @@ export async function getDefaultHierarchyTemplate() {
   const result = await db
     .select()
     .from(hierarchyTemplates)
-    .where(eq(hierarchyTemplates.isDefault, true))
+    .where(eq(hierarchyTemplates.isDefault, 1))
     .limit(1);
 
   return result[0] || null;
@@ -705,7 +705,7 @@ export async function getDefaultRatingScale(type: string) {
   if (!db) return null;
   
   const result = await db.select().from(ratingScales)
-    .where(and(eq(ratingScales.type, type as any), eq(ratingScales.isDefault, true)))
+    .where(and(eq(ratingScales.type, type as any), eq(ratingScales.isDefault, 1)))
     .limit(1);
   return result.length > 0 ? result[0] : null;
 }
@@ -1776,7 +1776,13 @@ export async function createDeteriorationCurve(data: {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
 
-  const result = await database.insert(deteriorationCurves).values(data);
+  // Convert boolean isDefault to number (tinyint)
+  const insertData = {
+    ...data,
+    isDefault: data.isDefault ? 1 : 0,
+  };
+
+  const result = await database.insert(deteriorationCurves).values(insertData);
   return result[0].insertId;
 }
 
