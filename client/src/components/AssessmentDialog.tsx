@@ -414,7 +414,7 @@ export function AssessmentDialog({
               {showComponentNameVoice && (
                 <VoiceRecorder
                   onTranscriptionComplete={(text) => {
-                    setComponentNameField(prev => prev + (prev ? " " : "") + text);
+                    setComponentNameField(text);
                     setShowComponentNameVoice(false);
                   }}
                   onCancel={() => setShowComponentNameVoice(false)}
@@ -446,7 +446,7 @@ export function AssessmentDialog({
               {showComponentLocationVoice && (
                 <VoiceRecorder
                   onTranscriptionComplete={(text) => {
-                    setComponentLocationField(prev => prev + (prev ? " " : "") + text);
+                    setComponentLocationField(text);
                     setShowComponentLocationVoice(false);
                   }}
                   onCancel={() => setShowComponentLocationVoice(false)}

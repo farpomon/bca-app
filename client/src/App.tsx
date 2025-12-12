@@ -25,6 +25,8 @@ import PortfolioBIDashboard from "./pages/PortfolioBIDashboard";
 import Admin from "./pages/Admin";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
+import ComplianceDashboard from "./pages/ComplianceDashboard";
+import PrivacySettings from "./pages/PrivacySettings";
 
 function Router() {
   return (
@@ -50,6 +52,8 @@ function Router() {
       <Route path={"/lp-optimization"} component={LPOptimizationDashboard} />
       <Route path={"/projects/:id/3d-model"} component={Model3DViewer} />
       <Route path={"/portfolio-analytics"} component={PortfolioBIDashboard} />
+      <Route path={"/admin/compliance"} component={ComplianceDashboard} />
+      <Route path={"/settings/privacy"} component={PrivacySettings} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

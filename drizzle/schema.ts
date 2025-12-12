@@ -415,9 +415,18 @@ export const auditLog = mysqlTable("audit_log", {
   userId: int("userId").notNull(), // Who made the change
   entityType: varchar("entityType", { length: 50 }).notNull(), // e.g., "assessment", "deficiency", "project"
   entityId: int("entityId").notNull(), // ID of the entity that changed
-  action: mysqlEnum("action", ["create", "update", "delete"]).notNull(),
+  action: mysqlEnum("action", ["create", "update", "delete", "view", "export", "share"]).notNull(),
   changes: text("changes").notNull(), // JSON: { before: {...}, after: {...} }
   metadata: text("metadata"), // JSON: Additional context (IP, user agent, etc.)
+  
+  // Compliance fields
+  dataClassification: mysqlEnum("dataClassification", ["public", "internal", "confidential", "restricted"]).default("internal"),
+  complianceTags: text("complianceTags"), // JSON array: ["FOIP", "PII", "Financial"]
+  retentionPolicy: varchar("retentionPolicy", { length: 50 }), // e.g., "7_years", "permanent"
+  ipAddress: varchar("ipAddress", { length: 45 }), // IPv4 or IPv6
+  userAgent: text("userAgent"),
+  sessionId: varchar("sessionId", { length: 100 }),
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -1838,3 +1847,58 @@ export const assessmentDocuments = mysqlTable("assessment_documents", {
 
 export type AssessmentDocument = typeof assessmentDocuments.$inferSelect;
 export type InsertAssessmentDocument = typeof assessmentDocuments.$inferInsert;
+
+/**
+ * User consents - Track privacy and data processing agreements
+ */
+export const userConsents = mysqlTable("user_consents", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  consentType: mysqlEnum("consentType", ["privacy_policy", "terms_of_service", "data_processing", "marketing", "analytics"]).notNull(),
+  consentVersion: varchar("consentVersion", { length: 20 }).notNull(), // e.g., "1.0", "2023-01"
+  consentGiven: int("consentGiven").notNull(), // 1 = yes, 0 = no
+  consentText: text("consentText"), // Full text of what was agreed to
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  consentedAt: timestamp("consentedAt").defaultNow().notNull(),
+  revokedAt: timestamp("revokedAt"),
+});
+
+export type UserConsent = typeof userConsents.$inferSelect;
+export type InsertUserConsent = typeof userConsents.$inferInsert;
+
+/**
+ * Data residency settings - Track where data is stored and processed
+ */
+export const dataResidencySettings = mysqlTable("data_residency_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  settingKey: varchar("settingKey", { length: 100 }).notNull().unique(),
+  settingValue: text("settingValue").notNull(),
+  description: text("description"),
+  updatedBy: int("updatedBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DataResidencySetting = typeof dataResidencySettings.$inferSelect;
+export type InsertDataResidencySetting = typeof dataResidencySettings.$inferInsert;
+
+/**
+ * Data access requests - FOIP compliance for user data requests
+ */
+export const dataAccessRequests = mysqlTable("data_access_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  requestType: mysqlEnum("requestType", ["export", "deletion", "correction", "access_log"]).notNull(),
+  status: mysqlEnum("status", ["pending", "processing", "completed", "rejected"]).default("pending").notNull(),
+  requestDetails: text("requestDetails"),
+  responseData: text("responseData"), // JSON or file path to exported data
+  processedBy: int("processedBy"),
+  rejectionReason: text("rejectionReason"),
+  requestedAt: timestamp("requestedAt").defaultNow().notNull(),
+  processedAt: timestamp("processedAt"),
+  completedAt: timestamp("completedAt"),
+});
+
+export type DataAccessRequest = typeof dataAccessRequests.$inferSelect;
+export type InsertDataAccessRequest = typeof dataAccessRequests.$inferInsert;

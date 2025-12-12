@@ -265,6 +265,25 @@ export default function Admin() {
             </div>
           ) : null}
 
+          {/* Compliance Quick Access */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Compliance & Security
+              </CardTitle>
+              <CardDescription>FOIP compliance, data residency, and audit tracking</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/compliance">
+                <Button className="w-full" variant="outline">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Open Compliance Dashboard
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Project Status Distribution</CardTitle>

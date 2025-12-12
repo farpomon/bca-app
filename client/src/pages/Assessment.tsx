@@ -332,22 +332,22 @@ export default function Assessment() {
                   {existingAssessments
                     ?.filter(a => a.condition === expandedCondition && a.componentCode)
                     .map(assessment => {
-                      const component = components?.find(c => c.code === assessment.componentCode);
                       const componentCode = assessment.componentCode!; // Assert non-null after filter
+                      const componentName = assessment.componentName || assessment.componentCode || 'Unknown Component';
                       return (
                         <Button
                           key={componentCode}
                           variant="ghost"
                           className="w-full justify-start text-left h-auto py-2 hover:bg-accent"
                           onClick={() => {
-                            loadAssessment(componentCode, component?.name || componentCode);
+                            loadAssessment(componentCode, componentName);
                             setExpandedCondition(null);
                           }}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div>
                               <div className="font-medium text-sm">{assessment.componentCode}</div>
-                              <div className="text-xs text-muted-foreground">{component?.name || 'Unknown Component'}</div>
+                              <div className="text-xs text-muted-foreground">{componentName}</div>
                             </div>
                             {assessment.componentCode && getConditionBadge(assessment.componentCode)}
                           </div>
