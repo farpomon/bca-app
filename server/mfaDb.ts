@@ -44,13 +44,14 @@ export async function getMfaSettings(userId: number) {
 export async function createMfaSettings(
   userId: number,
   secret: string,
-  backupCodes: string[]
+  backupCodes: string[],
+  mfaMethod: 'totp' | 'sms' | 'email' = 'totp'
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
   const encryptionKey = getMfaEncryptionKey();
-  const encryptedSecret = encryptSecret(secret, encryptionKey);
+  const encryptedSecret = secret ? encryptSecret(secret, encryptionKey) : "";
   const hashedCodes = backupCodes.map(hashBackupCode);
 
   await db.insert(userMfaSettings).values({
@@ -58,6 +59,7 @@ export async function createMfaSettings(
     secret: encryptedSecret,
     enabled: 0, // Not enabled until first verification
     backupCodes: JSON.stringify(hashedCodes),
+    mfaMethod,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -107,6 +109,25 @@ export async function updateBackupCodes(
     .update(userMfaSettings)
     .set({
       backupCodes: JSON.stringify(remainingCodes),
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(userMfaSettings.userId, userId));
+}
+
+/**
+ * Update MFA method for a user
+ */
+export async function updateMfaMethod(
+  userId: number,
+  mfaMethod: 'totp' | 'sms' | 'email'
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(userMfaSettings)
+    .set({
+      mfaMethod,
       updatedAt: new Date().toISOString(),
     })
     .where(eq(userMfaSettings.userId, userId));

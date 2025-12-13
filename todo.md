@@ -727,3 +727,16 @@
 - [x] Fixed both "Set Up MFA" and "Enable MFA Now" buttons
 - [x] Test "Set Up MFA" button navigation
 - [x] Verify MFA setup wizard opens correctly
+
+
+## Email-Based MFA Implementation (Completed)
+- [x] Extend database schema with email_mfa_codes table for temporary codes
+- [x] Create email MFA service for 6-digit code generation and verification
+- [x] Add email sending functionality using Manus notification API
+- [x] Create tRPC endpoints for email MFA (sendCode, verifyCode, enable, disable)
+- [x] Update MFASetupWizard to offer email option alongside TOTP
+- [x] Update MFAVerification component to support email code input
+- [x] Add email MFA management to SecuritySettings page
+- [x] Implement code expiration (5 minutes) and rate limiting
+- [x] Write comprehensive tests for email MFA flow
+- [x] Test complete email MFA enrollment and verification

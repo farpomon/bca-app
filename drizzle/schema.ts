@@ -1355,7 +1355,7 @@ export const userMfaSettings = mysqlTable("user_mfa_settings", {
 	secret: varchar({ length: 255 }), // Encrypted TOTP secret (nullable for SMS-only users)
 	enabled: int().default(0).notNull(), // 0 = disabled, 1 = enabled
 	backupCodes: text(), // JSON array of hashed backup codes
-	mfaMethod: mysqlEnum(['totp', 'sms']).default('totp'), // MFA method: TOTP (authenticator app) or SMS
+	mfaMethod: mysqlEnum(['totp', 'sms', 'email']).default('totp'), // MFA method: TOTP (authenticator app), SMS, or Email
 	phoneNumber: varchar({ length: 20 }), // Phone number for SMS MFA (E.164 format)
 	phoneVerified: int().default(0), // 0 = not verified, 1 = verified
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
@@ -1384,7 +1384,7 @@ export const trustedDevices = mysqlTable("trusted_devices", {
 export const mfaAuditLog = mysqlTable("mfa_audit_log", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
-	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','mfa_reset_by_admin','sms_sent','sms_verified']).notNull(),
+	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','mfa_reset_by_admin','sms_sent','sms_verified','email_sent','email_verified']).notNull(),
 	success: int().default(1).notNull(), // 0 = failed, 1 = success
 	ipAddress: varchar({ length: 45 }),
 	userAgent: text(),
@@ -1402,7 +1402,7 @@ export const smsVerificationCodes = mysqlTable("sms_verification_codes", {
 	userId: int().notNull(),
 	code: varchar({ length: 255 }).notNull(), // 6-digit verification code (hashed)
 	phoneNumber: varchar({ length: 20 }).notNull(), // E.164 format
-	purpose: mysqlEnum(['mfa_setup', 'mfa_login', 'phone_verification']).notNull(),
+	purpose: mysqlEnum(['mfa_setup', 'mfa_login', 'phone_verification', 'email_verification']).notNull(),
 	attempts: int().default(0).notNull(), // Number of verification attempts
 	verified: int().default(0).notNull(), // 0 = not verified, 1 = verified
 	expiresAt: timestamp({ mode: 'string' }).notNull(), // Code expires after 10 minutes

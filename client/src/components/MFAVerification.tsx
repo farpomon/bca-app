@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,49 @@ export function MFAVerification({ onSuccess, onCancel }: MFAVerificationProps) {
   const [trustDevice, setTrustDevice] = useState(false);
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [error, setError] = useState("");
+  const [mfaMethod, setMfaMethod] = useState<"totp" | "email" | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
+
+  // Get MFA settings to determine method
+  const { data: mfaStatus } = trpc.mfa.getStatus.useQuery();
+  const { data: emailStatus } = trpc.emailMfa.getEmailStatus.useQuery();
+
+  // Determine MFA method
+  useEffect(() => {
+    if (emailStatus?.enabled) {
+      setMfaMethod("email");
+    } else if (mfaStatus?.enabled) {
+      setMfaMethod("totp");
+    }
+  }, [emailStatus, mfaStatus]);
+
+  const sendEmailCodeMutation = trpc.emailMfa.sendLoginCode.useMutation({
+    onSuccess: () => {
+      setEmailSent(true);
+      toast.success("Verification code sent to your email");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const verifyEmailMutation = trpc.emailMfa.verifyLoginCode.useMutation({
+    onSuccess: () => {
+      toast.success("Verification successful!");
+      onSuccess();
+    },
+    onError: (error) => {
+      setError(error.message);
+      setCode("");
+    },
+  });
+
+  // Send email code automatically when component mounts for email MFA
+  useEffect(() => {
+    if (mfaMethod === "email" && !emailSent) {
+      sendEmailCodeMutation.mutate();
+    }
+  }, [mfaMethod, emailSent]);
 
   const verifyMutation = trpc.mfa.verify.useMutation({
     onSuccess: (data) => {
@@ -44,10 +87,18 @@ export function MFAVerification({ onSuccess, onCancel }: MFAVerificationProps) {
     }
 
     setError("");
-    verifyMutation.mutate({
-      token: code,
-      trustDevice,
-    });
+    
+    if (mfaMethod === "email") {
+      verifyEmailMutation.mutate({
+        code,
+        trustDevice,
+      });
+    } else {
+      verifyMutation.mutate({
+        token: code,
+        trustDevice,
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -66,6 +117,8 @@ export function MFAVerification({ onSuccess, onCancel }: MFAVerificationProps) {
         <CardDescription>
           {useBackupCode
             ? "Enter one of your backup codes"
+            : mfaMethod === "email"
+            ? "Enter the code sent to your email"
             : "Enter the code from your authenticator app"}
         </CardDescription>
       </CardHeader>
@@ -110,20 +163,34 @@ export function MFAVerification({ onSuccess, onCancel }: MFAVerificationProps) {
           </Label>
         </div>
 
-        <Button
-          variant="link"
-          size="sm"
-          onClick={() => {
-            setUseBackupCode(!useBackupCode);
-            setCode("");
-            setError("");
-          }}
-          className="p-0 h-auto"
-        >
-          {useBackupCode
-            ? "Use authenticator code instead"
-            : "Use backup code instead"}
-        </Button>
+        {mfaMethod === "totp" && (
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => {
+              setUseBackupCode(!useBackupCode);
+              setCode("");
+              setError("");
+            }}
+            className="p-0 h-auto"
+          >
+            {useBackupCode
+              ? "Use authenticator code instead"
+              : "Use backup code instead"}
+          </Button>
+        )}
+        {mfaMethod === "email" && (
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => sendEmailCodeMutation.mutate()}
+            disabled={sendEmailCodeMutation.isPending}
+            className="p-0 h-auto"
+          >
+            {sendEmailCodeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Resend code
+          </Button>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         {onCancel && (
@@ -134,12 +201,12 @@ export function MFAVerification({ onSuccess, onCancel }: MFAVerificationProps) {
         <Button
           onClick={handleVerify}
           disabled={
-            verifyMutation.isPending ||
+            (mfaMethod === "email" ? verifyEmailMutation.isPending : verifyMutation.isPending) ||
             code.length !== (useBackupCode ? 8 : 6)
           }
           className={!onCancel ? "w-full" : ""}
         >
-          {verifyMutation.isPending && (
+          {(mfaMethod === "email" ? verifyEmailMutation.isPending : verifyMutation.isPending) && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
           Verify

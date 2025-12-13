@@ -13,12 +13,33 @@ interface MFASetupWizardProps {
 }
 
 export function MFASetupWizard({ onComplete, onCancel }: MFASetupWizardProps) {
-  const [step, setStep] = useState<"intro" | "qr" | "verify" | "backup">("intro");
+  const [step, setStep] = useState<"method" | "intro" | "qr" | "verify" | "backup" | "email">("method");
+  const [mfaMethod, setMfaMethod] = useState<"totp" | "email">("totp");
   const [qrCode, setQrCode] = useState<string>("");
   const [secret, setSecret] = useState<string>("");
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
+
+  const setupEmailMutation = trpc.emailMfa.setupEmail.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      setStep("email");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const enableEmailMutation = trpc.emailMfa.enableEmail.useMutation({
+    onSuccess: () => {
+      toast.success("Email MFA enabled successfully!");
+      onComplete();
+    },
+    onError: (error) => {
+      setError(error.message);
+    },
+  });
 
   const setupMutation = trpc.mfa.setup.useMutation({
     onSuccess: (data) => {
@@ -41,6 +62,15 @@ export function MFASetupWizard({ onComplete, onCancel }: MFASetupWizardProps) {
     },
   });
 
+  const handleMethodSelect = (method: "totp" | "email") => {
+    setMfaMethod(method);
+    if (method === "email") {
+      setupEmailMutation.mutate();
+    } else {
+      setStep("intro");
+    }
+  };
+
   const handleSetup = () => {
     setupMutation.mutate();
   };
@@ -52,7 +82,11 @@ export function MFASetupWizard({ onComplete, onCancel }: MFASetupWizardProps) {
     }
 
     setError("");
-    enableMutation.mutate({ token: verificationCode });
+    if (mfaMethod === "email") {
+      enableEmailMutation.mutate({ code: verificationCode });
+    } else {
+      enableMutation.mutate({ token: verificationCode });
+    }
   };
 
   const handleDownloadBackupCodes = () => {
@@ -76,6 +110,50 @@ export function MFASetupWizard({ onComplete, onCancel }: MFASetupWizardProps) {
 
   return (
     <Card className="w-full max-w-lg mx-auto">
+      {step === "method" && (
+        <>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-6 w-6 text-primary" />
+              <CardTitle>Choose MFA Method</CardTitle>
+            </div>
+            <CardDescription>
+              Select how you'd like to receive verification codes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              variant="outline"
+              className="w-full h-auto p-6 flex flex-col items-start gap-2"
+              onClick={() => handleMethodSelect("totp")}
+              disabled={setupEmailMutation.isPending}
+            >
+              <div className="font-semibold">Authenticator App (TOTP)</div>
+              <div className="text-sm text-muted-foreground text-left">
+                Use Google Authenticator, Microsoft Authenticator, or similar apps
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-auto p-6 flex flex-col items-start gap-2"
+              onClick={() => handleMethodSelect("email")}
+              disabled={setupEmailMutation.isPending}
+            >
+              <div className="font-semibold">Email Verification</div>
+              <div className="text-sm text-muted-foreground text-left">
+                Receive verification codes via email
+              </div>
+              {setupEmailMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            </Button>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" onClick={onCancel} className="w-full">
+              Cancel
+            </Button>
+          </CardFooter>
+        </>
+      )}
+
       {step === "intro" && (
         <>
           <CardHeader>
@@ -145,6 +223,56 @@ export function MFASetupWizard({ onComplete, onCancel }: MFASetupWizardProps) {
           <CardFooter>
             <Button onClick={() => setStep("verify")} className="w-full">
               Continue
+            </Button>
+          </CardFooter>
+        </>
+      )}
+
+      {step === "email" && (
+        <>
+          <CardHeader>
+            <CardTitle>Email Verification</CardTitle>
+            <CardDescription>
+              Enter the 6-digit code sent to your email
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <AlertDescription>
+                A verification code has been sent to your email address. Please check your inbox.
+              </AlertDescription>
+            </Alert>
+            <div className="space-y-2">
+              <label htmlFor="email-code" className="text-sm font-medium">
+                Verification Code
+              </label>
+              <Input
+                id="email-code"
+                type="text"
+                placeholder="000000"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                maxLength={6}
+                className="text-center text-2xl tracking-widest"
+              />
+            </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setStep("method")}>
+              Back
+            </Button>
+            <Button
+              onClick={handleVerify}
+              disabled={verificationCode.length !== 6 || enableEmailMutation.isPending}
+            >
+              {enableEmailMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Verify & Enable
             </Button>
           </CardFooter>
         </>

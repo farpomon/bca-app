@@ -210,7 +210,12 @@ export async function logMfaAudit(params: {
     | "verify_fail"
     | "backup_code_used"
     | "device_trusted"
-    | "device_removed";
+    | "device_removed"
+    | "email_sent"
+    | "email_verified"
+    | "sms_sent"
+    | "sms_verified"
+    | "mfa_reset_by_admin";
   success: boolean;
   ipAddress?: string;
   userAgent?: string;
