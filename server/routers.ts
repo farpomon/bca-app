@@ -27,6 +27,8 @@ import { complianceRouter } from "./routers/compliance.router";
 import { dataSecurityRouter } from "./routers/dataSecurity.router";
 import { mfaRouter } from "./mfaRouter";
 import { emailMfaRouter } from "./emailMfaRouter";
+import { mfaMethodSwitchRouter } from "./mfaMethodSwitchRouter";
+import { mfaRecoveryRouter } from "./mfaRecoveryRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -54,6 +56,8 @@ export const appRouter = router({
   assetDocuments: assetDocumentsRouter,
   documents: documentsRouter,
   mfa: mfaRouter,
+  mfaMethodSwitch: mfaMethodSwitchRouter,
+  mfaRecovery: mfaRecoveryRouter,
   compliance: complianceRouter,
   dataSecurity: dataSecurityRouter,
   auth: router({

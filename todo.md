@@ -740,3 +740,40 @@
 - [x] Implement code expiration (5 minutes) and rate limiting
 - [x] Write comprehensive tests for email MFA flow
 - [x] Test complete email MFA enrollment and verification
+
+
+## MFA Method Switching (In Progress)
+- [ ] Extend database schema to track method switch requests
+- [ ] Create backend service for switching between TOTP and email
+- [ ] Add verification step for new method before switching
+- [ ] Create tRPC endpoints: initiateSwitch, verifyNewMethod, completeSwitch
+- [ ] Build MFA method switching UI component in SecuritySettings
+- [ ] Add audit logging for method switches
+- [ ] Implement rate limiting for switch attempts
+- [ ] Write tests for method switching flow
+
+## MFA Recovery Flow with Admin Approval (In Progress)
+- [ ] Create mfa_recovery_requests database table
+- [ ] Implement recovery request submission with identity verification
+- [ ] Create admin approval workflow endpoints
+- [ ] Add email notifications for recovery requests
+- [ ] Build user-facing recovery request form
+- [ ] Build admin recovery request dashboard
+- [ ] Implement temporary recovery codes (24-hour expiration)
+- [ ] Add comprehensive audit logging for recovery events
+- [ ] Write tests for recovery flow
+
+
+## MFA Features Completed (Dec 13, 2025)
+- [x] Created mfa_method_switch_requests table
+- [x] Created mfa_recovery_requests table
+- [x] Implemented MFA method switching backend service
+- [x] Implemented MFA method switching router
+- [x] Created MFAMethodSwitch UI component
+- [x] Integrated method switching into SecuritySettings
+- [x] Implemented MFA recovery backend service
+- [x] Implemented MFA recovery router with admin approval
+- [x] Created MFARecoveryRequest UI component
+- [x] Created AdminMFARecovery dashboard component
+- [x] Added MFA Recovery tab to Admin page
+- [x] Added recovery request option to SecuritySettings

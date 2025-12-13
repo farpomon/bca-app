@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `mfa_method_switch_requests` (\n  `id` INT AUTO_INCREMENT PRIMARY KEY,\n  `userId` INT NOT NULL,\n  `currentMethod` ENUM('totp', 'sms', 'email') NOT NULL,\n  `newMethod` ENUM('totp', 'sms', 'email') NOT NULL,\n  `newMethodSecret` VARCHAR(255),\n  `newMethodVerified` INT DEFAULT 0 NOT NULL,\n  `status` ENUM('pending', 'completed', 'cancelled', 'expired') DEFAULT 'pending' NOT NULL,\n  `expiresAt` TIMESTAMP NOT NULL,\n  `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  `completedAt` TIMESTAMP NULL,\n  INDEX `idx_user_status` (`userId`, `status`),\n  INDEX `idx_expires` (`expiresAt`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `mfa_method_switch_requests` (\n  `id` INT AUTO_INCREMENT PRIMARY KEY,\n  `userId` INT NOT NULL,\n  `currentMethod` ENUM('totp', 'sms', 'email') NOT NULL,\n  `newMethod` ENUM('totp', 'sms', 'email') NOT NULL,\n  `newMethodSecret` VARCHAR(255),\n  `newMethodVerified` INT DEFAULT 0 NOT NULL,\n  `status` ENUM('pending', 'completed', 'cancelled', 'expired') DEFAULT 'pending' NOT NULL,\n  `expiresAt` TIMESTAMP NOT NULL,\n  `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  `completedAt` TIMESTAMP NULL,\n  INDEX `idx_user_status` (`userId`, `status`),\n  INDEX `idx_expires` (`expiresAt`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 238
+}

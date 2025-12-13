@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Shield, ShieldCheck, ShieldOff, Smartphone, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MFASetupWizard } from "./MFASetupWizard";
+import { MFAMethodSwitch } from "./MFAMethodSwitch";
+import { MFARecoveryRequest } from "./MFARecoveryRequest";
 
 export function MFASettings() {
   const [showSetupWizard, setShowSetupWizard] = useState(false);
@@ -169,6 +171,10 @@ export function MFASettings() {
               </Button>
             ) : (
               <>
+                <MFAMethodSwitch
+                  currentMethod={(status as any)?.method || "totp"}
+                  onSwitchComplete={() => utils.mfa.getStatus.invalidate()}
+                />
                 <Button
                   variant="outline"
                   onClick={() => setShowRegenerateDialog(true)}
@@ -184,6 +190,17 @@ export function MFASettings() {
               </>
             )}
           </div>
+
+          {/* MFA Recovery */}
+          {status?.enabled && (
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium mb-2">Lost Access?</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                If you've lost access to your MFA device, you can request account recovery.
+              </p>
+              <MFARecoveryRequest />
+            </div>
+          )}
         </CardContent>
       </Card>
 

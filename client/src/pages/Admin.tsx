@@ -28,6 +28,7 @@ import { useState } from "react";
 import ApproveRequestDialog from "@/components/ApproveRequestDialog";
 import RejectRequestDialog from "@/components/RejectRequestDialog";
 import { MFAComplianceReport } from "@/components/MFAComplianceReport";
+import { AdminMFARecovery } from "@/components/AdminMFARecovery";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -207,6 +208,10 @@ export default function Admin() {
           <TabsTrigger value="mfa-compliance" className="gap-2">
             <Shield className="w-4 h-4" />
             MFA Compliance
+          </TabsTrigger>
+          <TabsTrigger value="mfa-recovery" className="gap-2">
+            <Shield className="w-4 h-4" />
+            MFA Recovery
           </TabsTrigger>
         </TabsList>
 
@@ -655,6 +660,11 @@ export default function Admin() {
         {/* MFA Compliance Tab */}
         <TabsContent value="mfa-compliance" className="space-y-4">
           <MFAComplianceReport />
+        </TabsContent>
+
+        {/* MFA Recovery Tab */}
+        <TabsContent value="mfa-recovery" className="space-y-4">
+          <AdminMFARecovery />
         </TabsContent>
       </Tabs>
 

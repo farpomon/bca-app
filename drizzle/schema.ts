@@ -1352,12 +1352,10 @@ export const wasteTracking = mysqlTable("waste_tracking", {
 export const userMfaSettings = mysqlTable("user_mfa_settings", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
-	secret: varchar({ length: 255 }), // Encrypted TOTP secret (nullable for SMS-only users)
+	secret: varchar({ length: 255 }), // Encrypted TOTP secret (nullable for email-only users)
 	enabled: int().default(0).notNull(), // 0 = disabled, 1 = enabled
 	backupCodes: text(), // JSON array of hashed backup codes
 	mfaMethod: mysqlEnum(['totp', 'sms', 'email']).default('totp'), // MFA method: TOTP (authenticator app), SMS, or Email
-	phoneNumber: varchar({ length: 20 }), // Phone number for SMS MFA (E.164 format)
-	phoneVerified: int().default(0), // 0 = not verified, 1 = verified
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
@@ -1411,6 +1409,48 @@ export const smsVerificationCodes = mysqlTable("sms_verification_codes", {
 (table) => [
 	index("idx_user_code").on(table.userId, table.code),
 	index("idx_expires").on(table.expiresAt),
+]);
+
+// MFA Method Switching
+export const mfaMethodSwitchRequests = mysqlTable("mfa_method_switch_requests", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	currentMethod: mysqlEnum(['totp', 'sms', 'email']).notNull(),
+	newMethod: mysqlEnum(['totp', 'sms', 'email']).notNull(),
+	newMethodSecret: varchar({ length: 255 }), // Temporary secret for new TOTP method
+	newMethodVerified: int().default(0).notNull(), // 0 = not verified, 1 = verified
+	status: mysqlEnum(['pending', 'completed', 'cancelled', 'expired']).default('pending').notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(), // Request expires after 30 minutes
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	completedAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_user_status").on(table.userId, table.status),
+	index("idx_expires").on(table.expiresAt),
+]);
+
+// MFA Recovery Flow
+export const mfaRecoveryRequests = mysqlTable("mfa_recovery_requests", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	reason: text().notNull(), // User's reason for recovery request
+	identityVerification: text(), // JSON: answers to security questions or other verification
+	status: mysqlEnum(['pending', 'approved', 'rejected', 'completed', 'expired']).default('pending').notNull(),
+	recoveryCode: varchar({ length: 255 }), // Temporary recovery code (hashed, 24-hour expiration)
+	recoveryCodeExpiresAt: timestamp({ mode: 'string' }),
+	submittedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	reviewedAt: timestamp({ mode: 'string' }),
+	reviewedBy: int(), // Admin user ID who reviewed the request
+	adminNotes: text(), // Internal admin notes
+	rejectionReason: text(), // Reason shown to user if rejected
+	completedAt: timestamp({ mode: 'string' }),
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+},
+(table) => [
+	index("idx_user_status").on(table.userId, table.status),
+	index("idx_status").on(table.status),
+	index("idx_submitted").on(table.submittedAt),
 ]);
 
 // Type exports for all tables
