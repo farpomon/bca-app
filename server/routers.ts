@@ -24,6 +24,7 @@ import { assessmentDocumentsRouter } from "./routers/assessmentDocuments.router"
 import { documentsRouter } from "./routers/documents.router";
 import { complianceRouter } from "./routers/compliance.router";
 import { dataSecurityRouter } from "./routers/dataSecurity.router";
+import { mfaRouter } from "./mfaRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -48,6 +49,7 @@ export const appRouter = router({
   accessRequests: accessRequestsRouter,
   assessmentDocuments: assessmentDocumentsRouter,
   documents: documentsRouter,
+  mfa: mfaRouter,
   compliance: complianceRouter,
   dataSecurity: dataSecurityRouter,
   auth: router({

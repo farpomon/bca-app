@@ -636,3 +636,68 @@ This is by design - the AI Import feature is meant for bulk import of complete B
 - [x] Display document count badge on Documents tab
 - [x] Add visual indicator for projects with documents
 - [x] Badge only shows when documents > 0
+
+
+## Presentation Development
+- [ ] Create professional presentation about BCA application
+  - [ ] Gather requirements: audience, goal, format, length, key aspects
+  - [ ] Prepare content and structure
+  - [ ] Generate slides
+  - [ ] Deliver to user
+
+
+## Multi-Factor Authentication (MFA) Implementation
+
+### Phase 1: Database Schema
+- [x] Create user_mfa_settings table (userId, secret, enabled, backupCodes, createdAt, updatedAt)
+- [x] Create trusted_devices table (userId, deviceFingerprint, deviceName, lastUsed, expiresAt)
+- [x] Create mfa_audit_log table (userId, action, success, ipAddress, userAgent, timestamp)
+- [x] Run database migrations
+
+### Phase 2: Backend Services
+- [x] Install speakeasy package for TOTP generation
+- [x] Create MFA service (generateSecret, verifyToken, generateBackupCodes)
+- [x] Create device fingerprinting service
+- [x] Create MFA middleware for protected routes
+- [x] Add rate limiting for MFA verification attempts
+
+### Phase 3: Backend API Endpoints
+- [x] mfa.getStatus - Check if user has MFA enabled
+- [x] mfa.setup - Generate QR code and secret for enrollment
+- [x] mfa.enable - Verify code and enable MFA
+- [x] mfa.disable - Disable MFA (requires password/code)
+- [x] mfa.verify - Verify TOTP code during login
+- [x] mfa.regenerateBackupCodes - Generate new backup codes
+- [x] mfa.getTrustedDevices - List trusted devices
+- [x] mfa.removeTrustedDevice - Remove device trust
+
+### Phase 4: Frontend Components
+- [x] Create MFASetupWizard component (QR code, instructions)
+- [x] Create MFAVerification component (code input during login)
+- [x] Create MFASettings component (enable/disable, backup codes, devices)
+- [x] Create BackupCodesDisplay component (show and download codes)
+- [x] Update login flow to check MFA status
+- [x] Add MFA section to user settings page
+
+### Phase 5: Admin Controls
+- [ ] Add MFA enforcement settings (require for admins, optional for others)
+- [ ] Add MFA status column to user management table
+- [ ] Add admin ability to reset user MFA
+- [ ] Add MFA audit log viewer for admins
+
+### Phase 6: Security Features
+- [x] Implement rate limiting (5 attempts per 15 minutes)
+- [x] Account lockout after 10 failed attempts
+- [x] Encrypt MFA secrets in database
+- [x] Time-window validation (±30 seconds)
+- [x] Single-use backup code enforcement
+- [x] Device fingerprinting for "remember me"
+
+### Phase 7: Testing & Documentation
+- [x] Test MFA enrollment flow
+- [x] Test login with MFA verification
+- [x] Test backup codes
+- [x] Test device trust
+- [ ] Test admin enforcement
+- [ ] Update user guide with MFA instructions
+- [ ] Create checkpoint

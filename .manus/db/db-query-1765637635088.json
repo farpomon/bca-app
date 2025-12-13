@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `mfa_audit_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `action` enum('setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed') NOT NULL,\n  `success` int DEFAULT 1 NOT NULL,\n  `ipAddress` varchar(45),\n  `userAgent` text,\n  `deviceFingerprint` varchar(255),\n  `failureReason` varchar(255),\n  `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  PRIMARY KEY (`id`),\n  INDEX `idx_user_action` (`userId`, `action`),\n  INDEX `idx_created` (`createdAt`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `mfa_audit_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `action` enum('setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed') NOT NULL,\n  `success` int DEFAULT 1 NOT NULL,\n  `ipAddress` varchar(45),\n  `userAgent` text,\n  `deviceFingerprint` varchar(255),\n  `failureReason` varchar(255),\n  `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  PRIMARY KEY (`id`),\n  INDEX `idx_user_action` (`userId`, `action`),\n  INDEX `idx_created` (`createdAt`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 243
+}

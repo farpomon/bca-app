@@ -1317,6 +1317,52 @@ export const wasteTracking = mysqlTable("waste_tracking", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 });
 
+// Multi-Factor Authentication Tables
+export const userMfaSettings = mysqlTable("user_mfa_settings", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	secret: varchar({ length: 255 }).notNull(), // Encrypted TOTP secret
+	enabled: int().default(0).notNull(), // 0 = disabled, 1 = enabled
+	backupCodes: text(), // JSON array of hashed backup codes
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_user_id").on(table.userId),
+]);
+
+export const trustedDevices = mysqlTable("trusted_devices", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	deviceFingerprint: varchar({ length: 255 }).notNull(), // Hashed device identifier
+	deviceName: varchar({ length: 255 }), // User-friendly device name
+	userAgent: text(),
+	ipAddress: varchar({ length: 45 }),
+	lastUsed: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(), // 30 days from creation
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_user_device").on(table.userId, table.deviceFingerprint),
+	index("idx_expires").on(table.expiresAt),
+]);
+
+export const mfaAuditLog = mysqlTable("mfa_audit_log", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed']).notNull(),
+	success: int().default(1).notNull(), // 0 = failed, 1 = success
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+	deviceFingerprint: varchar({ length: 255 }),
+	failureReason: varchar({ length: 255 }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_user_action").on(table.userId, table.action),
+	index("idx_created").on(table.createdAt),
+]);
+
 // Type exports for all tables
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -1446,3 +1492,12 @@ export type InsertReportHistory = typeof reportHistory.$inferInsert;
 
 export type ProjectDocument = typeof projectDocuments.$inferSelect;
 export type InsertProjectDocument = typeof projectDocuments.$inferInsert;
+
+export type UserMfaSettings = typeof userMfaSettings.$inferSelect;
+export type InsertUserMfaSettings = typeof userMfaSettings.$inferInsert;
+
+export type TrustedDevice = typeof trustedDevices.$inferSelect;
+export type InsertTrustedDevice = typeof trustedDevices.$inferInsert;
+
+export type MfaAuditLog = typeof mfaAuditLog.$inferSelect;
+export type InsertMfaAuditLog = typeof mfaAuditLog.$inferInsert;

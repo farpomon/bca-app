@@ -28,6 +28,7 @@ import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
 import PrivacySettings from "./pages/PrivacySettings";
 import DataSecurity from "./pages/DataSecurity";
+import SecuritySettings from "./pages/SecuritySettings";
 
 function Router() {
   return (
@@ -56,6 +57,7 @@ function Router() {
       <Route path={"/admin/compliance"} component={ComplianceDashboard} />
       <Route path={"/admin/data-security"} component={DataSecurity} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />
+      <Route path={"/settings/security"} component={SecuritySettings} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
