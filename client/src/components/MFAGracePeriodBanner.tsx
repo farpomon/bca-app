@@ -46,7 +46,7 @@ export function MFAGracePeriodBanner() {
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => setLocation("/security-settings")}
+            onClick={() => setLocation("/settings/security")}
             className="ml-4 shrink-0"
           >
             <Shield className="mr-2 h-4 w-4" />
@@ -78,7 +78,7 @@ export function MFAGracePeriodBanner() {
           <Button
             size="sm"
             variant={isUrgent ? "default" : "outline"}
-            onClick={() => setLocation("/security-settings")}
+            onClick={() => setLocation("/settings/security")}
           >
             <Shield className="mr-2 h-4 w-4" />
             Set Up MFA

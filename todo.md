@@ -695,3 +695,12 @@
 - [x] Create asset_documents table in database schema
 - [x] Add unit tests for AI import validation (file type and size checks)
 - [x] Test end-to-end AI import flow
+
+
+## MFA Banner Redirect Fix (Completed)
+- [x] Investigate current routes in App.tsx
+- [x] Find existing SecuritySettings page at /settings/security
+- [x] Update MFAGracePeriodBanner to use correct route (/settings/security)
+- [x] Fixed both "Set Up MFA" and "Enable MFA Now" buttons
+- [x] Test "Set Up MFA" button navigation
+- [x] Verify MFA setup wizard opens correctly
