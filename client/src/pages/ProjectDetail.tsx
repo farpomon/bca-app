@@ -24,6 +24,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import ReportTab from "@/components/ReportTab";
 import ExportButton from "@/components/ExportButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
+import { DocumentList } from "@/components/DocumentList";
 import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
@@ -40,6 +41,7 @@ export default function ProjectDetail() {
   const [statusFilter, setStatusFilter] = useState<"initial" | "active" | "completed" | undefined>(undefined);
   const [selectedAssessments, setSelectedAssessments] = useState<number[]>([]);
   const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [expandedDocuments, setExpandedDocuments] = useState<number | null>(null);
   const utils = trpc.useUtils();
   const [projectEditDialogOpen, setProjectEditDialogOpen] = useState(false);
   const [projectForm, setProjectForm] = useState({
@@ -574,7 +576,8 @@ export default function ProjectDetail() {
                     
                     <div className="space-y-2">
                       {assessments.map((assessment) => (
-                        <div key={assessment.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                        <div key={assessment.id} className="border rounded-lg hover:bg-accent/50 transition-colors">
+                        <div className="flex items-center gap-3 p-3">
                           {/* Checkbox */}
                           <Checkbox
                             checked={selectedAssessments.includes(assessment.id)}
@@ -628,10 +631,47 @@ export default function ProjectDetail() {
                               setEditingAssessment(assessment);
                               setAssessmentDialogOpen(true);
                             }}
+                            title="Edit assessment"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setExpandedDocuments(expandedDocuments === assessment.id ? null : assessment.id)}
+                            title="Attach documents"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
                           </div>
+                        </div>
+                        {/* Document Upload Section */}
+                        {expandedDocuments === assessment.id && (
+                          <div className="border-t p-4 bg-muted/30">
+                            <h4 className="text-sm font-medium mb-3">Assessment Documents</h4>
+                            <DocumentUploadZone
+                              onUpload={async (file) => {
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("assessmentId", assessment.id.toString());
+                                
+                                const response = await fetch("/api/upload-assessment-document", {
+                                  method: "POST",
+                                  body: formData,
+                                });
+                                
+                                if (!response.ok) {
+                                  throw new Error("Upload failed");
+                                }
+                                
+                                utils.assessmentDocuments.list.invalidate({ assessmentId: assessment.id });
+                              }}
+                            />
+                            <div className="mt-4">
+                              <DocumentList assessmentId={assessment.id} />
+                            </div>
+                          </div>
+                        )}
                         </div>
                     ))}
                     </div>

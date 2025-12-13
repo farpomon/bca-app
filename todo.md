@@ -1,5 +1,11 @@
 # BCA App TODO
 
+## Document Upload in Assessment List (Completed)
+- [x] Add document upload button/icon to each assessment item in the list
+- [x] Implement inline document upload without opening edit dialog
+- [x] Add quick document preview/download from assessment list
+- [x] Test document upload from main dashboard
+
 ## MFA Enhancements (Completed)
 
 ### Feature 1: Admin MFA Reset Capability
