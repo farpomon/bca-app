@@ -303,7 +303,7 @@ export default function ProjectDetail() {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
-            <Button onClick={() => setLocation(`/projects/${projectId}/assess`)}>
+            <Button onClick={() => setLocation(`/projects/${projectId}/assets`)}>
               <ClipboardCheck className="mr-2 h-4 w-4" />
               Start Assessment
             </Button>
