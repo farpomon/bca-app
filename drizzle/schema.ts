@@ -99,6 +99,20 @@ export const assets = mysqlTable("assets", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
+export const assetDocuments = mysqlTable("asset_documents", {
+	id: int().autoincrement().notNull(),
+	assetId: int().notNull(),
+	projectId: int().notNull(),
+	fileName: varchar({ length: 255 }).notNull(),
+	fileKey: varchar({ length: 500 }).notNull(),
+	url: text().notNull(),
+	mimeType: varchar({ length: 100 }).notNull(),
+	fileSize: int().notNull(),
+	uploadedBy: int().notNull(),
+	description: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
+
 export const auditLog = mysqlTable("audit_log", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
@@ -1258,6 +1272,8 @@ export const users = mysqlTable("users", {
 	city: varchar({ length: 255 }),
 	accountStatus: mysqlEnum(['pending','active','trial','suspended']).default('pending').notNull(),
 	trialEndsAt: timestamp({ mode: 'string' }),
+	mfaRequired: tinyint().default(0).notNull(),
+	mfaEnforcedAt: timestamp({ mode: 'string' }),
 });
 
 export const utilityConsumption = mysqlTable("utility_consumption", {

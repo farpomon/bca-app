@@ -685,6 +685,14 @@ This is by design - the AI Import feature is meant for bulk import of complete B
 - [ ] Add admin ability to reset user MFA
 - [ ] Add MFA audit log viewer for admins
 
+### Phase 8: MFA Login Flow Integration
+- [ ] Add MFA check after OAuth callback
+- [ ] Redirect to MFA verification page if enabled
+- [ ] Store pending session until MFA verified
+- [ ] Handle backup code login flow
+- [ ] Handle device trust (remember me) flow
+- [ ] Add "Trust this device" checkbox on verification
+
 ### Phase 6: Security Features
 - [x] Implement rate limiting (5 attempts per 15 minutes)
 - [x] Account lockout after 10 failed attempts
@@ -700,4 +708,39 @@ This is by design - the AI Import feature is meant for bulk import of complete B
 - [x] Test device trust
 - [ ] Test admin enforcement
 - [ ] Update user guide with MFA instructions
+- [ ] Create checkpoint
+
+
+## Asset AI Import & Document Attachment Features
+
+### Phase 1: Database Schema
+- [x] Create asset_documents table (assetId, fileName, fileKey, url, mimeType, fileSize, uploadedBy, description, createdAt)
+- [x] Push schema changes to database
+
+### Phase 2: Backend API
+- [x] Create assetDocuments router with endpoints:
+  - [x] upload - Upload document to S3 and save metadata
+  - [x] list - Get all documents for an asset
+  - [x] delete - Remove document from S3 and database
+- [x] Create assets.aiImport endpoint to parse PDF/Word and extract asset info
+- [x] Use LLM to extract: asset name, type, location, year built, gross area, description
+- [x] Register routers in main router
+
+### Phase 3: Frontend UI
+- [x] Add "AI Import" button to Assets page header
+- [x] Create AIImportAssetDialog component
+  - [x] File upload (PDF/Word only, max 10MB)
+  - [x] Show parsing progress
+  - [x] Display extracted asset information
+  - [x] Allow user to review and edit before saving
+- [ ] Add "Attach Document" button to asset detail view
+- [ ] Create DocumentUpload component with drag-and-drop
+- [ ] Display list of attached documents with download/delete actions
+- [ ] Show document count badge on asset cards
+
+### Phase 4: Testing
+- [x] Test AI import with sample facility documents
+- [x] Write and run unit tests for AI import validation
+- [ ] Test document upload/download/delete (not yet implemented)
+- [ ] Verify S3 storage and metadata (not yet implemented)
 - [ ] Create checkpoint

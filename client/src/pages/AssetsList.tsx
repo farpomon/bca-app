@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Edit, Trash2, ArrowLeft, Loader2, ClipboardCheck } from "lucide-react";
+import { Building2, Plus, Edit, Trash2, ArrowLeft, Loader2, ClipboardCheck, Sparkles } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
 import { AssetDialog } from "@/components/AssetDialog";
+import { AIImportAssetDialog } from "@/components/AIImportAssetDialog";
 import type { Asset } from "../../../drizzle/schema";
 import {
   AlertDialog,
@@ -40,6 +41,7 @@ export default function AssetsList() {
   const [editingAsset, setEditingAsset] = useState<Asset | undefined>(undefined);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | undefined>(undefined);
+  const [aiImportDialogOpen, setAiImportDialogOpen] = useState(false);
 
   const deleteAsset = trpc.assets.delete.useMutation({
     onSuccess: () => {
@@ -118,10 +120,16 @@ export default function AssetsList() {
             <h1 className="text-3xl font-bold tracking-tight">Assets</h1>
             <p className="text-muted-foreground">{project.name}</p>
           </div>
-          <Button onClick={() => setAssetDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Asset
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setAiImportDialogOpen(true)}>
+              <Sparkles className="mr-2 h-4 w-4" />
+              AI Import
+            </Button>
+            <Button onClick={() => setAssetDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Asset
+            </Button>
+          </div>
         </div>
 
         {/* Assets Grid */}
@@ -231,6 +239,14 @@ export default function AssetsList() {
         onOpenChange={handleDialogClose}
         projectId={projectId}
         asset={editingAsset}
+        onSuccess={refetchAssets}
+      />
+
+      {/* AI Import Dialog */}
+      <AIImportAssetDialog
+        open={aiImportDialogOpen}
+        onOpenChange={setAiImportDialogOpen}
+        projectId={projectId}
         onSuccess={refetchAssets}
       />
 

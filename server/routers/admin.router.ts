@@ -150,4 +150,95 @@ export const adminRouter = router({
 
       return { success: true };
     }),
+
+  /**
+   * Enforce MFA for specific roles
+   */
+  enforceMfaForRole: adminProcedure
+    .input(
+      z.object({
+        role: z.enum(["admin", "project_manager"]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Set mfaRequired=1 for all users with this role
+      await database
+        .update(users)
+        .set({ 
+          mfaRequired: 1,
+          mfaEnforcedAt: new Date().toISOString(),
+        })
+        .where(eq(users.role, input.role));
+
+      return { success: true, message: `MFA enforced for all ${input.role} users` };
+    }),
+
+  /**
+   * Require MFA for specific user
+   */
+  requireMfaForUser: adminProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        required: z.boolean(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database
+        .update(users)
+        .set({ 
+          mfaRequired: input.required ? 1 : 0,
+          mfaEnforcedAt: input.required ? new Date().toISOString() : null,
+        })
+        .where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Reset user's MFA (admin emergency access)
+   */
+  resetUserMfa: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => {
+      const { disableMfa } = await import("../mfaDb");
+      await disableMfa(input.userId);
+
+      return { success: true, message: "User MFA has been reset" };
+    }),
+
+  /**
+   * Get MFA statistics
+   */
+  getMfaStats: adminProcedure.query(async () => {
+    const database = await getDb();
+    if (!database) throw new Error("Database not available");
+
+    const { isMfaEnabled } = await import("../mfaDb");
+    const allUsers = await database.select().from(users);
+
+    // Count users with MFA enabled
+    let mfaEnabledCount = 0;
+    for (const user of allUsers) {
+      const enabled = await isMfaEnabled(user.id);
+      if (enabled) mfaEnabledCount++;
+    }
+
+    const mfaRequiredCount = allUsers.filter(u => u.mfaRequired === 1).length;
+    const adminsWithMfa = allUsers.filter(u => u.role === "admin" && u.mfaRequired === 1).length;
+
+    return {
+      totalUsers: allUsers.length,
+      mfaEnabledCount,
+      mfaRequiredCount,
+      adminsWithMfa,
+      complianceRate: allUsers.length > 0 ? (mfaEnabledCount / allUsers.length) * 100 : 0,
+    };
+  }),
 });

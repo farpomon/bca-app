@@ -21,6 +21,7 @@ import { auditRouter } from "./routers/audit.router";
 import { usersRouter } from "./routers/users.router";
 import { accessRequestsRouter } from "./routers/accessRequests.router";
 import { assessmentDocumentsRouter } from "./routers/assessmentDocuments.router";
+import { assetDocumentsRouter } from "./routers/assetDocuments.router";
 import { documentsRouter } from "./routers/documents.router";
 import { complianceRouter } from "./routers/compliance.router";
 import { dataSecurityRouter } from "./routers/dataSecurity.router";
@@ -48,6 +49,7 @@ export const appRouter = router({
   users: usersRouter,
   accessRequests: accessRequestsRouter,
   assessmentDocuments: assessmentDocumentsRouter,
+  assetDocuments: assetDocumentsRouter,
   documents: documentsRouter,
   mfa: mfaRouter,
   compliance: complianceRouter,
@@ -576,6 +578,145 @@ export const appRouter = router({
         }
         await assetsDb.deleteAsset(input.id, input.projectId);
         return { success: true };
+      }),
+
+    aiImport: protectedProcedure
+      .input(
+        z.object({
+          projectId: z.number(),
+          fileContent: z.string(), // Base64 encoded PDF/Word file
+          fileName: z.string(),
+          mimeType: z.string(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+
+        // Validate file type
+        const allowedTypes = [
+          "application/pdf",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/msword",
+        ];
+        if (!allowedTypes.includes(input.mimeType)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Only PDF and Word documents are supported",
+          });
+        }
+
+        // Validate file size (max 10MB)
+        const fileBuffer = Buffer.from(input.fileContent, "base64");
+        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+        if (fileBuffer.length > MAX_FILE_SIZE) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "File size exceeds 10MB limit",
+          });
+        }
+
+        try {
+          // Upload file to S3 for AI processing
+          const { storagePut } = await import("./storage");
+          const timestamp = Date.now();
+          const fileKey = `temp-uploads/${input.projectId}/${timestamp}-${input.fileName}`;
+          const { url: fileUrl } = await storagePut(fileKey, fileBuffer, input.mimeType);
+
+          // Use LLM to extract asset information from document
+          const { invokeLLM } = await import("./_core/llm");
+          const prompt = `You are an expert in building condition assessment and facility management. Extract asset/building information from the provided document.
+
+Extract the following information if available:
+- Asset/Building Name
+- Asset Type (e.g., Office Building, School, Hospital, Warehouse, etc.)
+- Address/Location
+- Year Built
+- Gross Floor Area (in square feet or square meters)
+- Number of Stories
+- Construction Type (e.g., Steel Frame, Concrete, Wood Frame, Masonry)
+- Description or Notes
+
+Return the information in JSON format with these exact fields:
+{
+  "name": "string",
+  "assetType": "string",
+  "address": "string",
+  "yearBuilt": number,
+  "grossFloorArea": number,
+  "numberOfStories": number,
+  "constructionType": "string",
+  "description": "string"
+}
+
+If a field is not found in the document, use null for that field. Be as accurate as possible.`;
+
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: prompt },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "file_url",
+                    file_url: {
+                      url: fileUrl,
+                      mime_type: input.mimeType as "application/pdf",
+                    },
+                  },
+                ],
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "asset_extraction",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: { type: ["string", "null"] },
+                    assetType: { type: ["string", "null"] },
+                    address: { type: ["string", "null"] },
+                    yearBuilt: { type: ["number", "null"] },
+                    grossFloorArea: { type: ["number", "null"] },
+                    numberOfStories: { type: ["number", "null"] },
+                    constructionType: { type: ["string", "null"] },
+                    description: { type: ["string", "null"] },
+                  },
+                  required: [
+                    "name",
+                    "assetType",
+                    "address",
+                    "yearBuilt",
+                    "grossFloorArea",
+                    "numberOfStories",
+                    "constructionType",
+                    "description",
+                  ],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+
+          const content = response.choices[0]?.message?.content;
+          const extractedData = typeof content === 'string' ? JSON.parse(content || "{}") : {};
+
+          return {
+            success: true,
+            extractedData,
+          };
+        } catch (error: any) {
+          console.error("[AI Import] Error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Failed to parse document",
+          });
+        }
       }),
   }),
 

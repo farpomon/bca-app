@@ -438,4 +438,28 @@ export const mfaRouter = router({
       createdAt: log.createdAt,
     }));
   }),
+
+  /**
+   * Check if user is required to have MFA enabled
+   */
+  checkMfaRequirement: protectedProcedure.query(async ({ ctx }) => {
+    const { getDb } = await import("./db");
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+    const { users } = await import("../drizzle/schema");
+    const { eq } = await import("drizzle-orm");
+
+    const [user] = await db.select().from(users).where(eq(users.id, ctx.user.id)).limit(1);
+    if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
+    const mfaEnabled = await isMfaEnabled(ctx.user.id);
+
+    return {
+      required: user.mfaRequired === 1,
+      enabled: mfaEnabled,
+      enforcedAt: user.mfaEnforcedAt,
+      needsSetup: user.mfaRequired === 1 && !mfaEnabled,
+    };
+  }),
 });
