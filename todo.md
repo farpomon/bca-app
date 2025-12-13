@@ -6,6 +6,13 @@
 - [x] Add quick document preview/download from assessment list
 - [x] Test document upload from main dashboard
 
+## Document Management Enhancements (Completed)
+- [x] Add backend endpoint to download all assessment documents as ZIP
+- [x] Add bulk download button to assessment document section
+- [x] Add document type filter dropdown (All, PDFs, Images, Word, Excel)
+- [x] Implement client-side filtering by document type
+- [x] Test bulk download and filtering features
+
 ## MFA Enhancements (Completed)
 
 ### Feature 1: Admin MFA Reset Capability

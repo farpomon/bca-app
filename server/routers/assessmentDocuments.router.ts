@@ -3,6 +3,8 @@ import { router, protectedProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "../db";
 import { storagePut } from "../storage";
+import archiver from "archiver";
+import fetch from "node-fetch";
 
 export const assessmentDocumentsRouter = router({
   /**
@@ -82,6 +84,76 @@ export const assessmentDocumentsRouter = router({
         throw new TRPCError({
           code: error.message === "Unauthorized" ? "FORBIDDEN" : "INTERNAL_SERVER_ERROR",
           message: error.message || "Failed to delete document",
+        });
+      }
+    }),
+
+  /**
+   * Download all documents for an assessment as a ZIP file
+   */
+  downloadAllAsZip: protectedProcedure
+    .input(z.object({ assessmentId: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        const documents = await db.getAssessmentDocuments(input.assessmentId);
+        
+        if (!documents || documents.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "No documents found for this assessment",
+          });
+        }
+
+        // Create a buffer to store the ZIP
+        const chunks: Buffer[] = [];
+        const archive = archiver("zip", { zlib: { level: 9 } });
+
+        // Collect chunks
+        archive.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+        // Handle errors
+        archive.on("error", (err: Error) => {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `ZIP creation failed: ${err.message}`,
+          });
+        });
+
+        // Download and add each document to the archive
+        for (const doc of documents) {
+          try {
+            const response = await fetch(doc.url);
+            if (!response.ok) {
+              console.warn(`Failed to fetch document: ${doc.fileName}`);
+              continue;
+            }
+            const buffer = await response.buffer();
+            archive.append(buffer, { name: doc.fileName });
+          } catch (error) {
+            console.warn(`Error adding document to ZIP: ${doc.fileName}`, error);
+          }
+        }
+
+        // Finalize the archive
+        await archive.finalize();
+
+        // Wait for all chunks to be collected
+        await new Promise((resolve) => archive.on("end", resolve));
+
+        // Combine chunks into a single buffer
+        const zipBuffer = Buffer.concat(chunks);
+
+        // Upload ZIP to S3
+        const zipKey = `temp/assessment-${input.assessmentId}-docs-${Date.now()}.zip`;
+        const { url } = await storagePut(zipKey, zipBuffer, "application/zip");
+
+        return { url, fileName: `assessment-${input.assessmentId}-documents.zip` };
+      } catch (error) {
+        console.error("[Assessment Documents] ZIP download failed:", error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create ZIP file",
         });
       }
     }),

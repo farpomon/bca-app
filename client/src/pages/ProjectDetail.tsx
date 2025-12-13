@@ -16,7 +16,7 @@ import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { ProjectDocumentList } from "@/components/ProjectDocumentList";
-import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target } from "lucide-react";
+import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -25,6 +25,7 @@ import ReportTab from "@/components/ReportTab";
 import ExportButton from "@/components/ExportButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { DocumentList } from "@/components/DocumentList";
+import { BulkDownloadButton } from "@/components/BulkDownloadButton";
 import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
@@ -648,7 +649,10 @@ export default function ProjectDetail() {
                         {/* Document Upload Section */}
                         {expandedDocuments === assessment.id && (
                           <div className="border-t p-4 bg-muted/30">
-                            <h4 className="text-sm font-medium mb-3">Assessment Documents</h4>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-sm font-medium">Assessment Documents</h4>
+                              <BulkDownloadButton assessmentId={assessment.id} />
+                            </div>
                             <DocumentUploadZone
                               onUpload={async (file) => {
                                 const formData = new FormData();

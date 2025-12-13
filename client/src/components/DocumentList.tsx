@@ -1,16 +1,29 @@
-import { FileText, Download, Trash2, ExternalLink } from "lucide-react";
+import { FileText, Download, Trash2, ExternalLink, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface DocumentListProps {
   assessmentId: number;
 }
 
+type DocumentFilter = "all" | "pdf" | "word" | "excel" | "image";
+
+const getDocumentType = (mimeType: string): DocumentFilter => {
+  if (mimeType.includes("pdf")) return "pdf";
+  if (mimeType.includes("word") || mimeType.includes("document")) return "word";
+  if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "excel";
+  if (mimeType.includes("image")) return "image";
+  return "all";
+};
+
 export function DocumentList({ assessmentId }: DocumentListProps) {
   const utils = trpc.useUtils();
+  const [filter, setFilter] = useState<DocumentFilter>("all");
   
   const { data: documents, isLoading } = trpc.assessmentDocuments.list.useQuery({
     assessmentId,
@@ -52,9 +65,34 @@ export function DocumentList({ assessmentId }: DocumentListProps) {
     );
   }
 
+  // Filter documents by type
+  const filteredDocuments = documents.filter((doc) => {
+    if (filter === "all") return true;
+    return getDocumentType(doc.mimeType) === filter;
+  });
+
   return (
     <div className="space-y-3">
-      {documents.map((doc) => (
+      {/* Filter Dropdown */}
+      <div className="flex items-center gap-2">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        <Select value={filter} onValueChange={(value) => setFilter(value as DocumentFilter)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Documents</SelectItem>
+            <SelectItem value="pdf">PDFs</SelectItem>
+            <SelectItem value="word">Word Documents</SelectItem>
+            <SelectItem value="excel">Excel Files</SelectItem>
+            <SelectItem value="image">Images</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-muted-foreground">
+          {filteredDocuments.length} of {documents.length} documents
+        </span>
+      </div>
+      {filteredDocuments.map((doc) => (
         <Card key={doc.id} className="p-4">
           <div className="flex items-start gap-3">
             <FileText className="h-5 w-5 text-primary mt-0.5" />
