@@ -1274,6 +1274,7 @@ export const users = mysqlTable("users", {
 	trialEndsAt: timestamp({ mode: 'string' }),
 	mfaRequired: tinyint().default(0).notNull(),
 	mfaEnforcedAt: timestamp({ mode: 'string' }),
+	mfaGracePeriodEnd: timestamp({ mode: 'string' }),
 });
 
 export const utilityConsumption = mysqlTable("utility_consumption", {
@@ -1366,7 +1367,7 @@ export const trustedDevices = mysqlTable("trusted_devices", {
 export const mfaAuditLog = mysqlTable("mfa_audit_log", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
-	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed']).notNull(),
+	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','mfa_reset_by_admin']).notNull(),
 	success: int().default(1).notNull(), // 0 = failed, 1 = success
 	ipAddress: varchar({ length: 45 }),
 	userAgent: text(),

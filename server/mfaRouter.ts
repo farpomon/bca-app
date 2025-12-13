@@ -455,11 +455,29 @@ export const mfaRouter = router({
 
     const mfaEnabled = await isMfaEnabled(ctx.user.id);
 
+    // Check if grace period is active
+    const now = new Date();
+    const gracePeriodEnd = user.mfaGracePeriodEnd ? new Date(user.mfaGracePeriodEnd) : null;
+    const inGracePeriod = gracePeriodEnd && now < gracePeriodEnd;
+    const gracePeriodExpired = gracePeriodEnd && now >= gracePeriodEnd;
+
+    // Calculate days remaining in grace period
+    let daysRemaining = 0;
+    if (inGracePeriod && gracePeriodEnd) {
+      const diffMs = gracePeriodEnd.getTime() - now.getTime();
+      daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    }
+
     return {
       required: user.mfaRequired === 1,
       enabled: mfaEnabled,
       enforcedAt: user.mfaEnforcedAt,
       needsSetup: user.mfaRequired === 1 && !mfaEnabled,
+      inGracePeriod,
+      gracePeriodEnd: user.mfaGracePeriodEnd,
+      gracePeriodExpired,
+      daysRemaining,
+      mustSetupNow: user.mfaRequired === 1 && !mfaEnabled && gracePeriodExpired,
     };
   }),
 });

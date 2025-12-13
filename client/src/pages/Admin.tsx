@@ -27,6 +27,7 @@ import {
 import { useState } from "react";
 import ApproveRequestDialog from "@/components/ApproveRequestDialog";
 import RejectRequestDialog from "@/components/RejectRequestDialog";
+import { MFAComplianceReport } from "@/components/MFAComplianceReport";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -202,6 +203,10 @@ export default function Admin() {
                 {pendingCountQuery.data.count}
               </Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="mfa-compliance" className="gap-2">
+            <Shield className="w-4 h-4" />
+            MFA Compliance
           </TabsTrigger>
         </TabsList>
 
@@ -645,6 +650,11 @@ export default function Admin() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* MFA Compliance Tab */}
+        <TabsContent value="mfa-compliance" className="space-y-4">
+          <MFAComplianceReport />
         </TabsContent>
       </Tabs>
 

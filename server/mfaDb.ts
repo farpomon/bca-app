@@ -209,3 +209,28 @@ export async function cleanupExpiredDevices() {
     .delete(trustedDevices)
     .where(eq(trustedDevices.expiresAt, now));
 }
+
+/**
+ * Log MFA audit event
+ */
+export async function logMfaAuditEvent(event: {
+  userId: number;
+  action: "setup" | "enable" | "disable" | "verify_success" | "verify_fail" | "backup_code_used" | "device_trusted" | "device_removed" | "mfa_reset_by_admin";
+  success: boolean;
+  ipAddress: string;
+  userAgent: string;
+  failureReason?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(mfaAuditLog).values({
+    userId: event.userId,
+    action: event.action,
+    success: event.success ? 1 : 0,
+    ipAddress: event.ipAddress,
+    userAgent: event.userAgent,
+    failureReason: event.failureReason || null,
+    createdAt: new Date().toISOString(),
+  });
+}

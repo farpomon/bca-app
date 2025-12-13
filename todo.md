@@ -1,5 +1,44 @@
 # BCA App TODO
 
+## MFA Enhancements (Completed)
+
+### Feature 1: Admin MFA Reset Capability
+- [x] Add admin.resetUserMfa endpoint with audit logging
+- [x] Enhanced resetUserMfa to accept optional reason parameter
+- [x] Log MFA reset events to mfa_audit_log table with full context
+- [x] Added logMfaAuditEvent function to mfaDb.ts
+- [x] Audit log includes admin details (who reset, target user, reason)
+- [x] Show success message after reset with audit confirmation
+- [x] Create comprehensive test suite (mfa.enhancements.test.ts)
+
+### Feature 2: 7-Day Grace Period
+- [x] Add mfaGracePeriodEnd timestamp field to users table
+- [x] Update admin.enforceMfaForRole to set grace period (7 days from enforcement)
+- [x] Update admin.requireMfaForUser to set grace period (7 days from enforcement)
+- [x] Update mfa.checkMfaRequirement to check grace period expiry
+- [x] Calculate days remaining in grace period
+- [x] Add inGracePeriod, gracePeriodExpired, mustSetupNow flags
+- [x] Create MFAGracePeriodBanner component
+- [x] Show days remaining with color-coded urgency (orange for ≤2 days)
+- [x] Show critical warning when grace period expired
+- [x] Add banner to DashboardLayout for all authenticated pages
+- [x] Test grace period countdown and expiry logic
+
+### Feature 3: MFA Compliance Reports
+- [x] Create getMfaComplianceReport function in admin router
+- [x] Calculate adoption rates by role (admin, project_manager, editor, viewer)
+- [x] Calculate adoption rates by time period (last 7 days, 30 days, 90 days, all)
+- [x] Generate user details with MFA status for CSV export
+- [x] Create MFAComplianceReport component with download functionality
+- [x] Add MFA Compliance tab in Admin section
+- [x] Build compliance report UI with time period filters
+- [x] Show summary stats cards (total users, MFA enabled, adoption rate)
+- [x] Show adoption breakdown by role in table format
+- [x] Show detailed user list with MFA and grace period status
+- [x] Implement CSV download with all user details
+- [x] Add color-coded badges for adoption rates (green ≥80%, yellow ≥50%, red <50%)
+- [x] Test report generation and CSV export
+
 ## SaaS Registration Approval & Multi-Tenant Isolation
 
 ### Phase 1: Access Requests Backend
@@ -352,71 +391,66 @@
 
 ### Authentication Event Logging
 - [x] Create authAudit.ts service for authentication event logging
-- [x] Log successful login attempts (user, timestamp, IP, method: SAML/OAuth)
-- [x] Log unsuccessful login attempts (failed credentials, account locked)
-- [x] Log SAML authentication events (SSO login, IdP errors)
-- [x] Log logout events (user-initiated, session timeout)
+- [x] Log successful login attempts with timestamp, IP, user agent
+- [x] Log unsuccessful login attempts with failure reason
+- [x] Log SAML authentication events
+- [x] Log logout events
 - [x] Log session timeout events
-- [x] Log account lockout events (too many failed attempts)
-- [x] Add IP address and user agent tracking
+- [x] Log account lockout events
+- [x] Create audit.getAuthLogs tRPC endpoint
 
-### System Configuration Change Logging
+### System Configuration Audit Logging
 - [x] Create configAudit.ts service for configuration change logging
-- [x] Log role changes (user promoted/demoted)
-- [x] Log permission changes (access granted/revoked)
-- [x] Log system settings changes (retention policy, security settings)
-- [x] Log SAML configuration changes (IdP URL, certificate updates)
-- [x] Log data retention policy changes
-- [x] Log encryption key rotation events
+- [x] Log role changes with old/new values
+- [x] Log permission changes
+- [x] Log system settings changes
+- [x] Log SAML configuration changes
+- [x] Log retention policy changes
+- [x] Log encryption key rotation
 - [x] Log backup and restore operations
+- [x] Create audit.getConfigLogs tRPC endpoint
 
-### Audit Trail API Enhancements
-- [x] Add audit.getAuthLogs endpoint (retrieve authentication events)
-- [x] Add audit.getConfigLogs endpoint (retrieve configuration changes)
-- [x] Add audit.exportLogs endpoint (CSV export for security audits)
-- [x] Add filtering by date range, user, event type
-- [x] Add pagination for large audit logs
-- [x] Add search functionality
-
-### Audit Trail UI (Pending)
-- [ ] Create authentication audit log viewer page
-- [ ] Create configuration audit log viewer page
-- [ ] Add filtering and search controls
-- [ ] Add export button for CSV download
-- [ ] Add real-time log updates (WebSocket or polling)
-- [ ] Add log retention policy display
+### Audit Log Export & Reporting
+- [x] Create audit.exportLogs endpoint for CSV export
+- [x] Add date range filtering for audit logs
+- [x] Add event type filtering
+- [x] Add user filtering
+- [x] Add IP address filtering
+- [x] Create audit log viewer UI (admin only)
+- [ ] Add real-time audit log monitoring dashboard
+- [ ] Add audit log retention policy (7 years)
 
 ### Testing
 - [ ] Write tests for authentication audit logging
 - [ ] Write tests for configuration audit logging
-- [ ] Write tests for audit log retrieval and filtering
 - [ ] Write tests for audit log export
-- [ ] Verify audit logs are immutable (no deletion/modification)
+- [ ] Test audit log viewer UI
+- [ ] Verify audit logs are immutable
 
 
 ## Security Architecture & Vulnerability Management (City Requirements)
 
-### Security Documentation
-- [x] Create SECURITY_ARCHITECTURE.md document
-  - [x] Infrastructure security (DDoS protection, firewalls, IDS/IPS)
+### Phase 1: Security Documentation
+- [x] Create comprehensive Security Architecture document (SECURITY_ARCHITECTURE.md)
+  - [x] Infrastructure security & threat protection
   - [x] Multi-tenancy & data isolation architecture
-  - [x] Application security controls (authentication, RBAC, input validation)
-  - [x] Data protection & encryption (TLS 1.3, AES-256 at rest)
+  - [x] Application security controls
+  - [x] Data protection & encryption
   - [x] Audit logging & security monitoring
   - [x] Vulnerability management processes
   - [x] Incident response & business continuity
   - [x] Compliance with NIST, OWASP, CIS standards
 
-- [x] Create VULNERABILITY_ASSESSMENT.md document
+- [x] Create Vulnerability Assessment Procedures document (VULNERABILITY_ASSESSMENT.md)
   - [x] City vulnerability assessment rights and procedures
   - [x] Vendor penetration testing methodology
   - [x] Vulnerability scanning processes
-  - [x] Remediation timelines by severity (Critical: 7 days, High: 30 days)
+  - [x] Remediation timelines by severity
   - [x] Patch management procedures
   - [x] Security testing tools and configuration
   - [x] Vulnerability disclosure policy
 
-### Application-Level Security Implementation
+### Phase 2: Application-Level Security Implementation
 - [x] Implement comprehensive security middleware (security.ts)
   - [x] Helmet security headers (HSTS, CSP, X-Frame-Options, etc.)
   - [x] Rate limiting (API: 100 req/15min, Auth: 5 attempts/15min, Upload: 20/hour)
@@ -432,7 +466,7 @@
   - [x] Input validation on all requests
   - [x] Security headers on all responses
 
-### Security Monitoring
+### Phase 3: Security Monitoring
 - [x] Failed authentication attempt logging
 - [x] Rate limit violation logging
 - [x] SQL injection attempt detection and logging
@@ -440,15 +474,15 @@
 - [x] Authorization failure logging (403 errors)
 - [x] IP-based access monitoring
 
-### Testing
+### Phase 4: Testing
 - [x] Create comprehensive security test suite (security.test.ts)
-- [x] SQL injection blocking tests
-- [x] XSS blocking tests
-- [x] Legitimate content allowed tests
-- [x] Input validation accuracy tests
-- [x] All tests passing
+- [x] Test SQL injection blocking
+- [x] Test XSS blocking
+- [x] Test legitimate content allowed
+- [x] Verify input validation accuracy
+- [x] Test false positive handling
 
-### Next Steps for City Deployment
+### Phase 5: Deployment Preparation
 - [ ] Review security documentation with City IT security team
 - [ ] Coordinate City-conducted vulnerability assessment (2 weeks notice)
 - [ ] Configure SAML SSO with City Active Directory
@@ -458,289 +492,206 @@
 
 ## Business Continuity & Disaster Recovery (City Requirements)
 
-### Documentation
-- [x] Create BUSINESS_CONTINUITY_DISASTER_RECOVERY.md document
-  - [x] Recovery objectives (RTO: 4 hours, RPO: 24 hours, 99.5% uptime)
+### Phase 1: BC/DR Documentation
+- [x] Create comprehensive Business Continuity and Disaster Recovery Plan (BUSINESS_CONTINUITY_DISASTER_RECOVERY.md)
+  - [x] Recovery objectives (RTO: 4 hours, RPO: 24 hours, SLA: 99.5% uptime)
   - [x] High availability architecture (redundancy, failover, load balancing)
   - [x] Backup strategy (full, incremental, transaction logs, snapshots)
   - [x] Backup security (encryption, key management, geographic separation)
-  - [x] Disaster recovery procedures (database, system, failover)
+  - [x] Disaster recovery procedures (database, full system, automated failover)
   - [x] Business continuity (incident response, communication, alternate procedures)
   - [x] Testing & validation (monthly, quarterly, annual DR exercises)
   - [x] Preventive measures (monitoring, capacity planning, change management)
   - [x] Compliance (ISO 22301, NIST SP 800-34, 7-year retention)
 
-### Implementation (Pending)
-- [ ] Implement automated backup verification
-- [ ] Create DR runbook for operations team
-- [ ] Schedule monthly recovery tests
-- [ ] Set up monitoring and alerting
+### Phase 2: Implementation (Manus Platform)
+- [ ] Verify Manus platform meets RTO/RPO requirements
+- [ ] Verify backup frequency and retention policies
+- [ ] Verify geographic distribution and redundancy
+- [ ] Verify encryption at rest and in transit
+- [ ] Verify automated failover capabilities
+- [ ] Document Manus platform BC/DR capabilities
+
+### Phase 3: Testing & Validation
+- [ ] Schedule monthly recovery tests (small-scale)
+- [ ] Schedule quarterly full recovery tests
+- [ ] Schedule annual comprehensive DR exercise
+- [ ] Document test results and improvements
+- [ ] Create test report template
+- [ ] Establish test success criteria
+
+### Phase 4: Incident Response
+- [ ] Create incident response team contact list
+- [ ] Create incident severity classification guide
+- [ ] Create incident escalation procedures
 - [ ] Create stakeholder communication templates
+- [ ] Create post-incident review template
+- [ ] Test incident response procedures
 
 
-## Incident Management & Notification Procedures (City Requirements)
+## Incident Management & Notification (City Requirements)
 
-### Documentation
-- [x] Create INCIDENT_MANAGEMENT.md document
+### Phase 1: Incident Management Documentation
+- [x] Create comprehensive Incident Management & Notification Procedures (INCIDENT_MANAGEMENT.md)
   - [x] Incident classification (Security, Service Degradation, Data, Compliance)
   - [x] Severity levels (Critical, High, Medium, Low)
-  - [x] Security breach notification (triggers, timelines, content)
-  - [x] Service degradation notification (SLA definitions, thresholds, timelines)
-  - [x] Incident response procedures (breach, degradation, escalation)
-  - [x] Liability and financial penalties (SLA penalties, data breach penalties)
-  - [x] Insurance requirements (cyber, professional, general liability)
-  - [x] Compliance and legal (PIPEDA, data protection, dispute resolution)
-  - [x] Continuous improvement (trend analysis, lessons learned)
+  - [x] Security breach notification timelines (1 hour to 24 hours)
+  - [x] Service degradation notification timelines (15 minutes to 4 hours)
+  - [x] Multi-channel communication (Email, phone, secure portal)
+  - [x] Incident response procedures (Detection → Resolution)
+  - [x] Escalation procedures (Technical and management paths)
+  - [x] Post-incident reviews and lessons learned
 
-### Implementation (Pending)
-- [ ] Create incident notification system
-- [ ] Set up automated alerting for SLA violations
+### Phase 2: Liability & Financial Penalties
+- [x] Document SLA penalties (5-50% of monthly fee)
+  - [x] Availability violations (uptime-based)
+  - [x] Performance violations (response time-based)
+  - [x] Support response violations ($50-$500 per incident)
+  - [x] Penalties capped at 100% monthly fee
+
+- [x] Document data breach penalties ($5K-$2M)
+  - [x] Minor breach (<100 records): $5K-$25K, cap $100K
+  - [x] Moderate breach (100-1K records): $25K-$100K, cap $500K
+  - [x] Major breach (1K-10K records): $100K-$500K, cap $2M
+  - [x] Critical breach (>10K records): $500K-$2M, no cap for gross negligence
+  - [x] Aggravating/mitigating factors (25-100% adjustment)
+
+- [x] Document liability framework
+  - [x] Data breach liability for vendor negligence
+  - [x] Data loss liability for backup failures
+  - [x] Service unavailability penalties per SLA
+  - [x] Wrongful disclosure liability
+  - [x] Total liability cap: $5M annually (exceptions for gross negligence)
+
+- [x] Document insurance requirements
+  - [x] Cyber liability: $5M minimum
+  - [x] Professional liability: $2M minimum
+  - [x] General liability: $2M minimum
+  - [x] City named as additional insured
+
+### Phase 3: Compliance and Legal
+- [x] Document PIPEDA and provincial privacy law compliance
+- [x] Document regulatory reporting assistance
+- [x] Document data protection obligations (minimization, purpose limitation, retention, portability)
+- [x] Document dispute resolution process (Operational → Arbitration)
+
+### Phase 4: Implementation
+- [ ] Create incident notification system (email, SMS, portal)
+- [ ] Create incident tracking database
+- [ ] Create incident escalation workflow
+- [ ] Create stakeholder contact list
 - [ ] Create incident response playbooks
-- [ ] Establish City contact list for notifications
-- [ ] Configure multi-channel communication (email, phone, portal)
+- [ ] Test incident notification system
+
+### Phase 5: Continuous Improvement
+- [ ] Schedule quarterly incident trend analysis
+- [ ] Create lessons learned documentation process
+- [ ] Update procedures based on incidents
+- [ ] Update procedures based on industry best practices
+- [ ] Review insurance coverage annually
 
 
-## Multi-Tenant Data Isolation Implementation ✅ COMPLETED
+## Photo Upload Display Bug Fix
+- [x] Fix photos not displaying after saving assessment
+- [x] Create byAssessment tRPC endpoint to retrieve photos for specific assessments
+- [x] Create ExistingPhotosDisplay component with grid view and delete functionality
+- [x] Integrate ExistingPhotosDisplay into AssessmentDialog
+- [x] Test photo display after saving assessment
 
-### Phase 1: Core Project Isolation ✅ COMPLETED
-- [x] Create verifyProjectAccess helper function in db.ts
-- [x] Update getProjectById to accept company and isAdmin parameters
-- [x] Add company ownership validation in getProjectById
-- [x] Return null for unauthorized access (different company)
-- [x] Allow admins to access all companies
-- [x] Update all 52 getProjectById calls across routers:
-  - [x] projects router (create, update, delete, get, fci, financialPlanning, etc.)
-  - [x] assessments router (list, upsert, delete, getByComponent)
-  - [x] deficiencies router (list, create, update, delete)
-  - [x] buildingComponents router (listForProject, getByCode)
-  - [x] photos router (upload, byProject, byAssessment, delete)
-  - [x] costEstimates router (create, list, update, delete)
-  - [x] assets router (list, create, update, delete)
-  - [x] buildingSections router (list, create, update, delete)
-  - [x] reports router (generate)
-  - [x] export (getProjectById)
-  - [x] exportCSV (getProjectById)
-  - [x] exportExcel (getProjectById)
+## Enterprise Authentication Foundation
+- [x] Install @node-saml/passport-saml package
+- [x] Create SAML configuration module (server/_core/saml.ts)
+- [x] Add SAML environment variables (SAML_ENABLED, SAML_ENTRY_POINT, SAML_ISSUER, etc.)
+- [x] Generate Service Provider metadata for IT department
+- [ ] Implement SAML authentication routes (pending)
+- [ ] Test SAML login flow (pending)
 
-### Phase 2: Assessment & Asset Isolation ✅ COMPLETED
-- [x] Update assessment queries to filter by project's company (52 router calls updated)
-- [x] Update deficiency queries to filter by project's company
-- [x] Update building component queries to filter by project's company
-- [x] Update photo queries to filter by project's company
-- [x] Update cost estimate queries to filter by project's company
-- [x] All routers now call getProjectById with company and isAdmin parameters
+## Project Sorting Feature
+- [x] Add sort dropdown with 7 criteria (name, client name, status, created date, updated date, address, building code)
+- [x] Add ascending/descending toggle button
+- [x] Implement sorting logic with useMemo optimization
+- [x] Add visual indicators with arrow icons
+- [x] Persist sort preferences in localStorage
+- [x] Add smooth transitions for better UX
 
-### Phase 3: Bulk Operations ✅ COMPLETED
-- [x] Update bulkDelete to verify company ownership for each project
-- [x] Update bulkArchive to verify company ownership
-- [x] Update bulkRestore to verify company ownership
-- [x] All bulk operations now use updated getProjectById with multi-tenant checks
+## TypeScript Error Fixes
+- [x] Fix role enum expansion for new roles (viewer, editor, project_manager, admin)
+- [x] Fix boolean-to-number conversions for tinyint fields (isDefault, isActive, isShared, isRecurring)
+- [x] Fix Date-to-ISO string conversions across all routers
+- [x] Reduce TypeScript errors from 99 to 61
 
+## Multi-Tenant Data Isolation Enhancement
+- [x] Update getProjectById with company ownership validation
+- [x] Update createProject with company assignment
+- [x] Update updateProject with company ownership validation
+- [x] Update deleteProject with company ownership validation
+- [x] Add verifyProjectAccess helper function
+- [x] Update all 52 getProjectById calls across routers to enforce company-based access control
+- [x] Admins can see all companies, non-admins restricted to their own company
+- [x] Prevent cross-company data access for projects, assessments, deficiencies, photos, cost estimates
 
+## AI Import Re-enablement
+- [x] Fix all 61 TypeScript errors
+- [x] Re-enable AI Import feature with text-only extraction
+- [x] Remove canvas dependencies completely
+- [x] Use text extraction only (no image rendering)
+- [x] Test AI import with real BCA documents
 
-## Document Upload Investigation
+## AI Import Error Handling Enhancement
+- [x] Create custom error types (ValidationError, DocumentParsingError, AIExtractionError)
+- [x] Add detailed error messages for each failure scenario
+- [x] Add file size validation (max 10MB)
+- [x] Add file type validation (PDF/Word only)
+- [x] Add text length validation (min 100 characters)
+- [x] Add page-level error handling for PDFs
+- [x] Add network error handling for file downloads
+- [x] Update frontend to display specific error messages
+- [x] Add comprehensive error logging with context
+- [x] Create AI_IMPORT_ERROR_HANDLING.md documentation
 
-### Findings
-- [x] Document upload field is NOT present in New Project form
-- [x] Document upload field is NOT present in Add Asset form
-- [x] Could not verify assessment forms due to React hooks error when navigating to asset pages
-- [x] Current workflow: Users must use "AI Import from Document" button on Projects page to import entire BCA reports
-
-### Conclusion
-**The application does NOT have document upload fields in individual forms (Project/Asset creation).**
-
-The only way to upload documents is through the **"AI Import from Document"** button on the main Projects page, which:
-- Imports complete BCA reports
-- Extracts project info, assessments, and deficiencies using AI
-- Creates a new project with all data in one operation
-
-This is by design - the AI Import feature is meant for bulk import of complete BCA reports, not for attaching individual documents to projects or assessments.
-
-
-## Document Attachment System Implementation (NEW FEATURE)
-
-### Database Schema
-- [ ] Create project_documents table (id, projectId, filename, fileUrl, fileSize, fileType, uploadedBy, uploadedAt, description)
-- [ ] Create assessment_documents table (id, assessmentId, filename, fileUrl, fileSize, fileType, uploadedBy, uploadedAt, description)
-- [ ] Add indexes for foreign keys (projectId, assessmentId, uploadedBy)
-- [ ] Push schema changes to database
-
-### Backend API
-- [ ] Create documents router with tRPC procedures
-- [ ] Implement uploadProjectDocument endpoint (S3 upload + database record)
-- [ ] Implement uploadAssessmentDocument endpoint
-- [ ] Implement listProjectDocuments endpoint
-- [ ] Implement listAssessmentDocuments endpoint
-- [ ] Implement deleteProjectDocument endpoint (S3 + database)
-- [ ] Implement deleteAssessmentDocument endpoint
-- [ ] Add authorization checks (user must own project/assessment)
-- [ ] Write comprehensive tests for all document endpoints
-
-### Frontend Components ✅ COMPLETED
-- [x] Create DocumentUploadZone component (drag-and-drop, file validation)
-- [x] Create ProjectDocumentList component (display uploaded documents with download/delete)
-- [x] Add file type icons for different document types (PDF, Word, Excel, images)
-- [x] Add file size display and formatting
-- [x] Add upload progress indicators
-- [x] Add error handling and validation messages
-
-### Integration ✅ COMPLETED
-- [x] Add document upload section to ProjectDetail page
-- [x] Add Documents tab with upload zone and document list
-- [x] Wire up tRPC queries and mutations
-- [ ] Add document upload section to AssessmentDialog (optional - can be done later)
-- [ ] Add document count badges to UI (optional enhancement)
-
-### Testing ✅ COMPLETED
-- [x] Write comprehensive test suite for documents router
-- [x] Test authentication requirements for all endpoints
-- [x] Test multi-tenant isolation (users can only see their company's documents)
-- [x] Test admin access to all projects
-- [x] Test project ownership validation
-- [x] All 16 tests passing
-- [x] Create checkpoint after testing
-
-
-## Document Attachment System - Progress Update
-
-### Database Schema ✅ COMPLETED
-- [x] Create project_documents table (id, projectId, filename, fileUrl, fileSize, fileType, uploadedBy, uploadedAt, description)
-- [x] Create assessment_documents table (already existed)
-- [x] Add indexes for foreign keys (projectId, assessmentId, uploadedBy)
-- [x] Push schema changes to database
-
-### Backend API ✅ COMPLETED
-- [x] Create documents router with tRPC procedures
-- [x] Implement uploadProjectDocument endpoint (S3 upload + database record)
-- [x] Implement uploadAssessmentDocument endpoint
-- [x] Implement listProjectDocuments endpoint
-- [x] Implement listAssessmentDocuments endpoint
-- [x] Implement deleteProjectDocument endpoint (S3 + database)
-- [x] Implement deleteAssessmentDocument endpoint
-- [x] Add authorization checks (user must own project/assessment)
-- [x] Register documents router in main routers.ts
-
+## Document Attachment System
+- [x] Create project_documents table in database schema
+- [x] Create assessment_documents table in database schema
+- [x] Add backend API endpoints for document upload/list/delete
+- [x] Implement S3 storage for documents
+- [x] Add multi-tenant isolation (users can only access their company's documents)
+- [x] Add admin access (admins can access all companies' documents)
+- [x] Create DocumentUploadZone component with drag-and-drop
+- [x] Create ProjectDocumentList component with download/delete
+- [x] Add Documents tab to ProjectDetail page
+- [x] Write 16 comprehensive tests for authentication, authorization, and multi-tenant isolation
+- [x] All tests passing
 
 ## Document Attachment Enhancements
-
-### Assessment Document Upload ✅ COMPLETED
-- [x] Modify AssessmentDialog to include document upload section
-- [x] Add DocumentUploadZone component to assessment form
-- [x] Add DocumentList component to show assessment documents
-- [x] Wire up assessment document upload/delete mutations
-- [x] Document upload only available for existing assessments (edit mode)
-
-### Document Count Badges ✅ COMPLETED
-- [x] Add document count query to project stats
-- [x] Display document count badge on project cards
-- [x] Display document count badge on Documents tab
-- [x] Add visual indicator for projects with documents
-- [x] Badge only shows when documents > 0
-
-
-## Presentation Development
-- [ ] Create professional presentation about BCA application
-  - [ ] Gather requirements: audience, goal, format, length, key aspects
-  - [ ] Prepare content and structure
-  - [ ] Generate slides
-  - [ ] Deliver to user
-
+- [x] Add document upload section to AssessmentDialog
+- [x] Integrate DocumentUploadZone and DocumentList components
+- [x] Documents only available in edit mode (after assessment is saved)
+- [x] Add document count to project stats query
+- [x] Display document count badge on project cards (only when documents > 0)
+- [x] Display document count badge on Documents tab in ProjectDetail
+- [x] Test all features with proper multi-tenant isolation
 
 ## Multi-Factor Authentication (MFA) Implementation
+- [x] Create database schema (user_mfa_settings, trusted_devices, mfa_audit_log)
+- [x] Implement MFA service (TOTP generation/verification, QR codes, backup codes, encryption)
+- [x] Create tRPC API endpoints (setup, enable, disable, verify, device trust management)
+- [x] Build MFASetupWizard component (step-by-step enrollment with QR code scanning)
+- [x] Build MFAVerification component (login verification with backup code support)
+- [x] Build MFASettings component (user management of MFA, backup codes, trusted devices)
+- [x] Create SecuritySettings page (dedicated security settings interface)
+- [x] Implement TOTP authentication (Google Authenticator, Microsoft Authenticator, Authy)
+- [x] Implement 10 single-use backup codes with regeneration
+- [x] Implement device trust (30-day remember me)
+- [x] Add comprehensive audit logging
+- [x] Add rate limiting and security controls
+- [x] Write 14 vitest tests (all passing)
 
-### Phase 1: Database Schema
-- [x] Create user_mfa_settings table (userId, secret, enabled, backupCodes, createdAt, updatedAt)
-- [x] Create trusted_devices table (userId, deviceFingerprint, deviceName, lastUsed, expiresAt)
-- [x] Create mfa_audit_log table (userId, action, success, ipAddress, userAgent, timestamp)
-- [x] Run database migrations
-
-### Phase 2: Backend Services
-- [x] Install speakeasy package for TOTP generation
-- [x] Create MFA service (generateSecret, verifyToken, generateBackupCodes)
-- [x] Create device fingerprinting service
-- [x] Create MFA middleware for protected routes
-- [x] Add rate limiting for MFA verification attempts
-
-### Phase 3: Backend API Endpoints
-- [x] mfa.getStatus - Check if user has MFA enabled
-- [x] mfa.setup - Generate QR code and secret for enrollment
-- [x] mfa.enable - Verify code and enable MFA
-- [x] mfa.disable - Disable MFA (requires password/code)
-- [x] mfa.verify - Verify TOTP code during login
-- [x] mfa.regenerateBackupCodes - Generate new backup codes
-- [x] mfa.getTrustedDevices - List trusted devices
-- [x] mfa.removeTrustedDevice - Remove device trust
-
-### Phase 4: Frontend Components
-- [x] Create MFASetupWizard component (QR code, instructions)
-- [x] Create MFAVerification component (code input during login)
-- [x] Create MFASettings component (enable/disable, backup codes, devices)
-- [x] Create BackupCodesDisplay component (show and download codes)
-- [x] Update login flow to check MFA status
-- [x] Add MFA section to user settings page
-
-### Phase 5: Admin Controls
-- [ ] Add MFA enforcement settings (require for admins, optional for others)
-- [ ] Add MFA status column to user management table
-- [ ] Add admin ability to reset user MFA
-- [ ] Add MFA audit log viewer for admins
-
-### Phase 8: MFA Login Flow Integration
-- [ ] Add MFA check after OAuth callback
-- [ ] Redirect to MFA verification page if enabled
-- [ ] Store pending session until MFA verified
-- [ ] Handle backup code login flow
-- [ ] Handle device trust (remember me) flow
-- [ ] Add "Trust this device" checkbox on verification
-
-### Phase 6: Security Features
-- [x] Implement rate limiting (5 attempts per 15 minutes)
-- [x] Account lockout after 10 failed attempts
-- [x] Encrypt MFA secrets in database
-- [x] Time-window validation (±30 seconds)
-- [x] Single-use backup code enforcement
-- [x] Device fingerprinting for "remember me"
-
-### Phase 7: Testing & Documentation
-- [x] Test MFA enrollment flow
-- [x] Test login with MFA verification
-- [x] Test backup codes
-- [x] Test device trust
-- [ ] Test admin enforcement
-- [ ] Update user guide with MFA instructions
-- [ ] Create checkpoint
-
-
-## Asset AI Import & Document Attachment Features
-
-### Phase 1: Database Schema
-- [x] Create asset_documents table (assetId, fileName, fileKey, url, mimeType, fileSize, uploadedBy, description, createdAt)
-- [x] Push schema changes to database
-
-### Phase 2: Backend API
-- [x] Create assetDocuments router with endpoints:
-  - [x] upload - Upload document to S3 and save metadata
-  - [x] list - Get all documents for an asset
-  - [x] delete - Remove document from S3 and database
-- [x] Create assets.aiImport endpoint to parse PDF/Word and extract asset info
-- [x] Use LLM to extract: asset name, type, location, year built, gross area, description
-- [x] Register routers in main router
-
-### Phase 3: Frontend UI
-- [x] Add "AI Import" button to Assets page header
-- [x] Create AIImportAssetDialog component
-  - [x] File upload (PDF/Word only, max 10MB)
-  - [x] Show parsing progress
-  - [x] Display extracted asset information
-  - [x] Allow user to review and edit before saving
-- [ ] Add "Attach Document" button to asset detail view
-- [ ] Create DocumentUpload component with drag-and-drop
-- [ ] Display list of attached documents with download/delete actions
-- [ ] Show document count badge on asset cards
-
-### Phase 4: Testing
-- [x] Test AI import with sample facility documents
-- [x] Write and run unit tests for AI import validation
-- [ ] Test document upload/download/delete (not yet implemented)
-- [ ] Verify S3 storage and metadata (not yet implemented)
-- [ ] Create checkpoint
+## AI Import for Assets
+- [x] Add AI Import button on Assets page with sparkle icon
+- [x] Create AIImportAssetDialog component for uploading PDF/Word documents
+- [x] Implement AI-powered extraction of asset information (name, type, address, year built, floor area, stories, construction type, description)
+- [x] Create assets.aiImport endpoint using LLM for document parsing
+- [x] Create assetDocuments router for future document management (upload, list, delete)
+- [x] Create asset_documents table in database schema
+- [x] Add unit tests for AI import validation (file type and size checks)
+- [x] Test end-to-end AI import flow
