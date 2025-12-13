@@ -13,6 +13,16 @@
 - [x] Implement client-side filtering by document type
 - [x] Test bulk download and filtering features
 
+## Google Maps Integration with Structured Addresses (Completed)
+- [x] Update assets table with structured address fields (street address, street number, apt/unit, postal code, province)
+- [x] Update projects table with structured address fields
+- [x] Update asset creation/edit forms with new address fields
+- [x] Create Google Maps component for asset visualization
+- [x] Add geocoding to convert addresses to coordinates
+- [x] Display all project assets on interactive map
+- [x] Make asset markers clickable to navigate to asset details
+- [x] Add map view tab to project detail page
+
 ## MFA Enhancements (Completed)
 
 ### Feature 1: Admin MFA Reset Capability

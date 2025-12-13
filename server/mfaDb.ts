@@ -33,7 +33,7 @@ export async function getMfaSettings(userId: number) {
 
   return {
     ...setting,
-    secret: decryptSecret(setting.secret, encryptionKey),
+    secret: setting.secret ? decryptSecret(setting.secret, encryptionKey) : "",
     backupCodes: setting.backupCodes ? JSON.parse(setting.backupCodes) : [],
   };
 }

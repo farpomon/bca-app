@@ -88,7 +88,14 @@ export const assets = mysqlTable("assets", {
 	name: varchar({ length: 255 }).notNull(),
 	description: text(),
 	assetType: varchar({ length: 100 }),
-	address: text(),
+	address: text(), // Legacy field - kept for backward compatibility
+	streetNumber: varchar({ length: 20 }),
+	streetAddress: varchar({ length: 255 }),
+	unitNumber: varchar({ length: 50 }),
+	postalCode: varchar({ length: 20 }),
+	province: varchar({ length: 100 }),
+	latitude: decimal({ precision: 10, scale: 7 }),
+	longitude: decimal({ precision: 10, scale: 7 }),
 	yearBuilt: int(),
 	grossFloorArea: int(),
 	numberOfStories: int(),
@@ -962,7 +969,14 @@ export const projects = mysqlTable("projects", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	address: text(),
+	address: text(), // Legacy field - kept for backward compatibility
+	streetNumber: varchar({ length: 20 }),
+	streetAddress: varchar({ length: 255 }),
+	unitNumber: varchar({ length: 50 }),
+	postalCode: varchar({ length: 20 }),
+	province: varchar({ length: 100 }),
+	latitude: decimal({ precision: 10, scale: 7 }),
+	longitude: decimal({ precision: 10, scale: 7 }),
 	clientName: varchar({ length: 255 }),
 	propertyType: varchar({ length: 100 }),
 	constructionType: varchar({ length: 100 }),
@@ -1338,9 +1352,12 @@ export const wasteTracking = mysqlTable("waste_tracking", {
 export const userMfaSettings = mysqlTable("user_mfa_settings", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
-	secret: varchar({ length: 255 }).notNull(), // Encrypted TOTP secret
+	secret: varchar({ length: 255 }), // Encrypted TOTP secret (nullable for SMS-only users)
 	enabled: int().default(0).notNull(), // 0 = disabled, 1 = enabled
 	backupCodes: text(), // JSON array of hashed backup codes
+	mfaMethod: mysqlEnum(['totp', 'sms']).default('totp'), // MFA method: TOTP (authenticator app) or SMS
+	phoneNumber: varchar({ length: 20 }), // Phone number for SMS MFA (E.164 format)
+	phoneVerified: int().default(0), // 0 = not verified, 1 = verified
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
@@ -1367,7 +1384,7 @@ export const trustedDevices = mysqlTable("trusted_devices", {
 export const mfaAuditLog = mysqlTable("mfa_audit_log", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
-	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','mfa_reset_by_admin']).notNull(),
+	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','mfa_reset_by_admin','sms_sent','sms_verified']).notNull(),
 	success: int().default(1).notNull(), // 0 = failed, 1 = success
 	ipAddress: varchar({ length: 45 }),
 	userAgent: text(),
@@ -1378,6 +1395,22 @@ export const mfaAuditLog = mysqlTable("mfa_audit_log", {
 (table) => [
 	index("idx_user_action").on(table.userId, table.action),
 	index("idx_created").on(table.createdAt),
+]);
+
+export const smsVerificationCodes = mysqlTable("sms_verification_codes", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	code: varchar({ length: 255 }).notNull(), // 6-digit verification code (hashed)
+	phoneNumber: varchar({ length: 20 }).notNull(), // E.164 format
+	purpose: mysqlEnum(['mfa_setup', 'mfa_login', 'phone_verification']).notNull(),
+	attempts: int().default(0).notNull(), // Number of verification attempts
+	verified: int().default(0).notNull(), // 0 = not verified, 1 = verified
+	expiresAt: timestamp({ mode: 'string' }).notNull(), // Code expires after 10 minutes
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_user_code").on(table.userId, table.code),
+	index("idx_expires").on(table.expiresAt),
 ]);
 
 // Type exports for all tables
@@ -1518,3 +1551,6 @@ export type InsertTrustedDevice = typeof trustedDevices.$inferInsert;
 
 export type MfaAuditLog = typeof mfaAuditLog.$inferSelect;
 export type InsertMfaAuditLog = typeof mfaAuditLog.$inferInsert;
+
+export type SmsVerificationCode = typeof smsVerificationCodes.$inferSelect;
+export type InsertSmsVerificationCode = typeof smsVerificationCodes.$inferInsert;

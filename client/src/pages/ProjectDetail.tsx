@@ -16,7 +16,7 @@ import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { ProjectDocumentList } from "@/components/ProjectDocumentList";
-import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive } from "lucide-react";
+import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -26,6 +26,7 @@ import ExportButton from "@/components/ExportButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { DocumentList } from "@/components/DocumentList";
 import { BulkDownloadButton } from "@/components/BulkDownloadButton";
+import { ProjectAssetsMap } from "@/components/ProjectAssetsMap";
 import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
@@ -389,6 +390,10 @@ export default function ProjectDetail() {
                   {stats.documents}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="map" className="gap-2">
+              <MapPin className="h-4 w-4" />
+              Map
             </TabsTrigger>
           </TabsList>
 
@@ -935,6 +940,23 @@ export default function ProjectDetail() {
                   }}
                   isLoading={documentsLoading}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="map" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Asset Locations
+                </CardTitle>
+                <CardDescription>
+                  View all project assets on an interactive map. Click on markers to navigate to asset details.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProjectAssetsMap projectId={projectId} />
               </CardContent>
             </Card>
           </TabsContent>

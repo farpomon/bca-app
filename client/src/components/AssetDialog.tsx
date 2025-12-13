@@ -23,6 +23,11 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
   const [description, setDescription] = useState("");
   const [assetType, setAssetType] = useState("");
   const [address, setAddress] = useState("");
+  const [streetNumber, setStreetNumber] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [unitNumber, setUnitNumber] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [province, setProvince] = useState("");
   const [yearBuilt, setYearBuilt] = useState("");
   const [grossFloorArea, setGrossFloorArea] = useState("");
   const [numberOfStories, setNumberOfStories] = useState("");
@@ -64,6 +69,11 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
       setDescription(asset.description || "");
       setAssetType(asset.assetType || "");
       setAddress(asset.address || "");
+      setStreetNumber(asset.streetNumber || "");
+      setStreetAddress(asset.streetAddress || "");
+      setUnitNumber(asset.unitNumber || "");
+      setPostalCode(asset.postalCode || "");
+      setProvince(asset.province || "");
       setYearBuilt(asset.yearBuilt?.toString() || "");
       setGrossFloorArea(asset.grossFloorArea?.toString() || "");
       setNumberOfStories(asset.numberOfStories?.toString() || "");
@@ -80,6 +90,11 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
     setDescription("");
     setAssetType("");
     setAddress("");
+    setStreetNumber("");
+    setStreetAddress("");
+    setUnitNumber("");
+    setPostalCode("");
+    setProvince("");
     setYearBuilt("");
     setGrossFloorArea("");
     setNumberOfStories("");
@@ -100,6 +115,11 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
       description: description.trim() || undefined,
       assetType: assetType.trim() || undefined,
       address: address.trim() || undefined,
+      streetNumber: streetNumber.trim() || undefined,
+      streetAddress: streetAddress.trim() || undefined,
+      unitNumber: unitNumber.trim() || undefined,
+      postalCode: postalCode.trim() || undefined,
+      province: province.trim() || undefined,
       yearBuilt: yearBuilt ? parseInt(yearBuilt) : undefined,
       grossFloorArea: grossFloorArea ? parseInt(grossFloorArea) : undefined,
       numberOfStories: numberOfStories ? parseInt(numberOfStories) : undefined,
@@ -164,14 +184,56 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Textarea
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-
-              rows={2}
-            />
+            <Label>Address</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="streetNumber">Street Number</Label>
+                <Input
+                  id="streetNumber"
+                  value={streetNumber}
+                  onChange={(e) => setStreetNumber(e.target.value)}
+                  placeholder="123"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="streetAddress">Street Address</Label>
+                <Input
+                  id="streetAddress"
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
+                  placeholder="Main Street"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="unitNumber">Apt/Unit No</Label>
+                <Input
+                  id="unitNumber"
+                  value={unitNumber}
+                  onChange={(e) => setUnitNumber(e.target.value)}
+                  placeholder="Suite 100"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  placeholder="A1A 1A1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="province">Province</Label>
+                <Input
+                  id="province"
+                  value={province}
+                  onChange={(e) => setProvince(e.target.value)}
+                  placeholder="Ontario"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

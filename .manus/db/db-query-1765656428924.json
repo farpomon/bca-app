@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE projects \nADD COLUMN streetNumber VARCHAR(20),\nADD COLUMN streetAddress VARCHAR(255),\nADD COLUMN unitNumber VARCHAR(50),\nADD COLUMN postalCode VARCHAR(20),\nADD COLUMN province VARCHAR(100),\nADD COLUMN latitude DECIMAL(10, 7),\nADD COLUMN longitude DECIMAL(10, 7);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE projects \nADD COLUMN streetNumber VARCHAR(20),\nADD COLUMN streetAddress VARCHAR(255),\nADD COLUMN unitNumber VARCHAR(50),\nADD COLUMN postalCode VARCHAR(20),\nADD COLUMN province VARCHAR(100),\nADD COLUMN latitude DECIMAL(10, 7),\nADD COLUMN longitude DECIMAL(10, 7);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1969
+}
