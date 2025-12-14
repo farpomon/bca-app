@@ -183,6 +183,9 @@ export function AssessmentDialog({
   const [showRecommendationsVoice, setShowRecommendationsVoice] = useState(false);
   const [showComponentNameVoice, setShowComponentNameVoice] = useState(false);
   const [showComponentLocationVoice, setShowComponentLocationVoice] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
+  const [dragOverPhotoIndex, setDragOverPhotoIndex] = useState<number | null>(null);
 
   const upsertAssessment = trpc.assessments.upsert.useMutation();
   const checkValidation = trpc.validation.check.useMutation();
@@ -458,6 +461,119 @@ export function AssessmentDialog({
     if (photoFiles.length === 1) {
       setPhotoGeolocation(null);
     }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files).filter(file => 
+      file.type.startsWith('image/')
+    );
+
+    if (files.length > 0) {
+      setPhotoFiles(prev => [...prev, ...files]);
+      
+      // Generate previews for all new files
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotoPreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Capture geolocation when photos are dropped
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setPhotoGeolocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              altitude: position.coords.altitude || undefined,
+              accuracy: position.coords.accuracy,
+            });
+            toast.success("Location captured");
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            toast.error("Location not available");
+          },
+          { enableHighAccuracy: true }
+        );
+      }
+
+      toast.success(`${files.length} photo${files.length > 1 ? 's' : ''} added`);
+    } else {
+      toast.error("Please drop image files only");
+    }
+  };
+
+  // Photo reordering handlers
+  const handlePhotoDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedPhotoIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handlePhotoDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverPhotoIndex(index);
+  };
+
+  const handlePhotoDragLeavePhoto = () => {
+    setDragOverPhotoIndex(null);
+  };
+
+  const handlePhotoDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (draggedPhotoIndex === null || draggedPhotoIndex === dropIndex) {
+      setDraggedPhotoIndex(null);
+      setDragOverPhotoIndex(null);
+      return;
+    }
+
+    // Reorder photos
+    const newPhotoFiles = [...photoFiles];
+    const newPhotoPreviews = [...photoPreviews];
+    
+    const [draggedFile] = newPhotoFiles.splice(draggedPhotoIndex, 1);
+    const [draggedPreview] = newPhotoPreviews.splice(draggedPhotoIndex, 1);
+    
+    newPhotoFiles.splice(dropIndex, 0, draggedFile);
+    newPhotoPreviews.splice(dropIndex, 0, draggedPreview);
+    
+    setPhotoFiles(newPhotoFiles);
+    setPhotoPreviews(newPhotoPreviews);
+    setDraggedPhotoIndex(null);
+    setDragOverPhotoIndex(null);
+    
+    toast.success("Photo reordered");
+  };
+
+  const handlePhotoDragEnd = () => {
+    setDraggedPhotoIndex(null);
+    setDragOverPhotoIndex(null);
   };
 
   const handleAIAnalysis = () => {
@@ -805,7 +921,17 @@ export function AssessmentDialog({
           {/* Photo Upload */}
           <div className="space-y-2">
             <Label htmlFor="photo">Upload Photos (Optional)</Label>
-            <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
+            <div 
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                isDragging 
+                  ? 'border-primary bg-primary/5' 
+                  : 'hover:border-primary'
+              }`}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
               <input
                 id="photo"
                 type="file"
@@ -815,9 +941,13 @@ export function AssessmentDialog({
                 className="hidden"
               />
               <label htmlFor="photo" className="cursor-pointer">
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload or drag and drop
+                <Upload className={`mx-auto h-12 w-12 mb-2 transition-colors ${
+                  isDragging ? 'text-primary' : 'text-muted-foreground'
+                }`} />
+                <p className={`text-sm transition-colors ${
+                  isDragging ? 'text-primary font-medium' : 'text-muted-foreground'
+                }`}>
+                  {isDragging ? 'Drop photos here' : 'Click to upload or drag and drop'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   PNG, JPG, GIF up to 10MB each - Select multiple files
@@ -827,13 +957,29 @@ export function AssessmentDialog({
             
             {photoPreviews.length > 0 && (
               <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Drag photos to reorder them</p>
                 <div className="grid grid-cols-2 gap-2">
                   {photoPreviews.map((preview, index) => (
-                    <div key={index} className="relative border rounded-lg overflow-hidden group">
+                    <div 
+                      key={index} 
+                      draggable
+                      onDragStart={(e) => handlePhotoDragStart(e, index)}
+                      onDragOver={(e) => handlePhotoDragOver(e, index)}
+                      onDragLeave={handlePhotoDragLeavePhoto}
+                      onDrop={(e) => handlePhotoDrop(e, index)}
+                      onDragEnd={handlePhotoDragEnd}
+                      className={`relative border rounded-lg overflow-hidden group cursor-move transition-all ${
+                        draggedPhotoIndex === index ? 'opacity-50 scale-95' : ''
+                      } ${
+                        dragOverPhotoIndex === index && draggedPhotoIndex !== index 
+                          ? 'ring-2 ring-primary scale-105' 
+                          : ''
+                      }`}
+                    >
                       <img
                         src={preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-32 object-cover"
+                        className="w-full h-32 object-cover pointer-events-none"
                       />
                       <Button
                         variant="destructive"

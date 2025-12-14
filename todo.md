@@ -88,6 +88,8 @@
 ## Current Bug Fixes
 
 - [x] Add multiple photo upload capability to AssessmentDialog component
+- [x] Add drag-and-drop support for multiple photo uploads
+- [x] Implement photo reordering with drag-and-drop in preview grid
 
 - [x] Fix "Start Assessment" button navigation on project detail page (not working on mobile)
 - [x] Fix AI Import Asset error: "Cannot read properties of undefined (reading '0')" - Fixed JSON schema nullable format
