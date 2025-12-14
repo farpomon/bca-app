@@ -70,11 +70,12 @@ export function configureSecurityHeaders() {
 
 /**
  * General API rate limiter
- * Limits: 100 requests per 15 minutes per IP
+ * Limits: 1000 requests per 15 minutes per IP
+ * Increased to accommodate multiple simultaneous queries on data-heavy pages
  */
 export const apiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 1000, // Limit each IP to 1000 requests per windowMs
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers

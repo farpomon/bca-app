@@ -42,6 +42,9 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   
+  // Trust proxy - needed for rate limiting behind reverse proxy
+  app.set('trust proxy', 1);
+  
   // Security middleware - MUST be first
   app.use(configureSecurityHeaders());
   app.use(configureCORS());

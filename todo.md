@@ -87,6 +87,9 @@
 
 ## Current Bug Fixes
 
+- [x] Fix "project not found" error when clicking on projects from Projects page - Fixed rate limiting issue (increased from 100 to 1000 requests per 15 min)
+- [x] Investigate routing or data fetching issue causing project not found - Root cause was HTTP 429 rate limiting, not routing
+
 - [x] Add multiple photo upload capability to AssessmentDialog component
 - [x] Add drag-and-drop support for multiple photo uploads
 - [x] Implement photo reordering with drag-and-drop in preview grid
