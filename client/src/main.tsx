@@ -8,6 +8,7 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import { DeviceProvider } from "./contexts/DeviceContext";
 import { SessionTimeoutProvider } from "./contexts/SessionTimeoutContext";
+import { OfflineSyncProvider } from "./components/OfflineSyncProvider";
 import "./index.css";
 import "./mobile-compat.css";
 
@@ -58,11 +59,13 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <DeviceProvider>
-        <SessionTimeoutProvider>
-          <App />
-        </SessionTimeoutProvider>
-      </DeviceProvider>
+      <OfflineSyncProvider>
+        <DeviceProvider>
+          <SessionTimeoutProvider>
+            <App />
+          </SessionTimeoutProvider>
+        </DeviceProvider>
+      </OfflineSyncProvider>
     </QueryClientProvider>
   </trpc.Provider>
 );

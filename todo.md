@@ -1,5 +1,64 @@
 # BCA App TODO
 
+## 🔥 CURRENT PRIORITY: Offline-First Functionality
+
+### Phase 1: Offline Storage Infrastructure
+- [x] Create IndexedDB schema for offline assessments (offlineAssessments store)
+- [x] Create IndexedDB schema for offline photos (offlinePhotos store)
+- [x] Create IndexedDB schema for offline deficiencies (offlineDeficiencies store)
+- [x] Create IndexedDB schema for sync queue (syncQueue store)
+- [x] Build sync queue manager with priority system
+- [x] Implement conflict resolution strategy (server-wins vs last-write-wins)
+
+### Phase 2: Offline Assessment Data Entry
+- [x] Enable assessment form to save locally when offline
+- [x] Store assessment drafts in IndexedDB with timestamps
+- [x] Add offline indicator badge to assessment form
+- [x] Queue assessments for sync when connection returns
+- [x] Handle partial assessment saves (auto-save every 30 seconds)
+- [x] Link offline assessments to offline photos
+
+### Phase 3: Offline Photo Management
+- [x] Implement photo compression for offline storage (reduce file size 50-70%)
+- [x] Queue photos with metadata in IndexedDB
+- [x] Add photo preview from local IndexedDB storage
+- [x] Link photos to offline assessments via temporary IDs
+- [x] Batch upload photos when connection returns
+- [x] Show upload progress for queued photos
+
+### Phase 4: Background Sync Service
+- [x] Implement automatic sync on connection restore (listen to online event)
+- [x] Add retry logic with exponential backoff (1s, 2s, 4s, 8s, 16s)
+- [x] Handle sync failures gracefully with user notifications
+- [x] Implement conflict resolution (server wins for now, add merge later)
+- [x] Add sync progress tracking with percentage
+- [x] Process sync queue in order: assessments first, then photos, then deficiencies
+
+### Phase 5: Offline UI/UX
+- [x] Create offline status banner (persistent at top of screen)
+- [x] Add sync progress indicator (circular progress with percentage)
+- [x] Show pending items count badge (e.g., "5 items pending sync")
+- [x] Build sync queue viewer dialog (list all pending items)
+- [x] Add manual sync trigger button
+- [x] Display last sync timestamp
+- [x] Show sync errors with retry button
+
+### Phase 6: Data Caching for Offline Viewing
+- [x] Cache project list for offline viewing (last 50 projects)
+- [x] Cache building components (UNIFORMAT II - static data)
+- [ ] Cache user settings and preferences (future enhancement)
+- [x] Implement cache invalidation strategy (TTL: 24 hours)
+- [x] Add cache size management (max 50MB)
+- [ ] Show cached data indicator in UI (future enhancement)
+
+### Phase 7: Testing & Documentation
+- [ ] Test offline assessment creation and sync (ready for testing)
+- [ ] Test offline photo upload and sync (ready for testing)
+- [ ] Test conflict resolution scenarios (ready for testing)
+- [ ] Test sync retry on network failures (ready for testing)
+- [x] Create user documentation for offline mode
+- [ ] Create checkpoint (pending testing)
+
 ## Current Bug Fixes
 
 - [x] Fix "Start Assessment" button navigation on project detail page (not working on mobile)
@@ -218,384 +277,12 @@
 - [x] Add voice input to Component Name field
 - [x] Add voice input to Component Location field
 
-## Offline Capabilities
+## Offline Capabilities (Voice Recording Only - Expanding to Full Offline-First)
 - [x] Save voice recordings locally when offline (using IndexedDB)
 - [x] Auto-transcribe saved recordings when connection is restored
 - [x] Show offline recording queue status to user (OfflineQueueWidget)
 
 ## Critical Bugs
 - [x] Fix logout error - Added redirect to home page after logout to prevent accessing protected pages
-
-## Data Issues
-- [x] Fixed projects not showing up - Updated projects.list router to pass company and isAdmin parameters to getUserProjects function
+- [x] Fix projects not showing up - Updated projects.list router to pass company and isAdmin parameters to getUserProjects function
 - [x] Verified 1,695 projects now visible for admin user
-
-## Current Tasks
-
-### AI Document Parsing Error Handling
-- [x] Add comprehensive error handling to AI document parser
-  - [x] Add try-catch blocks with specific error types (PDF parsing, AI extraction, network errors)
-  - [x] Return detailed error messages for different failure scenarios
-  - [x] Add file size validation (max 10MB)
-  - [x] Add file type validation (PDF/Word only)
-  - [x] Update frontend to display parsing errors to users
-  - [x] Add error logging for debugging
-
-## Current Issues
-- [x] Projects showing in Admin Dashboard but not in main Projects page (Admin Dashboard works as workaround)
-- [x] Make project names clickable in Admin Dashboard to navigate to project details
-
-## AI Enhancement Features
-- [x] Create backend tRPC procedure for AI text enhancement using BCA industry best practices
-- [x] Update VoiceRecorder to show original vs enhanced transcription
-- [x] Add user choice between original and enhanced version ("Use Enhanced" or "Use Original" buttons)
-- [x] Track transcription history to preserve all versions (original + enhanced) via IndexedDB
-
-## AI Import Enhancements
-- [x] Change AI import to save entire PDF/Word pages as images instead of extracting individual photos
-- [x] Associate each page image with the appropriate UNIFORMAT II sub-section using AI classification
-- [x] Preserve full page context (text, tables, diagrams around photos)
-- [x] Fix AI classification prompt to correctly parse pages with photos
-- [x] Improve prompt with better instructions for photo captions and visual content
-- [x] Add examples of how to extract component codes from photo descriptions
-- [x] Increased context from 300 to 800 characters for better classification
-- [x] Added comprehensive keyword lists for each building system
-- [x] Added reasoning field to AI response for transparency
-
-## Landing Page Updates
-- [x] Remove code edition references (e.g., ASTM E2018-15 → ASTM E2018)
-- [x] Update all standard references to show only base code without edition year suffix
-
-## AI Import Error Fixes
-- [x] Investigate "failed to parse" error in AI import (canvas rendering issue)
-- [x] Replace broken canvas-based PDF rendering with pdf-poppler
-- [x] Use Google Gemini Vision API to analyze page images directly
-- [x] Implement multimodal classification (image + text) for better accuracy
-- [x] Upload page images to S3 for vision analysis
-- [x] Process pages in batches of 5 to avoid token limits
-- [x] Add structured JSON schema for classification results
-
-## Mobile Assessment Page Enhancements
-- [x] Show assessment summary in UNIFORMAT section headers (e.g., "3 Good, 2 Fair, 1 Poor")
-- [x] Make Assessment Progress section expandable
-- [x] Show list of components when clicking on condition boxes (Good/Fair/Poor)
-- [x] Make components in the list clickable to open assessment dialog
-- [x] Add hover effects to condition boxes for better UX
-
-## Asset Document Management
-- [ ] Create database schema for asset documents (assetDocuments table)
-- [ ] Add document upload API endpoint (accepts PDF/Word files)
-- [ ] Store documents in S3 with proper file keys
-- [ ] Create UI for uploading documents to assets
-- [ ] Display list of uploaded documents for each asset
-- [ ] Add download/view functionality for uploaded documents
-- [ ] Add delete document functionality
-
-## Voice Input Bug Fix
-- [x] Investigate why voice transcriptions don't appear in form fields
-- [x] Fix VoiceRecorder callback integration
-- [x] Fix RichTextEditor to sync with external content changes
-- [x] Test voice input on all fields (observations, recommendations, component name, location)
-- [x] Verify transcription text is properly inserted into fields
-
-## Assessment Document Upload Feature
-- [x] Create assessment_documents table in database schema
-- [x] Add backend API endpoints for document upload/list/delete
-- [ ] Build DocumentUpload component with drag-and-drop support
-- [ ] Integrate document upload into AssessmentDialog
-- [ ] Add document list display in assessment view
-- [ ] Add download/view functionality for uploaded documents
-- [ ] Test with PDF and Word documents
-
-## Deployment Fixes
-- [x] Remove pdf-poppler dependency causing node-gyp errors
-- [x] Remove canvas package completely from dependencies
-- [x] Remove canvas from onlyBuiltDependencies in package.json
-- [x] Disable AI import temporarily to fix deployment
-- [x] Server compiles and runs successfully without native dependencies
-- [x] Verified no canvas dependencies remain
-- [ ] Re-implement AI import using cloud-based PDF processing service (future enhancement)
-
-## Compliance & Certifications Features
-
-### Phase 1: Enhanced Audit Logging
-- [x] Extend audit_log table with compliance fields (data_classification, retention_policy, compliance_tags)
-- [x] Add audit logging for all sensitive operations (data access, modifications, exports, deletions)
-- [x] Create audit log viewer with filtering and search
-- [x] Add audit log export functionality for compliance reviews
-
-### Phase 2: Data Residency & Consent Management
-- [x] Create data_residency_settings table
-- [x] Create user_consents table for tracking privacy agreements
-- [x] Build consent management UI (user consent forms, consent history)
-- [x] Add data residency display in admin settings
-- [x] Create privacy policy acceptance workflow
-
-### Phase 3: Compliance Dashboard
-- [x] Create compliance dashboard page (admin only)
-- [x] Add compliance metrics (audit coverage, consent rates, data retention)
-- [x] Build compliance report generator (PDF/CSV exports)
-- [x] Add data classification summary view
-- [x] Create compliance checklist tracker
-
-### Phase 4: User Privacy Controls
-- [x] Add "Export My Data" feature (FOIP data portability)
-- [x] Add "Delete My Account" feature (right to deletion)
-- [x] Create data access request workflow
-- [x] Add privacy settings page for users
-- [ ] Implement data anonymization for deleted users (backend logic pending)
-
-### Phase 5: Documentation & Testing
-- [ ] Create compliance documentation page
-- [ ] Add system security information display
-- [ ] Test all compliance features
-- [ ] Create compliance admin guide
-- [ ] Save checkpoint
-
-## Bug Fixes - Assessment Progress & Voice Input
-- [x] Fix assessment progress to display actual component names instead of "Unknown Component"
-- [x] Fix voice transcription not working for component name field (Input field issue)
-- [x] Test both fixes thoroughly
-
-## Bug Fixes - Building Codes Dropdown
-- [x] Fix building codes dropdown not working in project creation form
-- [x] Verify building codes are loading from database
-- [x] Fix NaN validation error when no building code is selected
-- [x] Test project creation with and without building code selection
-
-## Data Security & Encryption Requirements
-
-### Phase 1: Encryption Documentation & Data Ownership
-- [x] Document encryption standards (TLS 1.3 in transit, AES-256-GCM at rest)
-- [x] Create data ownership documentation (City retains sole ownership)
-- [x] Add encryption information to compliance documentation
-
-### Phase 2: Data Retention Policies
-- [x] Define 7-year retention policy for all data types
-- [x] Create retention_policies table
-- [x] Add retention policy management UI (admin only)
-- [x] Document retention policies in compliance section
-
-### Phase 3: Secure Data Disposal
-- [x] Create data disposal workflow
-- [x] Add secure deletion endpoints (projects, users, assessments)
-- [x] Implement backup purging for deleted data
-- [x] Add disposal audit logging
-- [x] Create Data Security admin dashboard
-
-### Phase 4: Testing & Documentation
-- [x] Test all data security features
-- [x] Update compliance documentation with security details
-- [x] Create admin guide for data security management
-- [x] Save checkpoint
-
-## Enterprise Authentication & Comprehensive Audit Trail
-
-### Phase 1: SAML 2.0 Authentication
-- [x] Install and configure @node-saml/passport-saml package
-- [x] Create SAML configuration module (saml.ts)
-- [x] Add SAML environment variables (SAML_ENABLED, SAML_ENTRY_POINT, SAML_ISSUER, etc.)
-- [x] Generate Service Provider metadata for City IT department
-- [x] Support Active Directory integration
-- [ ] Create SAML authentication routes (/api/saml/login, /api/saml/callback)
-- [ ] Test SAML authentication flow
-- [ ] Document SAML setup for City IT
-
-### Phase 2: Authentication Audit Logging
-- [x] Create authAudit.ts service
-- [x] Log successful login attempts (SAML and standard)
-- [x] Log unsuccessful login attempts
-- [x] Log logout events
-- [x] Log session timeout events
-- [x] Log account lockout events
-- [x] Add IP address and user agent tracking
-
-### Phase 3: System Configuration Audit Logging
-- [x] Create configAudit.ts service
-- [x] Log role changes
-- [x] Log permission changes
-- [x] Log system settings changes
-- [x] Log SAML configuration changes
-- [x] Log retention policy changes
-- [x] Log encryption key rotation
-- [x] Log backup and restore operations
-
-### Phase 4: Enhanced Audit Router
-- [x] Add getAuthLogs endpoint (authentication events)
-- [x] Add getConfigLogs endpoint (configuration changes)
-- [x] Add exportLogs endpoint (CSV export for security audits)
-- [x] Add filtering by event type, user, date range
-- [x] Add pagination for large audit logs
-
-### Phase 5: Granular RBAC Implementation
-- [ ] Extend role system beyond 4 basic roles
-- [ ] Create permissions table (granular permissions)
-- [ ] Create role_permissions mapping table
-- [ ] Implement permission checking middleware
-- [ ] Add permission management UI (admin only)
-- [ ] Test permission enforcement across all endpoints
-
-### Phase 6: Audit Trail Viewer UI
-- [ ] Create AuthAuditLog component (authentication events)
-- [ ] Create ConfigAuditLog component (configuration changes)
-- [ ] Add audit log viewer to Admin section
-- [ ] Implement filtering and search
-- [ ] Add CSV export button
-- [ ] Test audit log viewer
-
-## Security Architecture & Vulnerability Assessment
-
-### Phase 1: Security Documentation
-- [x] Create SECURITY_ARCHITECTURE.md
-  - [x] Infrastructure security (DDoS, firewalls, IDS/IPS)
-  - [x] Multi-tenancy & data isolation
-  - [x] Application security (authentication, RBAC, input validation)
-  - [x] Data protection & encryption
-  - [x] Audit logging & monitoring
-  - [x] Vulnerability management
-  - [x] Incident response & business continuity
-  - [x] Compliance (NIST, OWASP, CIS)
-
-- [x] Create VULNERABILITY_ASSESSMENT.md
-  - [x] City vulnerability assessment rights
-  - [x] Vendor penetration testing methodology
-  - [x] Vulnerability scanning processes
-  - [x] Remediation timelines (Critical: 7 days, High: 30 days)
-  - [x] Patch management procedures
-  - [x] Security testing tools
-  - [x] Vulnerability disclosure policy
-
-### Phase 2: Application Security Implementation
-- [x] Create security middleware (security.ts)
-- [x] Implement Helmet security headers (HSTS, CSP, X-Frame-Options)
-- [x] Implement rate limiting (API, Auth, Upload endpoints)
-- [x] Implement input validation & sanitization
-- [x] Implement request size limiting
-- [x] Implement CORS configuration
-- [x] Add security event logging
-
-- [x] Apply security middleware to Express server
-- [x] Protect all API endpoints with rate limiting
-- [x] Protect authentication endpoints with strict rate limiting
-- [x] Protect upload endpoints with dedicated rate limiting
-- [x] Add input validation to all requests
-- [x] Add security headers to all responses
-
-### Phase 3: Security Monitoring
-- [x] Log failed authentication attempts
-- [x] Log rate limit violations
-- [x] Log SQL injection attempts
-- [x] Log XSS attempts
-- [x] Log authorization failures (403 errors)
-- [x] Log IP-based access patterns
-
-### Phase 4: Security Testing
-- [x] Create security test suite (security.test.ts)
-- [x] Test SQL injection blocking
-- [x] Test XSS blocking
-- [x] Test legitimate content allowed
-- [x] Verify input validation accuracy
-- [x] Test false positive handling
-
-## Business Continuity & Disaster Recovery
-
-### Phase 1: BC/DR Documentation
-- [x] Create BUSINESS_CONTINUITY_DISASTER_RECOVERY.md
-  - [x] Recovery objectives (RTO: 4 hours, RPO: 24 hours)
-  - [x] High availability architecture
-  - [x] Backup strategy (full, incremental, transaction logs)
-  - [x] Backup security (encryption, geographic separation)
-  - [x] Disaster recovery procedures
-  - [x] Business continuity procedures
-  - [x] Testing & validation schedule
-  - [x] Preventive measures
-
-### Phase 2: Incident Management & Notification
-- [x] Create INCIDENT_MANAGEMENT.md
-  - [x] Incident classification (Security, Service, Data, Compliance)
-  - [x] Severity levels (Critical, High, Medium, Low)
-  - [x] Security breach notification timelines
-  - [x] Service degradation notification timelines
-  - [x] Incident response procedures
-  - [x] Escalation procedures
-  - [x] Post-incident reviews
-
-### Phase 3: Liability & Financial Penalties
-- [x] Document SLA penalties
-  - [x] Availability violations (5-50% monthly fee)
-  - [x] Performance violations (3-15% monthly fee)
-  - [x] Support response violations ($50-$500 per incident)
-  - [x] Penalty caps (100% monthly fee)
-
-- [x] Document data breach penalties
-  - [x] Minor breach (<100 records): $5K-$25K
-  - [x] Moderate breach (100-1K): $25K-$100K
-  - [x] Major breach (1K-10K): $100K-$500K
-  - [x] Critical breach (>10K): $500K-$2M
-  - [x] Liability caps and exceptions
-
-- [x] Document insurance requirements
-  - [x] Cyber liability: $5M minimum
-  - [x] Professional liability: $2M minimum
-  - [x] General liability: $2M minimum
-  - [x] City as additional insured
-
-### Phase 4: Compliance & Legal
-- [x] Document PIPEDA compliance
-- [x] Document regulatory reporting
-- [x] Document data protection obligations
-- [x] Document dispute resolution process
-
-## Project Sorting Feature
-- [x] Add sort dropdown with 7 criteria (name, client, status, created, updated, address, building code)
-- [x] Add ascending/descending toggle
-- [x] Implement sorting logic with useMemo
-- [x] Add localStorage persistence for user preferences
-- [x] Add visual indicators (arrow icons)
-- [x] Test sorting with all criteria
-
-## TypeScript Error Fixes
-- [x] Fix role enum expansion (viewer, editor, project_manager, admin)
-- [x] Fix boolean-to-number conversions for tinyint fields
-- [x] Fix Date-to-ISO string conversions across routers
-- [x] Reduce TypeScript errors from 99 to 61
-
-## Multi-Tenant Data Isolation (Phase 4 Continuation)
-- [x] Update getProjectById with company ownership validation
-- [x] Update createProject with company assignment
-- [x] Update updateProject with company validation
-- [x] Update deleteProject with company validation
-- [x] Add verifyProjectAccess helper function
-- [x] Update all 52 getProjectById calls across routers
-- [x] Enforce company-based access control for admins and non-admins
-- [x] Prevent cross-company data access
-
-## Document Attachment System
-- [x] Create project_documents table
-- [x] Create assessment_documents table
-- [x] Add S3 upload/download for documents
-- [x] Add multi-tenant isolation (users can only access their company's documents)
-- [x] Add admin access (admins can access all companies' documents)
-- [x] Create DocumentUploadZone component with drag-and-drop
-- [x] Create ProjectDocumentList component with download/delete
-- [x] Add Documents tab to ProjectDetail page
-- [x] Create comprehensive test suite (16 tests)
-- [x] Test authentication, authorization, and multi-tenant isolation
-
-## Document Attachment Enhancements
-- [x] Add document upload to AssessmentDialog (edit mode only)
-- [x] Integrate DocumentUploadZone and DocumentList components
-- [x] Add document count to project stats query
-- [x] Display document count badge on project cards
-- [x] Display document count badge on Documents tab
-- [x] Test document upload and display
-
-## AI Import for Assets
-- [x] Add "AI Import" button to Assets page
-- [x] Create AIImportAssetDialog component
-- [x] Implement assets.aiImport endpoint using LLM
-- [x] Extract asset information from PDF/Word documents
-- [x] Add file validation (PDF/Word only, max 10MB)
-- [x] Create assetDocuments router for future document management
-- [x] Create asset_documents table
-- [x] Add unit tests for AI import validation
