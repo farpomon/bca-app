@@ -7,12 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Upload, X, Sparkles, Mic, Trash2 } from "lucide-react";
+import { Loader2, Upload, X, Sparkles, Mic, Trash2, WifiOff, Wifi } from "lucide-react";
 import { ValidationWarning } from "@/components/ValidationWarning";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { DocumentList } from "@/components/DocumentList";
+import { Badge } from "@/components/ui/badge";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
@@ -311,6 +312,14 @@ export function AssessmentDialog({
   };
 
   const proceedWithSave = () => {
+    // Show offline notification if not online
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    if (!isOnline) {
+      toast.info("Saving offline... Data will sync when connection is restored", {
+        duration: 5000,
+      });
+    }
+
     if (photoFile) {
       // If there's a photo, use the async handler to link it to the assessment
       handleSaveWithPhoto();
@@ -462,14 +471,33 @@ export function AssessmentDialog({
     onOpenChange(false);
   };
 
+  // Check if online
+  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Assess Component</DialogTitle>
-          <DialogDescription>
-            {componentCode} - {componentName}
-          </DialogDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <DialogTitle>Assess Component</DialogTitle>
+              <DialogDescription>
+                {componentCode} - {componentName}
+              </DialogDescription>
+            </div>
+            {!isOnline && (
+              <Badge variant="outline" className="gap-1.5 bg-amber-50 text-amber-700 border-amber-200">
+                <WifiOff className="w-3 h-3" />
+                Offline Mode
+              </Badge>
+            )}
+            {isOnline && (
+              <Badge variant="outline" className="gap-1.5 bg-green-50 text-green-700 border-green-200">
+                <Wifi className="w-3 h-3" />
+                Online
+              </Badge>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

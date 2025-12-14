@@ -64,14 +64,22 @@
 - [x] Add project and component caching functions
 - [ ] Integrate useOfflineAssessment hook into AssessmentDialog component (ready to use)
 - [ ] Integrate useOfflinePhoto hook into photo upload components (ready to use)
-- [ ] Add offline indicator badges to assessment forms
+- [x] Add offline indicator badge to AssessmentDialog header
+- [ ] Add offline indicator badge to photo upload section
+- [x] Show "Saving offline..." message when offline
 - [ ] Update ExistingPhotosDisplay to show offline photos from IndexedDB
 
 ### Phase 9: Testing & Documentation
-- [ ] Test offline assessment creation and sync (ready for testing)
-- [ ] Test offline photo upload and sync (ready for testing)
-- [ ] Test conflict resolution scenarios (ready for testing)
-- [ ] Test sync retry on network failures (ready for testing)
+- [x] Create comprehensive offline testing guide with 10 test scenarios
+- [x] Document debugging tips and troubleshooting steps
+- [x] Document known issues and limitations
+- [ ] Execute manual testing using the testing guide (ready for user)
+- [ ] Test assessment creation while offline using Chrome DevTools (ready for user)
+- [ ] Test photo upload while offline (ready for user)
+- [ ] Test automatic sync when connection returns (ready for user)
+- [ ] Test manual sync trigger (ready for user)
+- [ ] Test sync retry on failures (ready for user)
+- [ ] Verify data integrity after sync (ready for user)
 - [x] Create user documentation for offline mode
 - [x] Backend sync endpoints implemented and registered
 - [x] Sync engine updated to use real backend
