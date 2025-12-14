@@ -655,25 +655,27 @@ Extract the following information if available:
 - Construction Type (e.g., Steel Frame, Concrete, Wood Frame, Masonry)
 - Description or Notes
 
-Return the information in JSON format with these exact fields:
+Return ONLY valid JSON with these exact fields (use null for missing fields):
 {
-  "name": "string",
-  "assetType": "string",
-  "address": "string",
-  "yearBuilt": number,
-  "grossFloorArea": number,
-  "numberOfStories": number,
-  "constructionType": "string",
-  "description": "string"
+  "name": "string or null",
+  "assetType": "string or null",
+  "address": "string or null",
+  "yearBuilt": "number or null",
+  "grossFloorArea": "number or null",
+  "numberOfStories": "number or null",
+  "constructionType": "string or null",
+  "description": "string or null"
 }
 
-If a field is not found in the document, use null for that field. Be as accurate as possible.`;
+Be as accurate as possible. Return ONLY the JSON object, no other text.`;
 
           console.log("[AI Import] Starting LLM extraction for file:", input.fileName);
           console.log("[AI Import] File URL:", fileUrl);
           console.log("[AI Import] MIME type:", input.mimeType);
 
-          const response = await invokeLLM({
+          let response;
+          try {
+            response = await invokeLLM({
             messages: [
               { role: "system", content: prompt },
               {
@@ -690,38 +692,18 @@ If a field is not found in the document, use null for that field. Be as accurate
               },
             ],
             response_format: {
-              // Using json_schema for structured output
-              type: "json_schema",
-              json_schema: {
-                name: "asset_extraction",
-                strict: true,
-                schema: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string", nullable: true },
-                    assetType: { type: "string", nullable: true },
-                    address: { type: "string", nullable: true },
-                    yearBuilt: { type: "number", nullable: true },
-                    grossFloorArea: { type: "number", nullable: true },
-                    numberOfStories: { type: "number", nullable: true },
-                    constructionType: { type: "string", nullable: true },
-                    description: { type: "string", nullable: true },
-                  },
-                  required: [
-                    "name",
-                    "assetType",
-                    "address",
-                    "yearBuilt",
-                    "grossFloorArea",
-                    "numberOfStories",
-                    "constructionType",
-                    "description",
-                  ],
-                  additionalProperties: false,
-                },
-              },
+              type: "json_object",
             },
           });
+            console.log("[AI Import] Raw LLM response:", JSON.stringify(response, null, 2));
+          } catch (llmError: any) {
+            console.error("[AI Import] LLM invocation error:", llmError);
+            console.error("[AI Import] LLM error stack:", llmError.stack);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: `AI extraction failed: ${llmError.message || 'Unknown error'}`,
+            });
+          }
 
           // Validate response structure
           if (!response || !response.choices || !Array.isArray(response.choices) || response.choices.length === 0) {

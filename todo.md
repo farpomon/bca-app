@@ -95,6 +95,14 @@
 - [ ] Test with LMS582 [2024-08-07] BAI.docx document after fix - Ready for user testing
 - [x] Verify error handling and user feedback - Tests passing
 
+## Fix AI Import Gemini Response Parsing
+
+- [x] Debug "Cannot read properties of undefined (reading '0')" error - Found json_schema mode incompatibility
+- [x] Add comprehensive logging to see actual Gemini response structure
+- [x] Fix response parsing to handle Gemini's actual format - Switched from json_schema to json_object mode
+- [ ] Test with real document upload - Ready for user testing
+- [ ] Verify extraction works correctly - Ready for user testing
+
 ## Document Upload in Assessment List (Completed)
 - [x] Add document upload button/icon to each assessment item in the list
 - [x] Implement inline document upload without opening edit dialog
