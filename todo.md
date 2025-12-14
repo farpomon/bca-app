@@ -89,9 +89,11 @@
 
 - [x] Fix "Start Assessment" button navigation on project detail page (not working on mobile)
 - [x] Fix AI Import Asset error: "Cannot read properties of undefined (reading '0')" - Fixed JSON schema nullable format
-- [ ] URGENT: AI Import Asset still failing with same error - needs investigation
-- [ ] Test with LMS582 [2024-08-07] BAI.docx document
-- [ ] Verify error handling and user feedback
+- [x] URGENT: AI Import Asset failing with "AI service returned an invalid response" error - Fixed JSON schema format
+- [x] URGENT: AI Import Document failing with "Cannot read properties of undefined (reading '0')" error - Fixed JSON schema format
+- [x] Investigate LLM response structure and JSON schema compatibility - Changed from type: ["string", "null"] to type: "string", nullable: true
+- [ ] Test with LMS582 [2024-08-07] BAI.docx document after fix - Ready for user testing
+- [x] Verify error handling and user feedback - Tests passing
 
 ## Document Upload in Assessment List (Completed)
 - [x] Add document upload button/icon to each assessment item in the list

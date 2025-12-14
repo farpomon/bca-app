@@ -698,14 +698,14 @@ If a field is not found in the document, use null for that field. Be as accurate
                 schema: {
                   type: "object",
                   properties: {
-                    name: { type: ["string", "null"] },
-                    assetType: { type: ["string", "null"] },
-                    address: { type: ["string", "null"] },
-                    yearBuilt: { type: ["number", "null"] },
-                    grossFloorArea: { type: ["number", "null"] },
-                    numberOfStories: { type: ["number", "null"] },
-                    constructionType: { type: ["string", "null"] },
-                    description: { type: ["string", "null"] },
+                    name: { type: "string", nullable: true },
+                    assetType: { type: "string", nullable: true },
+                    address: { type: "string", nullable: true },
+                    yearBuilt: { type: "number", nullable: true },
+                    grossFloorArea: { type: "number", nullable: true },
+                    numberOfStories: { type: "number", nullable: true },
+                    constructionType: { type: "string", nullable: true },
+                    description: { type: "string", nullable: true },
                   },
                   required: [
                     "name",
