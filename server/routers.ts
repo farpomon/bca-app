@@ -669,6 +669,10 @@ Return the information in JSON format with these exact fields:
 
 If a field is not found in the document, use null for that field. Be as accurate as possible.`;
 
+          console.log("[AI Import] Starting LLM extraction for file:", input.fileName);
+          console.log("[AI Import] File URL:", fileUrl);
+          console.log("[AI Import] MIME type:", input.mimeType);
+
           const response = await invokeLLM({
             messages: [
               { role: "system", content: prompt },
@@ -679,13 +683,14 @@ If a field is not found in the document, use null for that field. Be as accurate
                     type: "file_url",
                     file_url: {
                       url: fileUrl,
-                      mime_type: input.mimeType as "application/pdf",
+                      mime_type: input.mimeType as "application/pdf" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     },
                   },
                 ],
               },
             ],
             response_format: {
+              // Using json_schema for structured output
               type: "json_schema",
               json_schema: {
                 name: "asset_extraction",
@@ -693,14 +698,14 @@ If a field is not found in the document, use null for that field. Be as accurate
                 schema: {
                   type: "object",
                   properties: {
-                    name: { type: "string", nullable: true },
-                    assetType: { type: "string", nullable: true },
-                    address: { type: "string", nullable: true },
-                    yearBuilt: { type: "number", nullable: true },
-                    grossFloorArea: { type: "number", nullable: true },
-                    numberOfStories: { type: "number", nullable: true },
-                    constructionType: { type: "string", nullable: true },
-                    description: { type: "string", nullable: true },
+                    name: { type: ["string", "null"] },
+                    assetType: { type: ["string", "null"] },
+                    address: { type: ["string", "null"] },
+                    yearBuilt: { type: ["number", "null"] },
+                    grossFloorArea: { type: ["number", "null"] },
+                    numberOfStories: { type: ["number", "null"] },
+                    constructionType: { type: ["string", "null"] },
+                    description: { type: ["string", "null"] },
                   },
                   required: [
                     "name",
@@ -718,8 +723,36 @@ If a field is not found in the document, use null for that field. Be as accurate
             },
           });
 
+          // Validate response structure
+          if (!response || !response.choices || !Array.isArray(response.choices) || response.choices.length === 0) {
+            console.error("[AI Import] Invalid LLM response structure:", JSON.stringify(response, null, 2));
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "AI service returned an invalid response. Please try again.",
+            });
+          }
+
           const content = response.choices[0]?.message?.content;
-          const extractedData = typeof content === 'string' ? JSON.parse(content || "{}") : {};
+          if (!content) {
+            console.error("[AI Import] Empty content in LLM response:", JSON.stringify(response.choices[0], null, 2));
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "AI service returned empty content. Please try again.",
+            });
+          }
+
+          let extractedData;
+          try {
+            extractedData = typeof content === 'string' ? JSON.parse(content) : {};
+          } catch (parseError: any) {
+            console.error("[AI Import] Failed to parse JSON content:", content);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to parse AI response. Please try again.",
+            });
+          }
+
+          console.log("[AI Import] Successfully extracted data:", extractedData);
 
           return {
             success: true,
@@ -727,9 +760,16 @@ If a field is not found in the document, use null for that field. Be as accurate
           };
         } catch (error: any) {
           console.error("[AI Import] Error:", error);
+          console.error("[AI Import] Error stack:", error.stack);
+          
+          // Provide more specific error messages
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: error.message || "Failed to parse document",
+            message: `Failed to parse document: ${error.message || 'Unknown error'}`,
           });
         }
       }),
