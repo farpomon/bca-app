@@ -87,6 +87,8 @@
 
 ## Current Bug Fixes
 
+- [x] Fix bulk delete projects error - "Unable to transform response from server"
+
 - [x] Fix "project not found" error when clicking on projects from Projects page - Fixed rate limiting issue (increased from 100 to 1000 requests per 15 min)
 - [x] Investigate routing or data fetching issue causing project not found - Root cause was HTTP 429 rate limiting, not routing
 
@@ -333,3 +335,6 @@
 - [x] Fix logout error - Added redirect to home page after logout to prevent accessing protected pages
 - [x] Fix projects not showing up - Updated projects.list router to pass company and isAdmin parameters to getUserProjects function
 - [x] Verified 1,695 projects now visible for admin user
+
+## Recent Investigations
+- [x] Investigated sign-in issue on Chrome iPhone - Authentication working correctly, user successfully signed in as Luis Faria

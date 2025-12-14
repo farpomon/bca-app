@@ -170,8 +170,9 @@ export const appRouter = router({
       .input(z.object({ ids: z.array(z.number()) }))
       .mutation(async ({ ctx, input }) => {
         // Delete all projects that belong to the user
+        const isAdmin = ctx.user.role === "admin";
         for (const id of input.ids) {
-          await db.deleteProject(id, ctx.user.id);
+          await db.deleteProject(id, ctx.user.id, ctx.user.company, isAdmin);
         }
         return { success: true, count: input.ids.length };
       }),

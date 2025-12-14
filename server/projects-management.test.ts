@@ -14,6 +14,7 @@ function createAuthContext(): { ctx: TrpcContext } {
     name: "Test User",
     loginMethod: "manus",
     role: "admin",
+    company: "Test Company",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -82,7 +83,7 @@ describe("Project Management Features", () => {
       await otherCaller.projects.bulkDelete({ ids: [project.id] });
 
       // Verify project still exists for original user
-      const projects = await db.getUserProjects(ctx.user.id);
+      const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, ctx.user.role === "admin");
       const exists = projects.some((p) => p.id === project.id);
       expect(exists).toBe(true);
     });
