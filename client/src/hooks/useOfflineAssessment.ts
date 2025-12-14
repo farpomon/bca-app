@@ -60,15 +60,9 @@ export function useOfflineAssessment({
   const [offlineAssessments, setOfflineAssessments] = useState<OfflineAssessment[]>([]);
   
   const { isOnline } = useOfflineSync();
-  // TODO: Replace with actual tRPC mutation when backend is ready
-  // const createAssessmentMutation = trpc.assessments.create.useMutation();
-  const createAssessmentMutation = {
-    mutateAsync: async (data: AssessmentFormData) => {
-      // Placeholder - will be replaced with real tRPC call
-      console.log("[Offline] Assessment would be saved:", data);
-      throw new Error("Online assessment creation not yet implemented");
-    }
-  };
+  
+  // Use real tRPC mutation for online sync
+  const createAssessmentMutation = trpc.assessments.upsert.useMutation();
 
   /**
    * Load offline assessments for this project
@@ -94,7 +88,25 @@ export function useOfflineAssessment({
         if (isOnline) {
           // Save online via tRPC
           try {
-            const result = await createAssessmentMutation.mutateAsync(data);
+            // Convert null to undefined for tRPC
+            const tRPCData = {
+              projectId: data.projectId,
+              assetId: data.assetId,
+              componentCode: data.componentCode ?? undefined,
+              componentName: data.componentName ?? undefined,
+              componentLocation: data.componentLocation ?? undefined,
+              condition: (data.condition ?? undefined) as "good" | "fair" | "poor" | "not_assessed" | undefined,
+              status: (data.status ?? undefined) as "initial" | "active" | "completed" | undefined,
+              observations: data.observations ?? undefined,
+              recommendations: data.recommendations ?? undefined,
+              remainingUsefulLife: data.estimatedServiceLife ?? undefined,
+              reviewYear: data.reviewYear ?? undefined,
+              lastTimeAction: data.lastTimeAction ?? undefined,
+              estimatedRepairCost: data.estimatedRepairCost ?? undefined,
+              replacementValue: data.replacementValue ?? undefined,
+              actionYear: data.actionYear ?? undefined,
+            };
+            const result = await createAssessmentMutation.mutateAsync(tRPCData);
             
             toast.success("Assessment saved successfully");
             

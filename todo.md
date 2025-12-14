@@ -51,13 +51,31 @@
 - [x] Add cache size management (max 50MB)
 - [ ] Show cached data indicator in UI (future enhancement)
 
-### Phase 7: Testing & Documentation
+### Phase 7: Backend Sync Integration
+- [x] Implement assessments.createOffline mutation for syncing offline assessments
+- [x] Implement photos.createOffline mutation for syncing offline photos
+- [ ] Implement deficiencies.createOffline mutation for syncing offline deficiencies
+- [x] Add batch sync endpoint for multiple items at once
+- [x] Add conflict resolution logic (server-wins strategy)
+
+### Phase 8: Frontend Form Integration
+- [x] Update useOfflineAssessment hook to use real tRPC mutations
+- [x] Update syncEngine to call backend sync endpoints
+- [x] Add project and component caching functions
+- [ ] Integrate useOfflineAssessment hook into AssessmentDialog component (ready to use)
+- [ ] Integrate useOfflinePhoto hook into photo upload components (ready to use)
+- [ ] Add offline indicator badges to assessment forms
+- [ ] Update ExistingPhotosDisplay to show offline photos from IndexedDB
+
+### Phase 9: Testing & Documentation
 - [ ] Test offline assessment creation and sync (ready for testing)
 - [ ] Test offline photo upload and sync (ready for testing)
 - [ ] Test conflict resolution scenarios (ready for testing)
 - [ ] Test sync retry on network failures (ready for testing)
 - [x] Create user documentation for offline mode
-- [ ] Create checkpoint (pending testing)
+- [x] Backend sync endpoints implemented and registered
+- [x] Sync engine updated to use real backend
+- [ ] Create checkpoint after full offline implementation
 
 ## Current Bug Fixes
 

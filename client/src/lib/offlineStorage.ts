@@ -593,3 +593,119 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
 }
+
+// ============================================================================
+// Project and Component Caching
+// ============================================================================
+
+/**
+ * Cache a project for offline viewing
+ */
+export async function cacheProject(project: CachedProject): Promise<void> {
+  const cachedProject: CachedProject = {
+    ...project,
+    cachedAt: Date.now(),
+  };
+  
+  await updateItem(STORES.CACHED_PROJECTS, cachedProject);
+}
+
+/**
+ * Cache multiple projects
+ */
+export async function cacheProjects(projects: Omit<CachedProject, 'cachedAt'>[]): Promise<void> {
+  const now = Date.now();
+  
+  for (const project of projects) {
+    await cacheProject({ ...project, cachedAt: now });
+  }
+}
+
+/**
+ * Get cached projects
+ */
+export async function getCachedProjects(): Promise<CachedProject[]> {
+  const projects = await getAllItems<CachedProject>(STORES.CACHED_PROJECTS);
+  
+  // Filter out expired projects (older than 24 hours)
+  const now = Date.now();
+  const TTL = 24 * 60 * 60 * 1000; // 24 hours
+  
+  return projects.filter(p => now - p.cachedAt < TTL);
+}
+
+/**
+ * Get a single cached project by ID
+ */
+export async function getCachedProject(id: number): Promise<CachedProject | undefined> {
+  return getItem<CachedProject>(STORES.CACHED_PROJECTS, id);
+}
+
+/**
+ * Clear expired cached projects
+ */
+export async function clearExpiredProjectCache(): Promise<void> {
+  const allProjects = await getAllItems<CachedProject>(STORES.CACHED_PROJECTS);
+  const now = Date.now();
+  const TTL = 24 * 60 * 60 * 1000; // 24 hours
+  
+  for (const project of allProjects) {
+    if (now - project.cachedAt >= TTL) {
+      await deleteItem(STORES.CACHED_PROJECTS, project.id);
+    }
+  }
+}
+
+/**
+ * Cache building components (UNIFORMAT II)
+ */
+export async function cacheComponents(components: CachedBuildingComponent[]): Promise<void> {
+  for (const component of components) {
+    await updateItem(STORES.CACHED_COMPONENTS, component);
+  }
+}
+
+/**
+ * Get all cached components
+ */
+export async function getCachedComponents(): Promise<CachedBuildingComponent[]> {
+  return getAllItems<CachedBuildingComponent>(STORES.CACHED_COMPONENTS);
+}
+
+/**
+ * Get cached components by level
+ */
+export async function getCachedComponentsByLevel(level: number): Promise<CachedBuildingComponent[]> {
+  return getItemsByIndex<CachedBuildingComponent>(STORES.CACHED_COMPONENTS, "level", level);
+}
+
+/**
+ * Get cached component by code
+ */
+export async function getCachedComponentByCode(code: string): Promise<CachedBuildingComponent | undefined> {
+  const components = await getItemsByIndex<CachedBuildingComponent>(STORES.CACHED_COMPONENTS, "code", code);
+  return components[0];
+}
+
+/**
+ * Check if components are cached
+ */
+export async function areComponentsCached(): Promise<boolean> {
+  const components = await getCachedComponents();
+  return components.length > 0;
+}
+
+/**
+ * Clear all cached data (for cleanup/reset)
+ */
+export async function clearAllCachedData(): Promise<void> {
+  const projects = await getAllItems<CachedProject>(STORES.CACHED_PROJECTS);
+  for (const project of projects) {
+    await deleteItem(STORES.CACHED_PROJECTS, project.id);
+  }
+  
+  const components = await getAllItems<CachedBuildingComponent>(STORES.CACHED_COMPONENTS);
+  for (const component of components) {
+    await deleteItem(STORES.CACHED_COMPONENTS, component.id);
+  }
+}

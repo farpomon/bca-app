@@ -7,6 +7,19 @@
  */
 
 import { trpc } from "@/lib/trpc";
+import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import type { AppRouter } from "../../../server/routers";
+import superjson from "superjson";
+
+// Create vanilla client for use outside React components
+const trpcClient = createTRPCProxyClient<AppRouter>({
+  links: [
+    httpBatchLink({
+      url: '/api/trpc',
+      transformer: superjson,
+    }),
+  ],
+});
 import {
   getPendingSyncItems,
   getItemsReadyForRetry,
@@ -227,45 +240,33 @@ export class SyncEngine {
     await updateAssessmentSyncStatus(assessmentId, "syncing");
 
     try {
-      // Create assessment via tRPC
-      // Note: This will be implemented when tRPC mutations are ready
-      // For now, mark as synced to prevent blocking
-      console.log("[SyncEngine] Assessment sync not yet implemented:", assessment);
-      
-      // TODO: Implement actual sync when backend is ready
-      /*
-      const createdAssessment = await trpc.assessments.create.mutate({
+      // Sync assessment via tRPC
+      const result = await trpcClient.offlineSync.syncAssessment.mutate({
+        offlineId: assessmentId,
+        createdAt: new Date(assessment.createdAt).toISOString(),
         projectId: assessment.projectId,
-        assetId: assessment.assetId,
-        componentCode: assessment.componentCode,
-        componentName: assessment.componentName,
-        componentLocation: assessment.componentLocation,
-        condition: assessment.condition,
-        status: assessment.status,
-        observations: assessment.observations,
-        recommendations: assessment.recommendations,
-        estimatedServiceLife: assessment.estimatedServiceLife,
-        reviewYear: assessment.reviewYear,
-        lastTimeAction: assessment.lastTimeAction,
-        estimatedRepairCost: assessment.estimatedRepairCost,
-        replacementValue: assessment.replacementValue,
-        actionYear: assessment.actionYear,
+        assetId: assessment.assetId || undefined,
+        componentCode: assessment.componentCode || undefined,
+        componentName: assessment.componentName || undefined,
+        componentLocation: assessment.componentLocation || undefined,
+        condition: assessment.condition as any,
+        status: assessment.status as any,
+        observations: assessment.observations || undefined,
+        recommendations: assessment.recommendations || undefined,
+        remainingUsefulLife: assessment.estimatedServiceLife || undefined,
+        reviewYear: assessment.reviewYear || undefined,
+        lastTimeAction: assessment.lastTimeAction || undefined,
+        estimatedRepairCost: assessment.estimatedRepairCost || undefined,
+        replacementValue: assessment.replacementValue || undefined,
+        actionYear: assessment.actionYear || undefined,
       });
 
-      */
+      console.log("[SyncEngine] Assessment synced:", result);
       
-      // Update linked photos to use real assessment ID
-      // const photos = await getItem<OfflinePhoto[]>(STORES.PHOTOS, assessmentId);
-      /*
-      if (photos) {
-        for (const photo of photos) {
-          if (photo.assessmentId === assessmentId) {
-            photo.assessmentId = createdAssessment.id.toString();
-            await updateItem(STORES.PHOTOS, photo);
-          }
-        }
+      // If there was a conflict, log it
+      if (result.conflict) {
+        console.warn("[SyncEngine] Conflict detected:", result.resolution);
       }
-      */
 
       // Mark as synced
       await updateAssessmentSyncStatus(assessmentId, "synced");
@@ -293,38 +294,31 @@ export class SyncEngine {
     await updatePhotoSyncStatus(photoId, "syncing", 0);
 
     try {
-      // Upload to S3
-      // TODO: Implement when storage utility is ready
-      console.log("[SyncEngine] Photo sync not yet implemented:", photo);
-      
-      /*
+      // Convert blob to base64 for transmission
       const arrayBuffer = await photo.blob.arrayBuffer();
-      const buffer = new Uint8Array(arrayBuffer);
-      
-      const fileKey = `assessments/${photo.assessmentId}/photos/${photo.fileName}`;
-      const { url } = await storagePut(fileKey, buffer, photo.mimeType);
-      */
+      const buffer = Buffer.from(arrayBuffer);
+      const base64 = buffer.toString('base64');
 
       // Update progress
-      await updatePhotoSyncStatus(photoId, "syncing", 50);
+      await updatePhotoSyncStatus(photoId, "syncing", 30);
 
-      // Save photo metadata via tRPC
-      // TODO: Implement when backend is ready
-      /*
-      await trpc.photos.create.mutate({
-        assessmentId: parseInt(photo.assessmentId),
+      // Sync photo via tRPC (backend will upload to S3)
+      const result = await trpcClient.offlineSync.syncPhoto.mutate({
+        offlineId: photoId,
+        createdAt: new Date(photo.createdAt).toISOString(),
+        assessmentId: photo.assessmentId ? parseInt(photo.assessmentId) : undefined,
         projectId: photo.projectId,
-        url,
         fileName: photo.fileName,
-        fileSize: photo.fileSize,
+        caption: photo.caption || undefined,
+        photoBlob: base64,
         mimeType: photo.mimeType,
-        caption: photo.caption,
-        latitude: photo.latitude,
-        longitude: photo.longitude,
-        altitude: photo.altitude,
-        locationAccuracy: photo.locationAccuracy,
+        latitude: photo.latitude || undefined,
+        longitude: photo.longitude || undefined,
+        altitude: photo.altitude || undefined,
+        locationAccuracy: photo.locationAccuracy || undefined,
       });
-      */
+
+      console.log("[SyncEngine] Photo synced:", result);
 
       // Mark as synced
       await updatePhotoSyncStatus(photoId, "synced", 100);
