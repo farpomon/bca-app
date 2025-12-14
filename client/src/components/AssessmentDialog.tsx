@@ -166,8 +166,8 @@ export function AssessmentDialog({
   const [estimatedRepairCost, setEstimatedRepairCost] = useState("");
   const [replacementValue, setReplacementValue] = useState("");
   const [actionYear, setActionYear] = useState("");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
   const [photoGeolocation, setPhotoGeolocation] = useState<{
@@ -238,28 +238,51 @@ export function AssessmentDialog({
         actionYear: actionYear ? parseInt(actionYear) : undefined,
       });
 
-      // Then upload photo with the assessment ID
-      if (photoFile) {
+      // Then upload photos with the assessment ID
+      if (photoFiles.length > 0) {
         setUploadingPhoto(true);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = (reader.result as string).split(",")[1];
-          uploadPhoto.mutate({
-            projectId,
-            assessmentId: result.id, // Link photo to assessment
-            fileData: base64,
-            fileName: photoFile.name,
-            mimeType: photoFile.type,
-            componentCode,
-            caption: `${componentCode} - ${componentName}`,
-            latitude: photoGeolocation?.latitude,
-            longitude: photoGeolocation?.longitude,
-            altitude: photoGeolocation?.altitude,
-            locationAccuracy: photoGeolocation?.accuracy,
-            performOCR: true, // Enable OCR for all uploaded photos
-          });
-        };
-        reader.readAsDataURL(photoFile);
+        let uploadedCount = 0;
+        const totalPhotos = photoFiles.length;
+        
+        photoFiles.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(",")[1];
+            uploadPhoto.mutate({
+              projectId,
+              assessmentId: result.id, // Link photo to assessment
+              fileData: base64,
+              fileName: file.name,
+              mimeType: file.type,
+              componentCode,
+              caption: `${componentCode} - ${componentName} (${index + 1}/${totalPhotos})`,
+              latitude: photoGeolocation?.latitude,
+              longitude: photoGeolocation?.longitude,
+              altitude: photoGeolocation?.altitude,
+              locationAccuracy: photoGeolocation?.accuracy,
+              performOCR: true, // Enable OCR for all uploaded photos
+            }, {
+              onSuccess: () => {
+                uploadedCount++;
+                if (uploadedCount === totalPhotos) {
+                  // All photos uploaded
+                  setUploadingPhoto(false);
+                  toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved successfully`);
+                  onSuccess();
+                  handleClose();
+                }
+              },
+              onError: (error) => {
+                toast.error(`Failed to upload photo ${index + 1}: ${error.message}`);
+                uploadedCount++;
+                if (uploadedCount === totalPhotos) {
+                  setUploadingPhoto(false);
+                }
+              }
+            });
+          };
+          reader.readAsDataURL(file);
+        });
       } else {
         toast.success("Assessment saved successfully");
         onSuccess();
@@ -320,8 +343,8 @@ export function AssessmentDialog({
       });
     }
 
-    if (photoFile) {
-      // If there's a photo, use the async handler to link it to the assessment
+    if (photoFiles.length > 0) {
+      // If there are photos, use the async handler to link them to the assessment
       handleSaveWithPhoto();
     } else {
       // No photo, just save the assessment
@@ -392,16 +415,20 @@ export function AssessmentDialog({
   });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setPhotoFiles(prev => [...prev, ...files]);
+      
+      // Generate previews for all new files
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotoPreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
 
-      // Capture geolocation when photo is selected
+      // Capture geolocation when photos are selected
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -414,34 +441,34 @@ export function AssessmentDialog({
             toast.success("Location captured");
           },
           (error) => {
-            console.warn("Geolocation error:", error);
-            toast.info("Location not available");
+            console.error("Geolocation error:", error);
+            toast.error("Location not available");
           },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
-          }
+          { enableHighAccuracy: true }
         );
       }
     }
+    // Reset input to allow selecting the same file again
+    e.target.value = '';
   };
 
-  const handleRemovePhoto = () => {
-    setPhotoFile(null);
-    setPhotoPreview(null);
-    setPhotoGeolocation(null);
+  const handleRemovePhoto = (index: number) => {
+    setPhotoFiles(prev => prev.filter((_, i) => i !== index));
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
+    if (photoFiles.length === 1) {
+      setPhotoGeolocation(null);
+    }
   };
 
   const handleAIAnalysis = () => {
-    if (!photoFile || !photoPreview) {
-      toast.error("Please upload a photo first");
+    if (photoFiles.length === 0 || photoPreviews.length === 0) {
+      toast.error("Please upload at least one photo first");
       return;
     }
 
     setAnalyzingWithAI(true);
-    // Extract base64 data from preview (remove data:image/...;base64, prefix)
-    const base64Data = photoPreview.split(",")[1];
+    // Use the first photo for AI analysis
+    const base64Data = photoPreviews[0].split(",")[1];
     
     analyzeWithGemini.mutate({
       fileData: base64Data,
@@ -466,8 +493,8 @@ export function AssessmentDialog({
     setEstimatedRepairCost("");
     setReplacementValue("");
     setActionYear("");
-    setPhotoFile(null);
-    setPhotoPreview(null);
+    setPhotoFiles([]);
+    setPhotoPreviews([]);
     onOpenChange(false);
   };
 
@@ -777,42 +804,50 @@ export function AssessmentDialog({
 
           {/* Photo Upload */}
           <div className="space-y-2">
-            <Label htmlFor="photo">Upload Photo (Optional)</Label>
-            {!photoPreview ? (
-              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
-                <input
-                  id="photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="hidden"
-                />
-                <label htmlFor="photo" className="cursor-pointer">
-                  <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG, GIF up to 10MB
-                  </p>
-                </label>
-              </div>
-            ) : (
+            <Label htmlFor="photo">Upload Photos (Optional)</Label>
+            <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
+              <input
+                id="photo"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+              <label htmlFor="photo" className="cursor-pointer">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  PNG, JPG, GIF up to 10MB each - Select multiple files
+                </p>
+              </label>
+            </div>
+            
+            {photoPreviews.length > 0 && (
               <div className="space-y-2">
-                <div className="relative border rounded-lg overflow-hidden">
-                  <img
-                    src={photoPreview}
-                    alt="Preview"
-                    className="w-full h-48 object-cover"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={handleRemovePhoto}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  {photoPreviews.map((preview, index) => (
+                    <div key={index} className="relative border rounded-lg overflow-hidden group">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemovePhoto(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center">
+                        Photo {index + 1} of {photoPreviews.length}
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <Button
                   variant="outline"
@@ -828,7 +863,7 @@ export function AssessmentDialog({
                   ) : (
                     <>
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Analyze with AI
+                      Analyze First Photo with AI
                     </>
                   )}
                 </Button>

@@ -87,6 +87,8 @@
 
 ## Current Bug Fixes
 
+- [x] Add multiple photo upload capability to AssessmentDialog component
+
 - [x] Fix "Start Assessment" button navigation on project detail page (not working on mobile)
 - [x] Fix AI Import Asset error: "Cannot read properties of undefined (reading '0')" - Fixed JSON schema nullable format
 - [x] URGENT: AI Import Asset failing with "AI service returned an invalid response" error - Fixed JSON schema format
