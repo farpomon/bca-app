@@ -384,10 +384,29 @@ export async function parseDocument(
       );
     }
     
+    // Map condition values from AI output to database enum
+    // Database accepts: 'good', 'fair', 'poor', 'not_assessed'
+    // AI returns: 'excellent', 'good', 'fair', 'poor', 'critical'
+    const conditionMapping: Record<string, string> = {
+      'excellent': 'good',
+      'good': 'good',
+      'fair': 'fair',
+      'poor': 'poor',
+      'critical': 'poor'
+    };
+    
+    const mappedAssessments = extracted.assessments.map((assessment: any) => {
+      if (assessment.condition && typeof assessment.condition === 'string') {
+        const lowerCondition = assessment.condition.toLowerCase();
+        assessment.condition = conditionMapping[lowerCondition] || 'not_assessed';
+      }
+      return assessment;
+    });
+    
     console.log('[AI Parser] Document parsing completed successfully');
     return {
       project: extracted.project,
-      assessments: extracted.assessments,
+      assessments: mappedAssessments,
       deficiencies: extracted.deficiencies
     };
   } catch (error) {

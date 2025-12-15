@@ -104,6 +104,9 @@
 - [x] Fix AI Document Import to use json_object instead of json_schema - Tests passing
 - [ ] Test with LMS582 [2024-08-07] BAI.docx document after fix - Ready for user testing
 - [x] Verify error handling and user feedback - Tests passing
+- [x] Fix AI Import condition value validation error (excellent/good/fair/poor/critical vs database enum)
+- [x] Investigate what condition values the database schema expects - Database uses: good, fair, poor, not_assessed
+- [x] Map AI output condition values to match database schema - Added conditionMapping in parseDocument
 
 ## Fix AI Import Gemini Response Parsing
 
