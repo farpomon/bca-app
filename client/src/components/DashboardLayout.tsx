@@ -50,6 +50,7 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -93,8 +94,6 @@ export default function DashboardLayout({
       </div>
     );
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <SidebarProvider
