@@ -259,76 +259,7 @@ Respond with a JSON object following this exact structure:
         { role: 'user', content: prompt }
       ],
       response_format: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'bca_extraction',
-          strict: true,
-          schema: {
-            type: 'object',
-            properties: {
-              project: {
-                type: 'object',
-                properties: {
-                  name: { type: 'string' },
-                  address: { type: 'string', nullable: true },
-                  clientName: { type: 'string', nullable: true },
-                  propertyType: { type: 'string', nullable: true },
-                  constructionType: { type: 'string', nullable: true },
-                  yearBuilt: { type: 'number', nullable: true },
-                  numberOfUnits: { type: 'number', nullable: true },
-                  numberOfStories: { type: 'number', nullable: true },
-                  observations: { type: 'string', nullable: true }
-                },
-                required: ['name'],
-                additionalProperties: false
-              },
-              assessments: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    componentCode: { type: 'string' },
-                    componentName: { type: 'string' },
-                    componentLocation: { type: 'string', nullable: true },
-                    condition: { type: 'string', enum: ['excellent', 'good', 'fair', 'poor', 'critical'] },
-                    conditionPercentage: { type: 'number', nullable: true },
-                    observations: { type: 'string', nullable: true },
-                    recommendations: { type: 'string', nullable: true },
-                    estimatedServiceLife: { type: 'number', nullable: true },
-                    remainingUsefulLife: { type: 'number', nullable: true },
-                    reviewYear: { type: 'number', nullable: true },
-                    lastTimeAction: { type: 'number', nullable: true },
-                    estimatedRepairCost: { type: 'number', nullable: true },
-                    replacementValue: { type: 'number', nullable: true },
-                    actionYear: { type: 'number', nullable: true }
-                  },
-                  required: ['componentCode', 'componentName', 'condition'],
-                  additionalProperties: false
-                }
-              },
-              deficiencies: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    componentCode: { type: 'string' },
-                    description: { type: 'string' },
-                    location: { type: 'string', nullable: true },
-                    severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-                    priority: { type: 'number' },
-                    estimatedCost: { type: 'number', nullable: true },
-                    recommendedAction: { type: 'string', nullable: true },
-                    timeline: { type: 'string', nullable: true }
-                  },
-                  required: ['componentCode', 'description', 'severity', 'priority'],
-                  additionalProperties: false
-                }
-              }
-            },
-            required: ['project', 'assessments', 'deficiencies'],
-            additionalProperties: false
-          }
-        }
+        type: 'json_object'
       }
     });
 

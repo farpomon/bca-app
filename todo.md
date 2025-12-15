@@ -99,8 +99,9 @@
 - [x] Fix "Start Assessment" button navigation on project detail page (not working on mobile)
 - [x] Fix AI Import Asset error: "Cannot read properties of undefined (reading '0')" - Fixed JSON schema nullable format
 - [x] URGENT: AI Import Asset failing with "AI service returned an invalid response" error - Fixed JSON schema format
-- [x] URGENT: AI Import Document failing with "Cannot read properties of undefined (reading '0')" error - Fixed JSON schema format
-- [x] Investigate LLM response structure and JSON schema compatibility - Changed from type: ["string", "null"] to type: "string", nullable: true
+- [x] URGENT: AI Import Document failing with "Cannot read properties of undefined (reading '0')" error - Fixed by switching to json_object mode
+- [x] Investigate LLM response structure and JSON schema compatibility - Gemini doesn't support json_schema mode, only json_object
+- [x] Fix AI Document Import to use json_object instead of json_schema - Tests passing
 - [ ] Test with LMS582 [2024-08-07] BAI.docx document after fix - Ready for user testing
 - [x] Verify error handling and user feedback - Tests passing
 
@@ -109,6 +110,7 @@
 - [x] Debug "Cannot read properties of undefined (reading '0')" error - Found json_schema mode incompatibility
 - [x] Add comprehensive logging to see actual Gemini response structure
 - [x] Fix response parsing to handle Gemini's actual format - Switched from json_schema to json_object mode
+- [x] Apply fix to AI Document Import feature - Tests passing
 - [ ] Test with real document upload - Ready for user testing
 - [ ] Verify extraction works correctly - Ready for user testing
 
