@@ -48,7 +48,7 @@
   --color-info-foreground: var(--info-foreground);
 }
 
-/* Apple-Inspired Dark Professional Theme */
+/* Clean Light Professional Theme */
 :root {
   /* 8-point grid spacing system */
   --spacing-unit: 8px;
@@ -56,97 +56,97 @@
   /* Corner radius - subtle and professional */
   --radius: 8px;
   
-  /* Apple Professional Blue Accent */
-  --primary: oklch(0.62 0.21 255); /* #007AFF Apple Blue */
+  /* Professional Blue Accent */
+  --primary: oklch(0.55 0.20 255); /* Professional blue */
   --primary-foreground: oklch(1 0 0); /* Pure white */
   
-  /* Dark charcoal background - Apple style */
-  --background: oklch(0.13 0.005 285); /* #1D1D1F */
-  --foreground: oklch(0.91 0 0); /* #E8E8ED - body text */
+  /* Clean white background */
+  --background: oklch(0.985 0 0); /* Off-white #FAFAFA */
+  --foreground: oklch(0.15 0.005 285); /* Dark charcoal text */
   
-  /* Card surfaces - slightly elevated */
-  --card: oklch(0.18 0.005 285); /* #2C2C2E */
-  --card-foreground: oklch(0.91 0 0); /* #E8E8ED */
+  /* Card surfaces - pure white with subtle elevation */
+  --card: oklch(1 0 0); /* Pure white */
+  --card-foreground: oklch(0.15 0.005 285);
   
   /* Popover - same as card */
-  --popover: oklch(0.18 0.005 285);
-  --popover-foreground: oklch(0.91 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.005 285);
   
-  /* Secondary - subtle grey */
-  --secondary: oklch(0.22 0.005 285); /* #3A3A3C */
-  --secondary-foreground: oklch(0.85 0 0);
+  /* Secondary - light grey */
+  --secondary: oklch(0.96 0 0); /* #F5F5F5 */
+  --secondary-foreground: oklch(0.25 0.005 285);
   
   /* Muted - for secondary information */
-  --muted: oklch(0.22 0.005 285);
-  --muted-foreground: oklch(0.55 0 0); /* #86868B */
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0); /* Medium grey */
   
-  /* Accent - Apple Blue */
-  --accent: oklch(0.62 0.21 255);
+  /* Accent - Professional Blue */
+  --accent: oklch(0.55 0.20 255);
   --accent-foreground: oklch(1 0 0);
   
-  /* Destructive - Apple Red */
-  --destructive: oklch(0.55 0.22 25); /* #FF3B30 */
+  /* Destructive - Red */
+  --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(1 0 0);
   
-  /* Borders - subtle */
-  --border: oklch(0.28 0.005 285); /* #48484A */
-  --input: oklch(0.22 0.005 285);
-  --ring: oklch(0.62 0.21 255); /* Apple Blue for focus */
+  /* Borders - subtle grey */
+  --border: oklch(0.88 0 0); /* Light grey border */
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.55 0.20 255); /* Blue for focus */
   
-  /* Chart colors - Apple-inspired palette */
-  --chart-1: oklch(0.62 0.21 255); /* Blue */
-  --chart-2: oklch(0.65 0.20 145); /* Green */
-  --chart-3: oklch(0.70 0.18 65); /* Orange */
-  --chart-4: oklch(0.60 0.22 320); /* Purple */
+  /* Chart colors - professional palette */
+  --chart-1: oklch(0.55 0.20 255); /* Blue */
+  --chart-2: oklch(0.55 0.18 145); /* Green */
+  --chart-3: oklch(0.65 0.18 65); /* Orange */
+  --chart-4: oklch(0.55 0.20 320); /* Purple */
   --chart-5: oklch(0.55 0.22 25); /* Red */
   
-  /* Sidebar - darker than main content */
-  --sidebar: oklch(0.10 0.005 285); /* #111111 */
+  /* Sidebar - light grey background */
+  --sidebar: oklch(0.97 0 0); /* Very light grey */
+  --sidebar-foreground: oklch(0.15 0.005 285);
+  --sidebar-primary: oklch(0.55 0.20 255);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.94 0 0);
+  --sidebar-accent-foreground: oklch(0.15 0.005 285);
+  --sidebar-border: oklch(0.90 0 0);
+  --sidebar-ring: oklch(0.55 0.20 255);
+  
+  /* Status colors */
+  --success: oklch(0.55 0.18 145); /* Green */
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.70 0.18 65); /* Orange */
+  --warning-foreground: oklch(0.15 0.005 285);
+  --info: oklch(0.55 0.20 255); /* Blue */
+  --info-foreground: oklch(1 0 0);
+}
+
+/* Dark theme (kept for compatibility) */
+.dark {
+  --background: oklch(0.13 0.005 285);
+  --foreground: oklch(0.91 0 0);
+  --card: oklch(0.18 0.005 285);
+  --card-foreground: oklch(0.91 0 0);
+  --popover: oklch(0.18 0.005 285);
+  --popover-foreground: oklch(0.91 0 0);
+  --primary: oklch(0.62 0.21 255);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.22 0.005 285);
+  --secondary-foreground: oklch(0.85 0 0);
+  --muted: oklch(0.22 0.005 285);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: oklch(0.62 0.21 255);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.28 0.005 285);
+  --input: oklch(0.22 0.005 285);
+  --ring: oklch(0.62 0.21 255);
+  --sidebar: oklch(0.10 0.005 285);
   --sidebar-foreground: oklch(0.91 0 0);
   --sidebar-primary: oklch(0.62 0.21 255);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.18 0.005 285);
   --sidebar-accent-foreground: oklch(0.91 0 0);
   --sidebar-border: oklch(0.22 0.005 285);
-  --sidebar-ring: oklch(0.62 0.21 255);
-  
-  /* Status colors */
-  --success: oklch(0.65 0.20 145); /* Apple Green */
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.75 0.18 65); /* Apple Orange */
-  --warning-foreground: oklch(0.13 0.005 285);
-  --info: oklch(0.62 0.21 255); /* Apple Blue */
-  --info-foreground: oklch(1 0 0);
-}
-
-/* Light theme fallback (not used but kept for compatibility) */
-.light {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.13 0.005 285);
-  --card: oklch(0.98 0 0);
-  --card-foreground: oklch(0.13 0.005 285);
-  --popover: oklch(0.98 0 0);
-  --popover-foreground: oklch(0.13 0.005 285);
-  --primary: oklch(0.62 0.21 255);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.25 0.005 285);
-  --muted: oklch(0.95 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.62 0.21 255);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.90 0 0);
-  --input: oklch(0.90 0 0);
-  --ring: oklch(0.62 0.21 255);
-  --sidebar: oklch(0.97 0 0);
-  --sidebar-foreground: oklch(0.13 0.005 285);
-  --sidebar-primary: oklch(0.62 0.21 255);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.95 0 0);
-  --sidebar-accent-foreground: oklch(0.13 0.005 285);
-  --sidebar-border: oklch(0.90 0 0);
   --sidebar-ring: oklch(0.62 0.21 255);
 }
 
@@ -156,37 +156,30 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Apple system fonts with Inter fallback */
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'kern' 1, 'liga' 1;
   }
   
-  /* Typography Scale - Apple-inspired */
+  /* Typography Scale */
   h1 {
-    @apply text-4xl font-semibold tracking-tight;
-    color: oklch(1 0 0); /* Pure white for primary headings */
+    @apply text-4xl font-semibold tracking-tight text-foreground;
   }
   h2 {
-    @apply text-3xl font-semibold tracking-tight;
-    color: oklch(1 0 0);
+    @apply text-3xl font-semibold tracking-tight text-foreground;
   }
   h3 {
-    @apply text-2xl font-medium tracking-tight;
-    color: oklch(0.95 0 0);
+    @apply text-2xl font-medium tracking-tight text-foreground;
   }
   h4 {
-    @apply text-xl font-medium;
-    color: oklch(0.91 0 0);
+    @apply text-xl font-medium text-foreground;
   }
   h5 {
-    @apply text-lg font-medium;
-    color: oklch(0.91 0 0);
+    @apply text-lg font-medium text-foreground;
   }
   h6 {
-    @apply text-base font-medium;
-    color: oklch(0.91 0 0);
+    @apply text-base font-medium text-foreground;
   }
   
   /* Interactive elements cursor */
@@ -204,7 +197,7 @@
 }
 
 @layer components {
-  /* Container with 12-column grid alignment */
+  /* Container with responsive padding */
   .container {
     width: 100%;
     margin-left: auto;
@@ -233,30 +226,28 @@
     }
   }
 
-  /* Apple-style Cards */
+  /* Stat Cards - Light theme */
   .stat-card {
-    @apply relative bg-card rounded-lg p-6 border border-border/50;
+    @apply relative bg-card rounded-lg p-6 border border-border shadow-sm;
     transition: all 0.2s ease;
   }
   
   .stat-card:hover {
-    @apply border-border;
-    background: oklch(0.20 0.005 285);
+    @apply shadow-md border-border;
   }
 
-  /* Project card - Apple Pro style */
+  /* Project card - Light theme */
   .project-card {
-    @apply bg-card rounded-lg border border-border/50;
+    @apply bg-card rounded-lg border border-border shadow-sm;
     transition: all 0.2s ease;
   }
   
   .project-card:hover {
-    @apply border-border;
-    background: oklch(0.20 0.005 285);
+    @apply shadow-md;
     transform: translateY(-2px);
   }
 
-  /* Primary button - Apple Blue */
+  /* Primary button */
   .btn-primary {
     @apply bg-primary text-primary-foreground font-medium rounded-lg px-4 py-2;
     transition: all 0.15s ease;
@@ -270,7 +261,7 @@
     filter: brightness(0.95);
   }
 
-  /* Secondary button - outline style */
+  /* Secondary button */
   .btn-secondary {
     @apply bg-transparent text-foreground font-medium rounded-lg px-4 py-2 border border-border;
     transition: all 0.15s ease;
@@ -290,31 +281,30 @@
     display: none;
   }
 
-  /* Glassmorphism - Apple style */
+  /* Glass effects - Light theme */
   .glass {
-    @apply backdrop-blur-xl border border-white/10;
-    background: oklch(0.18 0.005 285 / 80%);
+    @apply backdrop-blur-xl border border-border/50;
+    background: oklch(1 0 0 / 80%);
   }
 
   .glass-card {
-    @apply backdrop-blur-xl border border-white/10 shadow-xl;
-    background: oklch(0.18 0.005 285 / 90%);
+    @apply backdrop-blur-xl border border-border/50 shadow-lg;
+    background: oklch(1 0 0 / 90%);
   }
 
   .glass-dialog {
-    @apply backdrop-blur-2xl border border-white/15 shadow-2xl;
-    background: oklch(0.18 0.005 285 / 95%);
+    @apply backdrop-blur-2xl border border-border/50 shadow-2xl;
+    background: oklch(1 0 0 / 95%);
   }
 
   /* Modern card with subtle elevation */
   .modern-card {
-    @apply bg-card border border-border/50 rounded-lg;
+    @apply bg-card border border-border rounded-lg shadow-sm;
     transition: all 0.2s ease;
   }
   
   .modern-card:hover {
-    @apply border-border;
-    background: oklch(0.20 0.005 285);
+    @apply shadow-md;
   }
 
   /* Floating animation */
@@ -327,49 +317,46 @@
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Gradient backgrounds - Apple style */
+  /* Gradient backgrounds */
   .gradient-primary {
-    background: linear-gradient(135deg, oklch(0.62 0.21 255), oklch(0.55 0.22 270));
+    background: linear-gradient(135deg, oklch(0.55 0.20 255), oklch(0.50 0.22 270));
   }
 
   .gradient-success {
-    background: linear-gradient(135deg, oklch(0.65 0.20 145), oklch(0.60 0.18 160));
+    background: linear-gradient(135deg, oklch(0.55 0.18 145), oklch(0.50 0.16 160));
   }
 
   .gradient-warning {
-    background: linear-gradient(135deg, oklch(0.75 0.18 65), oklch(0.70 0.20 45));
+    background: linear-gradient(135deg, oklch(0.70 0.18 65), oklch(0.65 0.20 45));
   }
 
-  /* Subtle shadows for dark theme */
+  /* Subtle shadows for light theme */
   .shadow-soft {
-    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 10px 20px -2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.08), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
   }
 
   .shadow-glass {
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
   }
 
   /* Professional Card */
   .professional-card {
-    @apply bg-card rounded-lg p-6 border border-border/50;
+    @apply bg-card rounded-lg p-6 border border-border shadow-sm;
     transition: all 0.2s ease;
   }
 
   .professional-card:hover {
-    @apply border-border;
-    background: oklch(0.20 0.005 285);
+    @apply shadow-md;
     transform: translateY(-2px);
   }
 
-  /* Metric Display - Apple style */
+  /* Metric Display */
   .metric-value {
-    @apply text-5xl font-semibold tracking-tight;
-    color: oklch(1 0 0);
+    @apply text-5xl font-semibold tracking-tight text-foreground;
   }
 
   .metric-label {
-    @apply text-sm font-medium uppercase tracking-wider;
-    color: oklch(0.55 0 0);
+    @apply text-sm font-medium uppercase tracking-wider text-muted-foreground;
   }
 
   /* Hover lift effect */
@@ -381,22 +368,22 @@
     transform: translateY(-2px);
   }
 
-  /* Focus states - Apple Blue ring */
+  /* Focus states */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
   }
 
-  /* Input fields - Apple style */
+  /* Input fields */
   input:focus,
   textarea:focus,
   select:focus {
     @apply outline-none ring-2 ring-primary ring-offset-0;
-    border-color: oklch(0.62 0.21 255);
+    border-color: oklch(0.55 0.20 255);
   }
 
-  /* Links - Apple Blue */
+  /* Links */
   a:not([class]) {
-    color: oklch(0.62 0.21 255);
+    color: oklch(0.55 0.20 255);
     text-decoration: none;
     transition: opacity 0.15s ease;
   }
