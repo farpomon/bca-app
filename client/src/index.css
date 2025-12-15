@@ -48,89 +48,106 @@
   --color-info-foreground: var(--info-foreground);
 }
 
+/* Apple-Inspired Dark Professional Theme */
 :root {
-  /* Modern Engineering Color Palette */
-  --primary: 210 60% 23%; /* Deep Navy #1f3a61 */
-  --primary-foreground: 0 0% 100%;
-  --sidebar-primary: 211 31% 42%; /* Kashmir Blue #4a6b8c */
-  --sidebar-primary-foreground: 0 0% 100%;
-  --chart-1: 186 44% 61%; /* Neptune #7ea8b9 */
-  --chart-2: 211 31% 42%; /* Kashmir Blue */
-  --chart-3: 210 60% 23%; /* Deep Navy */
-  --chart-4: 43 96% 61%; /* Saffron Mango */
-  --chart-5: 186 44% 90%; /* Powder Blue */
-  --radius: 0.5rem;
-  /* Light backgrounds */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: 43 96% 61%; /* Saffron Mango #f9c54e */
-  --accent-foreground: 210 60% 23%; /* Deep Navy */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-  --success: oklch(0.65 0.19 155);
-  --success-foreground: oklch(0.98 0 0);
-  --warning: oklch(0.75 0.15 85);
-  --warning-foreground: oklch(0.2 0.015 65);
-  --info: oklch(0.65 0.19 240);
-  --info-foreground: oklch(0.98 0 0);
+  /* 8-point grid spacing system */
+  --spacing-unit: 8px;
+  
+  /* Corner radius - subtle and professional */
+  --radius: 8px;
+  
+  /* Apple Professional Blue Accent */
+  --primary: oklch(0.62 0.21 255); /* #007AFF Apple Blue */
+  --primary-foreground: oklch(1 0 0); /* Pure white */
+  
+  /* Dark charcoal background - Apple style */
+  --background: oklch(0.13 0.005 285); /* #1D1D1F */
+  --foreground: oklch(0.91 0 0); /* #E8E8ED - body text */
+  
+  /* Card surfaces - slightly elevated */
+  --card: oklch(0.18 0.005 285); /* #2C2C2E */
+  --card-foreground: oklch(0.91 0 0); /* #E8E8ED */
+  
+  /* Popover - same as card */
+  --popover: oklch(0.18 0.005 285);
+  --popover-foreground: oklch(0.91 0 0);
+  
+  /* Secondary - subtle grey */
+  --secondary: oklch(0.22 0.005 285); /* #3A3A3C */
+  --secondary-foreground: oklch(0.85 0 0);
+  
+  /* Muted - for secondary information */
+  --muted: oklch(0.22 0.005 285);
+  --muted-foreground: oklch(0.55 0 0); /* #86868B */
+  
+  /* Accent - Apple Blue */
+  --accent: oklch(0.62 0.21 255);
+  --accent-foreground: oklch(1 0 0);
+  
+  /* Destructive - Apple Red */
+  --destructive: oklch(0.55 0.22 25); /* #FF3B30 */
+  --destructive-foreground: oklch(1 0 0);
+  
+  /* Borders - subtle */
+  --border: oklch(0.28 0.005 285); /* #48484A */
+  --input: oklch(0.22 0.005 285);
+  --ring: oklch(0.62 0.21 255); /* Apple Blue for focus */
+  
+  /* Chart colors - Apple-inspired palette */
+  --chart-1: oklch(0.62 0.21 255); /* Blue */
+  --chart-2: oklch(0.65 0.20 145); /* Green */
+  --chart-3: oklch(0.70 0.18 65); /* Orange */
+  --chart-4: oklch(0.60 0.22 320); /* Purple */
+  --chart-5: oklch(0.55 0.22 25); /* Red */
+  
+  /* Sidebar - darker than main content */
+  --sidebar: oklch(0.10 0.005 285); /* #111111 */
+  --sidebar-foreground: oklch(0.91 0 0);
+  --sidebar-primary: oklch(0.62 0.21 255);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.18 0.005 285);
+  --sidebar-accent-foreground: oklch(0.91 0 0);
+  --sidebar-border: oklch(0.22 0.005 285);
+  --sidebar-ring: oklch(0.62 0.21 255);
+  
+  /* Status colors */
+  --success: oklch(0.65 0.20 145); /* Apple Green */
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.75 0.18 65); /* Apple Orange */
+  --warning-foreground: oklch(0.13 0.005 285);
+  --info: oklch(0.62 0.21 255); /* Apple Blue */
+  --info-foreground: oklch(1 0 0);
 }
 
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: 186 44% 61%; /* Neptune #7ea8b9 */
-  --chart-2: 211 31% 42%; /* Kashmir Blue */
-  --chart-3: 210 60% 23%; /* Deep Navy */
-  --chart-4: 43 96% 61%; /* Saffron Mango */
-  --chart-5: 186 44% 90%; /* Powder Blue */
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
-  --success: oklch(0.65 0.19 155);
-  --success-foreground: oklch(0.98 0 0);
-  --warning: oklch(0.75 0.15 85);
-  --warning-foreground: oklch(0.2 0.015 65);
-  --info: oklch(0.65 0.19 240);
-  --info-foreground: oklch(0.98 0 0);
+/* Light theme fallback (not used but kept for compatibility) */
+.light {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.13 0.005 285);
+  --card: oklch(0.98 0 0);
+  --card-foreground: oklch(0.13 0.005 285);
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: oklch(0.13 0.005 285);
+  --primary: oklch(0.62 0.21 255);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.25 0.005 285);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.62 0.21 255);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.90 0 0);
+  --input: oklch(0.90 0 0);
+  --ring: oklch(0.62 0.21 255);
+  --sidebar: oklch(0.97 0 0);
+  --sidebar-foreground: oklch(0.13 0.005 285);
+  --sidebar-primary: oklch(0.62 0.21 255);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.95 0 0);
+  --sidebar-accent-foreground: oklch(0.13 0.005 285);
+  --sidebar-border: oklch(0.90 0 0);
+  --sidebar-ring: oklch(0.62 0.21 255);
 }
 
 @layer base {
@@ -139,26 +156,40 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Apple system fonts with Inter fallback */
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1;
   }
+  
+  /* Typography Scale - Apple-inspired */
   h1 {
-    @apply text-4xl font-bold tracking-tight;
+    @apply text-4xl font-semibold tracking-tight;
+    color: oklch(1 0 0); /* Pure white for primary headings */
   }
   h2 {
-    @apply text-3xl font-bold tracking-tight;
+    @apply text-3xl font-semibold tracking-tight;
+    color: oklch(1 0 0);
   }
   h3 {
-    @apply text-2xl font-semibold tracking-tight;
+    @apply text-2xl font-medium tracking-tight;
+    color: oklch(0.95 0 0);
   }
   h4 {
-    @apply text-xl font-semibold;
+    @apply text-xl font-medium;
+    color: oklch(0.91 0 0);
   }
   h5 {
-    @apply text-lg font-semibold;
+    @apply text-lg font-medium;
+    color: oklch(0.91 0 0);
   }
   h6 {
-    @apply text-base font-semibold;
+    @apply text-base font-medium;
+    color: oklch(0.91 0 0);
   }
+  
+  /* Interactive elements cursor */
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -173,25 +204,13 @@
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
+  /* Container with 12-column grid alignment */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
-    padding-right: 1rem;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .flex {
@@ -201,63 +220,102 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
-      padding-right: 1.5rem;
+      padding-left: 24px;
+      padding-right: 24px;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
-      padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      padding-left: 32px;
+      padding-right: 32px;
+      max-width: 1280px;
     }
   }
 
-  /* Minimalist Stats Cards */
+  /* Apple-style Cards */
   .stat-card {
-    @apply relative;
+    @apply relative bg-card rounded-lg p-6 border border-border/50;
+    transition: all 0.2s ease;
+  }
+  
+  .stat-card:hover {
+    @apply border-border;
+    background: oklch(0.20 0.005 285);
   }
 
-  /* Project card enhancements */
+  /* Project card - Apple Pro style */
   .project-card {
-    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+    @apply bg-card rounded-lg border border-border/50;
+    transition: all 0.2s ease;
+  }
+  
+  .project-card:hover {
+    @apply border-border;
+    background: oklch(0.20 0.005 285);
+    transform: translateY(-2px);
   }
 
-  /* Button enhancements */
-  .btn-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-200;
+  /* Primary button - Apple Blue */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground font-medium rounded-lg px-4 py-2;
+    transition: all 0.15s ease;
+  }
+  
+  .btn-primary:hover {
+    filter: brightness(1.1);
+  }
+  
+  .btn-primary:active {
+    filter: brightness(0.95);
+  }
+
+  /* Secondary button - outline style */
+  .btn-secondary {
+    @apply bg-transparent text-foreground font-medium rounded-lg px-4 py-2 border border-border;
+    transition: all 0.15s ease;
+  }
+  
+  .btn-secondary:hover {
+    @apply bg-secondary;
   }
 
   /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none;
   }
 
-  /* Glassmorphism effects */
+  /* Glassmorphism - Apple style */
   .glass {
-    @apply backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/20 dark:border-white/10;
+    @apply backdrop-blur-xl border border-white/10;
+    background: oklch(0.18 0.005 285 / 80%);
   }
 
   .glass-card {
-    @apply backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border border-white/20 dark:border-white/10 shadow-xl shadow-black/5;
+    @apply backdrop-blur-xl border border-white/10 shadow-xl;
+    background: oklch(0.18 0.005 285 / 90%);
   }
 
   .glass-dialog {
-    @apply backdrop-blur-2xl bg-white/90 dark:bg-gray-900/90 border border-white/30 dark:border-white/15 shadow-2xl;
+    @apply backdrop-blur-2xl border border-white/15 shadow-2xl;
+    background: oklch(0.18 0.005 285 / 95%);
   }
 
   /* Modern card with subtle elevation */
   .modern-card {
-    @apply bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-800/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300;
+    @apply bg-card border border-border/50 rounded-lg;
+    transition: all 0.2s ease;
   }
-
-  /* Smooth transitions - moved to utilities layer */
+  
+  .modern-card:hover {
+    @apply border-border;
+    background: oklch(0.20 0.005 285);
+  }
 
   /* Floating animation */
   @keyframes float {
@@ -269,48 +327,82 @@
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Gradient backgrounds */
+  /* Gradient backgrounds - Apple style */
   .gradient-primary {
-    @apply bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600;
+    background: linear-gradient(135deg, oklch(0.62 0.21 255), oklch(0.55 0.22 270));
   }
 
   .gradient-success {
-    @apply bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600;
+    background: linear-gradient(135deg, oklch(0.65 0.20 145), oklch(0.60 0.18 160));
   }
 
   .gradient-warning {
-    @apply bg-gradient-to-br from-amber-500 via-orange-500 to-red-500;
+    background: linear-gradient(135deg, oklch(0.75 0.18 65), oklch(0.70 0.20 45));
   }
 
-  /* Modern shadows */
+  /* Subtle shadows for dark theme */
   .shadow-soft {
-    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 10px 20px -2px rgba(0, 0, 0, 0.2);
   }
 
   .shadow-glass {
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
   }
 
-  /* Professional Card Enhancements */
+  /* Professional Card */
   .professional-card {
-    @apply bg-card rounded-2xl p-8 shadow-lg border border-gray-200/50 transition-all duration-300;
+    @apply bg-card rounded-lg p-6 border border-border/50;
+    transition: all 0.2s ease;
   }
 
   .professional-card:hover {
-    @apply -translate-y-1 shadow-xl;
+    @apply border-border;
+    background: oklch(0.20 0.005 285);
+    transform: translateY(-2px);
   }
 
-  /* Metric Display */
+  /* Metric Display - Apple style */
   .metric-value {
-    @apply text-5xl font-bold tracking-tight text-foreground;
+    @apply text-5xl font-semibold tracking-tight;
+    color: oklch(1 0 0);
   }
 
   .metric-label {
-    @apply text-sm font-medium uppercase tracking-wider text-muted-foreground;
+    @apply text-sm font-medium uppercase tracking-wider;
+    color: oklch(0.55 0 0);
   }
 
   /* Hover lift effect */
+  .hover-lift {
+    transition: transform 0.2s ease;
+  }
+  
   .hover-lift:hover {
-    @apply -translate-y-0.5;
+    transform: translateY(-2px);
+  }
+
+  /* Focus states - Apple Blue ring */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  /* Input fields - Apple style */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply outline-none ring-2 ring-primary ring-offset-0;
+    border-color: oklch(0.62 0.21 255);
+  }
+
+  /* Links - Apple Blue */
+  a:not([class]) {
+    color: oklch(0.62 0.21 255);
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+  
+  a:not([class]):hover {
+    opacity: 0.8;
+    text-decoration: underline;
   }
 }
