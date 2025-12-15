@@ -45,8 +45,11 @@ export function AIImportAssetDialog({
   });
 
   const createAsset = trpc.assets.create.useMutation({
-    onSuccess: () => {
-      toast.success("Asset created successfully");
+    onSuccess: (data) => {
+      const message = data.assessmentsCreated > 0 
+        ? `Asset created successfully with ${data.assessmentsCreated} assessment${data.assessmentsCreated !== 1 ? 's' : ''}`
+        : "Asset created successfully";
+      toast.success(message);
       onSuccess();
       handleClose();
     },
@@ -104,20 +107,27 @@ export function AIImportAssetDialog({
     reader.readAsDataURL(file);
   };
 
+  const [saveAssessments, setSaveAssessments] = useState(true);
+
   const handleSave = () => {
     if (!extractedData) return;
 
+    // Extract asset data (handle both old flat structure and new nested structure)
+    const assetData = extractedData.asset || extractedData;
+    const assessmentsToSave = saveAssessments ? (extractedData.assessments || []) : [];
+
     createAsset.mutate({
       projectId,
-      name: extractedData.name || "Unnamed Asset",
-      description: extractedData.description || undefined,
-      assetType: extractedData.assetType || undefined,
-      address: extractedData.address || undefined,
-      yearBuilt: extractedData.yearBuilt || undefined,
-      grossFloorArea: extractedData.grossFloorArea || undefined,
-      numberOfStories: extractedData.numberOfStories || undefined,
-      constructionType: extractedData.constructionType || undefined,
+      name: assetData.name || "Unnamed Asset",
+      description: assetData.description || undefined,
+      assetType: assetData.assetType || undefined,
+      address: assetData.address || undefined,
+      yearBuilt: assetData.yearBuilt || undefined,
+      grossFloorArea: assetData.grossFloorArea || undefined,
+      numberOfStories: assetData.numberOfStories || undefined,
+      constructionType: assetData.constructionType || undefined,
       status: "active",
+      assessments: assessmentsToSave.length > 0 ? assessmentsToSave : undefined,
     });
   };
 
@@ -129,11 +139,28 @@ export function AIImportAssetDialog({
   };
 
   const handleFieldChange = (field: string, value: any) => {
-    setExtractedData((prev: any) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setExtractedData((prev: any) => {
+      // Handle nested asset structure
+      if (prev.asset) {
+        return {
+          ...prev,
+          asset: {
+            ...prev.asset,
+            [field]: value,
+          },
+        };
+      }
+      // Handle flat structure (backward compatibility)
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   };
+
+  // Get asset data (handle both structures)
+  const assetData = extractedData?.asset || extractedData;
+  const assessments = extractedData?.assessments || [];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -214,7 +241,7 @@ export function AIImportAssetDialog({
                   <Label htmlFor="name">Asset Name *</Label>
                   <Input
                     id="name"
-                    value={extractedData.name || ""}
+                    value={assetData?.name || ""}
                     onChange={(e) => handleFieldChange("name", e.target.value)}
                     placeholder="Enter asset name"
                   />
@@ -224,7 +251,7 @@ export function AIImportAssetDialog({
                   <Label htmlFor="assetType">Asset Type</Label>
                   <Input
                     id="assetType"
-                    value={extractedData.assetType || ""}
+                    value={assetData?.assetType || ""}
                     onChange={(e) => handleFieldChange("assetType", e.target.value)}
                     placeholder="e.g., Office Building, School, Hospital"
                   />
@@ -234,7 +261,7 @@ export function AIImportAssetDialog({
                   <Label htmlFor="address">Address</Label>
                   <Input
                     id="address"
-                    value={extractedData.address || ""}
+                    value={assetData?.address || ""}
                     onChange={(e) => handleFieldChange("address", e.target.value)}
                     placeholder="Enter address"
                   />
@@ -246,7 +273,7 @@ export function AIImportAssetDialog({
                     <Input
                       id="yearBuilt"
                       type="number"
-                      value={extractedData.yearBuilt || ""}
+                      value={assetData?.yearBuilt || ""}
                       onChange={(e) => handleFieldChange("yearBuilt", parseInt(e.target.value) || null)}
                       placeholder="e.g., 1995"
                     />
@@ -257,7 +284,7 @@ export function AIImportAssetDialog({
                     <Input
                       id="grossFloorArea"
                       type="number"
-                      value={extractedData.grossFloorArea || ""}
+                      value={assetData?.grossFloorArea || ""}
                       onChange={(e) => handleFieldChange("grossFloorArea", parseInt(e.target.value) || null)}
                       placeholder="e.g., 50000"
                     />
@@ -270,7 +297,7 @@ export function AIImportAssetDialog({
                     <Input
                       id="numberOfStories"
                       type="number"
-                      value={extractedData.numberOfStories || ""}
+                      value={assetData?.numberOfStories || ""}
                       onChange={(e) => handleFieldChange("numberOfStories", parseInt(e.target.value) || null)}
                       placeholder="e.g., 5"
                     />
@@ -280,7 +307,7 @@ export function AIImportAssetDialog({
                     <Label htmlFor="constructionType">Construction Type</Label>
                     <Input
                       id="constructionType"
-                      value={extractedData.constructionType || ""}
+                      value={assetData?.constructionType || ""}
                       onChange={(e) => handleFieldChange("constructionType", e.target.value)}
                       placeholder="e.g., Steel Frame"
                     />
@@ -291,12 +318,64 @@ export function AIImportAssetDialog({
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    value={extractedData.description || ""}
+                    value={assetData?.description || ""}
                     onChange={(e) => handleFieldChange("description", e.target.value)}
                     placeholder="Enter description"
                     rows={4}
                   />
                 </div>
+
+                {/* Assessments Preview */}
+                {assessments.length > 0 && (
+                  <div className="space-y-3 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-base">UNIFORMAT II Assessments</Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {assessments.length} component assessment{assessments.length !== 1 ? 's' : ''} found in document
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="saveAssessments"
+                          checked={saveAssessments}
+                          onChange={(e) => setSaveAssessments(e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="saveAssessments" className="cursor-pointer text-sm font-normal">
+                          Import assessments
+                        </Label>
+                      </div>
+                    </div>
+
+                    {saveAssessments && (
+                      <div className="max-h-60 overflow-y-auto space-y-2 bg-muted/30 p-3 rounded-lg">
+                        {assessments.map((assessment: any, index: number) => (
+                          <div key={index} className="bg-background p-3 rounded border text-sm">
+                            <div className="font-medium">
+                              {assessment.componentCode} - {assessment.componentName}
+                            </div>
+                            {assessment.componentLocation && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Location: {assessment.componentLocation}
+                              </div>
+                            )}
+                            <div className="flex gap-4 mt-2 text-xs">
+                              <span className="font-medium">Condition: <span className="font-normal capitalize">{assessment.condition}</span></span>
+                              {assessment.estimatedRepairCost && (
+                                <span className="font-medium">Cost: <span className="font-normal">${assessment.estimatedRepairCost.toLocaleString()}</span></span>
+                              )}
+                              {assessment.remainingUsefulLife && (
+                                <span className="font-medium">RUL: <span className="font-normal">{assessment.remainingUsefulLife} years</span></span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 pt-4">
@@ -305,7 +384,7 @@ export function AIImportAssetDialog({
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={!extractedData.name || createAsset.isPending}
+                  disabled={!assetData?.name || createAsset.isPending}
                   className="flex-1"
                 >
                   {createAsset.isPending ? (

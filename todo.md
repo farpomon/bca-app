@@ -1,6 +1,14 @@
 # BCA App TODO
 
-## 🔥 CURRENT PRIORITY: Offline-First Functionality
+## 🔥 CURRENT PRIORITY: AI Import Asset with UNIFORMAT II Assessment Extraction
+
+- [x] Update AI parser to extract UNIFORMAT II component assessments from asset documents
+- [x] Include condition ratings, observations, recommendations, costs for each component
+- [x] Update frontend AIImportAssetDialog to display extracted assessments preview
+- [x] Add option to save assessments along with asset creation
+- [ ] Test with real BCA documents containing assessment data
+
+## Offline-First Functionality
 
 ### Phase 1: Offline Storage Infrastructure
 - [x] Create IndexedDB schema for offline assessments (offlineAssessments store)

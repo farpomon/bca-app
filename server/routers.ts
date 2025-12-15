@@ -540,6 +540,20 @@ export const appRouter = router({
         constructionType: z.string().optional(),
         currentReplacementValue: z.string().optional(),
         status: z.enum(["active", "inactive", "demolished"]).optional(),
+        // Optional assessments to create along with the asset
+        assessments: z.array(z.object({
+          componentCode: z.string(),
+          componentName: z.string(),
+          componentLocation: z.string().nullable().optional(),
+          condition: z.enum(['good', 'fair', 'poor', 'not_assessed']),
+          conditionPercentage: z.number().nullable().optional(),
+          observations: z.string().nullable().optional(),
+          recommendations: z.string().nullable().optional(),
+          remainingUsefulLife: z.number().nullable().optional(),
+          expectedUsefulLife: z.number().nullable().optional(),
+          estimatedRepairCost: z.number().nullable().optional(),
+          replacementValue: z.number().nullable().optional(),
+        })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
@@ -547,8 +561,36 @@ export const appRouter = router({
         if (!project) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
-        const assetId = await assetsDb.createAsset(input);
-        return { id: assetId };
+        
+        // Create the asset
+        const { assessments, ...assetData } = input;
+        const assetId = await assetsDb.createAsset(assetData);
+        
+        // Create assessments if provided
+        if (assessments && assessments.length > 0) {
+          for (const assessment of assessments) {
+            await db.upsertAssessment({
+              projectId: input.projectId,
+              assetId,
+              componentCode: assessment.componentCode,
+              componentName: assessment.componentName,
+              componentLocation: assessment.componentLocation || undefined,
+              condition: assessment.condition,
+              conditionPercentage: assessment.conditionPercentage?.toString() || undefined,
+              observations: assessment.observations || undefined,
+              recommendations: assessment.recommendations || undefined,
+              remainingUsefulLife: assessment.remainingUsefulLife || undefined,
+              expectedUsefulLife: assessment.expectedUsefulLife || undefined,
+              estimatedRepairCost: assessment.estimatedRepairCost || undefined,
+              replacementValue: assessment.replacementValue || undefined,
+              status: 'initial',
+              assessedAt: new Date().toISOString(),
+            });
+          }
+          console.log(`[AI Import] Created ${assessments.length} assessments for asset ${assetId}`);
+        }
+        
+        return { id: assetId, assessmentsCreated: assessments?.length || 0 };
       }),
 
     update: protectedProcedure
@@ -642,11 +684,13 @@ export const appRouter = router({
           const fileKey = `temp-uploads/${input.projectId}/${timestamp}-${input.fileName}`;
           const { url: fileUrl } = await storagePut(fileKey, fileBuffer, input.mimeType);
 
-          // Use LLM to extract asset information from document
+          // Use LLM to extract asset information AND assessments from document
           const { invokeLLM } = await import("./_core/llm");
-          const prompt = `You are an expert in building condition assessment and facility management. Extract asset/building information from the provided document.
+          const prompt = `You are an expert in building condition assessment and facility management following ASTM E2018 standards and UNIFORMAT II classification.
 
-Extract the following information if available:
+Extract the following information from the provided Building Condition Assessment (BCA) document:
+
+**ASSET INFORMATION:**
 - Asset/Building Name
 - Asset Type (e.g., Office Building, School, Hospital, Warehouse, etc.)
 - Address/Location
@@ -656,19 +700,50 @@ Extract the following information if available:
 - Construction Type (e.g., Steel Frame, Concrete, Wood Frame, Masonry)
 - Description or Notes
 
-Return ONLY valid JSON with these exact fields (use null for missing fields):
+**UNIFORMAT II COMPONENT ASSESSMENTS:**
+For each building component/system assessed in the document, extract:
+- Component Code (UNIFORMAT II format: A1010, B2020, D3050, etc.)
+- Component Name (e.g., "Standard Foundations", "Exterior Windows", "Plumbing Fixtures")
+- Component Location (specific location if mentioned)
+- Condition Rating (excellent/good/fair/poor/critical)
+- Condition Percentage (if mentioned, e.g., 75% of ESL)
+- Observations (technical description of current condition)
+- Recommendations (maintenance or repair actions needed)
+- Remaining Useful Life (years remaining)
+- Expected/Estimated Service Life (ESL in years)
+- Estimated Repair Cost (dollar amount)
+- Replacement Value (dollar amount)
+
+Return ONLY valid JSON with this exact structure:
 {
-  "name": "string or null",
-  "assetType": "string or null",
-  "address": "string or null",
-  "yearBuilt": "number or null",
-  "grossFloorArea": "number or null",
-  "numberOfStories": "number or null",
-  "constructionType": "string or null",
-  "description": "string or null"
+  "asset": {
+    "name": "string or null",
+    "assetType": "string or null",
+    "address": "string or null",
+    "yearBuilt": "number or null",
+    "grossFloorArea": "number or null",
+    "numberOfStories": "number or null",
+    "constructionType": "string or null",
+    "description": "string or null"
+  },
+  "assessments": [
+    {
+      "componentCode": "string",
+      "componentName": "string",
+      "componentLocation": "string or null",
+      "condition": "excellent/good/fair/poor/critical",
+      "conditionPercentage": "number or null",
+      "observations": "string or null",
+      "recommendations": "string or null",
+      "remainingUsefulLife": "number or null",
+      "expectedUsefulLife": "number or null",
+      "estimatedRepairCost": "number or null",
+      "replacementValue": "number or null"
+    }
+  ]
 }
 
-Be as accurate as possible. Return ONLY the JSON object, no other text.`;
+Be as accurate as possible. Extract ALL assessments found in the document. Return ONLY the JSON object, no other text.`;
 
           console.log("[AI Import] Starting LLM extraction for file:", input.fileName);
           console.log("[AI Import] File URL:", fileUrl);
@@ -737,9 +812,39 @@ Be as accurate as possible. Return ONLY the JSON object, no other text.`;
 
           console.log("[AI Import] Successfully extracted data:", extractedData);
 
+          // Map condition values from AI output to database enum
+          const conditionMapping: Record<string, 'good' | 'fair' | 'poor' | 'not_assessed'> = {
+            'excellent': 'good',
+            'good': 'good',
+            'fair': 'fair',
+            'poor': 'poor',
+            'critical': 'poor',
+            'not_assessed': 'not_assessed',
+          };
+
+          // Process assessments if they exist
+          const mappedAssessments = (extractedData.assessments || []).map((assessment: any) => ({
+            componentCode: assessment.componentCode || '',
+            componentName: assessment.componentName || 'Unknown Component',
+            componentLocation: assessment.componentLocation || null,
+            condition: conditionMapping[assessment.condition?.toLowerCase()] || 'not_assessed',
+            conditionPercentage: assessment.conditionPercentage || null,
+            observations: assessment.observations || null,
+            recommendations: assessment.recommendations || null,
+            remainingUsefulLife: assessment.remainingUsefulLife || null,
+            expectedUsefulLife: assessment.expectedUsefulLife || null,
+            estimatedRepairCost: assessment.estimatedRepairCost || null,
+            replacementValue: assessment.replacementValue || null,
+          }));
+
+          console.log("[AI Import] Mapped assessments count:", mappedAssessments.length);
+
           return {
             success: true,
-            extractedData,
+            extractedData: {
+              asset: extractedData.asset || {},
+              assessments: mappedAssessments,
+            },
           };
         } catch (error: any) {
           console.error("[AI Import] Error:", error);
