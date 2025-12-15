@@ -31,7 +31,7 @@ type ExtractedData = {
     componentCode: string;
     componentName: string;
     componentLocation?: string | null;
-    condition: "excellent" | "good" | "fair" | "poor" | "critical";
+    condition: "good" | "fair" | "poor" | "not_assessed";
     conditionPercentage?: number | null;
     observations?: string | null;
     recommendations?: string | null;
@@ -42,8 +42,8 @@ type ExtractedData = {
   }>;
   deficiencies: Array<{
     componentCode: string;
-    title: string;
-    description: string;
+    title?: string | null;
+    description?: string | null;
     location?: string | null;
     severity: "low" | "medium" | "high" | "critical";
     priority: "immediate" | "short_term" | "medium_term" | "long_term";

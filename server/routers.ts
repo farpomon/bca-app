@@ -1878,7 +1878,7 @@ Be as accurate as possible. Return ONLY the JSON object, no other text.`;
           componentCode: z.string(),
           componentName: z.string(),
           componentLocation: z.string().nullable().optional(),
-          condition: z.enum(['excellent', 'good', 'fair', 'poor', 'critical']),
+          condition: z.enum(['good', 'fair', 'poor', 'not_assessed']),
           conditionPercentage: z.number().nullable().optional(),
           observations: z.string().nullable().optional(),
           recommendations: z.string().nullable().optional(),
@@ -1889,8 +1889,8 @@ Be as accurate as possible. Return ONLY the JSON object, no other text.`;
         })),
         deficiencies: z.array(z.object({
           componentCode: z.string(),
-          title: z.string(),
-          description: z.string(),
+          title: z.string().nullable().optional(),
+          description: z.string().nullable().optional(),
           location: z.string().nullable().optional(),
           severity: z.enum(['low', 'medium', 'high', 'critical']),
           priority: z.enum(['immediate', 'short_term', 'medium_term', 'long_term']),
@@ -1965,6 +1965,7 @@ Be as accurate as possible. Return ONLY the JSON object, no other text.`;
             projectId,
             assessmentId: assessmentId || null,
             ...deficiency,
+            title: deficiency.title || `Deficiency - ${deficiency.componentCode}`,
           });
         }
         

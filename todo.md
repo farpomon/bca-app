@@ -114,6 +114,24 @@
 - [x] Check what priority values the database schema expects for deficiencies - Database uses: immediate, short_term, medium_term, long_term
 - [x] Map AI output priority values to match database schema (similar to condition mapping) - Added priorityMapping in parseDocument
 - [x] Test with Presidents Court document to verify fix - Tests passing, ready for user testing
+- [x] Fix commitAIImport schema to accept mapped values (good/fair/poor/not_assessed)
+- [x] Make deficiency title field optional to handle undefined values
+
+## Add OpenAI API Integration for Document Import
+
+- [x] Request OPENAI_API_KEY from user via webdev_request_secrets
+- [x] Create OpenAI document parser service (extractBCADataWithOpenAI)
+- [x] Update parseDocument to try OpenAI first with Gemini fallback
+- [x] Add automatic fallback logic (OpenAI → Gemini)
+- [ ] Test with MARINA document to verify OpenAI/Gemini fallback works
+- [ ] Create checkpoint after successful testing
+
+## Fix AI Import Deficiency Undefined Values
+
+- [x] Investigate "Invalid input: expected string, received undefined" error in deficiencies
+- [x] Check which deficiency fields are required vs optional in database schema
+- [x] Add default values or null handling for optional deficiency fields - Made description optional
+- [ ] Test with Presidents Court document to verify fix
 
 ## Fix AI Import Gemini Response Parsing
 

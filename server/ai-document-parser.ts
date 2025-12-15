@@ -313,6 +313,7 @@ export async function parseDocument(
   project: any;
   assessments: any[];
   deficiencies: any[];
+  aiProvider?: string;
 }> {
   try {
     console.log(`[AI Parser] Starting parse for ${mimeType}, size: ${buffer.length} bytes`);
@@ -364,17 +365,34 @@ export async function parseDocument(
     }
     
     // Use AI to extract structured data
+    // Try OpenAI first, fallback to Gemini if it fails
     let extracted;
+    let aiProvider = 'unknown';
     try {
-      extracted = await extractBCADataWithAI(text);
-    } catch (error) {
-      if (error instanceof AIExtractionError) {
-        throw error;
+      console.log('[AI Parser] Attempting extraction with OpenAI...');
+      const { extractBCADataWithOpenAI } = await import('./ai-document-parser-openai');
+      extracted = await extractBCADataWithOpenAI(text);
+      aiProvider = 'OpenAI';
+      console.log('[AI Parser] Successfully extracted data using OpenAI');
+    } catch (openaiError) {
+      console.warn('[AI Parser] OpenAI extraction failed, falling back to Gemini:', 
+        openaiError instanceof Error ? openaiError.message : 'Unknown error');
+      
+      try {
+        console.log('[AI Parser] Attempting extraction with Gemini...');
+        extracted = await extractBCADataWithAI(text);
+        aiProvider = 'Gemini';
+        console.log('[AI Parser] Successfully extracted data using Gemini');
+      } catch (geminiError) {
+        console.error('[AI Parser] Both OpenAI and Gemini extraction failed');
+        if (geminiError instanceof AIExtractionError) {
+          throw geminiError;
+        }
+        throw new AIExtractionError(
+          'Failed to analyze document with AI (tried both OpenAI and Gemini)',
+          geminiError instanceof Error ? geminiError : undefined
+        );
       }
-      throw new AIExtractionError(
-        'Failed to analyze document with AI',
-        error instanceof Error ? error : undefined
-      );
     }
     
     // Final validation
@@ -395,12 +413,35 @@ export async function parseDocument(
       'critical': 'poor'
     };
     
-    const mappedAssessments = extracted.assessments.map((assessment: any) => {
-      if (assessment.condition && typeof assessment.condition === 'string') {
-        const lowerCondition = assessment.condition.toLowerCase();
-        assessment.condition = conditionMapping[lowerCondition] || 'not_assessed';
-      }
-      return assessment;
+    const mappedAssessments: Array<{
+      componentCode: string;
+      componentName: string;
+      componentLocation?: string | null;
+      condition: 'good' | 'fair' | 'poor' | 'not_assessed';
+      conditionPercentage?: number | null;
+      observations?: string | null;
+      recommendations?: string | null;
+      remainingUsefulLife?: number | null;
+      expectedUsefulLife?: number | null;
+      estimatedRepairCost?: number | null;
+      replacementValue?: number | null;
+    }> = extracted.assessments.map((assessment: any) => {
+      const lowerCondition = assessment.condition?.toLowerCase() || '';
+      const mappedCondition = (conditionMapping[lowerCondition] || 'not_assessed') as 'good' | 'fair' | 'poor' | 'not_assessed';
+      
+      return {
+        componentCode: assessment.componentCode,
+        componentName: assessment.componentName,
+        componentLocation: assessment.componentLocation,
+        condition: mappedCondition,
+        conditionPercentage: assessment.conditionPercentage,
+        observations: assessment.observations,
+        recommendations: assessment.recommendations,
+        remainingUsefulLife: assessment.remainingUsefulLife,
+        expectedUsefulLife: assessment.expectedUsefulLife,
+        estimatedRepairCost: assessment.estimatedRepairCost,
+        replacementValue: assessment.replacementValue,
+      };
     });
     
     // Map priority values from AI output to database enum
@@ -431,14 +472,28 @@ export async function parseDocument(
         // Default to medium_term if priority is undefined or invalid
         deficiency.priority = 'medium_term';
       }
+      // Ensure title has a value
+      if (!deficiency.title || deficiency.title.trim() === '') {
+        deficiency.title = `Deficiency - ${deficiency.componentCode}`;
+      }
       return deficiency;
-    });
+    }) as Array<{
+      componentCode: string;
+      title: string;
+      description?: string | null;
+      location?: string | null;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      priority: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+      estimatedCost?: number | null;
+      recommendedAction?: string | null;
+    }>
     
-    console.log('[AI Parser] Document parsing completed successfully');
+    console.log(`[AI Parser] Document parsing completed successfully using ${aiProvider}`);
     return {
       project: extracted.project,
       assessments: mappedAssessments,
-      deficiencies: mappedDeficiencies
+      deficiencies: mappedDeficiencies,
+      aiProvider // Return which AI provider was used
     };
   } catch (error) {
     // Log the error for debugging
