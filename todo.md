@@ -108,6 +108,13 @@
 - [x] Investigate what condition values the database schema expects - Database uses: good, fair, poor, not_assessed
 - [x] Map AI output condition values to match database schema - Added conditionMapping in parseDocument
 
+## Fix AI Import Deficiency Priority Validation
+
+- [x] Investigate deficiency priority validation error (undefined vs immediate/short_term/medium_term/long_term)
+- [x] Check what priority values the database schema expects for deficiencies - Database uses: immediate, short_term, medium_term, long_term
+- [x] Map AI output priority values to match database schema (similar to condition mapping) - Added priorityMapping in parseDocument
+- [x] Test with Presidents Court document to verify fix - Tests passing, ready for user testing
+
 ## Fix AI Import Gemini Response Parsing
 
 - [x] Debug "Cannot read properties of undefined (reading '0')" error - Found json_schema mode incompatibility

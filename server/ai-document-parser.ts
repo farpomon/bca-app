@@ -403,11 +403,42 @@ export async function parseDocument(
       return assessment;
     });
     
+    // Map priority values from AI output to database enum
+    // Database accepts: 'immediate', 'short_term', 'medium_term', 'long_term'
+    // AI may return various formats or undefined
+    const priorityMapping: Record<string, string> = {
+      'immediate': 'immediate',
+      'urgent': 'immediate',
+      'critical': 'immediate',
+      'short': 'short_term',
+      'short_term': 'short_term',
+      'short term': 'short_term',
+      'medium': 'medium_term',
+      'medium_term': 'medium_term',
+      'medium term': 'medium_term',
+      'long': 'long_term',
+      'long_term': 'long_term',
+      'long term': 'long_term',
+      'low': 'long_term'
+    };
+    
+    const mappedDeficiencies = extracted.deficiencies.map((deficiency: any) => {
+      // Map priority if present
+      if (deficiency.priority && typeof deficiency.priority === 'string') {
+        const lowerPriority = deficiency.priority.toLowerCase().trim();
+        deficiency.priority = priorityMapping[lowerPriority] || 'medium_term';
+      } else {
+        // Default to medium_term if priority is undefined or invalid
+        deficiency.priority = 'medium_term';
+      }
+      return deficiency;
+    });
+    
     console.log('[AI Parser] Document parsing completed successfully');
     return {
       project: extracted.project,
       assessments: mappedAssessments,
-      deficiencies: extracted.deficiencies
+      deficiencies: mappedDeficiencies
     };
   } catch (error) {
     // Log the error for debugging
