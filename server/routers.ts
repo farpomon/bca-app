@@ -30,6 +30,7 @@ import { emailMfaRouter } from "./emailMfaRouter";
 import { mfaMethodSwitchRouter } from "./mfaMethodSwitchRouter";
 import { mfaRecoveryRouter } from "./mfaRecoveryRouter";
 import { offlineSyncRouter } from "./routers/offlineSync.router";
+import { privacyLockRouter } from "./routers/privacyLock.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -62,6 +63,7 @@ export const appRouter = router({
   compliance: complianceRouter,
   dataSecurity: dataSecurityRouter,
   offlineSync: offlineSyncRouter,
+  privacyLock: privacyLockRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

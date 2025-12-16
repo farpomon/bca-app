@@ -51,9 +51,24 @@ export const companies = mysqlTable("companies", {
 	mfaRequired: int().default(0),
 	maxUsers: int().default(100),
 	featureAccess: text(),
+	privacyLockEnabled: int().default(1).notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
+
+export const companyAccessCodes = mysqlTable("company_access_codes", {
+	id: int().autoincrement().notNull(),
+	companyId: int().notNull(),
+	code: varchar({ length: 64 }).notNull(),
+	createdBy: int().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	usedBy: int(),
+	usedAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_company_code").on(table.companyId, table.code),
+]);
 
 export const assessmentDocuments = mysqlTable("assessment_documents", {
 	id: int().autoincrement().notNull(),

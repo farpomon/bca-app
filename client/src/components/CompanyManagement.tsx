@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings } from "lucide-react";
+import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings, Lock, LockOpen } from "lucide-react";
 import { toast } from "sonner";
 import { CompanySettingsDialog } from "@/components/CompanySettingsDialog";
 
@@ -372,7 +372,16 @@ export function CompanyManagement() {
               <TableBody>
                 {filteredCompanies.map((company) => (
                   <TableRow key={company.id}>
-                    <TableCell className="font-medium">{company.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {company.name}
+                        {company.privacyLockEnabled ? (
+                          <Lock className="h-3.5 w-3.5 text-green-600" title="Privacy Lock Enabled" />
+                        ) : (
+                          <LockOpen className="h-3.5 w-3.5 text-muted-foreground" title="Privacy Lock Disabled" />
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{company.city || "-"}</TableCell>
                     <TableCell>{getStatusBadge(company.status)}</TableCell>
                     <TableCell>

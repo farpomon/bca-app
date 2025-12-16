@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2, Settings, Shield, Users, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrivacyLockSettings } from "./PrivacyLockSettings";
 
 interface CompanySettingsDialogProps {
   companyId: number | null;
@@ -162,6 +163,10 @@ export function CompanySettingsDialog({
                 </div>
               </CardContent>
             </Card>
+
+            {companyId && (
+              <PrivacyLockSettings companyId={companyId} companyName={companyName} />
+            )}
 
             <Card>
               <CardHeader className="pb-3">

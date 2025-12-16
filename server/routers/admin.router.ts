@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { users, projects, companies } from "../../drizzle/schema";
+import { users, projects, companies, companyAccessCodes } from "../../drizzle/schema";
 import { sql } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 
@@ -89,6 +89,7 @@ export const adminRouter = router({
 
   /**
    * Get all projects across all users
+   * Respects privacy lock - filters out projects from locked companies unless owner has valid access
    */
   getAllProjects: adminProcedure
     .input(
@@ -98,16 +99,63 @@ export const adminRouter = router({
         offset: z.number().min(0).default(0),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const database = await getDb();
       if (!database) throw new Error("Database not available");
 
       const allProjects = await database.select().from(projects);
+      const allCompanies = await database.select().from(companies);
+      const allUsers = await database.select().from(users);
+      
+      // Get companies with privacy lock enabled
+      const lockedCompanyNames = new Set(
+        allCompanies
+          .filter(c => c.privacyLockEnabled === 1)
+          .map(c => c.name)
+      );
+      
+      // Check if current user has valid access to locked companies
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const validAccessCodes = await database
+        .select()
+        .from(companyAccessCodes)
+        .where(
+          sql`${companyAccessCodes.usedBy} = ${ctx.user.id} AND ${companyAccessCodes.usedAt} > ${oneHourAgo}`
+        );
+      
+      const accessibleCompanyIds = new Set(validAccessCodes.map(c => c.companyId));
+      const accessibleCompanyNames = new Set(
+        allCompanies
+          .filter(c => accessibleCompanyIds.has(c.id))
+          .map(c => c.name)
+      );
+      
+      // Filter projects based on privacy lock
+      const accessibleProjects = allProjects.filter(project => {
+        // Find the user who owns this project
+        const projectOwner = allUsers.find(u => u.id === project.userId);
+        if (!projectOwner) return true; // No owner, allow access
+        
+        const ownerCompany = projectOwner.company;
+        if (!ownerCompany) return true; // No company, allow access
+        
+        // If company is not locked, allow access
+        if (!lockedCompanyNames.has(ownerCompany)) return true;
+        
+        // If admin's own company, allow access
+        if (ctx.user.company === ownerCompany) return true;
+        
+        // If admin has valid access code for this company, allow access
+        if (accessibleCompanyNames.has(ownerCompany)) return true;
+        
+        // Otherwise, filter out
+        return false;
+      });
       
       // Filter by status if provided
       const filtered = input.status
-        ? allProjects.filter(p => p.status === input.status)
-        : allProjects;
+        ? accessibleProjects.filter(p => p.status === input.status)
+        : accessibleProjects;
       
       // Apply pagination
       const paginated = filtered.slice(input.offset, input.offset + input.limit);
@@ -117,10 +165,11 @@ export const adminRouter = router({
 
   /**
    * Get project details by ID (admin can access any project)
+   * Respects privacy lock
    */
   getProjectById: adminProcedure
     .input(z.object({ projectId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const database = await getDb();
       if (!database) throw new Error("Database not available");
 
@@ -130,7 +179,41 @@ export const adminRouter = router({
         .where(eq(projects.id, input.projectId))
         .limit(1);
       
-      return result[0] || null;
+      const project = result[0];
+      if (!project) return null;
+      
+      // Check privacy lock
+      const projectOwner = await database
+        .select()
+        .from(users)
+        .where(eq(users.id, project.userId))
+        .limit(1);
+      
+      if (projectOwner[0]?.company && projectOwner[0].company !== ctx.user.company) {
+        const [ownerCompany] = await database
+          .select()
+          .from(companies)
+          .where(eq(companies.name, projectOwner[0].company))
+          .limit(1);
+        
+        if (ownerCompany?.privacyLockEnabled === 1) {
+          // Check for valid access code
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+          const [validAccess] = await database
+            .select()
+            .from(companyAccessCodes)
+            .where(
+              sql`${companyAccessCodes.companyId} = ${ownerCompany.id} AND ${companyAccessCodes.usedBy} = ${ctx.user.id} AND ${companyAccessCodes.usedAt} > ${oneHourAgo}`
+            )
+            .limit(1);
+          
+          if (!validAccess) {
+            throw new Error("Access denied: This company has privacy lock enabled. Request an access code from the company.");
+          }
+        }
+      }
+      
+      return project;
     }),
 
   /**
@@ -314,6 +397,7 @@ export const adminRouter = router({
       
       return {
         ...company,
+        privacyLockEnabled: company.privacyLockEnabled === 1,
         userCount: companyUsers.length,
         roleBreakdown,
         statusBreakdown,

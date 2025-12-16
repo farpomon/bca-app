@@ -409,3 +409,31 @@
 - [x] Add extend trial functionality
 - [x] Add suspend/activate user functionality
 - [x] Write tests for trial expiration middleware
+
+
+## Company Privacy Lock Feature
+
+### Database Schema
+- [x] Add privacyLockEnabled boolean to companies table (default: true)
+- [x] Create company_access_codes table (id, companyId, code, createdBy, createdAt, expiresAt, usedBy, usedAt)
+- [x] Push schema changes to database
+
+### Backend API
+- [x] Create generateAccessCode endpoint for company admins
+- [x] Create verifyAccessCode endpoint for site owner
+- [x] Add privacy lock check to project listing for owner
+- [x] Add audit logging for access code generation and usage
+- [x] Set access code expiration to 1 hour
+
+### Frontend UI
+- [x] Add privacy lock toggle to CompanySettingsDialog (enabled by default)
+- [x] Create AccessCodeGenerator component for company admins (PrivacyLockSettings)
+- [x] Create AccessCodePrompt dialog for site owner when accessing locked company
+- [x] Show privacy lock status badge on company cards
+- [x] Add access code verification flow
+
+### Testing
+- [ ] Test privacy lock blocks owner from viewing locked company projects
+- [ ] Test access code generation by company admin
+- [ ] Test access code verification grants temporary access
+- [ ] Test access code expiration after 1 hour
