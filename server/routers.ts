@@ -680,12 +680,6 @@ export const appRouter = router({
         }
 
         try {
-          // Upload file to S3 for AI processing
-          const { storagePut } = await import("./storage");
-          const timestamp = Date.now();
-          const fileKey = `temp-uploads/${input.projectId}/${timestamp}-${input.fileName}`;
-          const { url: fileUrl } = await storagePut(fileKey, fileBuffer, input.mimeType);
-
           // Use LLM to extract asset information AND assessments from document
           const { invokeLLM } = await import("./_core/llm");
           const prompt = `You are an expert in building condition assessment and facility management following ASTM E2018 standards and UNIFORMAT II classification.
@@ -748,8 +742,51 @@ Return ONLY valid JSON with this exact structure:
 Be as accurate as possible. Extract ALL assessments found in the document. Return ONLY the JSON object, no other text.`;
 
           console.log("[AI Import] Starting LLM extraction for file:", input.fileName);
-          console.log("[AI Import] File URL:", fileUrl);
           console.log("[AI Import] MIME type:", input.mimeType);
+
+          // Determine how to process the file based on MIME type
+          let userContent: any;
+          const isWordDoc = input.mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || 
+                           input.mimeType === "application/msword";
+          
+          if (isWordDoc) {
+            // For Word documents, extract text using mammoth since Gemini doesn't support .docx files
+            console.log("[AI Import] Extracting text from Word document...");
+            const mammoth = await import("mammoth");
+            const result = await mammoth.extractRawText({ buffer: fileBuffer });
+            const documentText = result.value;
+            
+            if (!documentText || documentText.trim().length === 0) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Could not extract text from Word document. The document may be empty or corrupted.",
+              });
+            }
+            
+            console.log("[AI Import] Extracted text length:", documentText.length);
+            // Truncate if too long (keep first 100k characters to stay within token limits)
+            const truncatedText = documentText.length > 100000 ? documentText.substring(0, 100000) + "\n\n[Document truncated due to length]" : documentText;
+            
+            userContent = {
+              type: "text",
+              text: `Here is the content of the Building Condition Assessment document:\n\n${truncatedText}`,
+            };
+          } else {
+            // For PDFs, upload to S3 and use file_url (Gemini supports PDF)
+            const { storagePut } = await import("./storage");
+            const timestamp = Date.now();
+            const fileKey = `temp-uploads/${input.projectId}/${timestamp}-${input.fileName}`;
+            const { url: fileUrl } = await storagePut(fileKey, fileBuffer, input.mimeType);
+            console.log("[AI Import] File URL:", fileUrl);
+            
+            userContent = {
+              type: "file_url",
+              file_url: {
+                url: fileUrl,
+                mime_type: "application/pdf" as const,
+              },
+            };
+          }
 
           let response;
           try {
@@ -758,15 +795,7 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
               { role: "system", content: prompt },
               {
                 role: "user",
-                content: [
-                  {
-                    type: "file_url",
-                    file_url: {
-                      url: fileUrl,
-                      mime_type: input.mimeType as "application/pdf" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    },
-                  },
-                ],
+                content: [userContent],
               },
             ],
             response_format: {
