@@ -1,10 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_TITLE, getLoginUrl } from "@/const";
+import { APP_TITLE, APP_LOGO, getLoginUrl } from "@/const";
 import { Building2, ClipboardCheck, FileText, TrendingUp, CheckCircle2, Shield, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import HeroImage from "@/components/HeroImage";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -34,8 +35,8 @@ export default function Home() {
       {/* Header */}
       <header className="glass border-b sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
+          <div className="flex items-center gap-3">
+            <img src={APP_LOGO} alt="Maben Consulting" className="h-10 w-auto" />
             <span className="font-bold text-xl">{APP_TITLE}</span>
           </div>
           <Button asChild>
@@ -44,62 +45,45 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section - Modern 2025 Design */}
-      <section className="container py-16 md:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left: Content (60%) */}
-          <div className="space-y-8">
+      {/* Hero Section with Rotating Background Image */}
+      <HeroImage height="600px">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center space-y-8 text-white">
             <div className="inline-block">
-              <span className="text-sm font-semibold uppercase tracking-wider text-accent">Building Condition Assessment Software</span>
+              <span className="text-sm font-semibold uppercase tracking-wider bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">Building Condition Assessment Software</span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight drop-shadow-lg">
               Streamline Building Assessments
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl leading-relaxed drop-shadow-md">
               Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="text-base h-12 px-8" asChild>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="text-base h-12 px-8 bg-white text-primary hover:bg-white/90" asChild>
                 <a href={getLoginUrl()}>Start Free Assessment</a>
               </Button>
-              <Button size="lg" variant="outline" className="text-base h-12 px-8" asChild>
+              <Button size="lg" variant="outline" className="text-base h-12 px-8 border-white text-white hover:bg-white/20" asChild>
                 <a href="#features">See How It Works</a>
               </Button>
             </div>
-            {/* Social Proof */}
-            <div className="flex items-center gap-6 pt-4">
-              <div className="flex -space-x-2">
-                <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-sm font-semibold">A</div>
-                <div className="w-10 h-10 rounded-full bg-secondary/20 border-2 border-background flex items-center justify-center text-sm font-semibold">B</div>
-                <div className="w-10 h-10 rounded-full bg-accent/20 border-2 border-background flex items-center justify-center text-sm font-semibold">C</div>
-              </div>
-              <div className="text-sm">
-                <div className="font-semibold">Trusted by inspectors</div>
-                <div className="text-muted-foreground">Join professionals worldwide</div>
-              </div>
-            </div>
           </div>
+        </div>
+      </HeroImage>
 
-          {/* Right: Visual (40%) */}
-          <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50">
-              {/* Product Screenshot Placeholder */}
-              <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center">
-                <div className="text-center space-y-4 p-8">
-                  <Building2 className="h-24 w-24 text-primary mx-auto" />
-                  <div className="space-y-2">
-                    <div className="h-4 w-48 bg-primary/20 rounded mx-auto"></div>
-                    <div className="h-4 w-32 bg-secondary/20 rounded mx-auto"></div>
-                    <div className="h-4 w-40 bg-accent/20 rounded mx-auto"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Floating Stats */}
-            <div className="absolute -bottom-6 -left-6 bg-card border border-border/50 rounded-xl shadow-lg p-4 hidden md:block">
-              <div className="text-3xl font-bold text-primary">1,244</div>
-              <div className="text-sm text-muted-foreground">Projects Completed</div>
-            </div>
+      {/* Value Proposition Section */}
+      <section className="container py-16">
+        <div className="grid md:grid-cols-3 gap-8 text-center">
+          <div className="space-y-3">
+            <div className="text-4xl font-bold text-primary">1,244+</div>
+            <div className="text-muted-foreground">Projects Completed</div>
+          </div>
+          <div className="space-y-3">
+            <div className="text-4xl font-bold text-primary">ASTM E2018</div>
+            <div className="text-muted-foreground">Standards Compliant</div>
+          </div>
+          <div className="space-y-3">
+            <div className="text-4xl font-bold text-primary">UNIFORMAT II</div>
+            <div className="text-muted-foreground">Classification System</div>
           </div>
         </div>
       </section>

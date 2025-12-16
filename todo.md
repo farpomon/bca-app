@@ -437,3 +437,14 @@
 - [ ] Test access code generation by company admin
 - [ ] Test access code verification grants temporary access
 - [ ] Test access code expiration after 1 hour
+
+## Landing Page Enhancements
+
+- [x] Add rotating hero images to landing page (random selection on each visit)
+- [x] Integrate Maben Consulting logo in header
+- [x] Copy all hero images to public directory with optimized naming
+- [x] Create HeroImage component with random image selection
+- [x] Update landing page layout to include hero section
+- [x] Update branding constants to include Maben Consulting logo
+- [x] Test image rotation functionality
+- [x] Verify responsive design on mobile devices
