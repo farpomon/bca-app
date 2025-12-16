@@ -376,3 +376,36 @@
 
 ## Recent Investigations
 - [x] Investigated sign-in issue on Chrome iPhone - Authentication working correctly, user successfully signed in as Luis Faria
+
+
+## Company Management & Trial Expiration (Dec 16, 2025)
+
+### Company Management Page
+- [ ] Create companies database table (id, name, city, status, createdAt, updatedAt)
+- [ ] Create company CRUD API endpoints (list, get, create, update, delete)
+- [ ] Build Company Management admin page with company list
+- [ ] Show users per company with role breakdown
+- [ ] Add edit company dialog
+- [ ] Add company status management (active, suspended)
+
+### Trial Expiration Handling
+- [ ] Add trialEndsAt field to users table
+- [ ] Set trialEndsAt when approving with trial status
+- [ ] Implement trial expiration check in useAuth hook
+- [ ] Auto-suspend accounts when trial expires
+- [ ] Show trial expiration warning banner for trial users
+- [ ] Add "X days remaining" indicator in user profile
+- [ ] Allow admins to extend trial period
+
+
+## Company Management & Trial Expiration (Completed)
+- [x] Create companies database table
+- [x] Add company management API endpoints (CRUD)
+- [x] Build CompanyManagement component for admin page
+- [x] Add Companies tab to Admin dashboard
+- [x] Implement trial expiration check in middleware
+- [x] Implement suspended account check in middleware
+- [x] Add trial stats endpoint for admin
+- [x] Add extend trial functionality
+- [x] Add suspend/activate user functionality
+- [x] Write tests for trial expiration middleware

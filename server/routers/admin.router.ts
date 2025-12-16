@@ -7,7 +7,8 @@
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { users, projects } from "../../drizzle/schema";
+import { users, projects, companies } from "../../drizzle/schema";
+import { sql } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 
 export const adminRouter = router({
@@ -283,6 +284,274 @@ export const adminRouter = router({
   /**
    * Get MFA compliance report with detailed breakdown by role and time period
    */
+  // ============ Company Management ============
+  
+  /**
+   * Get all companies with user counts
+   */
+  getCompanies: adminProcedure.query(async () => {
+    const database = await getDb();
+    if (!database) throw new Error("Database not available");
+
+    const allCompanies = await database.select().from(companies);
+    const allUsers = await database.select().from(users);
+
+    // Calculate user counts per company
+    return allCompanies.map(company => {
+      const companyUsers = allUsers.filter(u => u.company === company.name);
+      const roleBreakdown = {
+        admin: companyUsers.filter(u => u.role === "admin").length,
+        project_manager: companyUsers.filter(u => u.role === "project_manager").length,
+        editor: companyUsers.filter(u => u.role === "editor").length,
+        viewer: companyUsers.filter(u => u.role === "viewer").length,
+      };
+      const statusBreakdown = {
+        active: companyUsers.filter(u => u.accountStatus === "active").length,
+        trial: companyUsers.filter(u => u.accountStatus === "trial").length,
+        suspended: companyUsers.filter(u => u.accountStatus === "suspended").length,
+        pending: companyUsers.filter(u => u.accountStatus === "pending").length,
+      };
+      
+      return {
+        ...company,
+        userCount: companyUsers.length,
+        roleBreakdown,
+        statusBreakdown,
+      };
+    });
+  }),
+
+  /**
+   * Get company by ID with full details
+   */
+  getCompanyById: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      const result = await database.select().from(companies).where(eq(companies.id, input.id)).limit(1);
+      if (result.length === 0) return null;
+
+      const company = result[0];
+      const companyUsers = await database.select().from(users).where(eq(users.company, company.name));
+
+      return {
+        ...company,
+        users: companyUsers.map(u => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          accountStatus: u.accountStatus,
+          trialEndsAt: u.trialEndsAt,
+          lastSignedIn: u.lastSignedIn,
+        })),
+      };
+    }),
+
+  /**
+   * Create a new company
+   */
+  createCompany: adminProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      city: z.string().optional(),
+      contactEmail: z.string().email().optional(),
+      contactPhone: z.string().optional(),
+      address: z.string().optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      const result = await database.insert(companies).values(input);
+      return { success: true, id: Number(result[0].insertId) };
+    }),
+
+  /**
+   * Update company details
+   */
+  updateCompany: adminProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      city: z.string().optional(),
+      status: z.enum(["active", "suspended", "inactive"]).optional(),
+      contactEmail: z.string().email().optional(),
+      contactPhone: z.string().optional(),
+      address: z.string().optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      const { id, ...data } = input;
+      
+      // If company status is being suspended, also suspend all users
+      if (data.status === "suspended") {
+        const company = await database.select().from(companies).where(eq(companies.id, id)).limit(1);
+        if (company.length > 0) {
+          await database
+            .update(users)
+            .set({ accountStatus: "suspended" })
+            .where(eq(users.company, company[0].name));
+        }
+      }
+
+      await database.update(companies).set(data).where(eq(companies.id, id));
+      return { success: true };
+    }),
+
+  /**
+   * Delete company (only if no users)
+   */
+  deleteCompany: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Check if company has users
+      const company = await database.select().from(companies).where(eq(companies.id, input.id)).limit(1);
+      if (company.length === 0) {
+        throw new Error("Company not found");
+      }
+
+      const companyUsers = await database.select().from(users).where(eq(users.company, company[0].name));
+      if (companyUsers.length > 0) {
+        throw new Error("Cannot delete company with existing users. Remove or reassign users first.");
+      }
+
+      await database.delete(companies).where(eq(companies.id, input.id));
+      return { success: true };
+    }),
+
+  /**
+   * Get users by company
+   */
+  getUsersByCompany: adminProcedure
+    .input(z.object({ companyName: z.string() }))
+    .query(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      const companyUsers = await database.select().from(users).where(eq(users.company, input.companyName));
+      return companyUsers.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        accountStatus: u.accountStatus,
+        trialEndsAt: u.trialEndsAt,
+        createdAt: u.createdAt,
+        lastSignedIn: u.lastSignedIn,
+      }));
+    }),
+
+  /**
+   * Update user's trial end date
+   */
+  extendUserTrial: adminProcedure
+    .input(z.object({
+      userId: z.number(),
+      trialEndsAt: z.string(), // ISO date string
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database
+        .update(users)
+        .set({ 
+          trialEndsAt: input.trialEndsAt,
+          accountStatus: "trial",
+        })
+        .where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Suspend user account
+   */
+  suspendUser: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database
+        .update(users)
+        .set({ accountStatus: "suspended" })
+        .where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Activate user account
+   */
+  activateUser: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database
+        .update(users)
+        .set({ accountStatus: "active", trialEndsAt: null })
+        .where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Get trial expiration stats
+   */
+  getTrialStats: adminProcedure.query(async () => {
+    const database = await getDb();
+    if (!database) throw new Error("Database not available");
+
+    const allUsers = await database.select().from(users);
+    const trialUsers = allUsers.filter(u => u.accountStatus === "trial");
+    
+    const now = new Date();
+    const expiringSoon = trialUsers.filter(u => {
+      if (!u.trialEndsAt) return false;
+      const trialEnd = new Date(u.trialEndsAt);
+      const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysRemaining <= 7 && daysRemaining > 0;
+    });
+    
+    const expired = trialUsers.filter(u => {
+      if (!u.trialEndsAt) return false;
+      return new Date(u.trialEndsAt) < now;
+    });
+
+    return {
+      totalTrialUsers: trialUsers.length,
+      expiringSoon: expiringSoon.length,
+      expired: expired.length,
+      expiringSoonUsers: expiringSoon.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        company: u.company,
+        trialEndsAt: u.trialEndsAt,
+      })),
+      expiredUsers: expired.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        company: u.company,
+        trialEndsAt: u.trialEndsAt,
+      })),
+    };
+  }),
+
   getMfaComplianceReport: adminProcedure
     .input(
       z.object({

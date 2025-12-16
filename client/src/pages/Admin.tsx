@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +29,7 @@ import ApproveRequestDialog from "@/components/ApproveRequestDialog";
 import RejectRequestDialog from "@/components/RejectRequestDialog";
 import { MFAComplianceReport } from "@/components/MFAComplianceReport";
 import { AdminMFARecovery } from "@/components/AdminMFARecovery";
+import { CompanyManagement } from "@/components/CompanyManagement";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -212,6 +213,10 @@ export default function Admin() {
           <TabsTrigger value="mfa-recovery" className="gap-2">
             <Shield className="w-4 h-4" />
             MFA Recovery
+          </TabsTrigger>
+          <TabsTrigger value="companies" className="gap-2">
+            <Building2 className="w-4 h-4" />
+            Companies
           </TabsTrigger>
         </TabsList>
 
@@ -665,6 +670,11 @@ export default function Admin() {
         {/* MFA Recovery Tab */}
         <TabsContent value="mfa-recovery" className="space-y-4">
           <AdminMFARecovery />
+        </TabsContent>
+
+        {/* Companies Tab */}
+        <TabsContent value="companies" className="space-y-4">
+          <CompanyManagement />
         </TabsContent>
       </Tabs>
 

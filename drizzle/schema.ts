@@ -18,6 +18,39 @@ export const accessRequests = mysqlTable("access_requests", {
 	rejectionReason: text(),
 });
 
+export const smsVerificationCodes = mysqlTable("sms_verification_codes", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	phoneNumber: varchar({ length: 320 }).notNull(),
+	code: varchar({ length: 10 }).notNull(),
+	purpose: varchar({ length: 50 }).notNull(),
+	verified: int().default(0).notNull(),
+	attempts: int().default(0).notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
+
+export const projectPermissions = mysqlTable("project_permissions", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	userId: int().notNull(),
+	permission: mysqlEnum(['view','edit']).default('view').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
+
+export const companies = mysqlTable("companies", {
+	id: int().autoincrement().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	city: varchar({ length: 255 }),
+	status: mysqlEnum(['active','suspended','inactive']).default('active').notNull(),
+	contactEmail: varchar({ length: 320 }),
+	contactPhone: varchar({ length: 50 }),
+	address: text(),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+});
+
 export const assessmentDocuments = mysqlTable("assessment_documents", {
 	id: int().autoincrement().notNull(),
 	assessmentId: int().notNull(),
@@ -82,30 +115,6 @@ export const assessments = mysqlTable("assessments", {
 	complianceCheckedBy: int(),
 });
 
-export const assets = mysqlTable("assets", {
-	id: int().autoincrement().notNull(),
-	projectId: int().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	description: text(),
-	assetType: varchar({ length: 100 }),
-	address: text(), // Legacy field - kept for backward compatibility
-	streetNumber: varchar({ length: 20 }),
-	streetAddress: varchar({ length: 255 }),
-	unitNumber: varchar({ length: 50 }),
-	postalCode: varchar({ length: 20 }),
-	province: varchar({ length: 100 }),
-	latitude: decimal({ precision: 10, scale: 7 }),
-	longitude: decimal({ precision: 10, scale: 7 }),
-	yearBuilt: int(),
-	grossFloorArea: int(),
-	numberOfStories: int(),
-	constructionType: varchar({ length: 100 }),
-	currentReplacementValue: decimal({ precision: 15, scale: 2 }),
-	status: mysqlEnum(['active','inactive','demolished']).default('active').notNull(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-});
-
 export const assetDocuments = mysqlTable("asset_documents", {
 	id: int().autoincrement().notNull(),
 	assetId: int().notNull(),
@@ -118,6 +127,30 @@ export const assetDocuments = mysqlTable("asset_documents", {
 	uploadedBy: int().notNull(),
 	description: text(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
+
+export const assets = mysqlTable("assets", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	assetType: varchar({ length: 100 }),
+	address: text(),
+	yearBuilt: int(),
+	grossFloorArea: int(),
+	numberOfStories: int(),
+	constructionType: varchar({ length: 100 }),
+	currentReplacementValue: decimal({ precision: 15, scale: 2 }),
+	status: mysqlEnum(['active','inactive','demolished']).default('active').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	streetNumber: varchar({ length: 20 }),
+	streetAddress: varchar({ length: 255 }),
+	unitNumber: varchar({ length: 50 }),
+	postalCode: varchar({ length: 20 }),
+	province: varchar({ length: 100 }),
+	latitude: decimal({ precision: 10, scale: 7 }),
+	longitude: decimal({ precision: 10, scale: 7 }),
 });
 
 export const auditLog = mysqlTable("audit_log", {
@@ -155,6 +188,23 @@ export const budgetAllocations = mysqlTable("budget_allocations", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
+
+export const buildingCodes = mysqlTable("building_codes", {
+	id: int().autoincrement().notNull(),
+	code: varchar({ length: 100 }).notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	edition: varchar({ length: 100 }),
+	jurisdiction: varchar({ length: 100 }),
+	year: int(),
+	documentUrl: text(),
+	documentKey: varchar({ length: 500 }),
+	pageCount: int(),
+	isActive: int().default(1).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("code").on(table.code),
+]);
 
 export const buildingComponents = mysqlTable("building_components", {
 	id: int().autoincrement().notNull(),
@@ -645,6 +695,23 @@ export const hierarchyTemplates = mysqlTable("hierarchy_templates", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
+export const integrationRuns = mysqlTable("integration_runs", {
+	id: int().autoincrement().notNull(),
+	source: mysqlEnum(['sap','tririga']).notNull(),
+	runType: mysqlEnum(['full','incremental']).notNull(),
+	status: mysqlEnum(['running','success','failed','partial']).notNull(),
+	startedAt: timestamp({ mode: 'string' }).notNull(),
+	completedAt: timestamp({ mode: 'string' }),
+	recordsExtracted: int().default(0),
+	recordsTransformed: int().default(0),
+	recordsLoaded: int().default(0),
+	recordsFailed: int().default(0),
+	errorMessage: text(),
+	errorDetails: text(),
+	triggeredBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+});
+
 export const kpiSnapshots = mysqlTable("kpi_snapshots", {
 	id: int().autoincrement().notNull(),
 	snapshotDate: timestamp({ mode: 'string' }).notNull(),
@@ -707,6 +774,62 @@ export const maintenanceEntries = mysqlTable("maintenance_entries", {
 	index("idx_componentName").on(table.componentName),
 	index("idx_dateCompleted").on(table.dateCompleted),
 	index("idx_nextDueDate").on(table.nextDueDate),
+]);
+
+export const mfaAuditLog = mysqlTable("mfa_audit_log", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed']).notNull(),
+	success: int().default(1).notNull(),
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+	deviceFingerprint: varchar({ length: 255 }),
+	failureReason: varchar({ length: 255 }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_user_action").on(table.userId, table.action),
+	index("idx_created").on(table.createdAt),
+]);
+
+export const mfaMethodSwitchRequests = mysqlTable("mfa_method_switch_requests", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	currentMethod: mysqlEnum(['totp','sms','email']).notNull(),
+	newMethod: mysqlEnum(['totp','sms','email']).notNull(),
+	newMethodSecret: varchar({ length: 255 }),
+	newMethodVerified: int().default(0).notNull(),
+	status: mysqlEnum(['pending','completed','cancelled','expired']).default('pending').notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	completedAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_user_status").on(table.userId, table.status),
+	index("idx_expires").on(table.expiresAt),
+]);
+
+export const mfaRecoveryRequests = mysqlTable("mfa_recovery_requests", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	reason: text().notNull(),
+	identityVerification: text(),
+	status: mysqlEnum(['pending','approved','rejected','completed','expired']).default('pending').notNull(),
+	recoveryCode: varchar({ length: 255 }),
+	recoveryCodeExpiresAt: timestamp({ mode: 'string' }),
+	submittedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	reviewedAt: timestamp({ mode: 'string' }),
+	reviewedBy: int(),
+	adminNotes: text(),
+	rejectionReason: text(),
+	completedAt: timestamp({ mode: 'string' }),
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+},
+(table) => [
+	index("idx_user_status").on(table.userId, table.status),
+	index("idx_status").on(table.status),
+	index("idx_submitted").on(table.submittedAt),
 ]);
 
 export const modelAnnotations = mysqlTable("model_annotations", {
@@ -857,6 +980,23 @@ export const prioritizationCriteria = mysqlTable("prioritization_criteria", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
+export const projectDocuments = mysqlTable("project_documents", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	fileName: varchar({ length: 255 }).notNull(),
+	fileKey: varchar({ length: 500 }).notNull(),
+	url: text().notNull(),
+	mimeType: varchar({ length: 100 }).notNull(),
+	fileSize: int().notNull(),
+	uploadedBy: int().notNull(),
+	description: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_project_documents_projectId").on(table.projectId),
+	index("idx_project_documents_uploadedBy").on(table.uploadedBy),
+]);
+
 export const projectHierarchyConfig = mysqlTable("project_hierarchy_config", {
 	id: int().autoincrement().notNull(),
 	projectId: int().notNull(),
@@ -871,14 +1011,6 @@ export const projectHierarchyConfig = mysqlTable("project_hierarchy_config", {
 (table) => [
 	index("project_hierarchy_config_projectId_unique").on(table.projectId),
 ]);
-
-export const projectPermissions = mysqlTable("project_permissions", {
-	id: int().autoincrement().notNull(),
-	projectId: int().notNull(),
-	userId: int().notNull(),
-	permission: mysqlEnum(['view','edit']).notNull(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-});
 
 export const projectPriorityScores = mysqlTable("project_priority_scores", {
 	id: int().autoincrement().notNull(),
@@ -934,56 +1066,18 @@ export const projectVersions = mysqlTable("project_versions", {
 	index("idx_project").on(table.projectId),
 ]);
 
-export const projectDocuments = mysqlTable("project_documents", {
-	id: int().autoincrement().notNull(),
-	projectId: int().notNull(),
-	fileName: varchar({ length: 255 }).notNull(),
-	fileKey: varchar({ length: 500 }).notNull(),
-	url: text().notNull(),
-	mimeType: varchar({ length: 100 }).notNull(),
-	fileSize: int().notNull(),
-	uploadedBy: int().notNull(),
-	description: text(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-},
-(table) => [
-	index("idx_project_documents_projectId").on(table.projectId),
-	index("idx_project_documents_uploadedBy").on(table.uploadedBy),
-]);
-
-export const buildingCodes = mysqlTable("building_codes", {
-	id: int().autoincrement().notNull(),
-	code: varchar({ length: 100 }).notNull().unique(),
-	title: varchar({ length: 255 }).notNull(),
-	edition: varchar({ length: 100 }),
-	jurisdiction: varchar({ length: 100 }),
-	year: int(),
-	documentUrl: text(),
-	documentKey: varchar({ length: 500 }),
-	pageCount: int(),
-	isActive: int().default(1).notNull(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-});
-
 export const projects = mysqlTable("projects", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	address: text(), // Legacy field - kept for backward compatibility
-	streetNumber: varchar({ length: 20 }),
-	streetAddress: varchar({ length: 255 }),
-	unitNumber: varchar({ length: 50 }),
-	postalCode: varchar({ length: 20 }),
-	province: varchar({ length: 100 }),
-	latitude: decimal({ precision: 10, scale: 7 }),
-	longitude: decimal({ precision: 10, scale: 7 }),
+	address: text(),
 	clientName: varchar({ length: 255 }),
 	propertyType: varchar({ length: 100 }),
 	constructionType: varchar({ length: 100 }),
 	yearBuilt: int(),
 	numberOfUnits: int(),
 	numberOfStories: int(),
-	buildingCodeId: int().references(() => buildingCodes.id, { onDelete: "set null" }),
+	buildingCode: varchar({ length: 100 }),
 	assessmentDate: timestamp({ mode: 'string' }),
 	observations: text(),
 	status: mysqlEnum(['draft','in_progress','completed','archived','deleted']).default('draft').notNull(),
@@ -1009,6 +1103,14 @@ export const projects = mysqlTable("projects", {
 	company: varchar({ length: 255 }),
 	deletedAt: timestamp({ mode: 'string' }),
 	deletedBy: int(),
+	buildingCodeId: int(),
+	streetNumber: varchar({ length: 20 }),
+	streetAddress: varchar({ length: 255 }),
+	unitNumber: varchar({ length: 50 }),
+	postalCode: varchar({ length: 20 }),
+	province: varchar({ length: 100 }),
+	latitude: decimal({ precision: 10, scale: 7 }),
+	longitude: decimal({ precision: 10, scale: 7 }),
 });
 
 export const ratingScales = mysqlTable("rating_scales", {
@@ -1094,7 +1196,9 @@ export const reportSchedules = mysqlTable("report_schedules", {
 	recipientEmails: text().notNull(),
 	active: int().default(1).notNull(),
 	lastRun: timestamp({ mode: 'string' }),
+	nextRun: timestamp({ mode: 'string' }),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
 export const reportSections = mysqlTable("report_sections", {
@@ -1259,6 +1363,22 @@ export const sustainabilityGoals = mysqlTable("sustainability_goals", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
+export const trustedDevices = mysqlTable("trusted_devices", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	deviceFingerprint: varchar({ length: 255 }).notNull(),
+	deviceName: varchar({ length: 255 }),
+	userAgent: text(),
+	ipAddress: varchar({ length: 45 }),
+	lastUsed: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_user_device").on(table.userId, table.deviceFingerprint),
+	index("idx_expires").on(table.expiresAt),
+]);
+
 export const userConsents = mysqlTable("user_consents", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
@@ -1272,13 +1392,27 @@ export const userConsents = mysqlTable("user_consents", {
 	revokedAt: timestamp({ mode: 'string' }),
 });
 
+export const userMfaSettings = mysqlTable("user_mfa_settings", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	secret: varchar({ length: 255 }).notNull(),
+	enabled: int().default(0).notNull(),
+	backupCodes: text(),
+	mfaMethod: mysqlEnum(['totp','sms','email']).default('totp'),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_user_id").on(table.userId),
+]);
+
 export const users = mysqlTable("users", {
 	id: int().autoincrement().notNull(),
 	openId: varchar({ length: 64 }).notNull(),
 	name: text(),
 	email: varchar({ length: 320 }),
 	loginMethod: varchar({ length: 64 }),
-	role: mysqlEnum(['user','admin','viewer','editor','project_manager']).default('user').notNull(),
+	role: mysqlEnum(['user','admin']).default('user').notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	lastSignedIn: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
@@ -1347,250 +1481,3 @@ export const wasteTracking = mysqlTable("waste_tracking", {
 	notes: text(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 });
-
-// Multi-Factor Authentication Tables
-export const userMfaSettings = mysqlTable("user_mfa_settings", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull(),
-	secret: varchar({ length: 255 }), // Encrypted TOTP secret (nullable for email-only users)
-	enabled: int().default(0).notNull(), // 0 = disabled, 1 = enabled
-	backupCodes: text(), // JSON array of hashed backup codes
-	mfaMethod: mysqlEnum(['totp', 'sms', 'email']).default('totp'), // MFA method: TOTP (authenticator app), SMS, or Email
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-},
-(table) => [
-	index("idx_user_id").on(table.userId),
-]);
-
-export const trustedDevices = mysqlTable("trusted_devices", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull(),
-	deviceFingerprint: varchar({ length: 255 }).notNull(), // Hashed device identifier
-	deviceName: varchar({ length: 255 }), // User-friendly device name
-	userAgent: text(),
-	ipAddress: varchar({ length: 45 }),
-	lastUsed: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	expiresAt: timestamp({ mode: 'string' }).notNull(), // 30 days from creation
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-},
-(table) => [
-	index("idx_user_device").on(table.userId, table.deviceFingerprint),
-	index("idx_expires").on(table.expiresAt),
-]);
-
-export const mfaAuditLog = mysqlTable("mfa_audit_log", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull(),
-	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','mfa_reset_by_admin','sms_sent','sms_verified','email_sent','email_verified']).notNull(),
-	success: int().default(1).notNull(), // 0 = failed, 1 = success
-	ipAddress: varchar({ length: 45 }),
-	userAgent: text(),
-	deviceFingerprint: varchar({ length: 255 }),
-	failureReason: varchar({ length: 255 }),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-},
-(table) => [
-	index("idx_user_action").on(table.userId, table.action),
-	index("idx_created").on(table.createdAt),
-]);
-
-export const smsVerificationCodes = mysqlTable("sms_verification_codes", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull(),
-	code: varchar({ length: 255 }).notNull(), // 6-digit verification code (hashed)
-	phoneNumber: varchar({ length: 20 }).notNull(), // E.164 format
-	purpose: mysqlEnum(['mfa_setup', 'mfa_login', 'phone_verification', 'email_verification']).notNull(),
-	attempts: int().default(0).notNull(), // Number of verification attempts
-	verified: int().default(0).notNull(), // 0 = not verified, 1 = verified
-	expiresAt: timestamp({ mode: 'string' }).notNull(), // Code expires after 10 minutes
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-},
-(table) => [
-	index("idx_user_code").on(table.userId, table.code),
-	index("idx_expires").on(table.expiresAt),
-]);
-
-// MFA Method Switching
-export const mfaMethodSwitchRequests = mysqlTable("mfa_method_switch_requests", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull(),
-	currentMethod: mysqlEnum(['totp', 'sms', 'email']).notNull(),
-	newMethod: mysqlEnum(['totp', 'sms', 'email']).notNull(),
-	newMethodSecret: varchar({ length: 255 }), // Temporary secret for new TOTP method
-	newMethodVerified: int().default(0).notNull(), // 0 = not verified, 1 = verified
-	status: mysqlEnum(['pending', 'completed', 'cancelled', 'expired']).default('pending').notNull(),
-	expiresAt: timestamp({ mode: 'string' }).notNull(), // Request expires after 30 minutes
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	completedAt: timestamp({ mode: 'string' }),
-},
-(table) => [
-	index("idx_user_status").on(table.userId, table.status),
-	index("idx_expires").on(table.expiresAt),
-]);
-
-// MFA Recovery Flow
-export const mfaRecoveryRequests = mysqlTable("mfa_recovery_requests", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull(),
-	reason: text().notNull(), // User's reason for recovery request
-	identityVerification: text(), // JSON: answers to security questions or other verification
-	status: mysqlEnum(['pending', 'approved', 'rejected', 'completed', 'expired']).default('pending').notNull(),
-	recoveryCode: varchar({ length: 255 }), // Temporary recovery code (hashed, 24-hour expiration)
-	recoveryCodeExpiresAt: timestamp({ mode: 'string' }),
-	submittedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	reviewedAt: timestamp({ mode: 'string' }),
-	reviewedBy: int(), // Admin user ID who reviewed the request
-	adminNotes: text(), // Internal admin notes
-	rejectionReason: text(), // Reason shown to user if rejected
-	completedAt: timestamp({ mode: 'string' }),
-	ipAddress: varchar({ length: 45 }),
-	userAgent: text(),
-},
-(table) => [
-	index("idx_user_status").on(table.userId, table.status),
-	index("idx_status").on(table.status),
-	index("idx_submitted").on(table.submittedAt),
-]);
-
-// Type exports for all tables
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
-
-export type Project = typeof projects.$inferSelect;
-export type InsertProject = typeof projects.$inferInsert;
-
-export type Assessment = typeof assessments.$inferSelect;
-export type InsertAssessment = typeof assessments.$inferInsert;
-
-export type Deficiency = typeof deficiencies.$inferSelect;
-export type InsertDeficiency = typeof deficiencies.$inferInsert;
-
-export type Photo = typeof photos.$inferSelect;
-export type InsertPhoto = typeof photos.$inferInsert;
-
-export type CostEstimate = typeof costEstimates.$inferSelect;
-export type InsertCostEstimate = typeof costEstimates.$inferInsert;
-
-export type Asset = typeof assets.$inferSelect;
-export type InsertAsset = typeof assets.$inferInsert;
-
-export type BuildingSection = typeof buildingSections.$inferSelect;
-export type InsertBuildingSection = typeof buildingSections.$inferInsert;
-
-export type CustomComponent = typeof customComponents.$inferSelect;
-export type InsertCustomComponent = typeof customComponents.$inferInsert;
-
-export type CustomVocabulary = typeof customVocabulary.$inferSelect;
-export type InsertCustomVocabulary = typeof customVocabulary.$inferInsert;
-
-export type AuditLog = typeof auditLog.$inferSelect;
-export type InsertAuditLog = typeof auditLog.$inferInsert;
-
-export type AssessmentVersion = typeof assessmentVersions.$inferSelect;
-export type InsertAssessmentVersion = typeof assessmentVersions.$inferInsert;
-
-export type DeficiencyVersion = typeof deficiencyVersions.$inferSelect;
-export type InsertDeficiencyVersion = typeof deficiencyVersions.$inferInsert;
-
-export type ProjectVersion = typeof projectVersions.$inferSelect;
-export type InsertProjectVersion = typeof projectVersions.$inferInsert;
-
-export type RatingScale = typeof ratingScales.$inferSelect;
-export type InsertRatingScale = typeof ratingScales.$inferInsert;
-
-export type ProjectRatingConfig = typeof projectRatingConfig.$inferSelect;
-export type InsertProjectRatingConfig = typeof projectRatingConfig.$inferInsert;
-
-export type AssessmentDocument = typeof assessmentDocuments.$inferSelect;
-export type InsertAssessmentDocument = typeof assessmentDocuments.$inferInsert;
-
-export type ProjectPermission = typeof projectPermissions.$inferSelect;
-export type InsertProjectPermission = typeof projectPermissions.$inferInsert;
-
-export type ReportTemplate = typeof reportTemplates.$inferSelect;
-export type InsertReportTemplate = typeof reportTemplates.$inferInsert;
-
-export type ReportSection = typeof reportSections.$inferSelect;
-export type InsertReportSection = typeof reportSections.$inferInsert;
-
-export type ReportConfiguration = typeof reportConfigurations.$inferSelect;
-export type InsertReportConfiguration = typeof reportConfigurations.$inferInsert;
-
-export type UtilityConsumption = typeof utilityConsumption.$inferSelect;
-export type InsertUtilityConsumption = typeof utilityConsumption.$inferInsert;
-
-export type WasteTracking = typeof wasteTracking.$inferSelect;
-export type InsertWasteTracking = typeof wasteTracking.$inferInsert;
-
-export type EmissionsData = typeof emissionsData.$inferSelect;
-export type InsertEmissionsData = typeof emissionsData.$inferInsert;
-
-export type SustainabilityGoal = typeof sustainabilityGoals.$inferSelect;
-export type InsertSustainabilityGoal = typeof sustainabilityGoals.$inferInsert;
-
-export type GreenUpgrade = typeof greenUpgrades.$inferSelect;
-export type InsertGreenUpgrade = typeof greenUpgrades.$inferInsert;
-
-export type ESGScore = typeof esgScores.$inferSelect;
-export type InsertESGScore = typeof esgScores.$inferInsert;
-
-export type MaintenanceEntry = typeof maintenanceEntries.$inferSelect;
-export type InsertMaintenanceEntry = typeof maintenanceEntries.$inferInsert;
-
-export type FacilityModel = typeof facilityModels.$inferSelect;
-export type InsertFacilityModel = typeof facilityModels.$inferInsert;
-
-export type ModelAnnotation = typeof modelAnnotations.$inferSelect;
-export type InsertModelAnnotation = typeof modelAnnotations.$inferInsert;
-
-export type ModelViewpoint = typeof modelViewpoints.$inferSelect;
-export type InsertModelViewpoint = typeof modelViewpoints.$inferInsert;
-
-export type PrioritizationCriteria = typeof prioritizationCriteria.$inferSelect;
-export type InsertPrioritizationCriteria = typeof prioritizationCriteria.$inferInsert;
-
-export type ProjectScore = typeof projectScores.$inferSelect;
-export type InsertProjectScore = typeof projectScores.$inferInsert;
-
-export type RiskAssessment = typeof riskAssessments.$inferSelect;
-export type InsertRiskAssessment = typeof riskAssessments.$inferInsert;
-
-export type PofFactor = typeof pofFactors.$inferSelect;
-export type InsertPofFactor = typeof pofFactors.$inferInsert;
-
-export type CofFactor = typeof cofFactors.$inferSelect;
-export type InsertCofFactor = typeof cofFactors.$inferInsert;
-
-export type CriticalEquipment = typeof criticalEquipment.$inferSelect;
-export type InsertCriticalEquipment = typeof criticalEquipment.$inferInsert;
-
-export type RiskMitigationAction = typeof riskMitigationActions.$inferSelect;
-export type InsertRiskMitigationAction = typeof riskMitigationActions.$inferInsert;
-
-export type CapitalBudgetCycle = typeof capitalBudgetCycles.$inferSelect;
-export type InsertCapitalBudgetCycle = typeof capitalBudgetCycles.$inferInsert;
-
-export type BudgetAllocation = typeof budgetAllocations.$inferSelect;
-export type InsertBudgetAllocation = typeof budgetAllocations.$inferInsert;
-
-export type RenovationCost = typeof renovationCosts.$inferSelect;
-export type InsertRenovationCost = typeof renovationCosts.$inferInsert;
-
-export type ReportHistory = typeof reportHistory.$inferSelect;
-export type InsertReportHistory = typeof reportHistory.$inferInsert;
-
-export type ProjectDocument = typeof projectDocuments.$inferSelect;
-export type InsertProjectDocument = typeof projectDocuments.$inferInsert;
-
-export type UserMfaSettings = typeof userMfaSettings.$inferSelect;
-export type InsertUserMfaSettings = typeof userMfaSettings.$inferInsert;
-
-export type TrustedDevice = typeof trustedDevices.$inferSelect;
-export type InsertTrustedDevice = typeof trustedDevices.$inferInsert;
-
-export type MfaAuditLog = typeof mfaAuditLog.$inferSelect;
-export type InsertMfaAuditLog = typeof mfaAuditLog.$inferInsert;
-
-export type SmsVerificationCode = typeof smsVerificationCodes.$inferSelect;
-export type InsertSmsVerificationCode = typeof smsVerificationCodes.$inferInsert;

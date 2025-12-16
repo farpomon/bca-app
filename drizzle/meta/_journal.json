@@ -295,6 +295,20 @@
       "when": 1765503558667,
       "tag": "0041_skinny_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "5",
+      "when": 1765879573353,
+      "tag": "0042_funny_gambit",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "5",
+      "when": 1765880268572,
+      "tag": "0043_swift_scalphunter",
+      "breakpoints": true
     }
   ]
 }
