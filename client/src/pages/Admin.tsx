@@ -30,6 +30,8 @@ import RejectRequestDialog from "@/components/RejectRequestDialog";
 import { MFAComplianceReport } from "@/components/MFAComplianceReport";
 import { AdminMFARecovery } from "@/components/AdminMFARecovery";
 import { CompanyManagement } from "@/components/CompanyManagement";
+import { BulkUserActions } from "@/components/BulkUserActions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -41,6 +43,7 @@ export default function Admin() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
 
   // Queries
   const statsQuery = trpc.admin.getSystemStats.useQuery(undefined, {
@@ -406,9 +409,25 @@ export default function Admin() {
                     </div>
                   </div>
 
+                <BulkUserActions
+                  selectedUserIds={selectedUserIds}
+                  onClearSelection={() => setSelectedUserIds([])}
+                  onSuccess={() => usersQuery.refetch()}
+                  currentUserId={user?.id}
+                />
+
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={filteredUsers.length > 0 && selectedUserIds.length === filteredUsers.length}
+                          onCheckedChange={(checked) => {
+                            if (checked) setSelectedUserIds(filteredUsers.map(u => u.id));
+                            else setSelectedUserIds([]);
+                          }}
+                        />
+                      </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Company</TableHead>
@@ -421,7 +440,16 @@ export default function Admin() {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((u) => (
-                      <TableRow key={u.id}>
+                      <TableRow key={u.id} className={selectedUserIds.includes(u.id) ? "bg-muted/50" : ""}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedUserIds.includes(u.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) setSelectedUserIds([...selectedUserIds, u.id]);
+                              else setSelectedUserIds(selectedUserIds.filter(id => id !== u.id));
+                            }}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{u.name || "—"}</TableCell>
                         <TableCell>{u.email || "—"}</TableCell>
                         <TableCell>{u.company || "—"}</TableCell>

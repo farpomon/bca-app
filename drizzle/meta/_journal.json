@@ -309,6 +309,13 @@
       "when": 1765880268572,
       "tag": "0043_swift_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "5",
+      "when": 1765883637564,
+      "tag": "0044_cuddly_zeigeist",
+      "breakpoints": true
     }
   ]
 }

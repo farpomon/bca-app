@@ -47,6 +47,10 @@ export const companies = mysqlTable("companies", {
 	contactPhone: varchar({ length: 50 }),
 	address: text(),
 	notes: text(),
+	defaultTrialDuration: int().default(14),
+	mfaRequired: int().default(0),
+	maxUsers: int().default(100),
+	featureAccess: text(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });

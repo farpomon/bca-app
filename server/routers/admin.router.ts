@@ -639,4 +639,215 @@ export const adminRouter = router({
         userDetails,
       };
     }),
+
+  /**
+   * Get company settings
+   */
+  getCompanySettings: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      const result = await database.select().from(companies).where(eq(companies.id, input.id)).limit(1);
+      if (result.length === 0) throw new Error("Company not found");
+
+      const company = result[0];
+      return {
+        id: company.id,
+        name: company.name,
+        defaultTrialDuration: company.defaultTrialDuration ?? 14,
+        mfaRequired: company.mfaRequired === 1,
+        maxUsers: company.maxUsers ?? 100,
+        featureAccess: company.featureAccess ? JSON.parse(company.featureAccess) : {
+          aiImport: true,
+          offlineMode: true,
+          advancedReports: true,
+          bulkOperations: true,
+        },
+      };
+    }),
+
+  /**
+   * Update company settings
+   */
+  updateCompanySettings: adminProcedure
+    .input(z.object({
+      id: z.number(),
+      defaultTrialDuration: z.number().min(1).max(365).optional(),
+      mfaRequired: z.boolean().optional(),
+      maxUsers: z.number().min(1).max(10000).optional(),
+      featureAccess: z.object({
+        aiImport: z.boolean().optional(),
+        offlineMode: z.boolean().optional(),
+        advancedReports: z.boolean().optional(),
+        bulkOperations: z.boolean().optional(),
+      }).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      const { id, featureAccess, mfaRequired, ...rest } = input;
+      const updateData: Record<string, unknown> = { ...rest };
+      
+      if (mfaRequired !== undefined) {
+        updateData.mfaRequired = mfaRequired ? 1 : 0;
+      }
+      
+      if (featureAccess) {
+        const existing = await database.select().from(companies).where(eq(companies.id, id)).limit(1);
+        const existingFeatures = existing[0]?.featureAccess ? JSON.parse(existing[0].featureAccess) : {};
+        updateData.featureAccess = JSON.stringify({ ...existingFeatures, ...featureAccess });
+      }
+
+      await database.update(companies).set(updateData).where(eq(companies.id, id));
+      return { success: true };
+    }),
+
+  /**
+   * Bulk extend trial for multiple users
+   */
+  bulkExtendTrial: adminProcedure
+    .input(z.object({
+      userIds: z.array(z.number()).min(1).max(100),
+      days: z.number().min(1).max(365),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let successCount = 0;
+      const errors: { userId: number; error: string }[] = [];
+
+      for (const userId of input.userIds) {
+        try {
+          const user = await database.select().from(users).where(eq(users.id, userId)).limit(1);
+          if (user.length === 0) {
+            errors.push({ userId, error: "User not found" });
+            continue;
+          }
+
+          const currentTrialEnd = user[0].trialEndsAt ? new Date(user[0].trialEndsAt) : new Date();
+          const newTrialEnd = new Date(Math.max(currentTrialEnd.getTime(), Date.now()));
+          newTrialEnd.setDate(newTrialEnd.getDate() + input.days);
+
+          await database.update(users).set({
+            trialEndsAt: newTrialEnd.toISOString().slice(0, 19).replace('T', ' '),
+            accountStatus: "trial",
+          }).where(eq(users.id, userId));
+          successCount++;
+        } catch (e) {
+          errors.push({ userId, error: e instanceof Error ? e.message : "Unknown error" });
+        }
+      }
+
+      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+    }),
+
+  /**
+   * Bulk suspend users
+   */
+  bulkSuspendUsers: adminProcedure
+    .input(z.object({
+      userIds: z.array(z.number()).min(1).max(100),
+      reason: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let successCount = 0;
+      const errors: { userId: number; error: string }[] = [];
+
+      for (const userId of input.userIds) {
+        try {
+          await database.update(users).set({ accountStatus: "suspended" }).where(eq(users.id, userId));
+          successCount++;
+        } catch (e) {
+          errors.push({ userId, error: e instanceof Error ? e.message : "Unknown error" });
+        }
+      }
+
+      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+    }),
+
+  /**
+   * Bulk activate users
+   */
+  bulkActivateUsers: adminProcedure
+    .input(z.object({
+      userIds: z.array(z.number()).min(1).max(100),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let successCount = 0;
+      const errors: { userId: number; error: string }[] = [];
+
+      for (const userId of input.userIds) {
+        try {
+          await database.update(users).set({ accountStatus: "active" }).where(eq(users.id, userId));
+          successCount++;
+        } catch (e) {
+          errors.push({ userId, error: e instanceof Error ? e.message : "Unknown error" });
+        }
+      }
+
+      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+    }),
+
+  /**
+   * Bulk change user roles
+   */
+  bulkChangeRole: adminProcedure
+    .input(z.object({
+      userIds: z.array(z.number()).min(1).max(100),
+      newRole: z.enum(["admin", "project_manager", "editor", "viewer"]),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let successCount = 0;
+      const errors: { userId: number; error: string }[] = [];
+
+      for (const userId of input.userIds) {
+        try {
+          await database.update(users).set({ role: input.newRole }).where(eq(users.id, userId));
+          successCount++;
+        } catch (e) {
+          errors.push({ userId, error: e instanceof Error ? e.message : "Unknown error" });
+        }
+      }
+
+      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+    }),
+
+  /**
+   * Bulk delete users
+   */
+  bulkDeleteUsers: adminProcedure
+    .input(z.object({
+      userIds: z.array(z.number()).min(1).max(100),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let successCount = 0;
+      const errors: { userId: number; error: string }[] = [];
+
+      for (const userId of input.userIds) {
+        try {
+          await database.delete(users).where(eq(users.id, userId));
+          successCount++;
+        } catch (e) {
+          errors.push({ userId, error: e instanceof Error ? e.message : "Unknown error" });
+        }
+      }
+
+      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+    }),
 });

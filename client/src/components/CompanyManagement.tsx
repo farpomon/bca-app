@@ -29,8 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar } from "lucide-react";
+import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { CompanySettingsDialog } from "@/components/CompanySettingsDialog";
 
 interface CompanyUser {
   id: number;
@@ -52,6 +53,8 @@ export function CompanyManagement() {
   const [extendTrialDialogOpen, setExtendTrialDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CompanyUser | null>(null);
   const [trialDays, setTrialDays] = useState(30);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [settingsCompany, setSettingsCompany] = useState<{ id: number; name: string } | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -411,6 +414,17 @@ export function CompanyManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => {
+                            setSettingsCompany({ id: company.id, name: company.name });
+                            setSettingsDialogOpen(true);
+                          }}
+                          title="Company Settings"
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleEdit(company)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -727,6 +741,15 @@ export function CompanyManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Company Settings Dialog */}
+      <CompanySettingsDialog
+        companyId={settingsCompany?.id ?? null}
+        companyName={settingsCompany?.name ?? ""}
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
+        onSuccess={() => companiesQuery.refetch()}
+      />
     </div>
   );
 }
