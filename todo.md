@@ -448,3 +448,17 @@
 - [x] Update branding constants to include Maben Consulting logo
 - [x] Test image rotation functionality
 - [x] Verify responsive design on mobile devices
+
+## Landing Page Animation Effects
+- [x] Add subtle zoom animation to hero background image
+- [x] Implement parallax scrolling effect on hero section
+- [x] Add smooth fade-in animations for hero content
+- [x] Test animation performance on different devices
+- [x] Ensure animations respect user's motion preferences
+
+## Mobile Layout Optimization
+- [x] Fix header logo and title overlap on mobile
+- [x] Increase spacing and padding for mobile viewport
+- [x] Improve typography sizing for mobile readability
+- [x] Fix hero section height and content positioning
+- [x] Optimize button sizes and spacing for touch targets
