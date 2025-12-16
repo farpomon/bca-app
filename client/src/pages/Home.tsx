@@ -83,20 +83,16 @@ export default function Home() {
         </div>
       </HeroImage>
 
-      {/* Value Proposition Section - Mobile optimized */}
-      <section className="container py-12 md:py-16 px-4 md:px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 text-center max-w-4xl mx-auto">
-          <div className="space-y-2 md:space-y-3">
-            <div className="text-3xl md:text-4xl font-bold text-primary">1,244+</div>
-            <div className="text-sm md:text-base text-muted-foreground">Projects Completed</div>
+      {/* Value Proposition Section - Optimized for laptop and mobile */}
+      <section className="container py-12 md:py-16 lg:py-20 px-4 md:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 text-center max-w-4xl mx-auto">
+          <div className="space-y-3 md:space-y-4">
+            <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary">ASTM E2018</div>
+            <div className="text-base md:text-lg text-muted-foreground">Standards Compliant</div>
           </div>
-          <div className="space-y-2 md:space-y-3">
-            <div className="text-3xl md:text-4xl font-bold text-primary">ASTM E2018</div>
-            <div className="text-sm md:text-base text-muted-foreground">Standards Compliant</div>
-          </div>
-          <div className="space-y-2 md:space-y-3">
-            <div className="text-3xl md:text-4xl font-bold text-primary">UNIFORMAT II</div>
-            <div className="text-sm md:text-base text-muted-foreground">Classification System</div>
+          <div className="space-y-3 md:space-y-4">
+            <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary">UNIFORMAT II</div>
+            <div className="text-base md:text-lg text-muted-foreground">Classification System</div>
           </div>
         </div>
       </section>
