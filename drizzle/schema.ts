@@ -70,6 +70,24 @@ export const companyAccessCodes = mysqlTable("company_access_codes", {
 	index("idx_company_code").on(table.companyId, table.code),
 ]);
 
+export const assetTimelineEvents = mysqlTable("asset_timeline_events", {
+	id: int().autoincrement().notNull(),
+	assetId: int().notNull(),
+	projectId: int().notNull(),
+	eventType: mysqlEnum(['assessment','deficiency','maintenance','document','schedule','custom']).notNull(),
+	eventDate: timestamp({ mode: 'string' }).notNull(),
+	title: varchar({ length: 500 }).notNull(),
+	description: text(),
+	relatedId: int(),
+	metadata: text(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_asset_timeline").on(table.assetId, table.eventDate),
+	index("idx_event_type").on(table.eventType),
+]);
+
 export const assessmentDocuments = mysqlTable("assessment_documents", {
 	id: int().autoincrement().notNull(),
 	assessmentId: int().notNull(),

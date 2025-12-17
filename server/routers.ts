@@ -31,6 +31,7 @@ import { mfaMethodSwitchRouter } from "./mfaMethodSwitchRouter";
 import { mfaRecoveryRouter } from "./mfaRecoveryRouter";
 import { offlineSyncRouter } from "./routers/offlineSync.router";
 import { privacyLockRouter } from "./routers/privacyLock.router";
+import { timelineRouter } from "./routers/timeline.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -48,6 +49,7 @@ export const appRouter = router({
   system: systemRouter,
   audio: audioRouter,
   admin: adminRouter,
+  timeline: timelineRouter,
   vocabulary: vocabularyRouter,
   sharing: sharingRouter,
   audit: auditRouter,

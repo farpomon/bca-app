@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `asset_timeline_events` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `assetId` int NOT NULL,\n  `projectId` int NOT NULL,\n  `eventType` enum('assessment','deficiency','maintenance','document','schedule','custom') NOT NULL,\n  `eventDate` timestamp NOT NULL,\n  `title` varchar(500) NOT NULL,\n  `description` text,\n  `relatedId` int,\n  `metadata` text,\n  `createdBy` int,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `asset_timeline_events_id` PRIMARY KEY(`id`),\n  INDEX `idx_asset_timeline` (`assetId`, `eventDate`),\n  INDEX `idx_event_type` (`eventType`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `asset_timeline_events` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `assetId` int NOT NULL,\n  `projectId` int NOT NULL,\n  `eventType` enum('assessment','deficiency','maintenance','document','schedule','custom') NOT NULL,\n  `eventDate` timestamp NOT NULL,\n  `title` varchar(500) NOT NULL,\n  `description` text,\n  `relatedId` int,\n  `metadata` text,\n  `createdBy` int,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `asset_timeline_events_id` PRIMARY KEY(`id`),\n  INDEX `idx_asset_timeline` (`assetId`, `eventDate`),\n  INDEX `idx_event_type` (`eventType`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 291
+}

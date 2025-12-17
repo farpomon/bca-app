@@ -555,3 +555,41 @@
   - [x] Show replacement vs repair analysis
   - [x] Display cost projections over time
   - [x] Add NPV calculations
+
+## Timeline Tab Implementation (User Request - Jan 2025)
+
+### Database Schema
+- [x] Create asset_timeline_events table for custom events
+- [x] Add fields: eventType, eventDate, title, description, relatedId, metadata
+
+### Backend API
+- [x] Create timeline aggregation function to collect all events
+- [x] Aggregate assessments with creation dates
+- [x] Aggregate deficiencies with discovery dates
+- [x] Aggregate maintenance entries (identified and executed)
+- [x] Aggregate document uploads
+- [x] Include future scheduled maintenance
+- [x] Add tRPC endpoint for timeline data retrieval
+- [x] Implement filtering by event type and date range
+
+### Frontend Timeline Component
+- [x] Create TimelineView component with vertical timeline layout
+- [x] Add event type icons (assessment, deficiency, maintenance, document, schedule)
+- [x] Implement chronological sorting (past to future)
+- [x] Add visual distinction between past events and future schedules
+- [x] Create event cards with title, date, description, and quick actions
+- [x] Add "View Details" link to navigate to related item
+
+### Filtering and Interaction
+- [x] Add event type filter (All, Assessments, Deficiencies, Maintenance, Documents, Scheduled)
+- [x] Add date range filter (Last 30 days, Last 90 days, Last year, All time, Custom range)
+- [x] Implement search functionality for event titles/descriptions
+- [x] Add event detail modal/drawer for expanded information
+- [x] Show related photos and documents in event details
+
+### Testing
+- [x] Test timeline data aggregation with real data
+- [x] Verify chronological ordering
+- [x] Test filtering functionality
+- [x] Test event detail views
+- [ ] Verify mobile responsiveness

@@ -21,7 +21,8 @@ import {
   Shield,
   Box,
   Clock,
-  FileBarChart
+  FileBarChart,
+  CalendarDays
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
@@ -29,6 +30,7 @@ import AssetPhotoGallery from "@/components/AssetPhotoGallery";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
 import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
+import AssetTimeline from "@/components/AssetTimeline";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 
@@ -176,6 +178,10 @@ export default function AssetDetail() {
             <TabsTrigger value="optimization" className="flex-none px-3">
               <Target className="mr-2 h-4 w-4" />
               Optimization
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex-none px-3">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Timeline
             </TabsTrigger>
           </TabsList>
 
@@ -597,6 +603,21 @@ export default function AssetDetail() {
               assessments={assessments}
               deficiencies={deficiencies}
             />
+          </TabsContent>
+
+          {/* Timeline Tab */}
+          <TabsContent value="timeline" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Asset Timeline</CardTitle>
+                <CardDescription>
+                  View all historical events and future schedules for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetTimeline assetId={assetIdNum} projectId={projectId} />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
