@@ -5,13 +5,11 @@ import { APP_TITLE, APP_LOGO, getLoginUrl } from "@/const";
 import { Building2, ClipboardCheck, FileText, TrendingUp, CheckCircle2, Shield, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
-import HeroImage from "@/components/HeroImage";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
-  // All hooks must be called before any conditional returns
   useEffect(() => {
     if (user && !loading) {
       setLocation("/projects");
@@ -32,19 +30,25 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header - Fixed for desktop */}
-      <header className="glass border-b sticky top-0 z-50 bg-white/95 backdrop-blur-sm">
-        <div className="container">
-          <div className="flex h-16 items-center justify-between gap-6">
-            <div className="flex items-center gap-3 min-w-0">
-              <img src={APP_LOGO} alt="Maben Consulting" className="h-10 w-auto flex-shrink-0" />
-              <span className="font-bold text-lg lg:text-xl whitespace-nowrap">{APP_TITLE}</span>
+      {/* Header */}
+      <header className="border-b sticky top-0 z-50 bg-white/95 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between gap-2">
+            {/* Logo */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+              <img src={APP_LOGO} alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
+              <div className="hidden sm:flex flex-col leading-none">
+                <span className="font-bold text-base">MABEN</span>
+                <span className="font-bold text-base">CONSULTING</span>
+              </div>
             </div>
+            
+            {/* Auth Buttons */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Button size="sm" variant="outline" className="md:size-default" asChild>
-                <a href="/signup">Sign Up</a>
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <a href="#features">Features</a>
               </Button>
-              <Button size="sm" className="md:size-default" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <a href={getLoginUrl()}>Sign In</a>
               </Button>
             </div>
@@ -52,29 +56,43 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section - Mobile: Image first, text below | Desktop: Text overlay on image */}
-      <div className="md:hidden">
-        {/* Mobile Layout: Image first, then text */}
-        <HeroImage height="400px" showOverlay={false}>
-          <div></div>
-        </HeroImage>
-        <div className="bg-gradient-to-b from-primary to-primary/90 text-white py-12 px-4">
-          <div className="container max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-block">
-              <span className="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80')",
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/95 via-primary/90 to-primary/95"></div>
+        </div>
+
+        {/* Content */}
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
+          <div className="max-w-3xl">
+            {/* Badge */}
+            <div className="inline-block mb-6">
+              <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider bg-white/20 text-white px-4 py-2 rounded-full backdrop-blur-sm">
                 Building Condition Assessment Software
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight text-white">
+
+            {/* Heading */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight">
               Streamline Building Assessments
             </h1>
-            <p className="text-base sm:text-lg leading-relaxed">
+
+            {/* Description */}
+            <p className="text-base sm:text-lg lg:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl">
               Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
             </p>
-            <div className="flex flex-col gap-3 pt-2">
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
-                className="text-base h-12 px-6 bg-white text-primary hover:bg-white/90 font-semibold w-full" 
+                className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8" 
                 asChild
               >
                 <a href={getLoginUrl()}>Start Free Assessment</a>
@@ -82,7 +100,7 @@ export default function Home() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="text-base h-12 px-6 border-2 border-white text-white hover:bg-white/20 font-semibold w-full" 
+                className="border-2 border-white text-white hover:bg-white/10 font-semibold text-base h-12 px-8" 
                 asChild
               >
                 <a href="#features">See How It Works</a>
@@ -90,159 +108,169 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Desktop/Tablet Layout: Text overlay on image */}
-      <div className="hidden md:block">
-        <HeroImage height="700px">
-          <div className="container px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8 text-white">
-              <div className="inline-block">
-                <span className="text-xs md:text-sm font-semibold uppercase tracking-wider bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full backdrop-blur-sm">
-                  Building Condition Assessment Software
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] drop-shadow-lg whitespace-nowrap">
-                Streamline Building Assessments
-              </h1>
-              <p className="text-lg md:text-xl lg:text-2xl leading-relaxed drop-shadow-md px-4 md:px-8 max-w-3xl mx-auto">
-                Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-2">
-                <Button 
-                  size="lg" 
-                  className="text-base h-12 md:h-14 px-6 md:px-8 bg-white text-primary hover:bg-white/90 font-semibold" 
-                  asChild
-                >
-                  <a href={getLoginUrl()}>Start Free Assessment</a>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-base h-12 md:h-14 px-6 md:px-8 border-2 border-white text-white hover:bg-white/20 font-semibold" 
-                  asChild
-                >
-                  <a href="#features">See How It Works</a>
-                </Button>
-              </div>
+      {/* Stats Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12 max-w-4xl mx-auto text-center">
+            <div className="space-y-2">
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">ASTM E2018</div>
+              <div className="text-base sm:text-lg text-muted-foreground">Standards Compliant</div>
             </div>
-          </div>
-        </HeroImage>
-      </div>
-
-      {/* Value Proposition Section - Optimized for laptop and mobile */}
-      <section className="container py-12 md:py-16 lg:py-20 px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 text-center max-w-4xl mx-auto">
-          <div className="space-y-3 md:space-y-4">
-            <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary">ASTM E2018</div>
-            <div className="text-base md:text-lg text-muted-foreground">Standards Compliant</div>
-          </div>
-          <div className="space-y-3 md:space-y-4">
-            <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary">UNIFORMAT II</div>
-            <div className="text-base md:text-lg text-muted-foreground">Classification System</div>
+            <div className="space-y-2">
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">UNIFORMAT II</div>
+              <div className="text-base sm:text-lg text-muted-foreground">Classification System</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section - Mobile optimized */}
-      <section id="features" className="py-16 md:py-20 bg-muted/50">
-        <div className="container px-4 md:px-6">
-          <div className="mx-auto max-w-5xl">
-            <div className="text-center mb-10 md:mb-12 px-4">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-                Everything You Need for Professional BCAs
+      {/* Features Section */}
+      <section id="features" className="py-16 sm:py-20 lg:py-24 bg-muted/50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+                Everything You Need for Professional Building Assessments
               </h2>
-              <p className="mt-3 md:mt-4 text-base md:text-lg text-muted-foreground">
-                Comprehensive tools for conducting building condition assessments
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+                Comprehensive tools designed for building condition assessment professionals
               </p>
             </div>
 
-            <div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <Card className="glass-card hover-lift smooth-transition">
-                <CardHeader className="p-5 md:p-6">
-                  <ClipboardCheck className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <CardTitle className="text-lg md:text-xl">UNIFORMAT II Classification</CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    Organize assessments using the industry-standard UNIFORMAT II hierarchical structure
-                  </CardDescription>
+            {/* Feature Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {/* Feature 1 */}
+              <Card className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <Building2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl">UNIFORMAT II Classification</CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm sm:text-base">
+                    Standardized building component classification system for consistent assessments
+                  </CardDescription>
+                </CardContent>
               </Card>
 
-              <Card className="glass-card hover-lift smooth-transition">
-                <CardHeader className="p-5 md:p-6">
-                  <FileText className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <CardTitle className="text-lg md:text-xl">Professional Reports</CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    Generate comprehensive BCA reports following ASTM E2018 standards
-                  </CardDescription>
+              {/* Feature 2 */}
+              <Card className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <ClipboardCheck className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl">Voice Recording</CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm sm:text-base">
+                    Capture observations hands-free with voice-to-text transcription
+                  </CardDescription>
+                </CardContent>
               </Card>
 
-              <Card className="glass-card hover-lift smooth-transition">
-                <CardHeader className="p-5 md:p-6">
-                  <TrendingUp className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <CardTitle className="text-lg md:text-xl">Cost Estimation</CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    Track deficiencies and estimate repair costs with detailed breakdowns
-                  </CardDescription>
+              {/* Feature 3 */}
+              <Card className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <FileText className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl">Automated Reports</CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm sm:text-base">
+                    Generate professional PDF reports automatically from your assessments
+                  </CardDescription>
+                </CardContent>
               </Card>
 
-              <Card className="glass-card hover-lift smooth-transition">
-                <CardHeader className="p-5 md:p-6">
-                  <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <CardTitle className="text-lg md:text-xl">Condition Tracking</CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    Rate building components and track remaining useful life
-                  </CardDescription>
+              {/* Feature 4 */}
+              <Card className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <CheckCircle2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl">ASTM E2018 Compliant</CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm sm:text-base">
+                    Follow industry-standard property condition assessment guidelines
+                  </CardDescription>
+                </CardContent>
               </Card>
 
-              <Card className="glass-card hover-lift smooth-transition">
-                <CardHeader className="p-5 md:p-6">
-                  <Shield className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <CardTitle className="text-lg md:text-xl">Standards Compliant</CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    Follow NRC protocols and ASTM E2018 methodology
-                  </CardDescription>
+              {/* Feature 5 */}
+              <Card className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <Clock className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl">Offline Mode</CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm sm:text-base">
+                    Work without internet connection and sync when you're back online
+                  </CardDescription>
+                </CardContent>
               </Card>
 
-              <Card className="glass-card hover-lift smooth-transition">
-                <CardHeader className="p-5 md:p-6">
-                  <Clock className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <CardTitle className="text-lg md:text-xl">Photo Documentation</CardTitle>
-                  <CardDescription className="text-sm md:text-base">
-                    Upload and organize photos for comprehensive visual documentation
-                  </CardDescription>
+              {/* Feature 6 */}
+              <Card className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <TrendingUp className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl">Analytics & Insights</CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm sm:text-base">
+                    Track project progress and generate insights from your assessment data
+                  </CardDescription>
+                </CardContent>
               </Card>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section - Mobile optimized */}
-      <section className="container py-16 md:py-20 px-4 md:px-6">
-        <Card className="mx-auto max-w-3xl bg-primary text-primary-foreground">
-          <CardContent className="p-8 md:p-12 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">
-              Ready to Start Your Assessment?
+      {/* CTA Section */}
+      <section className="py-16 sm:py-20 lg:py-24 bg-primary text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">
+              Ready to Streamline Your Assessments?
             </h2>
-            <p className="text-base md:text-lg mb-6 md:mb-8 opacity-90">
-              Join professionals who trust our platform for building condition assessments
+            <p className="text-base sm:text-lg text-white/90 mb-8">
+              Join building assessment professionals who trust our platform for their projects
             </p>
-            <Button size="lg" variant="secondary" className="h-12 md:h-14 px-6 md:px-8 w-full sm:w-auto" asChild>
-              <a href={getLoginUrl()}>Sign In Now</a>
+            <Button 
+              size="lg" 
+              className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8" 
+              asChild
+            >
+              <a href={getLoginUrl()}>Get Started Free</a>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-muted/50 py-6 md:py-8">
-        <div className="container px-4 md:px-6 text-center text-xs md:text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} {APP_TITLE}. All rights reserved.</p>
+      <footer className="py-8 sm:py-12 bg-background border-t">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
+              <span className="text-sm text-muted-foreground">© 2024 Maben Consulting. All rights reserved.</span>
+            </div>
+            <div className="flex gap-6 text-sm text-muted-foreground">
+              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
+              <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
