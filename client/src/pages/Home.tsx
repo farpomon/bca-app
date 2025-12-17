@@ -32,13 +32,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header - Optimized for mobile */}
+      {/* Header - Fixed for desktop */}
       <header className="glass border-b sticky top-0 z-50 bg-white/95 backdrop-blur-sm">
         <div className="container">
-          <div className="flex h-20 md:h-16 items-center justify-between gap-4">
-            <div className="flex items-center gap-2 md:gap-3 min-w-0">
-              <img src={APP_LOGO} alt="Maben Consulting" className="h-8 md:h-10 w-auto flex-shrink-0" />
-              <span className="font-bold text-base md:text-xl truncate">{APP_TITLE}</span>
+          <div className="flex h-16 items-center justify-between gap-6">
+            <div className="flex items-center gap-3 min-w-0">
+              <img src={APP_LOGO} alt="Maben Consulting" className="h-10 w-auto flex-shrink-0" />
+              <span className="font-bold text-lg lg:text-xl whitespace-nowrap">{APP_TITLE}</span>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button size="sm" variant="outline" className="md:size-default" asChild>
@@ -102,10 +102,10 @@ export default function Home() {
                   Building Condition Assessment Software
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-tight drop-shadow-lg">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] drop-shadow-lg whitespace-nowrap">
                 Streamline Building Assessments
               </h1>
-              <p className="text-lg md:text-xl leading-relaxed drop-shadow-md px-4 md:px-8">
+              <p className="text-lg md:text-xl lg:text-2xl leading-relaxed drop-shadow-md px-4 md:px-8 max-w-3xl mx-auto">
                 Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-2">

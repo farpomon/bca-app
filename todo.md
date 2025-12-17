@@ -638,3 +638,11 @@
 - [x] Test email delivery with real registration submission
 - [x] Verify email tracking logs all deliveries correctly
 - [x] All tests passing - emails sent successfully to lfaria@mabenconsulting.ca
+
+## Fix Desktop Landing Page Formatting Issues
+
+- [x] Fix logo overlap - "MABEN" and "CONSULTING" text colliding
+- [x] Fix hero heading line breaks - "Streamline Building Assessments" breaking awkwardly
+- [x] Improve desktop spacing and layout
+- [x] Ensure responsive design works properly on large screens (1920px, 1440px, 1280px)
+- [x] Test on various desktop screen sizes
