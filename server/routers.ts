@@ -20,6 +20,7 @@ import { sharingRouter } from "./routers/sharing.router";
 import { auditRouter } from "./routers/audit.router";
 import { usersRouter } from "./routers/users.router";
 import { accessRequestsRouter } from "./routers/accessRequests.router";
+import { emailDeliveryLogsRouter } from "./routers/emailDeliveryLogs.router";
 import { assessmentDocumentsRouter } from "./routers/assessmentDocuments.router";
 import { assetDocumentsRouter } from "./routers/assetDocuments.router";
 import { documentsRouter } from "./routers/documents.router";
@@ -55,6 +56,7 @@ export const appRouter = router({
   audit: auditRouter,
   users: usersRouter,
   accessRequests: accessRequestsRouter,
+  emailDeliveryLogs: emailDeliveryLogsRouter,
   emailMfa: emailMfaRouter,
   assessmentDocuments: assessmentDocumentsRouter,
   assetDocuments: assetDocumentsRouter,

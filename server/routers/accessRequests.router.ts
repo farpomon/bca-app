@@ -4,12 +4,8 @@ import { eq, and, desc } from "drizzle-orm";
 import { accessRequests, users } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
-import {
-  notifyAdminNewRegistration,
-  notifyUserRegistrationReceived,
-  notifyUserApproved,
-  notifyUserRejected,
-} from "../services/accessRequestEmail";
+import { sendEmailWithTracking } from "../services/emailTracking";
+import { notifyOwner } from "../_core/notification";
 // import { logAuditEvent } from "../db/audit"; // TODO: Add audit logging
 
 export const accessRequestsRouter = router({
@@ -56,7 +52,6 @@ export const accessRequestsRouter = router({
       }
 
       // Create new access request
-      const submittedAt = new Date();
       await db.insert(accessRequests).values({
         openId: input.openId,
         fullName: input.fullName,
@@ -68,26 +63,25 @@ export const accessRequestsRouter = router({
         status: "pending",
       });
 
-      // Send email notifications
-      try {
-        await notifyAdminNewRegistration({
-          fullName: input.fullName,
-          email: input.email,
-          companyName: input.companyName,
-          city: input.city,
-          phoneNumber: input.phoneNumber,
-          useCase: input.useCase,
-          submittedAt,
-        });
-
-        await notifyUserRegistrationReceived({
-          fullName: input.fullName,
-          email: input.email,
-        });
-      } catch (emailError) {
-        console.error("[AccessRequest] Failed to send email notifications:", emailError);
-        // Don't fail the request if email fails
-      }
+      // Send notification to admin with tracking
+      await sendEmailWithTracking(
+        {
+          emailType: 'admin_notification',
+          recipientEmail: 'admin',
+          subject: `New Access Request from ${input.fullName}`,
+          metadata: {
+            openId: input.openId,
+            companyName: input.companyName,
+            email: input.email,
+          },
+        },
+        async () => {
+          return await notifyOwner({
+            title: `New Access Request from ${input.fullName}`,
+            content: `Company: ${input.companyName}\nEmail: ${input.email}\nCity: ${input.city}\nPhone: ${input.phoneNumber || 'N/A'}\nUse Case: ${input.useCase || 'N/A'}`,
+          });
+        }
+      );
 
       return { success: true, message: "Access request submitted successfully" };
     }),
@@ -218,18 +212,28 @@ export const accessRequestsRouter = router({
         })
         .where(eq(accessRequests.id, input.requestId));
 
-      // Send approval email notification
-      try {
-        await notifyUserApproved({
-          fullName: accessRequest.fullName,
-          email: accessRequest.email,
-          companyName: input.company,
-          role: input.role,
-        });
-      } catch (emailError) {
-        console.error("[AccessRequest] Failed to send approval email:", emailError);
-        // Don't fail the request if email fails
-      }
+      // Send approval notification to user with tracking
+      await sendEmailWithTracking(
+        {
+          emailType: 'user_approved',
+          recipientEmail: accessRequest.email,
+          recipientName: accessRequest.fullName,
+          subject: 'Your BCA System Access Request Has Been Approved',
+          metadata: {
+            requestId: input.requestId,
+            company: input.company,
+            role: input.role,
+            accountStatus: input.accountStatus,
+            approvedBy: ctx.user.id,
+          },
+        },
+        async () => {
+          return await notifyOwner({
+            title: `Access Approved: ${accessRequest.fullName}`,
+            content: `User ${accessRequest.fullName} (${accessRequest.email}) has been approved for ${input.company}.\nRole: ${input.role}\nStatus: ${input.accountStatus}`,
+          });
+        }
+      );
 
       // TODO: Log audit event
       // await logAuditEvent({
@@ -267,15 +271,6 @@ export const accessRequestsRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
-      // Get the access request to get user details
-      const request = await db.select().from(accessRequests).where(eq(accessRequests.id, input.requestId)).limit(1);
-
-      if (request.length === 0) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Access request not found" });
-      }
-
-      const accessRequest = request[0]!;
-
       // Update access request status
       await db
         .update(accessRequests)
@@ -288,16 +283,32 @@ export const accessRequestsRouter = router({
         })
         .where(eq(accessRequests.id, input.requestId));
 
-      // Send rejection email notification
-      try {
-        await notifyUserRejected({
-          fullName: accessRequest.fullName,
-          email: accessRequest.email,
-          rejectionReason: input.rejectionReason,
-        });
-      } catch (emailError) {
-        console.error("[AccessRequest] Failed to send rejection email:", emailError);
-        // Don't fail the request if email fails
+      // Get the access request for email notification
+      const request = await db.select().from(accessRequests).where(eq(accessRequests.id, input.requestId)).limit(1);
+      
+      if (request.length > 0) {
+        const accessRequest = request[0]!;
+        
+        // Send rejection notification to user with tracking
+        await sendEmailWithTracking(
+          {
+            emailType: 'user_rejected',
+            recipientEmail: accessRequest.email,
+            recipientName: accessRequest.fullName,
+            subject: 'Update on Your BCA System Access Request',
+            metadata: {
+              requestId: input.requestId,
+              rejectionReason: input.rejectionReason,
+              rejectedBy: ctx.user.id,
+            },
+          },
+          async () => {
+            return await notifyOwner({
+              title: `Access Rejected: ${accessRequest.fullName}`,
+              content: `User ${accessRequest.fullName} (${accessRequest.email}) access request has been rejected.\nReason: ${input.rejectionReason}`,
+            });
+          }
+        );
       }
 
       // TODO: Log audit event

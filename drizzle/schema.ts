@@ -1521,3 +1521,26 @@ export const wasteTracking = mysqlTable("waste_tracking", {
 	notes: text(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 });
+
+export const emailDeliveryLog = mysqlTable("email_delivery_log", {
+	id: int().autoincrement().notNull(),
+	emailType: mysqlEnum(['admin_notification','user_confirmation','user_approved','user_rejected','mfa_code','password_reset','other']).notNull(),
+	recipientEmail: varchar({ length: 320 }).notNull(),
+	recipientName: varchar({ length: 255 }),
+	subject: varchar({ length: 500 }).notNull(),
+	status: mysqlEnum(['sent','delivered','failed','pending']).default('pending').notNull(),
+	sentAt: timestamp({ mode: 'string' }),
+	deliveredAt: timestamp({ mode: 'string' }),
+	failureReason: text(),
+	metadata: text(), // JSON string with additional context (userId, requestId, etc.)
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_email_status").on(table.status),
+	index("idx_email_type").on(table.emailType),
+	index("idx_recipient").on(table.recipientEmail),
+	index("idx_sent_at").on(table.sentAt),
+]);
+
+export type EmailDeliveryLog = typeof emailDeliveryLog.$inferSelect;
+export type InsertEmailDeliveryLog = typeof emailDeliveryLog.$inferInsert;

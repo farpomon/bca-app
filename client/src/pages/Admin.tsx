@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2 } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +30,7 @@ import RejectRequestDialog from "@/components/RejectRequestDialog";
 import { MFAComplianceReport } from "@/components/MFAComplianceReport";
 import { AdminMFARecovery } from "@/components/AdminMFARecovery";
 import { CompanyManagement } from "@/components/CompanyManagement";
+import EmailDeliveryLogs from "@/components/EmailDeliveryLogs";
 import { BulkUserActions } from "@/components/BulkUserActions";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -220,6 +221,10 @@ export default function Admin() {
           <TabsTrigger value="companies" className="gap-2">
             <Building2 className="w-4 h-4" />
             Companies
+          </TabsTrigger>
+          <TabsTrigger value="email-logs" className="gap-2">
+            <Mail className="w-4 h-4" />
+            Email Logs
           </TabsTrigger>
         </TabsList>
 
@@ -703,6 +708,11 @@ export default function Admin() {
         {/* Companies Tab */}
         <TabsContent value="companies" className="space-y-4">
           <CompanyManagement />
+        </TabsContent>
+
+        {/* Email Logs Tab */}
+        <TabsContent value="email-logs" className="space-y-4">
+          <EmailDeliveryLogs />
         </TabsContent>
       </Tabs>
 

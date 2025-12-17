@@ -612,12 +612,15 @@
 - [x] Show pending approval status
 - [x] Test complete signup → admin approval → login workflow
 
-## Email Notifications for Signup Workflow
+## Email Delivery Tracking and Audit Logging
 
-- [x] Create email notification service for access requests
-- [x] Send email to lfaria@mabenconsulting.ca when new registration submitted
-- [x] Include user details in notification email (name, email, company, city, phone, use case)
-- [x] Send confirmation email to user after registration
-- [x] Send approval email to user when admin approves request
-- [x] Send rejection email to user when admin rejects request
-- [x] Test email delivery with real registration
+- [x] Create email_delivery_log database table
+- [x] Add fields: id, emailType, recipientEmail, recipientName, subject, status, sentAt, deliveredAt, failureReason, metadata
+- [x] Create email tracking service with logging functions
+- [x] Integrate tracking into accessRequestEmail service
+- [x] Create tRPC router for email logs (admin-only access)
+- [x] Build EmailDeliveryLogs admin component
+- [x] Add Email Logs tab to Admin section
+- [x] Implement filtering by status, type, date range
+- [x] Add email statistics dashboard (sent, delivered, failed counts)
+- [x] Test email tracking with real notifications
