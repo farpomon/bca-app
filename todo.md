@@ -593,3 +593,5 @@
 - [x] Test filtering functionality
 - [x] Test event detail views
 - [ ] Verify mobile responsiveness
+
+- [x] Fix division by zero error in AssetOptimization component when totalEstimatedCost is 0

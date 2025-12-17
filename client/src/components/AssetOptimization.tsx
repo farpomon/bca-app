@@ -38,7 +38,7 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
   };
 
   // Calculate budget allocation percentages
-  const budgetAllocations = totalBudget > 0 ? {
+  const budgetAllocations = totalBudget > 0 && totalEstimatedCost > 0 ? {
     immediate: (costsByPriority.immediate / totalEstimatedCost) * totalBudget,
     short_term: (costsByPriority.short_term / totalEstimatedCost) * totalBudget,
     medium_term: (costsByPriority.medium_term / totalEstimatedCost) * totalBudget,
