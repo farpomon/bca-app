@@ -470,3 +470,10 @@
 - [x] Optimize layout for mobile screens (320px - 768px)
 - [x] Adjust value proposition section to 2-column layout (ASTM + UNIFORMAT)
 - [x] Test responsive breakpoints for smooth transitions between mobile and laptop
+
+
+## Mobile Hero Section Restructuring (User Request - Dec 2024)
+- [x] Restructure hero section to show image first on mobile
+- [x] Move text content below the image on mobile screens
+- [x] Keep overlay text on image for desktop/laptop screens
+- [x] Test layout on various mobile screen sizes

@@ -47,25 +47,29 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section with Rotating Background Image - Mobile optimized */}
-      <HeroImage height="700px">
-        <div className="container px-4 md:px-6">
-          <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8 text-white py-8 md:py-0">
+      {/* Hero Section - Mobile: Image first, text below | Desktop: Text overlay on image */}
+      <div className="md:hidden">
+        {/* Mobile Layout: Image first, then text */}
+        <HeroImage height="400px" showOverlay={false}>
+          <div></div>
+        </HeroImage>
+        <div className="bg-gradient-to-b from-primary to-primary/90 text-white py-12 px-4">
+          <div className="container max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-block">
-              <span className="text-xs md:text-sm font-semibold uppercase tracking-wider bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full backdrop-blur-sm">
+              <span className="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 Building Condition Assessment Software
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-tight drop-shadow-lg px-4">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
               Streamline Building Assessments
             </h1>
-            <p className="text-base sm:text-lg md:text-xl leading-relaxed drop-shadow-md px-4 md:px-8">
+            <p className="text-base sm:text-lg leading-relaxed">
               Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4 pt-2">
+            <div className="flex flex-col gap-3 pt-2">
               <Button 
                 size="lg" 
-                className="text-base h-12 md:h-14 px-6 md:px-8 bg-white text-primary hover:bg-white/90 font-semibold w-full sm:w-auto" 
+                className="text-base h-12 px-6 bg-white text-primary hover:bg-white/90 font-semibold w-full" 
                 asChild
               >
                 <a href={getLoginUrl()}>Start Free Assessment</a>
@@ -73,7 +77,7 @@ export default function Home() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="text-base h-12 md:h-14 px-6 md:px-8 border-2 border-white text-white hover:bg-white/20 font-semibold w-full sm:w-auto" 
+                className="text-base h-12 px-6 border-2 border-white text-white hover:bg-white/20 font-semibold w-full" 
                 asChild
               >
                 <a href="#features">See How It Works</a>
@@ -81,7 +85,45 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </HeroImage>
+      </div>
+
+      {/* Desktop/Tablet Layout: Text overlay on image */}
+      <div className="hidden md:block">
+        <HeroImage height="700px">
+          <div className="container px-4 md:px-6">
+            <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8 text-white">
+              <div className="inline-block">
+                <span className="text-xs md:text-sm font-semibold uppercase tracking-wider bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full backdrop-blur-sm">
+                  Building Condition Assessment Software
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-tight drop-shadow-lg">
+                Streamline Building Assessments
+              </h1>
+              <p className="text-lg md:text-xl leading-relaxed drop-shadow-md px-4 md:px-8">
+                Professional BCA platform following ASTM E2018 standards. Complete assessments faster with UNIFORMAT II classification, voice recording, and automated reporting.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-2">
+                <Button 
+                  size="lg" 
+                  className="text-base h-12 md:h-14 px-6 md:px-8 bg-white text-primary hover:bg-white/90 font-semibold" 
+                  asChild
+                >
+                  <a href={getLoginUrl()}>Start Free Assessment</a>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-base h-12 md:h-14 px-6 md:px-8 border-2 border-white text-white hover:bg-white/20 font-semibold" 
+                  asChild
+                >
+                  <a href="#features">See How It Works</a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </HeroImage>
+      </div>
 
       {/* Value Proposition Section - Optimized for laptop and mobile */}
       <section className="container py-12 md:py-16 lg:py-20 px-4 md:px-6">
