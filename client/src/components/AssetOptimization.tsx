@@ -18,8 +18,15 @@ interface AssetOptimizationProps {
 export default function AssetOptimization({ assetId, assessments = [], deficiencies = [] }: AssetOptimizationProps) {
   const [totalBudget, setTotalBudget] = useState<number>(0);
 
-  // Calculate total estimated costs from deficiencies
-  const totalEstimatedCost = deficiencies.reduce((sum, d) => sum + (d.estimatedCost || 0), 0);
+  // Helper function to validate and sanitize estimated cost
+  const getValidCost = (cost: any): number => {
+    if (cost === null || cost === undefined) return 0;
+    const numCost = typeof cost === 'number' ? cost : parseFloat(cost);
+    return !isNaN(numCost) && isFinite(numCost) && numCost >= 0 ? numCost : 0;
+  };
+
+  // Calculate total estimated costs from deficiencies with validation
+  const totalEstimatedCost = deficiencies.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0);
 
   // Group deficiencies by priority
   const deficienciesByPriority = {
@@ -29,12 +36,12 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
     long_term: deficiencies.filter(d => d.priority === 'long_term'),
   };
 
-  // Calculate costs by priority
+  // Calculate costs by priority with validation
   const costsByPriority = {
-    immediate: deficienciesByPriority.immediate.reduce((sum, d) => sum + (d.estimatedCost || 0), 0),
-    short_term: deficienciesByPriority.short_term.reduce((sum, d) => sum + (d.estimatedCost || 0), 0),
-    medium_term: deficienciesByPriority.medium_term.reduce((sum, d) => sum + (d.estimatedCost || 0), 0),
-    long_term: deficienciesByPriority.long_term.reduce((sum, d) => sum + (d.estimatedCost || 0), 0),
+    immediate: deficienciesByPriority.immediate.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0),
+    short_term: deficienciesByPriority.short_term.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0),
+    medium_term: deficienciesByPriority.medium_term.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0),
+    long_term: deficienciesByPriority.long_term.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0),
   };
 
   // Calculate budget allocation percentages
@@ -110,23 +117,35 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
               </div>
             </div>
 
-            <div className="grid gap-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Estimated Cost</p>
-                  <p className="text-2xl font-bold">${totalEstimatedCost.toLocaleString()}</p>
-                </div>
-                {totalBudget > 0 && (
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-muted-foreground">Budget Coverage</p>
-                    <p className="text-2xl font-bold">
-                      {((totalBudget / totalEstimatedCost) * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                )}
+            {totalEstimatedCost === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed rounded-lg bg-muted/20">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Repair Costs to Allocate</h3>
+                <p className="text-sm text-muted-foreground max-w-md mb-4">
+                  Add deficiencies with estimated costs to use budget planning and allocation features.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Navigate to the Deficiencies tab to add repair items with cost estimates.
+                </p>
               </div>
+            ) : (
+              <div className="grid gap-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Estimated Cost</p>
+                    <p className="text-2xl font-bold">${totalEstimatedCost.toLocaleString()}</p>
+                  </div>
+                  {totalBudget > 0 && (
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-muted-foreground">Budget Coverage</p>
+                      <p className="text-2xl font-bold">
+                        {((totalBudget / totalEstimatedCost) * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-              {totalBudget > 0 && budgetAllocations && (
+                {totalBudget > 0 && budgetAllocations && (
                 <div className="space-y-3">
                   <h3 className="font-semibold">Budget Distribution by Priority</h3>
                   
@@ -203,9 +222,10 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
@@ -275,7 +295,7 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
                         {items.length} {items.length === 1 ? 'item' : 'items'}
                       </span>
                       <span className="text-sm font-semibold ml-auto">
-                        ${items.reduce((sum, d) => sum + (d.estimatedCost || 0), 0).toLocaleString()}
+                        ${items.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0).toLocaleString()}
                       </span>
                     </div>
                     <div className="pl-4 space-y-1">
