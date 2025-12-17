@@ -6,6 +6,7 @@ import { getDb } from "../db";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { sendEmailWithTracking } from "../services/emailTracking";
 import { notifyOwner } from "../_core/notification";
+import { sendAccessRequestNotification, sendApprovalNotification, sendRejectionNotification } from "../services/emailService";
 // import { logAuditEvent } from "../db/audit"; // TODO: Add audit logging
 
 export const accessRequestsRouter = router({
@@ -67,7 +68,7 @@ export const accessRequestsRouter = router({
       await sendEmailWithTracking(
         {
           emailType: 'admin_notification',
-          recipientEmail: 'admin',
+          recipientEmail: process.env.ADMIN_EMAIL || 'lfaria@mabenconsulting.ca',
           subject: `New Access Request from ${input.fullName}`,
           metadata: {
             openId: input.openId,
@@ -76,10 +77,23 @@ export const accessRequestsRouter = router({
           },
         },
         async () => {
-          return await notifyOwner({
+          // Send actual email to admin
+          const emailSent = await sendAccessRequestNotification({
+            fullName: input.fullName,
+            email: input.email,
+            companyName: input.companyName,
+            city: input.city,
+            phoneNumber: input.phoneNumber,
+            useCase: input.useCase,
+          });
+          
+          // Also send Manus platform notification
+          await notifyOwner({
             title: `New Access Request from ${input.fullName}`,
             content: `Company: ${input.companyName}\nEmail: ${input.email}\nCity: ${input.city}\nPhone: ${input.phoneNumber || 'N/A'}\nUse Case: ${input.useCase || 'N/A'}`,
           });
+          
+          return emailSent;
         }
       );
 
@@ -228,10 +242,22 @@ export const accessRequestsRouter = router({
           },
         },
         async () => {
-          return await notifyOwner({
+          // Send actual email to user
+          const emailSent = await sendApprovalNotification({
+            email: accessRequest.email,
+            fullName: accessRequest.fullName,
+            company: input.company,
+            role: input.role,
+            accountStatus: input.accountStatus,
+          });
+          
+          // Also send Manus platform notification to admin
+          await notifyOwner({
             title: `Access Approved: ${accessRequest.fullName}`,
             content: `User ${accessRequest.fullName} (${accessRequest.email}) has been approved for ${input.company}.\nRole: ${input.role}\nStatus: ${input.accountStatus}`,
           });
+          
+          return emailSent;
         }
       );
 
@@ -303,10 +329,20 @@ export const accessRequestsRouter = router({
             },
           },
           async () => {
-            return await notifyOwner({
+            // Send actual email to user
+            const emailSent = await sendRejectionNotification({
+              email: accessRequest.email,
+              fullName: accessRequest.fullName,
+              rejectionReason: input.rejectionReason,
+            });
+            
+            // Also send Manus platform notification to admin
+            await notifyOwner({
               title: `Access Rejected: ${accessRequest.fullName}`,
               content: `User ${accessRequest.fullName} (${accessRequest.email}) access request has been rejected.\nReason: ${input.rejectionReason}`,
             });
+            
+            return emailSent;
           }
         );
       }

@@ -624,3 +624,17 @@
 - [x] Implement filtering by status, type, date range
 - [x] Add email statistics dashboard (sent, delivered, failed counts)
 - [x] Test email tracking with real notifications
+
+## Fix Email Notifications for Access Requests
+
+- [x] Issue: Currently using notifyOwner() which sends Manus platform notifications, not emails
+- [x] Create proper email service to send actual emails to lfaria@mabenconsulting.ca
+- [x] Installed SendGrid package (@sendgrid/mail) for reliable email delivery
+- [x] Created emailService.ts with SendGrid integration
+- [x] Update accessRequests.submit to send email notification to admin
+- [x] Update accessRequests.approve to send email notification to user
+- [x] Update accessRequests.reject to send email notification to user
+- [x] Configure SendGrid API key and verified sender email
+- [x] Test email delivery with real registration submission
+- [x] Verify email tracking logs all deliveries correctly
+- [x] All tests passing - emails sent successfully to lfaria@mabenconsulting.ca
