@@ -323,6 +323,20 @@
       "when": 1765884411305,
       "tag": "0045_melodic_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "5",
+      "when": 1765969227033,
+      "tag": "0046_chilly_salo",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "5",
+      "when": 1765969873474,
+      "tag": "0047_empty_power_pack",
+      "breakpoints": true
     }
   ]
 }

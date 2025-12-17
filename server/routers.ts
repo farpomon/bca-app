@@ -1251,10 +1251,17 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
         return await db.getAssessmentPhotos(input.assessmentId);
       }),
 
+    byAsset: protectedProcedure
+      .input(z.object({ assetId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAssetPhotos(input.assetId);
+      }),
+
     upload: protectedProcedure
       .input(z.object({
         projectId: z.number(),
         assessmentId: z.number().optional(),
+        assetId: z.number().optional(),
         deficiencyId: z.number().optional(),
         componentCode: z.string().optional(),
         fileData: z.string(), // base64 encoded
@@ -1290,6 +1297,7 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
         const photoId = await db.createPhoto({
           projectId: input.projectId,
           assessmentId: input.assessmentId,
+          assetId: input.assetId,
           deficiencyId: input.deficiencyId,
           componentCode: input.componentCode,
           fileKey,

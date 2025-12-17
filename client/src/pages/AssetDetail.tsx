@@ -24,6 +24,11 @@ import {
   FileBarChart
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
+import AssetPhotoUpload from "@/components/AssetPhotoUpload";
+import AssetPhotoGallery from "@/components/AssetPhotoGallery";
+import AssetDocumentUpload from "@/components/AssetDocumentUpload";
+import AssetDocumentList from "@/components/AssetDocumentList";
+import AssetOptimization from "@/components/AssetOptimization";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 
@@ -344,15 +349,31 @@ export default function AssetDetail() {
           <TabsContent value="photos" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Photo Gallery</CardTitle>
+                <CardTitle>Upload Photos</CardTitle>
                 <CardDescription>
-                  All photos from assessments for this asset
+                  Take photos with your camera or upload from your device
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Photo gallery coming soon. This will display all photos from asset assessments.
-                </p>
+                <AssetPhotoUpload 
+                  assetId={assetIdNum} 
+                  projectId={projectId}
+                  onPhotoUploaded={() => {
+                    // Refresh will happen automatically via tRPC invalidation
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Photo Gallery</CardTitle>
+                <CardDescription>
+                  All photos for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetPhotoGallery assetId={assetIdNum} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -361,15 +382,29 @@ export default function AssetDetail() {
           <TabsContent value="maintenance" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Maintenance History</CardTitle>
+                <CardTitle>Upload Maintenance Documents</CardTitle>
                 <CardDescription>
-                  Timeline of all maintenance activities for this asset
+                  Upload maintenance records, reports, and related documents
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Maintenance history coming soon. This will show identified and executed maintenance entries.
-                </p>
+                <AssetDocumentUpload 
+                  assetId={assetIdNum} 
+                  projectId={projectId}
+                  category="maintenance"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Maintenance Documents</CardTitle>
+                <CardDescription>
+                  All maintenance-related documents for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetDocumentList assetId={assetIdNum} category="maintenance" />
               </CardContent>
             </Card>
           </TabsContent>
@@ -387,8 +422,8 @@ export default function AssetDetail() {
                 {deficiencies && deficiencies.length > 0 ? (
                   <div className="space-y-2">
                     {deficiencies.map((deficiency) => (
-                      <div key={deficiency.id} className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={deficiency.id} className="p-4 border rounded-lg space-y-3">
+                        <div className="flex items-center justify-between">
                           <p className="font-medium">{deficiency.title}</p>
                           <Badge variant={deficiency.severity === 'critical' ? 'destructive' : deficiency.severity === 'high' ? 'secondary' : 'outline'}>
                             {deficiency.severity}
@@ -397,6 +432,15 @@ export default function AssetDetail() {
                         {deficiency.description && (
                           <p className="text-sm text-muted-foreground">{deficiency.description}</p>
                         )}
+                        <div className="border-t pt-3">
+                          <p className="text-sm font-medium mb-2">Upload Evidence</p>
+                          <AssetDocumentUpload 
+                            assetId={assetIdNum} 
+                            projectId={projectId}
+                            category="deficiency"
+                            deficiencyId={deficiency.id}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -411,15 +455,29 @@ export default function AssetDetail() {
           <TabsContent value="documents" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Documents</CardTitle>
+                <CardTitle>Upload Documents</CardTitle>
                 <CardDescription>
-                  All documents attached to this asset and its assessments
+                  Upload general documents for this asset (reports, plans, permits, etc.)
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Document management coming soon. This will show all attached files.
-                </p>
+                <AssetDocumentUpload 
+                  assetId={assetIdNum} 
+                  projectId={projectId}
+                  category="general"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>All Documents</CardTitle>
+                <CardDescription>
+                  All documents attached to this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetDocumentList assetId={assetIdNum} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -534,20 +592,11 @@ export default function AssetDetail() {
 
           {/* Optimization Tab */}
           <TabsContent value="optimization" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Asset Optimization</CardTitle>
-                <CardDescription>
-                  Optimize maintenance and repair strategies for this asset
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Optimization features coming soon. This will include budget allocation,
-                  priority scheduling, and lifecycle cost analysis.
-                </p>
-              </CardContent>
-            </Card>
+            <AssetOptimization 
+              assetId={assetIdNum}
+              assessments={assessments}
+              deficiencies={deficiencies}
+            />
           </TabsContent>
         </Tabs>
       </div>

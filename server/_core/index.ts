@@ -64,6 +64,10 @@ async function startServer() {
   // Audio upload endpoint (with rate limiting)
   app.post("/api/upload-audio", uploadRateLimiter, handleAudioUpload, uploadAudio);
   
+  // Photo upload endpoint (with rate limiting)
+  const { uploadPhotoHandler, handlePhotoUpload } = await import('../api/upload-photo');
+  app.post("/api/upload-photo", uploadRateLimiter, uploadPhotoHandler, handlePhotoUpload);
+  
   // Document upload endpoint for AI import (with rate limiting)
   const { uploadMiddleware, handleUpload } = await import('./upload-handler');
   app.post("/api/upload", uploadRateLimiter, uploadMiddleware, handleUpload);

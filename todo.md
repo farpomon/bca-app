@@ -512,3 +512,46 @@
 - [x] Ensure proper data filtering by assetId
 - [x] Add loading states and empty states for all tabs
 - [x] Verify mobile responsiveness across all tabs
+
+## Asset Detail Page Enhancements - Phase 2 (User Request - Jan 2025)
+
+### Photos Tab
+- [x] Add camera capture functionality using browser MediaDevices API
+- [x] Add file upload with drag-and-drop support
+- [x] Display photo gallery with thumbnails
+- [x] Add photo preview and delete functionality
+- [x] Link photos to specific asset (not just assessments)
+- [x] Add photo metadata (date, location, description)
+
+### Maintenance Tab
+- [x] Add document upload for maintenance records
+- [ ] Display maintenance history timeline
+- [x] Allow document attachment to maintenance entries
+- [x] Add document preview and download
+
+### Deficiencies Tab
+- [x] Add document upload for deficiency evidence
+- [x] Link documents to specific deficiencies
+- [x] Add document preview and download
+
+### Documents Tab
+- [x] Implement general document upload for asset
+- [x] Add document categorization (reports, plans, permits, etc.)
+- [x] Add bulk upload support
+- [x] Add document search and filtering
+- [x] Add document preview and download
+
+### Optimization Tab
+- [x] Implement budget allocation feature
+  - [x] Show total estimated costs
+  - [x] Allow budget distribution across components
+  - [x] Show budget vs actual comparison
+- [x] Implement priority scheduling
+  - [x] Rank components by urgency/condition
+  - [x] Create maintenance schedule
+  - [x] Show timeline visualization
+- [x] Implement lifecycle cost analysis
+  - [x] Calculate total cost of ownership
+  - [x] Show replacement vs repair analysis
+  - [x] Display cost projections over time
+  - [x] Add NPV calculations

@@ -20,9 +20,11 @@ export const assetDocumentsRouter = router({
       z.object({
         assetId: z.number(),
         projectId: z.number(),
+        deficiencyId: z.number().optional(),
         fileName: z.string(),
         fileContent: z.string(), // Base64 encoded file content
         mimeType: z.string(),
+        category: z.string().optional(),
         description: z.string().optional(),
       })
     )
@@ -69,12 +71,14 @@ export const assetDocumentsRouter = router({
         .values({
           assetId: input.assetId,
           projectId: input.projectId,
+          deficiencyId: input.deficiencyId || null,
           fileName: input.fileName,
           fileKey,
           url,
           mimeType: input.mimeType,
           fileSize,
           uploadedBy: ctx.user.id,
+          category: input.category || null,
           description: input.description || null,
         });
 
@@ -117,9 +121,11 @@ export const assetDocumentsRouter = router({
         url: doc.url,
         mimeType: doc.mimeType,
         fileSize: doc.fileSize,
+        category: doc.category,
         description: doc.description,
         createdAt: doc.createdAt,
         uploadedBy: doc.uploadedBy,
+        deficiencyId: doc.deficiencyId,
       }));
     }),
 

@@ -494,6 +494,17 @@ export async function getAssessmentPhotos(assessmentId: number) {
     .orderBy(desc(photos.createdAt));
 }
 
+export async function getAssetPhotos(assetId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(photos)
+    .where(eq(photos.assetId, assetId))
+    .orderBy(desc(photos.createdAt));
+}
+
 export async function createPhoto(data: InsertPhoto) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
