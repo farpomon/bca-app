@@ -65,11 +65,9 @@ export function AIImportAssetDialog({
     // Validate file type
     const allowedTypes = [
       "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/msword",
     ];
     if (!allowedTypes.includes(selectedFile.type)) {
-      toast.error("Only PDF and Word documents are supported");
+      toast.error("Only PDF documents are supported");
       return;
     }
 
@@ -171,7 +169,7 @@ export function AIImportAssetDialog({
             AI Import Asset
           </DialogTitle>
           <DialogDescription>
-            Upload a PDF or Word document containing asset information. AI will extract the details automatically.
+            Upload a PDF document containing asset information. AI will extract the details automatically.
           </DialogDescription>
         </DialogHeader>
 
@@ -183,7 +181,7 @@ export function AIImportAssetDialog({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,application/pdf"
                   onChange={handleFileChange}
                   className="hidden"
                 />
@@ -200,7 +198,7 @@ export function AIImportAssetDialog({
                   Select File
                 </Button>
                 <p className="text-xs text-muted-foreground mt-2">
-                  PDF or Word documents (max 10MB)
+                  PDF documents only (max 10MB)
                 </p>
               </div>
 

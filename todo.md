@@ -690,3 +690,12 @@
 - [x] Add better visual separation between sections
 - [x] Remove unnecessary gradient backgrounds for simpler look
 - [x] Test on mobile viewport (375px-428px)
+
+## AI Import File Type Restriction (PDF Only)
+
+- [x] Update AIImportDialog component - change accept to PDF only (.pdf)
+- [x] Update AIImportAssetDialog component - change accept to PDF only (.pdf)
+- [x] Update description text to say "PDF documents" instead of "PDF or Word documents"
+- [x] Update file validation error messages to mention PDF only
+- [ ] Update backend validation to only accept PDF files
+- [ ] Test file picker shows only PDF files on mobile/desktop

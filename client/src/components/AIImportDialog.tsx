@@ -79,12 +79,10 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
       // Validate file type
       const validTypes = [
         "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/msword",
       ];
       
       if (!validTypes.includes(selectedFile.type)) {
-        toast.error("Please upload a PDF or Word document");
+        toast.error("Please upload a PDF document");
         return;
       }
       
@@ -104,12 +102,10 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
     if (droppedFile) {
       const validTypes = [
         "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/msword",
       ];
       
       if (!validTypes.includes(droppedFile.type)) {
-        toast.error("Please upload a PDF or Word document");
+        toast.error("Please upload a PDF document");
         return;
       }
       
@@ -238,7 +234,7 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
             AI Document Import
           </DialogTitle>
           <DialogDescription>
-            Upload a PDF or Word BCA report and let AI extract the data automatically
+            Upload a PDF BCA report and let AI extract the data automatically
           </DialogDescription>
         </DialogHeader>
 
@@ -255,12 +251,12 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
                 {file ? file.name : "Drop your document here or click to browse"}
               </p>
               <p className="text-sm text-muted-foreground">
-                Supports PDF and Word documents (max 10MB)
+                PDF documents only (max 10MB)
               </p>
               <input
                 id="file-input"
                 type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
+                accept=".pdf,application/pdf"
                 onChange={handleFileSelect}
                 className="hidden"
               />
