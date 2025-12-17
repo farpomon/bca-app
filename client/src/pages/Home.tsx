@@ -276,12 +276,12 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
-              <span className="text-sm text-muted-foreground">© 2024 Maben Consulting. All rights reserved.</span>
+              <span className="text-sm text-muted-foreground">© 2025 Maben Consulting. All rights reserved.</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-              <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+              <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
+              <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
+              <a href="/contact" className="hover:text-foreground transition-colors">Contact</a>
             </div>
           </div>
         </div>

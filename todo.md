@@ -699,3 +699,14 @@
 - [x] Update file validation error messages to mention PDF only
 - [ ] Update backend validation to only accept PDF files
 - [ ] Test file picker shows only PDF files on mobile/desktop
+
+## Landing Page Updates (Dec 17, 2024)
+
+- [x] Update footer copyright year from 2024 to 2025
+- [x] Add Privacy Policy and Terms of Service links to footer
+- [x] Create Privacy Policy page with industry-standard content
+- [x] Create Terms of Service page with industry-standard content
+- [x] Create Contact page with form
+- [x] Implement contact form backend endpoint to send emails to lfaria@mabenconsulting.ca
+- [x] Add form validation and success/error states
+- [x] Test contact form email delivery

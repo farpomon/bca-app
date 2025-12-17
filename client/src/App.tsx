@@ -31,12 +31,18 @@ import PrivacySettings from "./pages/PrivacySettings";
 import DataSecurity from "./pages/DataSecurity";
 import SecuritySettings from "./pages/SecuritySettings";
 import SignUp from "./pages/SignUp";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Contact from "./pages/Contact";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/signup"} component={SignUp} />
+      <Route path={"/privacy"} component={Privacy} />
+      <Route path={"/terms"} component={Terms} />
+      <Route path={"/contact"} component={Contact} />
       <Route path={"/pending-approval"} component={PendingApproval} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/deleted-projects"} component={DeletedProjects} />
