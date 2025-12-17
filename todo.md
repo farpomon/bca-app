@@ -677,3 +677,16 @@
 - [x] Add better spacing and visual hierarchy to signup form
 - [x] Enhance form styling with modern input fields
 - [x] Add visual elements or background styling to signup page
+
+
+## Signup Page UI Improvements (Round 2 - Mobile-First Simplification)
+
+- [x] Simplify header design - remove duplicate title text on mobile
+- [x] Reduce visual clutter in form layout
+- [x] Improve mobile spacing and padding (better touch targets)
+- [x] Simplify color scheme for cleaner, more minimal look
+- [x] Reduce form field sizes for better mobile UX
+- [x] Improve button styling for mobile (full-width, better sizing)
+- [x] Add better visual separation between sections
+- [x] Remove unnecessary gradient backgrounds for simpler look
+- [x] Test on mobile viewport (375px-428px)
