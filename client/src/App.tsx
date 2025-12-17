@@ -10,6 +10,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ProjectDashboard from "./pages/ProjectDashboard";
 import Assessment from "./pages/Assessment";
 import AssetsList from "./pages/AssetsList";
+import AssetDetail from "./pages/AssetDetail";
 import HierarchySettings from "./pages/HierarchySettings";
 import RatingScalesSettings from "./pages/RatingScalesSettings";
 import AuditTrailDashboard from "./pages/AuditTrailDashboard";
@@ -41,6 +42,7 @@ function Router() {
       <Route path={"/projects/:id/dashboard"} component={ProjectDashboard} />
       <Route path={"/projects/:id/assets"} component={AssetsList} />
       <Route path={"/projects/:id/assets/:assetId/assess"} component={Assessment} />
+      <Route path={"/projects/:id/assets/:assetId"} component={AssetDetail} />
       <Route path={"/projects/:id"} component={ProjectDetail} />
       <Route path={"/settings/hierarchy"} component={HierarchySettings} />
       <Route path={"/settings/rating-scales"} component={RatingScalesSettings} />

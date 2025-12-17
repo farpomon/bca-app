@@ -483,3 +483,15 @@
 - [x] Change "Streamline Building Assessments" heading to white text color on mobile
 - [x] Ensure good contrast against background image
 - [x] Test visibility on mobile devices
+
+
+## Asset Card Navigation Fix (User Request - Dec 2024)
+- [x] Fix asset card click to navigate to asset detail page
+- [x] Ensure clicking asset card shows Dashboard and Optimization tabs
+- [x] Test navigation from Assets list to asset detail page
+- [x] Create AssetDetail page with Dashboard and Optimization tabs
+- [x] Add route to App.tsx for /projects/:id/assets/:assetId
+- [x] Make asset cards clickable with cursor-pointer class
+- [x] Add stopPropagation to buttons to prevent card click
+- [x] Add listByAsset endpoints for assessments and deficiencies
+- [x] Add getAssetAssessments and getAssetDeficiencies database functions

@@ -140,7 +140,11 @@ export default function AssetsList() {
         ) : assets && assets.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {assets.map((asset) => (
-              <Card key={asset.id} className="hover:shadow-lg transition-shadow">
+              <Card 
+                key={asset.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setLocation(`/projects/${projectId}/assets/${asset.id}`)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
@@ -192,7 +196,10 @@ export default function AssetsList() {
                       variant="default"
                       size="sm"
                       className="flex-1"
-                      onClick={() => setLocation(`/projects/${projectId}/assets/${asset.id}/assess`)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation(`/projects/${projectId}/assets/${asset.id}/assess`);
+                      }}
                     >
                       <ClipboardCheck className="mr-2 h-4 w-4" />
                       Assess
@@ -200,14 +207,20 @@ export default function AssetsList() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEdit(asset)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(asset);
+                      }}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(asset)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(asset);
+                      }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

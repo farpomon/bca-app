@@ -986,6 +986,12 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
         return await db.getProjectAssessmentsByStatus(input.projectId, input.status);
       }),
 
+    listByAsset: protectedProcedure
+      .input(z.object({ assetId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAssetAssessments(input.assetId);
+      }),
+
     statusCounts: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
@@ -1158,6 +1164,12 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
         const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
         if (!project) throw new Error("Project not found");
         return await db.getProjectDeficiencies(input.projectId);
+      }),
+
+    listByAsset: protectedProcedure
+      .input(z.object({ assetId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAssetDeficiencies(input.assetId);
       }),
 
     get: protectedProcedure

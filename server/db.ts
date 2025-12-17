@@ -354,6 +354,17 @@ export async function getProjectAssessments(projectId: number) {
     .orderBy(desc(assessments.assessedAt));
 }
 
+export async function getAssetAssessments(assetId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(assessments)
+    .where(eq(assessments.assetId, assetId))
+    .orderBy(desc(assessments.assessedAt));
+}
+
 export async function getAssessmentByComponent(projectId: number, componentCode: string) {
   const db = await getDb();
   if (!db) return undefined;
@@ -397,6 +408,17 @@ export async function getProjectDeficiencies(projectId: number) {
     .select()
     .from(deficiencies)
     .where(eq(deficiencies.projectId, projectId))
+    .orderBy(desc(deficiencies.createdAt));
+}
+
+export async function getAssetDeficiencies(assetId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(deficiencies)
+    .where(eq(deficiencies.assetId, assetId))
     .orderBy(desc(deficiencies.createdAt));
 }
 
