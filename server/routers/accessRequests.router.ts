@@ -4,6 +4,12 @@ import { eq, and, desc } from "drizzle-orm";
 import { accessRequests, users } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import {
+  notifyAdminNewRegistration,
+  notifyUserRegistrationReceived,
+  notifyUserApproved,
+  notifyUserRejected,
+} from "../services/accessRequestEmail";
 // import { logAuditEvent } from "../db/audit"; // TODO: Add audit logging
 
 export const accessRequestsRouter = router({
@@ -50,6 +56,7 @@ export const accessRequestsRouter = router({
       }
 
       // Create new access request
+      const submittedAt = new Date();
       await db.insert(accessRequests).values({
         openId: input.openId,
         fullName: input.fullName,
@@ -60,6 +67,27 @@ export const accessRequestsRouter = router({
         useCase: input.useCase || null,
         status: "pending",
       });
+
+      // Send email notifications
+      try {
+        await notifyAdminNewRegistration({
+          fullName: input.fullName,
+          email: input.email,
+          companyName: input.companyName,
+          city: input.city,
+          phoneNumber: input.phoneNumber,
+          useCase: input.useCase,
+          submittedAt,
+        });
+
+        await notifyUserRegistrationReceived({
+          fullName: input.fullName,
+          email: input.email,
+        });
+      } catch (emailError) {
+        console.error("[AccessRequest] Failed to send email notifications:", emailError);
+        // Don't fail the request if email fails
+      }
 
       return { success: true, message: "Access request submitted successfully" };
     }),
@@ -190,6 +218,19 @@ export const accessRequestsRouter = router({
         })
         .where(eq(accessRequests.id, input.requestId));
 
+      // Send approval email notification
+      try {
+        await notifyUserApproved({
+          fullName: accessRequest.fullName,
+          email: accessRequest.email,
+          companyName: input.company,
+          role: input.role,
+        });
+      } catch (emailError) {
+        console.error("[AccessRequest] Failed to send approval email:", emailError);
+        // Don't fail the request if email fails
+      }
+
       // TODO: Log audit event
       // await logAuditEvent({
       //   userId: ctx.user.id,
@@ -226,6 +267,15 @@ export const accessRequestsRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
+      // Get the access request to get user details
+      const request = await db.select().from(accessRequests).where(eq(accessRequests.id, input.requestId)).limit(1);
+
+      if (request.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Access request not found" });
+      }
+
+      const accessRequest = request[0]!;
+
       // Update access request status
       await db
         .update(accessRequests)
@@ -237,6 +287,18 @@ export const accessRequestsRouter = router({
           adminNotes: input.adminNotes || null,
         })
         .where(eq(accessRequests.id, input.requestId));
+
+      // Send rejection email notification
+      try {
+        await notifyUserRejected({
+          fullName: accessRequest.fullName,
+          email: accessRequest.email,
+          rejectionReason: input.rejectionReason,
+        });
+      } catch (emailError) {
+        console.error("[AccessRequest] Failed to send rejection email:", emailError);
+        // Don't fail the request if email fails
+      }
 
       // TODO: Log audit event
       // await logAuditEvent({

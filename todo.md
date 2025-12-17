@@ -611,3 +611,13 @@
 - [x] Display success message after submission
 - [x] Show pending approval status
 - [x] Test complete signup → admin approval → login workflow
+
+## Email Notifications for Signup Workflow
+
+- [x] Create email notification service for access requests
+- [x] Send email to lfaria@mabenconsulting.ca when new registration submitted
+- [x] Include user details in notification email (name, email, company, city, phone, use case)
+- [x] Send confirmation email to user after registration
+- [x] Send approval email to user when admin approves request
+- [x] Send rejection email to user when admin rejects request
+- [x] Test email delivery with real registration
