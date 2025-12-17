@@ -48,6 +48,9 @@ export default function Home() {
               <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
                 <a href="#features">Features</a>
               </Button>
+              <Button variant="default" size="sm" asChild>
+                <a href="/signup">Request Access</a>
+              </Button>
               <Button variant="outline" size="sm" asChild>
                 <a href={getLoginUrl()}>Sign In</a>
               </Button>
@@ -95,7 +98,7 @@ export default function Home() {
                 className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8" 
                 asChild
               >
-                <a href={getLoginUrl()}>Start Free Assessment</a>
+                <a href="/signup">Request Access</a>
               </Button>
               <Button 
                 size="lg" 
@@ -246,13 +249,23 @@ export default function Home() {
             <p className="text-base sm:text-lg text-white/90 mb-8">
               Join building assessment professionals who trust our platform for their projects
             </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8" 
-              asChild
-            >
-              <a href={getLoginUrl()}>Get Started Free</a>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8" 
+                asChild
+              >
+                <a href="/signup">Request Access</a>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-white text-white hover:bg-white/10 font-semibold text-base h-12 px-8" 
+                asChild
+              >
+                <a href={getLoginUrl()}>Sign In</a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

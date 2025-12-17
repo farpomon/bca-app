@@ -663,3 +663,10 @@
 - [x] Remove large white space between hero image and blue content section
 - [x] Ensure all header elements fit properly on mobile screens
 - [x] Test on various mobile screen sizes (375px, 414px, 428px)
+
+## Add Signup Link to Landing Page
+
+- [x] Add "Request Access" or "Sign Up" button to header next to "Sign In"
+- [x] Update hero section CTA buttons to include signup option
+- [x] Ensure signup button navigates to /signup page
+- [ ] Test signup flow from landing page
