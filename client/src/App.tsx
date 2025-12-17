@@ -30,11 +30,13 @@ import ComplianceDashboard from "./pages/ComplianceDashboard";
 import PrivacySettings from "./pages/PrivacySettings";
 import DataSecurity from "./pages/DataSecurity";
 import SecuritySettings from "./pages/SecuritySettings";
+import SignUp from "./pages/SignUp";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/signup"} component={SignUp} />
       <Route path={"/pending-approval"} component={PendingApproval} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/deleted-projects"} component={DeletedProjects} />

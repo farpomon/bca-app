@@ -600,3 +600,14 @@
 - [x] Add empty state messaging in Budget Allocation section when no costs to allocate
 - [x] Add data validation for deficiency estimated costs (ensure valid numbers)
 - [x] Create comprehensive edge case tests for Optimization tab
+
+## Signup/Registration Page
+
+- [x] Create SignUp page component with registration form
+- [x] Add form fields: full name, email, company name, city, phone, use case
+- [x] Integrate with existing accessRequests.submit API endpoint
+- [x] Add route /signup to App.tsx
+- [x] Add "Sign Up" link to login page/home page
+- [x] Display success message after submission
+- [x] Show pending approval status
+- [x] Test complete signup → admin approval → login workflow

@@ -40,9 +40,14 @@ export default function Home() {
               <img src={APP_LOGO} alt="Maben Consulting" className="h-8 md:h-10 w-auto flex-shrink-0" />
               <span className="font-bold text-base md:text-xl truncate">{APP_TITLE}</span>
             </div>
-            <Button size="sm" className="md:size-default flex-shrink-0" asChild>
-              <a href={getLoginUrl()}>Sign In</a>
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button size="sm" variant="outline" className="md:size-default" asChild>
+                <a href="/signup">Sign Up</a>
+              </Button>
+              <Button size="sm" className="md:size-default" asChild>
+                <a href={getLoginUrl()}>Sign In</a>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
