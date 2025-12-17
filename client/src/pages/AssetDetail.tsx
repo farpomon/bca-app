@@ -14,7 +14,14 @@ import {
   TrendingUp,
   Target,
   DollarSign,
-  AlertTriangle
+  AlertTriangle,
+  Camera,
+  Wrench,
+  FileText,
+  Shield,
+  Box,
+  Clock,
+  FileBarChart
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -116,12 +123,52 @@ export default function AssetDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="dashboard">
+          <TabsList className="w-full max-w-full overflow-x-auto scrollbar-hide">
+            <TabsTrigger value="dashboard" className="flex-none px-3">
               <Building2 className="mr-2 h-4 w-4" />
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="optimization">
+            <TabsTrigger value="assessments" className="flex-none px-3">
+              <ClipboardCheck className="mr-2 h-4 w-4" />
+              Assessments
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="flex-none px-3">
+              <Camera className="mr-2 h-4 w-4" />
+              Photos
+            </TabsTrigger>
+            <TabsTrigger value="maintenance" className="flex-none px-3">
+              <Wrench className="mr-2 h-4 w-4" />
+              Maintenance
+            </TabsTrigger>
+            <TabsTrigger value="deficiencies" className="flex-none px-3">
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Deficiencies
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex-none px-3">
+              <FileText className="mr-2 h-4 w-4" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="financial" className="flex-none px-3">
+              <DollarSign className="mr-2 h-4 w-4" />
+              Financial
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="flex-none px-3">
+              <Shield className="mr-2 h-4 w-4" />
+              Compliance
+            </TabsTrigger>
+            <TabsTrigger value="3d-model" className="flex-none px-3">
+              <Box className="mr-2 h-4 w-4" />
+              3D Model
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex-none px-3">
+              <Clock className="mr-2 h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex-none px-3">
+              <FileBarChart className="mr-2 h-4 w-4" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="optimization" className="flex-none px-3">
               <Target className="mr-2 h-4 w-4" />
               Optimization
             </TabsTrigger>
@@ -255,6 +302,231 @@ export default function AssetDetail() {
                       <p className="text-sm font-medium">{asset.occupancyType}</p>
                     </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Assessments Tab */}
+          <TabsContent value="assessments" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Component Assessments</CardTitle>
+                <CardDescription>
+                  All UNIFORMAT II component assessments for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {assessments && assessments.length > 0 ? (
+                  <div className="space-y-2">
+                    {assessments.map((assessment) => (
+                      <div key={assessment.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{assessment.componentCode}</p>
+                            <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
+                          </div>
+                          <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
+                            {assessment.condition}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No assessments found for this asset</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Photos Tab */}
+          <TabsContent value="photos" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Photo Gallery</CardTitle>
+                <CardDescription>
+                  All photos from assessments for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Photo gallery coming soon. This will display all photos from asset assessments.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Maintenance History Tab */}
+          <TabsContent value="maintenance" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Maintenance History</CardTitle>
+                <CardDescription>
+                  Timeline of all maintenance activities for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Maintenance history coming soon. This will show identified and executed maintenance entries.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Deficiencies Tab */}
+          <TabsContent value="deficiencies" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Deficiencies</CardTitle>
+                <CardDescription>
+                  All deficiencies identified for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {deficiencies && deficiencies.length > 0 ? (
+                  <div className="space-y-2">
+                    {deficiencies.map((deficiency) => (
+                      <div key={deficiency.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium">{deficiency.title}</p>
+                          <Badge variant={deficiency.severity === 'critical' ? 'destructive' : deficiency.severity === 'high' ? 'secondary' : 'outline'}>
+                            {deficiency.severity}
+                          </Badge>
+                        </div>
+                        {deficiency.description && (
+                          <p className="text-sm text-muted-foreground">{deficiency.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No deficiencies found for this asset</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Documents Tab */}
+          <TabsContent value="documents" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Documents</CardTitle>
+                <CardDescription>
+                  All documents attached to this asset and its assessments
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Document management coming soon. This will show all attached files.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Financial Summary Tab */}
+          <TabsContent value="financial" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Financial Summary</CardTitle>
+                <CardDescription>
+                  Cost breakdown and budget allocation for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Estimated Costs</h3>
+                    <p className="text-3xl font-bold">${totalEstimatedCost.toLocaleString()}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Repair Costs</h3>
+                      <p className="text-xl font-semibold">${totalEstimatedCost.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">FCI</h3>
+                      <p className="text-xl font-semibold">-</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Compliance Tab */}
+          <TabsContent value="compliance" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Building Code Compliance</CardTitle>
+                <CardDescription>
+                  Compliance status and violations for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Compliance tracking coming soon. This will show building code violations and recommendations.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 3D Model Tab */}
+          <TabsContent value="3d-model" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>3D Digital Twin</CardTitle>
+                <CardDescription>
+                  Interactive 3D model with clickable annotations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  3D model viewer coming soon. This will display digital twin models with linked assessments.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Timeline Tab */}
+          <TabsContent value="timeline" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Asset Timeline</CardTitle>
+                <CardDescription>
+                  Visual timeline of assessment history and projected future actions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Timeline view coming soon. This will show historical events and future maintenance schedules.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Reports Tab */}
+          <TabsContent value="reports" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Asset Reports</CardTitle>
+                <CardDescription>
+                  Generate customized reports for this asset
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Generate comprehensive reports in PDF or Excel format
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="outline" disabled>
+                    <Download className="mr-2 h-4 w-4" />
+                    PDF Report
+                  </Button>
+                  <Button variant="outline" disabled>
+                    <Download className="mr-2 h-4 w-4" />
+                    Excel Report
+                  </Button>
                 </div>
               </CardContent>
             </Card>
