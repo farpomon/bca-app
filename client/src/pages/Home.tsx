@@ -60,7 +60,7 @@ export default function Home() {
                 Building Condition Assessment Software
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight text-white">
               Streamline Building Assessments
             </h1>
             <p className="text-base sm:text-lg leading-relaxed">

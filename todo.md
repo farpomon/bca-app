@@ -477,3 +477,9 @@
 - [x] Move text content below the image on mobile screens
 - [x] Keep overlay text on image for desktop/laptop screens
 - [x] Test layout on various mobile screen sizes
+
+
+## Mobile Hero Heading Color Fix (User Request - Dec 2024)
+- [x] Change "Streamline Building Assessments" heading to white text color on mobile
+- [x] Ensure good contrast against background image
+- [x] Test visibility on mobile devices
