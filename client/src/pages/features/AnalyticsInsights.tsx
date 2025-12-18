@@ -3,6 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart3, TrendingUp, PieChart, LineChart, Target, DollarSign } from "lucide-react";
 import { Link } from "wouter";
 import { APP_TITLE } from "@/const";
+import {
+  PortfolioHealthGauge,
+  ConditionDistribution,
+  CapitalPlanningChart,
+  BudgetAllocationChart,
+  DeficiencyPriorityChart,
+  DeficiencyTrendChart,
+} from "@/components/analytics/SampleCharts";
 
 export default function AnalyticsInsights() {
   return (
@@ -139,13 +147,17 @@ export default function AnalyticsInsights() {
                 <CardTitle className="text-lg">Portfolio Health Score</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 mb-3">
+                <p className="text-slate-600 mb-4">
                   Overall condition rating across all properties with breakdown by building system and component type
                 </p>
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Visualizations:</span>
-                    <span className="text-slate-900">Gauge charts, heat maps, condition distribution graphs</span>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">Overall Health Score</h4>
+                    <PortfolioHealthGauge />
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">Condition by System</h4>
+                    <ConditionDistribution />
                   </div>
                 </div>
               </CardContent>
@@ -156,13 +168,17 @@ export default function AnalyticsInsights() {
                 <CardTitle className="text-lg">Capital Planning Dashboard</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 mb-3">
+                <p className="text-slate-600 mb-4">
                   Multi-year capital expenditure forecasts with immediate, short-term, and long-term cost projections
                 </p>
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Visualizations:</span>
-                    <span className="text-slate-900">Stacked bar charts, timeline views, budget allocation pie charts</span>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">5-Year Capital Forecast</h4>
+                    <CapitalPlanningChart />
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">Budget Allocation by System</h4>
+                    <BudgetAllocationChart />
                   </div>
                 </div>
               </CardContent>
@@ -173,13 +189,17 @@ export default function AnalyticsInsights() {
                 <CardTitle className="text-lg">Deficiency Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 mb-3">
+                <p className="text-slate-600 mb-4">
                   Track open deficiencies by priority level, building system, and age with resolution status tracking
                 </p>
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Visualizations:</span>
-                    <span className="text-slate-900">Priority matrices, aging reports, resolution trend lines</span>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">Deficiencies by Priority</h4>
+                    <DeficiencyPriorityChart />
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">Resolution Trends</h4>
+                    <DeficiencyTrendChart />
                   </div>
                 </div>
               </CardContent>

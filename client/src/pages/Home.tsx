@@ -41,6 +41,11 @@ export default function Home() {
                 <span className="font-bold text-base">MABEN</span>
                 <span className="font-bold text-base">CONSULTING</span>
               </div>
+              {/* Canadian Badge */}
+              <div className="hidden lg:flex items-center gap-1.5 ml-3 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
+                <span className="text-red-600 text-lg">🍁</span>
+                <span className="text-xs font-semibold text-red-700 whitespace-nowrap">Proudly Canadian</span>
+              </div>
             </div>
             
             {/* Auth Buttons */}
@@ -286,9 +291,16 @@ export default function Home() {
       <footer className="py-8 sm:py-12 bg-background border-t">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
-              <span className="text-sm text-muted-foreground">© 2025 Maben Consulting. All rights reserved.</span>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="flex items-center gap-3">
+                <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
+                <span className="text-sm text-muted-foreground">© 2025 Maben Consulting. All rights reserved.</span>
+              </div>
+              {/* Canadian Badge */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-50 border border-red-200 rounded-full">
+                <span className="text-red-600">🍁</span>
+                <span className="text-xs font-semibold text-red-700">Proudly Canadian</span>
+              </div>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>

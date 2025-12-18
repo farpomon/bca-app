@@ -725,3 +725,16 @@
 - [x] Create Analytics & Insights feature page with detailed content
 - [x] Add routes for all feature pages in App.tsx
 - [x] Make landing page feature cards clickable with navigation to detail pages
+
+## Canadian Branding
+- [x] Add maple leaf icon to landing page header
+- [x] Add "Proudly Canadian" badge/text to landing page
+- [x] Add Canadian flag or maple leaf to footer
+- [ ] Consider adding to other pages (feature pages, about section)
+
+## Analytics & Insights Feature Page - Graph Visualizations
+- [x] Create sample graph components for Portfolio Health Score (gauge chart, heat map, condition distribution)
+- [x] Create sample graph components for Capital Planning Dashboard (stacked bar chart, timeline, pie chart)
+- [x] Create sample graph components for Deficiency Management (priority matrix, aging report, trend lines)
+- [x] Replace text-only visualization descriptions with actual graph components
+- [x] Ensure graphs are responsive and mobile-friendly
