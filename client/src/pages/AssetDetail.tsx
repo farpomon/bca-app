@@ -22,12 +22,14 @@ import {
   Box,
   Clock,
   FileBarChart,
-  CalendarDays
+  CalendarDays,
+  Sparkles
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
 import AssetPhotoGallery from "@/components/AssetPhotoGallery";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
+import { AIInsightsChat } from "@/components/AIInsightsChat";
 import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
 import AssetTimeline from "@/components/AssetTimeline";
@@ -182,6 +184,10 @@ export default function AssetDetail() {
             <TabsTrigger value="timeline" className="flex-none px-3">
               <CalendarDays className="mr-2 h-4 w-4" />
               Timeline
+            </TabsTrigger>
+            <TabsTrigger value="ai-insights" className="flex-none px-3">
+              <Sparkles className="mr-2 h-4 w-4" />
+              AI Insights
             </TabsTrigger>
           </TabsList>
 
@@ -618,6 +624,16 @@ export default function AssetDetail() {
                 <AssetTimeline assetId={assetIdNum} projectId={projectId} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* AI Insights Tab */}
+          <TabsContent value="ai-insights" className="space-y-4">
+            <AIInsightsChat
+              sessionType="asset"
+              contextId={assetIdNum}
+              title={`AI Insights - ${asset?.name || 'Asset'}`}
+              className="h-[600px]"
+            />
           </TabsContent>
         </Tabs>
       </div>

@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,6 +33,7 @@ import { CompanyManagement } from "@/components/CompanyManagement";
 import EmailDeliveryLogs from "@/components/EmailDeliveryLogs";
 import { BulkUserActions } from "@/components/BulkUserActions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AIInsightsChat } from "@/components/AIInsightsChat";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -225,6 +226,10 @@ export default function Admin() {
           <TabsTrigger value="email-logs" className="gap-2">
             <Mail className="w-4 h-4" />
             Email Logs
+          </TabsTrigger>
+          <TabsTrigger value="company-insights" className="gap-2">
+            <Sparkles className="w-4 h-4" />
+            Company Insights
           </TabsTrigger>
         </TabsList>
 
@@ -713,6 +718,25 @@ export default function Admin() {
         {/* Email Logs Tab */}
         <TabsContent value="email-logs" className="space-y-4">
           <EmailDeliveryLogs />
+        </TabsContent>
+
+        {/* Company Insights Tab */}
+        <TabsContent value="company-insights" className="space-y-4">
+          {user?.companyId ? (
+            <AIInsightsChat
+              sessionType="company"
+              title={`Company Portfolio Insights - ${user?.company || 'Your Company'}`}
+              className="h-[700px]"
+            />
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground text-center">
+                  Company insights are only available for users with a company assignment.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 

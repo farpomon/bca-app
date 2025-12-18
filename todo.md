@@ -766,3 +766,19 @@
 - [x] Implement fix for mobile compatibility - Added proper hex color mapping + moved formatEventDate outside component
 - [x] Test fix on desktop - Timeline tab loads successfully
 - [ ] User to test fix on mobile device (iPhone)
+
+## AI Chat Feature (Dec 18, 2024)
+- [x] Design AI chat system architecture with three levels (project, asset, company)
+- [x] Implement data access control based on user role and company
+- [x] Create backend AI chat service with context retrieval
+- [x] Build chat message database schema (chat_sessions, chat_messages, chat_context_cache)
+- [x] Implement project-level chat with assessment/deficiency insights
+- [x] Implement asset-level chat with condition/maintenance analysis
+- [x] Implement company-level chat for portfolio insights (admin/manager only)
+- [x] Create reusable AIInsightsChat component
+- [x] Integrate chat into ProjectDetail page (AI Insights tab)
+- [x] Integrate chat into AssetDetail page (AI Insights tab)
+- [x] Add company-level chat to Admin dashboard (Company Insights tab)
+- [ ] Test chat with different user roles and permissions
+- [ ] Test data isolation (users can only chat about their company's data)
+- [ ] Create checkpoint after testing

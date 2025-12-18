@@ -351,6 +351,13 @@
       "when": 1765989022288,
       "tag": "0049_thick_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "5",
+      "when": 1766083450135,
+      "tag": "0050_careless_azazel",
+      "breakpoints": true
     }
   ]
 }

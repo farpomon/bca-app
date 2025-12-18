@@ -55,49 +55,43 @@ interface AssetTimelineProps {
 
 const eventTypeConfig: Record<
   EventType,
-  { icon: React.ElementType; label: string; color: string; bgColor: string; borderColor: string }
+  { icon: React.ElementType; label: string; color: string; bgColor: string }
 > = {
   assessment: {
     icon: ClipboardList,
     label: "Assessment",
     color: "text-blue-600",
     bgColor: "bg-blue-50",
-    borderColor: "#2563eb",
   },
   deficiency: {
     icon: AlertTriangle,
     label: "Deficiency",
     color: "text-red-600",
     bgColor: "bg-red-50",
-    borderColor: "#dc2626",
   },
   maintenance: {
     icon: Wrench,
     label: "Maintenance",
     color: "text-green-600",
     bgColor: "bg-green-50",
-    borderColor: "#16a34a",
   },
   document: {
     icon: FileText,
     label: "Document",
     color: "text-purple-600",
     bgColor: "bg-purple-50",
-    borderColor: "#9333ea",
   },
   schedule: {
     icon: Calendar,
     label: "Scheduled",
     color: "text-orange-600",
     bgColor: "bg-orange-50",
-    borderColor: "#ea580c",
   },
   custom: {
     icon: Plus,
     label: "Custom",
     color: "text-gray-600",
     bgColor: "bg-gray-50",
-    borderColor: "#4b5563",
   },
 };
 
@@ -107,21 +101,6 @@ const dateRangeOptions = [
   { value: "90", label: "Last 90 Days" },
   { value: "365", label: "Last Year" },
 ];
-
-// Helper function to format event dates
-const formatEventDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const isPast = date < now;
-    return {
-      formatted: format(date, "MMM dd, yyyy 'at' h:mm a"),
-      isPast,
-    };
-  } catch {
-    return { formatted: dateString, isPast: true };
-  }
-};
 
 export default function AssetTimeline({ assetId, projectId }: AssetTimelineProps) {
   const [selectedEventTypes, setSelectedEventTypes] = useState<EventType[]>([]);
@@ -159,7 +138,19 @@ export default function AssetTimeline({ assetId, projectId }: AssetTimelineProps
     );
   };
 
-
+  const formatEventDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const isPast = date < now;
+      return {
+        formatted: format(date, "MMM dd, yyyy 'at' h:mm a"),
+        isPast,
+      };
+    } catch {
+      return { formatted: dateString, isPast: true };
+    }
+  };
 
   const getEventIcon = (type: EventType) => {
     const Icon = eventTypeConfig[type].icon;
@@ -344,7 +335,7 @@ function TimelineEventCard({ event, onSelect }: TimelineEventCardProps) {
   return (
     <Card
       className="p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4"
-      style={{ borderLeftColor: config.borderColor }}
+      style={{ borderLeftColor: config.color.replace("text-", "#") }}
       onClick={() => onSelect(event)}
     >
       <div className="flex items-start gap-4">

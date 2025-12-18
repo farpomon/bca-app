@@ -16,7 +16,7 @@ import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { ProjectDocumentList } from "@/components/ProjectDocumentList";
-import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin } from "lucide-react";
+import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin, Sparkles } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -29,6 +29,7 @@ import { BulkDownloadButton } from "@/components/BulkDownloadButton";
 import { ProjectAssetsMap } from "@/components/ProjectAssetsMap";
 import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
+import { AIInsightsChat } from "@/components/AIInsightsChat";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
 import FacilitySummaryTab from "@/components/FacilitySummaryTab";
 
@@ -394,6 +395,10 @@ export default function ProjectDetail() {
             <TabsTrigger value="map" className="gap-2">
               <MapPin className="h-4 w-4" />
               Map
+            </TabsTrigger>
+            <TabsTrigger value="ai-insights" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              AI Insights
             </TabsTrigger>
           </TabsList>
 
@@ -884,9 +889,17 @@ export default function ProjectDetail() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="map">
+            <ProjectAssetsMap projectId={projectId} />
+          </TabsContent>
 
-          <TabsContent value="photos">
-            <PhotoGallery projectId={projectId} />
+          <TabsContent value="ai-insights">
+            <AIInsightsChat
+              sessionType="project"
+              contextId={projectId}
+              title={`AI Insights - ${project?.name || 'Project'}`}
+              className="h-[600px]"
+            />
           </TabsContent>
 
           <TabsContent value="sections">
