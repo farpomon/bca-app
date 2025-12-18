@@ -119,7 +119,7 @@ export const aiChatRouter = router({
         const context = await getProjectContext(
           contextId,
           ctx.user.id,
-          ctx.user.companyId
+          ctx.user.company ? Number(ctx.user.company) : null
         );
 
         if (!context) {
@@ -134,7 +134,7 @@ export const aiChatRouter = router({
         const context = await getAssetContext(
           contextId,
           ctx.user.id,
-          ctx.user.companyId
+          ctx.user.company ? Number(ctx.user.company) : null
         );
 
         if (!context) {
