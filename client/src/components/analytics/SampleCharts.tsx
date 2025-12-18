@@ -461,3 +461,412 @@ export function DeficiencyTrendChart() {
     </div>
   );
 }
+
+// System Performance - Radar Chart
+export function SystemPerformanceRadar() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<Chart | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const config: ChartConfiguration = {
+      type: "radar",
+      data: {
+        labels: ["Structural", "Envelope", "Mechanical", "Electrical", "Plumbing", "Interior"],
+        datasets: [
+          {
+            label: "Current Condition",
+            data: [75, 62, 68, 82, 71, 65],
+            backgroundColor: "rgba(59, 130, 246, 0.2)",
+            borderColor: "#3b82f6",
+            borderWidth: 2,
+            pointBackgroundColor: "#3b82f6",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "#3b82f6",
+          },
+          {
+            label: "Target Condition",
+            data: [85, 80, 85, 90, 85, 80],
+            backgroundColor: "rgba(16, 185, 129, 0.2)",
+            borderColor: "#10b981",
+            borderWidth: 2,
+            pointBackgroundColor: "#10b981",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "#10b981",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              stepSize: 20,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+          },
+        },
+      },
+    };
+
+    chartRef.current = new Chart(ctx, config);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ height: "350px" }}>
+      <canvas ref={canvasRef}></canvas>
+    </div>
+  );
+}
+
+// System Performance - Ranking Bar Chart
+export function SystemRankingChart() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<Chart | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const config: ChartConfiguration = {
+      type: "bar",
+      data: {
+        labels: ["Electrical", "Structural", "Plumbing", "Mechanical", "Interior", "Envelope"],
+        datasets: [
+          {
+            label: "Condition Score",
+            data: [82, 75, 71, 68, 65, 62],
+            backgroundColor: [
+              "#10b981",
+              "#10b981",
+              "#f59e0b",
+              "#f59e0b",
+              "#f59e0b",
+              "#ef4444",
+            ],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        scales: {
+          x: {
+            beginAtZero: true,
+            max: 100,
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const value = context.parsed.x;
+                let status = "Good";
+                if (value < 70) status = "Needs Investment";
+                if (value < 60) status = "Critical";
+                return `Score: ${value}/100 (${status})`;
+              },
+            },
+          },
+        },
+      },
+    };
+
+    chartRef.current = new Chart(ctx, config);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ height: "300px" }}>
+      <canvas ref={canvasRef}></canvas>
+    </div>
+  );
+}
+
+// Assessment Activity - Completion Rate Progress
+export function AssessmentCompletionChart() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<Chart | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const config: ChartConfiguration = {
+      type: "bar",
+      data: {
+        labels: ["Building A", "Building B", "Building C", "Building D", "Building E", "Building F"],
+        datasets: [
+          {
+            label: "Completed",
+            data: [100, 85, 92, 78, 100, 65],
+            backgroundColor: "#10b981",
+          },
+          {
+            label: "Remaining",
+            data: [0, 15, 8, 22, 0, 35],
+            backgroundColor: "#e5e7eb",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        scales: {
+          x: {
+            stacked: true,
+            max: 100,
+            ticks: {
+              callback: (value) => `${value}%`,
+            },
+          },
+          y: {
+            stacked: true,
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || "";
+                const value = context.parsed.x;
+                return `${label}: ${value}%`;
+              },
+            },
+          },
+        },
+      },
+    };
+
+    chartRef.current = new Chart(ctx, config);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ height: "300px" }}>
+      <canvas ref={canvasRef}></canvas>
+    </div>
+  );
+}
+
+// Assessment Activity - Timeline Chart
+export function AssessmentTimelineChart() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<Chart | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const config: ChartConfiguration = {
+      type: "line",
+      data: {
+        labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"],
+        datasets: [
+          {
+            label: "Planned Progress",
+            data: [12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100],
+            borderColor: "#94a3b8",
+            backgroundColor: "rgba(148, 163, 184, 0.1)",
+            borderDash: [5, 5],
+            tension: 0,
+            fill: false,
+          },
+          {
+            label: "Actual Progress",
+            data: [15, 28, 35, 48, 58, 72, 85, 95],
+            borderColor: "#3b82f6",
+            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: (value) => `${value}%`,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+          },
+        },
+      },
+    };
+
+    chartRef.current = new Chart(ctx, config);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ height: "300px" }}>
+      <canvas ref={canvasRef}></canvas>
+    </div>
+  );
+}
+
+// Assessment Activity - Heatmap (using bar chart as alternative)
+export function AssessmentActivityHeatmap() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<Chart | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const config: ChartConfiguration = {
+      type: "bar",
+      data: {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+          {
+            label: "Week 1",
+            data: [8, 12, 15, 10, 14, 3, 2],
+            backgroundColor: "#dbeafe",
+          },
+          {
+            label: "Week 2",
+            data: [10, 14, 18, 12, 16, 4, 1],
+            backgroundColor: "#93c5fd",
+          },
+          {
+            label: "Week 3",
+            data: [12, 16, 20, 14, 18, 5, 3],
+            backgroundColor: "#60a5fa",
+          },
+          {
+            label: "Week 4",
+            data: [9, 13, 17, 11, 15, 4, 2],
+            backgroundColor: "#3b82f6",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            stacked: false,
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Assessments Completed",
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || "";
+                const value = context.parsed.y;
+                return `${label}: ${value} assessments`;
+              },
+            },
+          },
+        },
+      },
+    };
+
+    chartRef.current = new Chart(ctx, config);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ height: "300px" }}>
+      <canvas ref={canvasRef}></canvas>
+    </div>
+  );
+}

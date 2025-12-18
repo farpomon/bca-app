@@ -10,6 +10,11 @@ import {
   BudgetAllocationChart,
   DeficiencyPriorityChart,
   DeficiencyTrendChart,
+  SystemPerformanceRadar,
+  SystemRankingChart,
+  AssessmentCompletionChart,
+  AssessmentTimelineChart,
+  AssessmentActivityHeatmap,
 } from "@/components/analytics/SampleCharts";
 
 export default function AnalyticsInsights() {
@@ -210,13 +215,17 @@ export default function AnalyticsInsights() {
                 <CardTitle className="text-lg">System Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 mb-3">
+                <p className="text-slate-600 mb-4">
                   Compare condition ratings across different building systems to identify which areas need investment
                 </p>
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Visualizations:</span>
-                    <span className="text-slate-900">Radar charts, comparative bar graphs, system ranking tables</span>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">System Condition Comparison</h4>
+                    <SystemPerformanceRadar />
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">System Rankings</h4>
+                    <SystemRankingChart />
                   </div>
                 </div>
               </CardContent>
@@ -227,13 +236,23 @@ export default function AnalyticsInsights() {
                 <CardTitle className="text-lg">Assessment Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 mb-3">
+                <p className="text-slate-600 mb-4">
                   Monitor assessment completion rates, assessor productivity, and project timelines
                 </p>
-                <div className="bg-slate-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Visualizations:</span>
-                    <span className="text-slate-900">Progress bars, timeline charts, activity heatmaps</span>
+                <div className="space-y-6">
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3">Completion Progress by Building</h4>
+                    <AssessmentCompletionChart />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <h4 className="text-sm font-semibold text-slate-700 mb-3">Project Timeline</h4>
+                      <AssessmentTimelineChart />
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <h4 className="text-sm font-semibold text-slate-700 mb-3">Weekly Activity</h4>
+                      <AssessmentActivityHeatmap />
+                    </div>
                   </div>
                 </div>
               </CardContent>
