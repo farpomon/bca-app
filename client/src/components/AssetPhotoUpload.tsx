@@ -63,17 +63,25 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        } 
       });
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsCameraActive(true);
+        
+        // Wait for video to load and play
+        await videoRef.current.play();
+        toast.success('Camera ready');
       }
     } catch (error) {
       console.error('Camera error:', error);
-      toast.error('Failed to access camera');
+      toast.error('Failed to access camera. Please check permissions.');
     }
   };
 
@@ -189,7 +197,9 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
                 ref={videoRef}
                 autoPlay
                 playsInline
-                className="w-full rounded-lg"
+                muted
+                className="w-full rounded-lg bg-black"
+                style={{ minHeight: '300px' }}
               />
               <div className="flex gap-2">
                 <Button onClick={capturePhoto} className="flex-1">

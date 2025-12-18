@@ -747,3 +747,14 @@
 - [x] Add interactive dashboard preview section with real-time data visualization
 - [x] Ensure responsive design for dashboard preview on mobile devices
 - [x] Test landing page with dashboard visualizations
+
+## Project Detail Page Error Fix (Dec 17, 2024)
+- [x] Fix "unexpected error occurred" on project detail page
+- [x] Investigate missing procedure or component causing the error
+- [x] Test fix on both desktop and mobile
+
+## Camera Photo Capture Bug Fix (Dec 18, 2024)
+- [x] Investigate why camera view doesn't appear when clicking "Take Photo" button
+- [x] Fix camera stream display implementation (added muted attribute, explicit play() call, resolution constraints)
+- [x] Test camera functionality on Photos tab (desktop - confirmed fix works, mobile testing by user)
+- [x] Verify camera permissions are working correctly
