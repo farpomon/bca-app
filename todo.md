@@ -710,3 +710,8 @@
 - [x] Implement contact form backend endpoint to send emails to lfaria@mabenconsulting.ca
 - [x] Add form validation and success/error states
 - [x] Test contact form email delivery
+
+## Date Updates (Dec 17, 2024)
+
+- [x] Update Privacy Policy "Last updated" date from December 17, 2024 to December 17, 2025
+- [x] Update Terms of Service "Last updated" date from December 17, 2024 to December 17, 2025

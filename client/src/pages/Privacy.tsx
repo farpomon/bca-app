@@ -26,7 +26,7 @@ export default function Privacy() {
       {/* Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-4xl">
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-muted-foreground mb-8">Last updated: December 17, 2024</p>
+        <p className="text-muted-foreground mb-8">Last updated: December 17, 2025</p>
 
         <div className="prose prose-slate max-w-none space-y-8">
           <section>
