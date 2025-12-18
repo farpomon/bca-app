@@ -2,6 +2,8 @@ import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
 import { processChatMessage } from "../services/aiChat.service";
 import { getUserChatSessions, getChatSessionById, getSessionMessages, deleteChatSession } from "../db/chatDb";
+import { getProjectContext, getAssetContext, getCompanyContext } from "../services/chatContext.service";
+import { generateProjectQuestions, generateAssetQuestions, generateCompanyQuestions } from "../services/suggestedQuestions.service";
 
 export const aiChatRouter = router({
   /**
@@ -21,7 +23,7 @@ export const aiChatRouter = router({
 
       const response = await processChatMessage({
         userId: ctx.user.id,
-        userCompanyId: ctx.user.companyId,
+        userCompanyId: ctx.user.company ? Number(ctx.user.company) : null,
         isAdmin: ctx.user.role === 'admin' || ctx.user.role === 'project_manager',
         sessionType,
         contextId,
@@ -97,5 +99,67 @@ export const aiChatRouter = router({
       await deleteChatSession(input.sessionId);
 
       return { success: true };
+    }),
+
+  /**
+   * Get suggested questions based on available data
+   */
+  getSuggestedQuestions: protectedProcedure
+    .input(
+      z.object({
+        sessionType: z.enum(['project', 'asset', 'company']),
+        contextId: z.number().optional(), // projectId or assetId
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { sessionType, contextId } = input;
+
+      // Get context data to determine what questions are relevant
+      if (sessionType === 'project' && contextId) {
+        const context = await getProjectContext(
+          contextId,
+          ctx.user.id,
+          ctx.user.companyId
+        );
+
+        if (!context) {
+          return { questions: [] };
+        }
+
+        const questions = generateProjectQuestions(context);
+        return { questions };
+      }
+
+      if (sessionType === 'asset' && contextId) {
+        const context = await getAssetContext(
+          contextId,
+          ctx.user.id,
+          ctx.user.companyId
+        );
+
+        if (!context) {
+          return { questions: [] };
+        }
+
+        const questions = generateAssetQuestions(context);
+        return { questions };
+      }
+
+      if (sessionType === 'company' && ctx.user.company) {
+        const companyId = Number(ctx.user.company);
+        const context = await getCompanyContext(
+          companyId,
+          ctx.user.id
+        );
+
+        if (!context) {
+          return { questions: [] };
+        }
+
+        const questions = generateCompanyQuestions(context);
+        return { questions };
+      }
+
+      return { questions: [] };
     }),
 });

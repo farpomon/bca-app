@@ -779,6 +779,21 @@
 - [x] Integrate chat into ProjectDetail page (AI Insights tab)
 - [x] Integrate chat into AssetDetail page (AI Insights tab)
 - [x] Add company-level chat to Admin dashboard (Company Insights tab)
-- [ ] Test chat with different user roles and permissions
-- [ ] Test data isolation (users can only chat about their company's data)
+- [x] Test chat with different user roles and permissions
+- [x] Test data isolation (users can only chat about their company's data)
+- [x] Create checkpoint after testing
+
+## AI Chat Enhancement - Context-Aware Suggested Questions
+
+- [x] Design suggested questions logic based on available data
+- [x] Create backend service to analyze data availability and generate relevant questions
+- [x] Add tRPC endpoint for getting suggested questions
+- [x] Update AIInsightsChat component with suggested questions UI
+- [ ] Test suggested questions with different data scenarios (empty, partial, full data)
 - [ ] Create checkpoint after testing
+
+## Bug Fix: AI Chat Suggested Questions Error
+
+- [x] Fix "Cannot read properties of undefined (reading 'id')" error when clicking suggested questions
+- [x] Investigate user context issue in AI chat (user.companyId vs user.company)
+- [ ] Test suggested questions click functionality

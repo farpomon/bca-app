@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, Sparkles, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Send, Bot, User, Sparkles, Trash2, Lightbulb } from "lucide-react";
 import { Streamdown } from "streamdown";
 import { toast } from "sonner";
 
@@ -27,6 +28,19 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
   const [sessionId, setSessionId] = useState<number | undefined>();
   const [messages, setMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch suggested questions
+  const { data: suggestedQuestionsData } = trpc.aiChat.getSuggestedQuestions.useQuery(
+    {
+      sessionType,
+      contextId,
+    },
+    {
+      enabled: messages.length === 0, // Only show when chat is empty
+    }
+  );
+
+  const suggestedQuestions = suggestedQuestionsData?.questions || [];
 
   const sendMessageMutation = trpc.aiChat.sendMessage.useMutation({
     onSuccess: (data) => {
@@ -102,6 +116,29 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
     }
   };
 
+  const handleSuggestedQuestionClick = (question: string) => {
+    setMessage(question);
+    // Optionally auto-send the question
+    setTimeout(() => {
+      sendMessageMutation.mutate({
+        sessionType,
+        contextId,
+        message: question,
+        sessionId,
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          role: 'user',
+          content: question,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      setMessage("");
+    }, 0);
+  };
+
   return (
     <Card className={`flex flex-col ${className}`}>
       {/* Header */}
@@ -127,14 +164,36 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <Bot className="h-12 w-12 mb-4 opacity-50" />
-            <p className="text-sm">
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <Bot className="h-12 w-12 mb-4 opacity-50 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
               Ask me anything about this {sessionType}.
             </p>
-            <p className="text-xs mt-2">
+            <p className="text-xs mt-2 text-muted-foreground">
               I can analyze conditions, costs, deficiencies, and trends.
             </p>
+
+            {/* Suggested Questions */}
+            {suggestedQuestions.length > 0 && (
+              <div className="mt-6 w-full max-w-2xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-medium text-foreground">Suggested Questions</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {suggestedQuestions.map((question, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-primary/10 hover:border-primary transition-colors p-3 h-auto justify-start text-left text-xs font-normal"
+                      onClick={() => handleSuggestedQuestionClick(question)}
+                    >
+                      {question}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
