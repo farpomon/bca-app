@@ -52,7 +52,7 @@ export async function processChatMessage(request: ChatRequest): Promise<ChatResp
   switch (sessionType) {
     case 'project':
       if (!contextId) throw new Error("Project ID required for project chat");
-      contextData = await getProjectContext(contextId, userId, userCompanyId);
+      contextData = await getProjectContext(contextId, userId, userCompanyId, isAdmin);
       if (!contextData) throw new Error("Project not found or access denied");
       systemPrompt = buildProjectSystemPrompt(contextData);
       break;

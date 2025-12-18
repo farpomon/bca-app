@@ -21,10 +21,13 @@ export const aiChatRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { sessionType, contextId, message, sessionId } = input;
 
+      // Type assertion: protectedProcedure ensures ctx.user is never null
+      const user = ctx.user!;
+
       const response = await processChatMessage({
-        userId: ctx.user.id,
-        userCompanyId: ctx.user.company ? Number(ctx.user.company) : null,
-        isAdmin: ctx.user.role === 'admin' || ctx.user.role === 'project_manager',
+        userId: user.id,
+        userCompanyId: user.company ? Number(user.company) : null,
+        isAdmin: user.role === 'admin' || user.role === 'project_manager',
         sessionType,
         contextId,
         message,
@@ -45,8 +48,9 @@ export const aiChatRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
+      const user = ctx.user!;
       const sessions = await getUserChatSessions(
-        ctx.user.id,
+        user.id,
         input.sessionType,
         input.contextId
       );
@@ -60,6 +64,7 @@ export const aiChatRouter = router({
   getSession: protectedProcedure
     .input(z.object({ sessionId: z.number() }))
     .query(async ({ input, ctx }) => {
+      const user = ctx.user!;
       const session = await getChatSessionById(input.sessionId);
 
       if (!session) {
@@ -67,7 +72,7 @@ export const aiChatRouter = router({
       }
 
       // Verify ownership
-      if (session.userId !== ctx.user.id) {
+      if (session.userId !== user.id) {
         throw new Error("Unauthorized access to chat session");
       }
 
@@ -85,6 +90,7 @@ export const aiChatRouter = router({
   deleteSession: protectedProcedure
     .input(z.object({ sessionId: z.number() }))
     .mutation(async ({ input, ctx }) => {
+      const user = ctx.user!;
       const session = await getChatSessionById(input.sessionId);
 
       if (!session) {
@@ -92,7 +98,7 @@ export const aiChatRouter = router({
       }
 
       // Verify ownership
-      if (session.userId !== ctx.user.id) {
+      if (session.userId !== user.id) {
         throw new Error("Unauthorized access to chat session");
       }
 
@@ -113,13 +119,15 @@ export const aiChatRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const { sessionType, contextId } = input;
+      const user = ctx.user!;
 
       // Get context data to determine what questions are relevant
       if (sessionType === 'project' && contextId) {
         const context = await getProjectContext(
           contextId,
-          ctx.user.id,
-          ctx.user.company ? Number(ctx.user.company) : null
+          user.id,
+          user.company ? Number(user.company) : null,
+          user.role === 'admin' || user.role === 'project_manager'
         );
 
         if (!context) {
@@ -133,8 +141,8 @@ export const aiChatRouter = router({
       if (sessionType === 'asset' && contextId) {
         const context = await getAssetContext(
           contextId,
-          ctx.user.id,
-          ctx.user.company ? Number(ctx.user.company) : null
+          user.id,
+          user.company ? Number(user.company) : null
         );
 
         if (!context) {
@@ -145,11 +153,11 @@ export const aiChatRouter = router({
         return { questions };
       }
 
-      if (sessionType === 'company' && ctx.user.company) {
-        const companyId = Number(ctx.user.company);
+      if (sessionType === 'company' && user.company) {
+        const companyId = Number(user.company);
         const context = await getCompanyContext(
           companyId,
-          ctx.user.id
+          user.id
         );
 
         if (!context) {

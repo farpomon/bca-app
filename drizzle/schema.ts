@@ -1547,7 +1547,7 @@ export type InsertEmailDeliveryLog = typeof emailDeliveryLog.$inferInsert;
 
 // AI Chat Sessions table - tracks conversation contexts
 export const chatSessions = mysqlTable("chat_sessions", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey().notNull(),
 	userId: int("userId").notNull(),
 	sessionType: mysqlEnum("sessionType", ['project', 'asset', 'company']).notNull(),
 	contextId: int("contextId"), // projectId or assetId (NULL for company-level)

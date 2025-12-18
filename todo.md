@@ -804,3 +804,17 @@
 - [x] Fix ctx.user.companyId on line 137 (asset context)
 - [x] Test suggested questions work for all three levels (project, asset, company)
 - [x] Verify error is resolved
+
+
+## AI Chat UX Improvements
+
+- [x] Add loading indicator when AI is generating response
+- [x] Add loading state for suggested questions
+- [x] Fix database insert error in createChatSession and addChatMessage (using correct Drizzle insertId pattern)
+- [x] Fix database NULL check in getProjectContext (changed from eq(deletedAt, sql`NULL`) to isNull(deletedAt))
+- [x] Test project-level AI chat with suggested questions (WORKING!)
+- [x] Test asset-level AI chat with suggested questions (WORKING!)
+- [ ] Test company-level AI chat with suggested questions
+- [ ] Optimize AI service response time if slow
+- [ ] Add timeout handling for AI responses
+- [ ] Add error message UI if AI service fails

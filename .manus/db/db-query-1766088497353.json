@@ -1,0 +1,18 @@
+{
+  "query": "SELECT p.id, p.name, p.company, u.id as user_id, u.email, u.role FROM projects p CROSS JOIN users u WHERE p.id = 2160002 AND u.email = 'luisrubiof@gmail.com' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT p.id, p.name, p.company, u.id as user_id, u.email, u.role FROM projects p CROSS JOIN users u WHERE p.id = 2160002 AND u.email = 'luisrubiof@gmail.com' LIMIT 1;",
+  "rows": [
+    {
+      "id": "2160002",
+      "name": "Timeline Test Project",
+      "company": "NULL",
+      "user_id": "1",
+      "email": "luisrubiof@gmail.com",
+      "role": "admin"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcompany\tuser_id\temail\trole\n2160002\tTimeline Test Project\tNULL\t1\tluisrubiof@gmail.com\tadmin\n",
+  "stderr": "",
+  "execution_time_ms": 165
+}

@@ -27,6 +27,7 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
   const [message, setMessage] = useState("");
   const [sessionId, setSessionId] = useState<number | undefined>();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [clickedQuestionIndex, setClickedQuestionIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch suggested questions
@@ -116,7 +117,8 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
     }
   };
 
-  const handleSuggestedQuestionClick = (question: string) => {
+  const handleSuggestedQuestionClick = (question: string, index: number) => {
+    setClickedQuestionIndex(index);
     setMessage(question);
     // Optionally auto-send the question
     setTimeout(() => {
@@ -136,6 +138,7 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
         },
       ]);
       setMessage("");
+      setClickedQuestionIndex(null);
     }, 0);
   };
 
@@ -185,10 +188,13 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
                     <Badge
                       key={index}
                       variant="outline"
-                      className="cursor-pointer hover:bg-primary/10 hover:border-primary transition-colors p-3 h-auto justify-start text-left text-xs font-normal"
-                      onClick={() => handleSuggestedQuestionClick(question)}
+                      className="cursor-pointer hover:bg-primary/10 hover:border-primary transition-colors p-3 h-auto justify-start text-left text-xs font-normal flex items-center gap-2"
+                      onClick={() => handleSuggestedQuestionClick(question, index)}
                     >
-                      {question}
+                      {clickedQuestionIndex === index && (
+                        <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />
+                      )}
+                      <span className="flex-1">{question}</span>
                     </Badge>
                   ))}
                 </div>

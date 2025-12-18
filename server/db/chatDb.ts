@@ -9,8 +9,8 @@ export async function createChatSession(data: InsertChatSession) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const [session] = await db.insert(chatSessions).values(data).$returningId();
-  return session.id;
+  const [result] = await db.insert(chatSessions).values(data);
+  return Number(result.insertId);
 }
 
 /**
@@ -77,12 +77,12 @@ export async function addChatMessage(data: InsertChatMessage) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const [message] = await db.insert(chatMessages).values(data).$returningId();
+  const [result] = await db.insert(chatMessages).values(data);
   
   // Update session's lastMessageAt
   await updateSessionLastMessage(data.sessionId);
   
-  return message.id;
+  return Number(result.insertId);
 }
 
 /**

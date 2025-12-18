@@ -1,0 +1,29 @@
+{
+  "query": "SHOW CREATE TABLE chat_sessions",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SHOW CREATE TABLE chat_sessions",
+  "rows": [
+    {
+      "Table": "chat_sessions",
+      "Create Table": "CREATE TABLE `chat_sessions` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `userId` int(11) NOT NULL,",
+    "  `sessionType` enum('project','asset','company') NOT NULL,",
+    "  `contextId` int(11) DEFAULT NULL,",
+    "  `companyId` int(11) DEFAULT NULL,",
+    "  `title` varchar(255) DEFAULT NULL,",
+    "  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
+    "  `lastMessageAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,",
+    "  KEY `idx_user_session` (`userId`,`sessionType`),",
+    "  KEY `idx_context` (`sessionType`,`contextId`),",
+    "  KEY `idx_company` (`companyId`)",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=90001"
+  ],
+  "stdout": "Table\tCreate Table\nchat_sessions\tCREATE TABLE `chat_sessions` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `userId` int(11) NOT NULL,\n  `sessionType` enum('project','asset','company') NOT NULL,\n  `contextId` int(11) DEFAULT NULL,\n  `companyId` int(11) DEFAULT NULL,\n  `title` varchar(255) DEFAULT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  `lastMessageAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,\n  KEY `idx_user_session` (`userId`,`sessionType`),\n  KEY `idx_context` (`sessionType`,`contextId`),\n  KEY `idx_company` (`companyId`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=90001\n",
+  "stderr": "",
+  "execution_time_ms": 128
+}

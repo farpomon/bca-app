@@ -1,6 +1,6 @@
 import { getDb } from "../db";
 import { projects, assets, assessments, deficiencies, photos, companies } from "../../drizzle/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, isNull } from "drizzle-orm";
 
 /**
  * Context retrieval service for AI chat
@@ -51,7 +51,7 @@ interface CompanyContext {
 /**
  * Get project-level context for AI chat
  */
-export async function getProjectContext(projectId: number, userId: number, userCompanyId: number | null): Promise<ProjectContext | null> {
+export async function getProjectContext(projectId: number, userId: number, userCompanyId: number | null, isAdmin: boolean = false): Promise<ProjectContext | null> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -62,7 +62,7 @@ export async function getProjectContext(projectId: number, userId: number, userC
     .where(
       and(
         eq(projects.id, projectId),
-        eq(projects.deletedAt, sql`NULL`)
+        isNull(projects.deletedAt)
       )
     )
     .limit(1);
@@ -70,7 +70,8 @@ export async function getProjectContext(projectId: number, userId: number, userC
   if (!project) return null;
 
   // Check company access (non-admins can only see their company's projects)
-  if (userCompanyId && project.company !== String(userCompanyId)) {
+  // Admins can access all projects, and allow access to projects without a company (legacy data)
+  if (!isAdmin && userCompanyId && project.company && project.company !== String(userCompanyId)) {
     return null;
   }
 
