@@ -34,11 +34,23 @@ import SignUp from "./pages/SignUp";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
+import UniformatClassification from "./pages/features/UniformatClassification";
+import VoiceRecording from "./pages/features/VoiceRecording";
+import AutomatedReports from "./pages/features/AutomatedReports";
+import ASTMCompliant from "./pages/features/ASTMCompliant";
+import OfflineMode from "./pages/features/OfflineMode";
+import AnalyticsInsights from "./pages/features/AnalyticsInsights";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/features/uniformat-classification"} component={UniformatClassification} />
+      <Route path={"/features/voice-recording"} component={VoiceRecording} />
+      <Route path={"/features/automated-reports"} component={AutomatedReports} />
+      <Route path={"/features/astm-compliant"} component={ASTMCompliant} />
+      <Route path={"/features/offline-mode"} component={OfflineMode} />
+      <Route path={"/features/analytics-insights"} component={AnalyticsInsights} />
       <Route path={"/signup"} component={SignUp} />
       <Route path={"/privacy"} component={Privacy} />
       <Route path={"/terms"} component={Terms} />

@@ -715,3 +715,13 @@
 
 - [x] Update Privacy Policy "Last updated" date from December 17, 2024 to December 17, 2025
 - [x] Update Terms of Service "Last updated" date from December 17, 2024 to December 17, 2025
+
+## Landing Page Feature Detail Pages
+- [x] Create UNIFORMAT II Classification feature page with detailed content
+- [x] Create Voice Recording feature page with detailed content
+- [x] Create Automated Reports feature page with detailed content
+- [x] Create ASTM E2018 Compliant feature page with detailed content
+- [x] Create Offline Mode feature page with detailed content
+- [x] Create Analytics & Insights feature page with detailed content
+- [x] Add routes for all feature pages in App.tsx
+- [x] Make landing page feature cards clickable with navigation to detail pages

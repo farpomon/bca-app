@@ -146,94 +146,106 @@ export default function Home() {
             {/* Feature Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {/* Feature 1 */}
-              <Card className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <Building2 className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl">UNIFORMAT II Classification</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base">
-                    Standardized building component classification system for consistent assessments
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <a href="/features/uniformat-classification" className="block">
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <Building2 className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg sm:text-xl">UNIFORMAT II Classification</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm sm:text-base">
+                      Standardized building component classification system for consistent assessments
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </a>
 
               {/* Feature 2 */}
-              <Card className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <ClipboardCheck className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl">Voice Recording</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base">
-                    Capture observations hands-free with voice-to-text transcription
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <a href="/features/voice-recording" className="block">
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <ClipboardCheck className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg sm:text-xl">Voice Recording</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm sm:text-base">
+                      Capture observations hands-free with voice-to-text transcription
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </a>
 
               {/* Feature 3 */}
-              <Card className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <FileText className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl">Automated Reports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base">
-                    Generate professional PDF reports automatically from your assessments
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <a href="/features/automated-reports" className="block">
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <FileText className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg sm:text-xl">Automated Reports</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm sm:text-base">
+                      Generate professional PDF reports automatically from your assessments
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </a>
 
               {/* Feature 4 */}
-              <Card className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <CheckCircle2 className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl">ASTM E2018 Compliant</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base">
-                    Follow industry-standard property condition assessment guidelines
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <a href="/features/astm-compliant" className="block">
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg sm:text-xl">ASTM E2018 Compliant</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm sm:text-base">
+                      Follow industry-standard property condition assessment guidelines
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </a>
 
               {/* Feature 5 */}
-              <Card className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <Clock className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl">Offline Mode</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base">
-                    Work without internet connection and sync when you're back online
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <a href="/features/offline-mode" className="block">
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <Clock className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg sm:text-xl">Offline Mode</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm sm:text-base">
+                      Work without internet connection and sync when you're back online
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </a>
 
               {/* Feature 6 */}
-              <Card className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <TrendingUp className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl">Analytics & Insights</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm sm:text-base">
-                    Track project progress and generate insights from your assessment data
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <a href="/features/analytics-insights" className="block">
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <TrendingUp className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg sm:text-xl">Analytics & Insights</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm sm:text-base">
+                      Track project progress and generate insights from your assessment data
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </a>
             </div>
           </div>
         </div>
