@@ -211,6 +211,12 @@
     min-width: 0;
   }
 
+  /* Text overflow handling for chat messages */
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   @media (min-width: 640px) {
     .container {
       padding-left: 24px;

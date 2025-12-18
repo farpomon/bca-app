@@ -216,16 +216,18 @@ export function AIInsightsChat({ sessionType, contextId, title, className }: AII
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[80%] rounded-lg p-3 break-words overflow-wrap-anywhere ${
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'
                   }`}
                 >
                   {msg.role === 'assistant' ? (
-                    <Streamdown className="text-sm">{msg.content}</Streamdown>
+                    <div className="text-sm break-words overflow-wrap-anywhere">
+                      <Streamdown>{msg.content}</Streamdown>
+                    </div>
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                   )}
                 </div>
                 {msg.role === 'user' && (

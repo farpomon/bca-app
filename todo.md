@@ -1,6 +1,12 @@
 # BCA App TODO
 
-## 🔥 CURRENT PRIORITY: Fix Asset Detail Navigation Button
+## ✅ COMPLETED: AI Chat Response Overflow Fix
+
+- [x] Fix AI response text extending beyond white chat container
+- [x] Add proper max-width and overflow constraints to message bubbles
+- [x] Ensure Streamdown markdown content respects container boundaries
+
+## ✅ COMPLETED: Fix Asset Detail Navigation Button
 
 - [x] Change "Back to Projects" to "Back to Assets" in AssetDetail page
 
