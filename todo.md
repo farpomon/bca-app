@@ -1,6 +1,14 @@
 # BCA App TODO
 
-## 🔥 CURRENT PRIORITY: AI Import Asset with UNIFORMAT II Assessment Extraction
+## 🔥 CURRENT PRIORITY: Asset Detail Tab Navigation UI Improvements
+
+- [x] Implement dropdown menu for overflow tabs (More menu)
+- [x] Add tooltips with descriptions for each tab
+- [x] Organize tabs into primary (always visible) and secondary (in dropdown)
+- [x] Test responsive behavior on mobile and desktop
+- [x] Ensure consistent styling with rest of application
+
+## AI Import Asset with UNIFORMAT II Assessment Extraction
 
 - [x] Update AI parser to extract UNIFORMAT II component assessments from asset documents
 - [x] Include condition ratings, observations, recommendations, costs for each component
