@@ -1,6 +1,10 @@
 # BCA App TODO
 
-## 🔥 CURRENT PRIORITY: Asset Detail Tab Navigation UI Improvements
+## 🔥 CURRENT PRIORITY: Fix Asset Detail Navigation Button
+
+- [x] Change "Back to Projects" to "Back to Assets" in AssetDetail page
+
+## Asset Detail Tab Navigation UI Improvements
 
 - [x] Implement dropdown menu for overflow tabs (More menu)
 - [x] Add tooltips with descriptions for each tab
