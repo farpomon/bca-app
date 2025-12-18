@@ -5,6 +5,7 @@ import { APP_TITLE, APP_LOGO, getLoginUrl } from "@/const";
 import { Building2, ClipboardCheck, FileText, TrendingUp, CheckCircle2, Shield, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import { DashboardPreview } from "@/components/DashboardPreview";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -52,6 +53,9 @@ export default function Home() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
                 <a href="#features">Features</a>
+              </Button>
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <a href="#analytics">Analytics</a>
               </Button>
               <Button variant="default" size="sm" asChild>
                 <a href="/signup">Request Access</a>
@@ -111,7 +115,7 @@ export default function Home() {
                 className="border-2 border-white text-white hover:bg-white/10 font-semibold text-base h-12 px-8" 
                 asChild
               >
-                <a href="#features">See How It Works</a>
+                <a href="#analytics">See Analytics in Action</a>
               </Button>
             </div>
           </div>
@@ -134,8 +138,66 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Analytics Dashboard Preview Section */}
+      <section id="analytics" className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-muted/30 to-muted/50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-12 sm:mb-16">
+              <div className="inline-block mb-4">
+                <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider bg-primary/10 text-primary px-4 py-2 rounded-full">
+                  Powerful Analytics
+                </span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                Real-Time Insights at Your Fingertips
+              </h2>
+              <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
+                Track facility conditions, monitor maintenance priorities, and make data-driven decisions with comprehensive analytics dashboards. Our platform provides instant visibility into your building portfolio's health and performance metrics.
+              </p>
+            </div>
+
+            {/* Dashboard Preview */}
+            <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12 border-2 border-primary/10">
+              <DashboardPreview />
+            </div>
+
+            {/* Analytics Features */}
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Live Metrics</h3>
+                <p className="text-sm text-muted-foreground">
+                  CI and FCI calculations update automatically as you complete assessments
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Portfolio View</h3>
+                <p className="text-sm text-muted-foreground">
+                  Monitor multiple buildings and compare performance across your entire portfolio
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Export Reports</h3>
+                <p className="text-sm text-muted-foreground">
+                  Generate professional PDF reports with charts and visualizations for stakeholders
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="py-16 sm:py-20 lg:py-24 bg-muted/50">
+      <section id="features" className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
             {/* Section Header */}
