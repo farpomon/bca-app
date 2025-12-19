@@ -794,7 +794,7 @@ export const adminRouter = router({
    */
   bulkExtendTrial: adminProcedure
     .input(z.object({
-      userIds: z.array(z.number()).min(1).max(100),
+      userIds: z.array(z.number()).min(1).max(1000),
       days: z.number().min(1).max(365),
     }))
     .mutation(async ({ input }) => {
@@ -834,12 +834,20 @@ export const adminRouter = router({
    */
   bulkSuspendUsers: adminProcedure
     .input(z.object({
-      userIds: z.array(z.number()).min(1).max(100),
+      userIds: z.array(z.number()).min(1).max(1000),
       reason: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const database = await getDb();
       if (!database) throw new Error("Database not available");
+
+      const { captureSnapshot } = await import("../services/undo.service");
+      const operationId = await captureSnapshot({
+        operationType: "suspend_users",
+        performedBy: ctx.user.id,
+        recordType: "user",
+        recordIds: input.userIds,
+      });
 
       let successCount = 0;
       const errors: { userId: number; error: string }[] = [];
@@ -853,7 +861,7 @@ export const adminRouter = router({
         }
       }
 
-      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+      return { success: true, successCount, totalRequested: input.userIds.length, errors, operationId };
     }),
 
   /**
@@ -861,11 +869,19 @@ export const adminRouter = router({
    */
   bulkActivateUsers: adminProcedure
     .input(z.object({
-      userIds: z.array(z.number()).min(1).max(100),
+      userIds: z.array(z.number()).min(1).max(1000),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const database = await getDb();
       if (!database) throw new Error("Database not available");
+
+      const { captureSnapshot } = await import("../services/undo.service");
+      const operationId = await captureSnapshot({
+        operationType: "activate_users",
+        performedBy: ctx.user.id,
+        recordType: "user",
+        recordIds: input.userIds,
+      });
 
       let successCount = 0;
       const errors: { userId: number; error: string }[] = [];
@@ -879,7 +895,7 @@ export const adminRouter = router({
         }
       }
 
-      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+      return { success: true, successCount, totalRequested: input.userIds.length, errors, operationId };
     }),
 
   /**
@@ -887,12 +903,20 @@ export const adminRouter = router({
    */
   bulkChangeRole: adminProcedure
     .input(z.object({
-      userIds: z.array(z.number()).min(1).max(100),
+      userIds: z.array(z.number()).min(1).max(1000),
       newRole: z.enum(["admin", "project_manager", "editor", "viewer"]),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const database = await getDb();
       if (!database) throw new Error("Database not available");
+
+      const { captureSnapshot } = await import("../services/undo.service");
+      const operationId = await captureSnapshot({
+        operationType: "change_role",
+        performedBy: ctx.user.id,
+        recordType: "user",
+        recordIds: input.userIds,
+      });
 
       let successCount = 0;
       const errors: { userId: number; error: string }[] = [];
@@ -906,7 +930,7 @@ export const adminRouter = router({
         }
       }
 
-      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+      return { success: true, successCount, totalRequested: input.userIds.length, errors, operationId };
     }),
 
   /**
@@ -914,11 +938,22 @@ export const adminRouter = router({
    */
   bulkDeleteUsers: adminProcedure
     .input(z.object({
-      userIds: z.array(z.number()).min(1).max(100),
+      userIds: z.array(z.number()).min(1).max(1000),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const database = await getDb();
       if (!database) throw new Error("Database not available");
+
+      // Import undo service at top of file if not already imported
+      const { captureSnapshot } = await import("../services/undo.service");
+
+      // Capture snapshot before deletion for undo capability
+      const operationId = await captureSnapshot({
+        operationType: "delete_users",
+        performedBy: ctx.user.id,
+        recordType: "user",
+        recordIds: input.userIds,
+      });
 
       let successCount = 0;
       const errors: { userId: number; error: string }[] = [];
@@ -932,6 +967,6 @@ export const adminRouter = router({
         }
       }
 
-      return { success: true, successCount, totalRequested: input.userIds.length, errors };
+      return { success: true, successCount, totalRequested: input.userIds.length, errors, operationId };
     }),
 });

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Loader2, Calendar, UserX, UserCheck, Shield, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { showUndoToast } from "@/components/UndoNotification";
 
 interface BulkUserActionsProps {
   selectedUserIds: number[];
@@ -60,6 +61,11 @@ export function BulkUserActions({ selectedUserIds, onClearSelection, onSuccess, 
   const bulkSuspendMutation = trpc.admin.bulkSuspendUsers.useMutation({
     onSuccess: (result) => {
       toast.success(`Suspended ${result.successCount} users`);
+      if (result.operationId) {
+        showUndoToast(result.operationId, "Suspend Users", result.successCount, () => {
+          onSuccess();
+        });
+      }
       setSuspendDialogOpen(false);
       onClearSelection();
       onSuccess();
@@ -70,6 +76,11 @@ export function BulkUserActions({ selectedUserIds, onClearSelection, onSuccess, 
   const bulkActivateMutation = trpc.admin.bulkActivateUsers.useMutation({
     onSuccess: (result) => {
       toast.success(`Activated ${result.successCount} users`);
+      if (result.operationId) {
+        showUndoToast(result.operationId, "Activate Users", result.successCount, () => {
+          onSuccess();
+        });
+      }
       onClearSelection();
       onSuccess();
     },
@@ -79,6 +90,11 @@ export function BulkUserActions({ selectedUserIds, onClearSelection, onSuccess, 
   const bulkChangeRoleMutation = trpc.admin.bulkChangeRole.useMutation({
     onSuccess: (result) => {
       toast.success(`Changed role for ${result.successCount} users`);
+      if (result.operationId) {
+        showUndoToast(result.operationId, "Change Role", result.successCount, () => {
+          onSuccess();
+        });
+      }
       setChangeRoleDialogOpen(false);
       onClearSelection();
       onSuccess();
@@ -89,6 +105,11 @@ export function BulkUserActions({ selectedUserIds, onClearSelection, onSuccess, 
   const bulkDeleteMutation = trpc.admin.bulkDeleteUsers.useMutation({
     onSuccess: (result) => {
       toast.success(`Deleted ${result.successCount} users`);
+      if (result.operationId) {
+        showUndoToast(result.operationId, "Delete Users", result.successCount, () => {
+          onSuccess();
+        });
+      }
       setDeleteDialogOpen(false);
       onClearSelection();
       onSuccess();

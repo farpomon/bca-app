@@ -798,8 +798,8 @@
 - [x] Add select all/deselect all functionality for all tabs
 - [x] Show selected count badge in bulk action toolbar
 - [x] Protect current user from self-destructive bulk actions
-- [ ] Test bulk actions with multiple selections across all tabs
-- [ ] Create checkpoint after implementation
+- [x] Test bulk actions with multiple selections across all tabs
+- [x] Create checkpoint after implementation
 
 
 ## 🔥 URGENT: Fix User Approval Error (Dec 18, 2024)
@@ -809,4 +809,46 @@
 - [x] Check accessRequests.approve mutation and upsertUser function
 - [x] Verify user table schema matches the insertion parameters
 - [x] Updated users table role enum to include viewer, editor, project_manager
-- [ ] Test user approval flow after fix
+- [x] Test user approval flow after fix
+
+
+## 🗑️ Reduce Project Count (Dec 19, 2024)
+
+- [x] Query database to get total project count
+- [x] Delete excess projects keeping only the 100 most recent
+- [x] Verify final project count is 100
+- [x] Test that application still works correctly
+
+## ⏮️ Undo Capability for Bulk Operations (Dec 19, 2024)
+
+Database Schema:
+- [x] Create bulk_operation_history table (operation type, affected records, timestamp, user)
+- [x] Create bulk_operation_snapshots table (store original data before changes)
+- [x] Add expiration mechanism (30-minute time window)
+
+Backend API:
+- [x] Create undo service to capture bulk operation snapshots
+- [x] Implement undo logic for each bulk operation type (delete, suspend, role change, etc.)
+- [x] Add tRPC endpoints: captureSnapshot, undoOperation, listUndoableOperations
+- [x] Add automatic cleanup of expired undo records
+
+Frontend UI:
+- [x] Add "Undo" notification toast after bulk operations
+- [x] Create UndoHistory component showing recent bulk operations
+- [x] Add countdown timer showing time remaining to undo
+- [x] Add confirmation dialog for undo action
+- [x] Integrate into Admin page
+
+Testing:
+- [x] Test undo for bulk user delete
+- [x] Test undo for bulk suspend/activate
+- [ ] Test undo for bulk role changes
+- [ ] Test expiration of undo capability after 30 minutes
+- [x] Verify data integrity after undo operations
+
+
+## 🐛 Bug Fix: Bulk Delete Limit (Dec 19, 2024)
+
+- [x] Remove 100-item limit on bulk delete operations
+- [x] Update validation schema to allow larger batches
+- [x] Test bulk delete with 458 users (limit increased to 1000)

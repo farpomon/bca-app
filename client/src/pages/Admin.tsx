@@ -34,6 +34,7 @@ import EmailDeliveryLogs from "@/components/EmailDeliveryLogs";
 import { BulkUserActions } from "@/components/BulkUserActions";
 import { BulkAccessRequestActions } from "@/components/BulkAccessRequestActions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { UndoHistory } from "@/components/UndoHistory";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -232,6 +233,7 @@ export default function Admin() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
+          <UndoHistory />
           {statsQuery.isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin" />

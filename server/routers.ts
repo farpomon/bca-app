@@ -34,6 +34,7 @@ import { offlineSyncRouter } from "./routers/offlineSync.router";
 import { privacyLockRouter } from "./routers/privacyLock.router";
 import { contactRouter } from "./routers/contact.router";
 import { timelineRouter } from "./routers/timeline.router";
+import { undoRouter } from "./routers/undoRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -52,6 +53,7 @@ export const appRouter = router({
   audio: audioRouter,
   admin: adminRouter,
   timeline: timelineRouter,
+  undo: undoRouter,
   vocabulary: vocabularyRouter,
   sharing: sharingRouter,
   audit: auditRouter,
