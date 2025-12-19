@@ -855,3 +855,27 @@ Testing:
 - [x] Remove 100-item limit on bulk delete operations
 - [x] Update validation schema to allow larger batches
 - [x] Test bulk delete with 458 users (limit increased to 1000)
+
+## Email MFA Bug Fix
+
+- [x] Debug email MFA verification code sending failure
+- [x] Create proper email service using SendGrid
+- [x] Replace notifyOwner() with sendVerificationEmail() in emailMfa.ts
+- [x] Fix email sending to send to user's email instead of project owner
+- [ ] Test email MFA setup flow end-to-end in browser
+
+## Email MFA Bug Fix
+
+- [x] Debug email MFA verification code sending failure
+- [x] Create proper email service using SendGrid
+- [x] Replace notifyOwner() with sendVerificationEmail() in emailMfa.ts
+- [x] Fix email sending to send to user's email instead of project owner
+- [x] Check server logs to see actual error when sending email
+- [x] Debug SendGrid API call to see why it's failing
+- [x] Fix Email MFA setup error - 'Failed to send verification code' despite backend working
+  - Fixed corrupted MFA data handling in getMfaSettings (returns null instead of throwing)
+  - Updated sms_verification_codes.code column from VARCHAR(10) to VARCHAR(64) for hashed codes
+  - Updated mfa_audit_log.action enum to include email actions (email_sent, email_verified, etc.)
+  - Fixed timestamp handling in createVerificationCode and logMfaAudit (use Date objects)
+  - Updated tests to clean up data and use valid encrypted secrets
+- [ ] Test email MFA setup flow end-to-end in browser

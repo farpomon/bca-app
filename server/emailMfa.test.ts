@@ -40,6 +40,13 @@ describe("Email MFA", () => {
       const ctx = createAuthContext();
       const caller = appRouter.createCaller(ctx);
 
+      // Clean up any existing data first
+      const db = await getDb();
+      if (db) {
+        await db.delete(smsVerificationCodes).where(eq(smsVerificationCodes.userId, ctx.user.id));
+        await db.delete(userMfaSettings).where(eq(userMfaSettings.userId, ctx.user.id));
+      }
+
       const result = await caller.emailMfa.setupEmail();
 
       expect(result.success).toBe(true);
@@ -47,7 +54,6 @@ describe("Email MFA", () => {
       expect(result.email).toBe("test@example.com");
 
       // Verify code was stored in database
-      const db = await getDb();
       if (!db) throw new Error("Database not available");
 
       const codes = await db
@@ -75,18 +81,26 @@ describe("Email MFA", () => {
       const ctx = createAuthContext();
       const caller = appRouter.createCaller(ctx);
 
-      // Enable MFA first
+      // Enable MFA first with valid encrypted data
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
+      // Clean up first
+      await db.delete(userMfaSettings).where(eq(userMfaSettings.userId, ctx.user.id));
+
+      // Import encryption functions
+      const { encryptSecret, getMfaEncryptionKey } = await import("./mfa");
+      const encryptionKey = getMfaEncryptionKey();
+      const encryptedSecret = encryptSecret("test-secret", encryptionKey);
+
       await db.insert(userMfaSettings).values({
         userId: ctx.user.id,
-        secret: "",
+        secret: encryptedSecret,
         enabled: 1,
         backupCodes: "[]",
         mfaMethod: "email",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       await expect(caller.emailMfa.setupEmail()).rejects.toThrow(

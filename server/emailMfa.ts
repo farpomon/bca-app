@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { eq, and, gt } from "drizzle-orm";
 import { getDb } from "./db";
 import { smsVerificationCodes } from "../drizzle/schema";
-import { notifyOwner } from "./_core/notification";
+import { sendVerificationEmail } from "./_core/email";
 
 /**
  * Email MFA Service
@@ -29,7 +29,7 @@ export function hashCode(code: string): string {
 }
 
 /**
- * Send verification code via email using Manus notification API
+ * Send verification code via email using SendGrid
  */
 export async function sendEmailCode(
   userEmail: string,
@@ -37,26 +37,7 @@ export async function sendEmailCode(
   purpose: "mfa_setup" | "mfa_login" | "email_verification"
 ): Promise<boolean> {
   try {
-    const purposeText = {
-      mfa_setup: "set up email-based MFA",
-      mfa_login: "verify your identity",
-      email_verification: "verify your email address",
-    };
-
-    const message = `Your BCA System verification code is: ${code}
-
-This code will expire in ${CODE_EXPIRY_MINUTES} minutes.
-
-Purpose: ${purposeText[purpose]}
-
-If you didn't request this code, please ignore this email.`;
-
-    // Use Manus notification API to send email
-    const success = await notifyOwner({
-      title: `BCA System - Verification Code for ${userEmail}`,
-      content: message,
-    });
-
+    const success = await sendVerificationEmail(userEmail, code, purpose);
     return success;
   } catch (error) {
     console.error("[Email MFA] Failed to send email code:", error);
@@ -94,8 +75,8 @@ export async function createVerificationCode(
       purpose,
       attempts: 0,
       verified: 0,
-      expiresAt: expiresAt.toISOString(),
-      createdAt: new Date().toISOString(),
+      expiresAt: expiresAt,
+      createdAt: new Date(),
     });
 
     // Send email

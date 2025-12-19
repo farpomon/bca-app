@@ -233,7 +233,7 @@ export async function logMfaAudit(params: {
     userAgent: params.userAgent,
     deviceFingerprint: params.deviceFingerprint,
     failureReason: params.failureReason,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(),
   });
 }
 

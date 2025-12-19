@@ -22,7 +22,7 @@ export const smsVerificationCodes = mysqlTable("sms_verification_codes", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
 	phoneNumber: varchar({ length: 320 }).notNull(),
-	code: varchar({ length: 10 }).notNull(),
+	code: varchar({ length: 64 }).notNull(), // Increased to 64 to support SHA-256 hashed codes
 	purpose: varchar({ length: 50 }).notNull(),
 	verified: int().default(0).notNull(),
 	attempts: int().default(0).notNull(),
@@ -818,13 +818,13 @@ export const maintenanceEntries = mysqlTable("maintenance_entries", {
 export const mfaAuditLog = mysqlTable("mfa_audit_log", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
-	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed']).notNull(),
+	action: mysqlEnum(['setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','email_sent','email_verified','sms_sent','sms_verified','mfa_reset_by_admin']).notNull(),
 	success: int().default(1).notNull(),
 	ipAddress: varchar({ length: 45 }),
 	userAgent: text(),
 	deviceFingerprint: varchar({ length: 255 }),
 	failureReason: varchar({ length: 255 }),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	createdAt: timestamp().default(sql`CURRENT_TIMESTAMP`).notNull(),
 },
 (table) => [
 	index("idx_user_action").on(table.userId, table.action),

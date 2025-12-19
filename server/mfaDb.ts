@@ -31,11 +31,19 @@ export async function getMfaSettings(userId: number) {
   const setting = settings[0];
   const encryptionKey = getMfaEncryptionKey();
 
-  return {
-    ...setting,
-    secret: setting.secret ? decryptSecret(setting.secret, encryptionKey) : "",
-    backupCodes: setting.backupCodes ? JSON.parse(setting.backupCodes) : [],
-  };
+  try {
+    return {
+      ...setting,
+      secret: setting.secret ? decryptSecret(setting.secret, encryptionKey) : "",
+      backupCodes: setting.backupCodes ? JSON.parse(setting.backupCodes) : [],
+    };
+  } catch (error) {
+    // If decryption fails (corrupted data), log error and return null
+    // This allows the user to set up MFA again
+    console.error("[MFA] Failed to decrypt MFA settings for user", userId, error);
+    console.error("[MFA] Corrupted MFA data detected. User will need to set up MFA again.");
+    return null;
+  }
 }
 
 /**
