@@ -30,6 +30,7 @@ import { mfaRouter } from "./mfaRouter";
 import { emailMfaRouter } from "./emailMfaRouter";
 import { mfaMethodSwitchRouter } from "./mfaMethodSwitchRouter";
 import { mfaRecoveryRouter } from "./mfaRecoveryRouter";
+import { mfaTimeRestrictionsRouter } from "./routers/mfaTimeRestrictionsRouter";
 import { offlineSyncRouter } from "./routers/offlineSync.router";
 import { privacyLockRouter } from "./routers/privacyLock.router";
 import { contactRouter } from "./routers/contact.router";
@@ -67,6 +68,7 @@ export const appRouter = router({
   mfa: mfaRouter,
   mfaMethodSwitch: mfaMethodSwitchRouter,
   mfaRecovery: mfaRecoveryRouter,
+  mfaTimeRestrictions: mfaTimeRestrictionsRouter,
   compliance: complianceRouter,
   dataSecurity: dataSecurityRouter,
   offlineSync: offlineSyncRouter,

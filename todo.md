@@ -879,3 +879,47 @@ Testing:
   - Fixed timestamp handling in createVerificationCode and logMfaAudit (use Date objects)
   - Updated tests to clean up data and use valid encrypted secrets
 - [ ] Test email MFA setup flow end-to-end in browser
+
+## Email MFA Random Code Generation
+
+- [x] Investigate why verification code shows "123456" instead of random numbers
+- [x] Fix code generation to use crypto.randomInt() or similar for proper randomization
+- [x] Test that each email sends a different random 6-digit code
+- [x] Verify codes are properly hashed before storage in database
+
+
+## MFA Time-Based Restrictions Feature
+
+### Database Schema
+- [x] Create mfa_time_restrictions table with fields: userId, restrictionType, startTime, endTime, daysOfWeek, timezone, isActive
+- [x] Add indexes for efficient querying by userId and isActive status
+- [x] Support multiple restriction rules per user (e.g., business hours + weekend restrictions)
+
+### Backend API
+- [x] Create MFA time restriction service (mfaTimeRestrictions.ts)
+- [x] Implement checkMfaTimeRestriction() function to evaluate if MFA is required at current time
+- [x] Create tRPC endpoints: setTimeRestriction, getTimeRestrictions, updateTimeRestriction, deleteTimeRestriction
+- [x] Add time zone support for global users
+- [x] Integrate time checks into MFA verification flow
+
+### Admin UI
+- [x] Create MFATimeRestrictionDialog component for configuring time rules
+- [x] Add time restriction controls to Admin → Users page
+- [x] Support restriction types: always, business_hours, after_hours, custom_schedule, never
+- [x] Add day-of-week selector (Monday-Sunday checkboxes)
+- [x] Add time range pickers (start time - end time)
+- [x] Add timezone selector dropdown
+- [ ] Display active time restrictions in user list (optional enhancement)
+
+### Authentication Integration
+- [x] Update MFA verification flow to check time restrictions
+- [x] Show appropriate messages when MFA is/isn't required based on time
+- [ ] Add bypass option for emergency access (admin override) (future enhancement)
+- [ ] Log all time-based MFA decisions in audit trail (future enhancement)
+
+### Testing
+- [x] Write unit tests for time restriction logic
+- [x] Test timezone conversions
+- [x] Test day-of-week filtering
+- [x] Test time range validation
+- [x] Test multiple overlapping restrictions

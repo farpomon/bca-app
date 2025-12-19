@@ -1446,6 +1446,25 @@ export const userMfaSettings = mysqlTable("user_mfa_settings", {
 	index("idx_user_id").on(table.userId),
 ]);
 
+export const mfaTimeRestrictions = mysqlTable("mfa_time_restrictions", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	restrictionType: mysqlEnum(['always','business_hours','after_hours','custom_schedule','never']).default('always').notNull(),
+	startTime: varchar({ length: 5 }), // e.g., '09:00'
+	endTime: varchar({ length: 5 }), // e.g., '17:00'
+	daysOfWeek: text(), // JSON array, e.g., '["monday","tuesday"]'
+	timezone: varchar({ length: 50 }).default('UTC'),
+	isActive: tinyint().default(1).notNull(),
+	description: text(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_user_active").on(table.userId, table.isActive),
+	index("idx_restriction_type").on(table.restrictionType),
+]);
+
 export const users = mysqlTable("users", {
 	id: int().autoincrement().notNull(),
 	openId: varchar({ length: 64 }).notNull(),

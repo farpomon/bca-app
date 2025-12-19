@@ -455,6 +455,10 @@ export const mfaRouter = router({
 
     const mfaEnabled = await isMfaEnabled(ctx.user.id);
 
+    // Check time-based MFA restrictions
+    const { checkMfaTimeRestriction } = await import("./services/mfaTimeRestrictions");
+    const timeBasedRequired = await checkMfaTimeRestriction(ctx.user.id);
+
     // Check if grace period is active
     const now = new Date();
     const gracePeriodEnd = user.mfaGracePeriodEnd ? new Date(user.mfaGracePeriodEnd) : null;
@@ -468,16 +472,20 @@ export const mfaRouter = router({
       daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     }
 
+    // MFA is required if either the user flag is set OR time-based restrictions apply
+    const isRequired = user.mfaRequired === 1 || timeBasedRequired;
+
     return {
-      required: user.mfaRequired === 1,
+      required: isRequired,
+      timeBasedRequired,
       enabled: mfaEnabled,
       enforcedAt: user.mfaEnforcedAt,
-      needsSetup: user.mfaRequired === 1 && !mfaEnabled,
+      needsSetup: isRequired && !mfaEnabled,
       inGracePeriod,
       gracePeriodEnd: user.mfaGracePeriodEnd,
       gracePeriodExpired,
       daysRemaining,
-      mustSetupNow: user.mfaRequired === 1 && !mfaEnabled && gracePeriodExpired,
+      mustSetupNow: isRequired && !mfaEnabled && gracePeriodExpired,
     };
   }),
 });

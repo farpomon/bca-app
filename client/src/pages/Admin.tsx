@@ -35,6 +35,7 @@ import { BulkUserActions } from "@/components/BulkUserActions";
 import { BulkAccessRequestActions } from "@/components/BulkAccessRequestActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UndoHistory } from "@/components/UndoHistory";
+import { MFATimeRestrictionDialog } from "@/components/MFATimeRestrictionDialog";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -48,6 +49,8 @@ export default function Admin() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedRequestIds, setSelectedRequestIds] = useState<number[]>([]);
+  const [timeRestrictionDialogOpen, setTimeRestrictionDialogOpen] = useState(false);
+  const [selectedUserForTimeRestriction, setSelectedUserForTimeRestriction] = useState<any>(null);
 
   // Queries
   const statsQuery = trpc.admin.getSystemStats.useQuery(undefined, {
@@ -544,15 +547,28 @@ export default function Admin() {
                             </div>
                             <div className="flex flex-col gap-1">
                               <label className="text-xs text-muted-foreground">MFA</label>
-                              <Button
-                                variant={u.mfaRequired ? "outline" : "default"}
-                                size="sm"
-                                onClick={() => handleRequireMfa(u.id, !u.mfaRequired)}
-                                disabled={requireMfaMutation.isPending}
-                                className="w-[140px]"
-                              >
-                                {u.mfaRequired ? "Remove Requirement" : "Require MFA"}
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant={u.mfaRequired ? "outline" : "default"}
+                                  size="sm"
+                                  onClick={() => handleRequireMfa(u.id, !u.mfaRequired)}
+                                  disabled={requireMfaMutation.isPending}
+                                  className="w-[140px]"
+                                >
+                                  {u.mfaRequired ? "Remove Requirement" : "Require MFA"}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedUserForTimeRestriction(u);
+                                    setTimeRestrictionDialogOpen(true);
+                                  }}
+                                  title="Set MFA time restrictions"
+                                >
+                                  <Shield className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                             {u.id !== user.id && (
                               <Button
@@ -801,6 +817,19 @@ export default function Admin() {
             accessRequestsQuery.refetch();
             pendingCountQuery.refetch();
           }}
+        />
+      )}
+
+      {/* MFA Time Restriction Dialog */}
+      {selectedUserForTimeRestriction && (
+        <MFATimeRestrictionDialog
+          open={timeRestrictionDialogOpen}
+          onClose={() => {
+            setTimeRestrictionDialogOpen(false);
+            setSelectedUserForTimeRestriction(null);
+          }}
+          userId={selectedUserForTimeRestriction.id}
+          userName={selectedUserForTimeRestriction.name || selectedUserForTimeRestriction.email}
         />
       )}
     </div>
