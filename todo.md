@@ -175,6 +175,9 @@
 
 ## MFA Enhancements (Completed)
 
+- [x] Add "Require MFA" button to Admin → Users page for individual user MFA enforcement
+
+
 ### Feature 1: Admin MFA Reset Capability
 - [x] Add admin.resetUserMfa endpoint with audit logging
 - [x] Enhanced resetUserMfa to accept optional reason parameter

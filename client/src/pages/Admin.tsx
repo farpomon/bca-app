@@ -105,6 +105,20 @@ export default function Admin() {
     },
   });
 
+  const requireMfaMutation = trpc.admin.requireMfaForUser.useMutation({
+    onSuccess: (data, variables) => {
+      if (variables.required) {
+        toast.success("MFA requirement set. User has 7 days to set up MFA.");
+      } else {
+        toast.success("MFA requirement removed.");
+      }
+      usersQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update MFA requirement: ${error.message}`);
+    },
+  });
+
   // Loading state
   if (loading || !user) {
     return (
@@ -177,6 +191,10 @@ export default function Admin() {
     if (confirm(`Are you sure you want to delete user "${userName || 'Unknown'}"? This action cannot be undone.`)) {
       deleteUserMutation.mutate({ userId });
     }
+  };
+
+  const handleRequireMfa = (userId: number, required: boolean) => {
+    requireMfaMutation.mutate({ userId, required });
   };
 
   return (
@@ -523,6 +541,18 @@ export default function Admin() {
                                   <SelectItem value="suspended">Suspended</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs text-muted-foreground">MFA</label>
+                              <Button
+                                variant={u.mfaRequired ? "outline" : "default"}
+                                size="sm"
+                                onClick={() => handleRequireMfa(u.id, !u.mfaRequired)}
+                                disabled={requireMfaMutation.isPending}
+                                className="w-[140px]"
+                              >
+                                {u.mfaRequired ? "Remove Requirement" : "Require MFA"}
+                              </Button>
                             </div>
                             {u.id !== user.id && (
                               <Button
