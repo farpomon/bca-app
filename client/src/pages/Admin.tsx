@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail, Sparkles } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,8 +32,8 @@ import { AdminMFARecovery } from "@/components/AdminMFARecovery";
 import { CompanyManagement } from "@/components/CompanyManagement";
 import EmailDeliveryLogs from "@/components/EmailDeliveryLogs";
 import { BulkUserActions } from "@/components/BulkUserActions";
+import { BulkAccessRequestActions } from "@/components/BulkAccessRequestActions";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AIInsightsChat } from "@/components/AIInsightsChat";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -46,6 +46,7 @@ export default function Admin() {
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+  const [selectedRequestIds, setSelectedRequestIds] = useState<number[]>([]);
 
   // Queries
   const statsQuery = trpc.admin.getSystemStats.useQuery(undefined, {
@@ -226,10 +227,6 @@ export default function Admin() {
           <TabsTrigger value="email-logs" className="gap-2">
             <Mail className="w-4 h-4" />
             Email Logs
-          </TabsTrigger>
-          <TabsTrigger value="company-insights" className="gap-2">
-            <Sparkles className="w-4 h-4" />
-            Company Insights
           </TabsTrigger>
         </TabsList>
 
@@ -621,10 +618,28 @@ export default function Admin() {
                   <Loader2 className="w-6 h-6 animate-spin" />
                 </div>
               ) : accessRequestsQuery.data && accessRequestsQuery.data.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
+                <>
+                  <BulkAccessRequestActions
+                    selectedRequestIds={selectedRequestIds}
+                    onClearSelection={() => setSelectedRequestIds([])}
+                    onSuccess={() => {
+                      accessRequestsQuery.refetch();
+                      pendingCountQuery.refetch();
+                    }}
+                  />
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={accessRequestsQuery.data.length > 0 && selectedRequestIds.length === accessRequestsQuery.data.length}
+                            onCheckedChange={(checked) => {
+                              if (checked) setSelectedRequestIds(accessRequestsQuery.data?.map(r => r.id) || []);
+                              else setSelectedRequestIds([]);
+                            }}
+                          />
+                        </TableHead>
+                        <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Company</TableHead>
                       <TableHead>City</TableHead>
@@ -635,7 +650,16 @@ export default function Admin() {
                   </TableHeader>
                   <TableBody>
                     {accessRequestsQuery.data.map((req) => (
-                      <TableRow key={req.id}>
+                      <TableRow key={req.id} className={selectedRequestIds.includes(req.id) ? "bg-muted/50" : ""}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedRequestIds.includes(req.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) setSelectedRequestIds([...selectedRequestIds, req.id]);
+                              else setSelectedRequestIds(selectedRequestIds.filter(id => id !== req.id));
+                            }}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{req.fullName}</TableCell>
                         <TableCell>{req.email}</TableCell>
                         <TableCell>{req.companyName}</TableCell>
@@ -690,7 +714,8 @@ export default function Admin() {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                  </Table>
+                </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   No access requests found
@@ -718,25 +743,6 @@ export default function Admin() {
         {/* Email Logs Tab */}
         <TabsContent value="email-logs" className="space-y-4">
           <EmailDeliveryLogs />
-        </TabsContent>
-
-        {/* Company Insights Tab */}
-        <TabsContent value="company-insights" className="space-y-4">
-          {user?.companyId ? (
-            <AIInsightsChat
-              sessionType="company"
-              title={`Company Portfolio Insights - ${user?.company || 'Your Company'}`}
-              className="h-[700px]"
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center">
-                  Company insights are only available for users with a company assignment.
-                </p>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
       </Tabs>
 

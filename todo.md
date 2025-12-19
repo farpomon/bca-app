@@ -1,24 +1,6 @@
 # BCA App TODO
 
-## ✅ COMPLETED: AI Chat Response Overflow Fix
-
-- [x] Fix AI response text extending beyond white chat container
-- [x] Add proper max-width and overflow constraints to message bubbles
-- [x] Ensure Streamdown markdown content respects container boundaries
-
-## ✅ COMPLETED: Fix Asset Detail Navigation Button
-
-- [x] Change "Back to Projects" to "Back to Assets" in AssetDetail page
-
-## Asset Detail Tab Navigation UI Improvements
-
-- [x] Implement dropdown menu for overflow tabs (More menu)
-- [x] Add tooltips with descriptions for each tab
-- [x] Organize tabs into primary (always visible) and secondary (in dropdown)
-- [x] Test responsive behavior on mobile and desktop
-- [x] Ensure consistent styling with rest of application
-
-## AI Import Asset with UNIFORMAT II Assessment Extraction
+## 🔥 CURRENT PRIORITY: AI Import Asset with UNIFORMAT II Assessment Extraction
 
 - [x] Update AI parser to extract UNIFORMAT II component assessments from asset documents
 - [x] Include condition ratings, observations, recommendations, costs for each component
@@ -778,61 +760,53 @@
 - [x] Verify camera permissions are working correctly
 
 ## Mobile JavaScript Error (Dec 18, 2024)
-- [x] Investigate "An unexpected error occurred" on mobile assessment page
-- [x] Analyze error stack trace from screenshot (DRJFVckH.js:917:253929)
-- [x] Identify root cause of the error - Two issues: Invalid color conversion + function scope error
-- [x] Implement fix for mobile compatibility - Added proper hex color mapping + moved formatEventDate outside component
-- [x] Test fix on desktop - Timeline tab loads successfully
-- [ ] User to test fix on mobile device (iPhone)
+- [ ] Investigate "An unexpected error occurred" on mobile assessment page
+- [ ] Analyze error stack trace from screenshot (DRJFVckH.js:917:253929)
+- [ ] Identify root cause of the error
+- [ ] Implement fix for mobile compatibility
+- [ ] Test fix on mobile device
 
-## AI Chat Feature (Dec 18, 2024)
-- [x] Design AI chat system architecture with three levels (project, asset, company)
-- [x] Implement data access control based on user role and company
-- [x] Create backend AI chat service with context retrieval
-- [x] Build chat message database schema (chat_sessions, chat_messages, chat_context_cache)
-- [x] Implement project-level chat with assessment/deficiency insights
-- [x] Implement asset-level chat with condition/maintenance analysis
-- [x] Implement company-level chat for portfolio insights (admin/manager only)
-- [x] Create reusable AIInsightsChat component
-- [x] Integrate chat into ProjectDetail page (AI Insights tab)
-- [x] Integrate chat into AssetDetail page (AI Insights tab)
-- [x] Add company-level chat to Admin dashboard (Company Insights tab)
-- [x] Test chat with different user roles and permissions
-- [x] Test data isolation (users can only chat about their company's data)
-- [x] Create checkpoint after testing
+## 🔥 URGENT: Hide Timeline Tab
 
-## AI Chat Enhancement - Context-Aware Suggested Questions
+- [x] Hide Timeline tab from Asset Detail page (causing runtime errors)
+- [x] Remove from secondary tabs list in TabsWithDropdown
+- [x] Test asset detail page loads without errors
 
-- [x] Design suggested questions logic based on available data
-- [x] Create backend service to analyze data availability and generate relevant questions
-- [x] Add tRPC endpoint for getting suggested questions
-- [x] Update AIInsightsChat component with suggested questions UI
-- [x] Test suggested questions with different data scenarios (empty, partial, full data)
-- [x] Create checkpoint after testing
+## MFA Testing - Force Logout and Test Authentication
+- [ ] Log out luisrubiofaria@gmail.com from the application
+- [ ] Enable MFA requirement for the user account
+- [ ] Test login flow with MFA enforcement
+- [ ] Verify email-based MFA code delivery
+- [ ] Verify authenticator app (TOTP) code requirement
+- [ ] Document test results
 
-## Bug Fix: AI Chat Suggested Questions Error
-
-- [x] Fix "Cannot read properties of undefined (reading 'id')" error when clicking suggested questions
-- [x] Investigate user context issue in AI chat (user.companyId vs user.company)
-- [ ] Test suggested questions click functionality
-
-## URGENT: Fix Remaining companyId References in getSuggestedQuestions
-
-- [x] Fix ctx.user.companyId on line 122 (project context)
-- [x] Fix ctx.user.companyId on line 137 (asset context)
-- [x] Test suggested questions work for all three levels (project, asset, company)
-- [x] Verify error is resolved
+## Database Cleanup
+- [x] Delete all users except luisrubiof@gmail.com (29,198 users to clean up)
+- [x] Verify only one user remains in database
 
 
-## AI Chat UX Improvements
+## Admin Page Bulk Actions (New Feature Request - Dec 18, 2024)
 
-- [x] Add loading indicator when AI is generating response
-- [x] Add loading state for suggested questions
-- [x] Fix database insert error in createChatSession and addChatMessage (using correct Drizzle insertId pattern)
-- [x] Fix database NULL check in getProjectContext (changed from eq(deletedAt, sql`NULL`) to isNull(deletedAt))
-- [x] Test project-level AI chat with suggested questions (WORKING!)
-- [x] Test asset-level AI chat with suggested questions (WORKING!)
-- [ ] Test company-level AI chat with suggested questions
-- [ ] Optimize AI service response time if slow
-- [ ] Add timeout handling for AI responses
-- [ ] Add error message UI if AI service fails
+- [x] Analyze current Admin page structure (Users tab, Companies tab, Access Requests tab)
+- [x] Add checkbox selection to user list in Admin page
+- [x] Add bulk user actions toolbar (extend trial, suspend, activate, change role, delete)
+- [x] Add checkbox selection to company list in Admin page  
+- [x] Add bulk company actions toolbar (suspend, activate, extend trials, delete)
+- [x] Add checkbox selection to access requests list
+- [x] Add bulk access request actions (approve, reject)
+- [x] Implement bulk operations with confirmation dialogs
+- [x] Add select all/deselect all functionality for all tabs
+- [x] Show selected count badge in bulk action toolbar
+- [x] Protect current user from self-destructive bulk actions
+- [ ] Test bulk actions with multiple selections across all tabs
+- [ ] Create checkpoint after implementation
+
+
+## 🔥 URGENT: Fix User Approval Error (Dec 18, 2024)
+
+- [x] Fix database insertion error when approving access requests
+- [x] Investigate "Failed query: insert into users" error with too many parameters
+- [x] Check accessRequests.approve mutation and upsertUser function
+- [x] Verify user table schema matches the insertion parameters
+- [x] Updated users table role enum to include viewer, editor, project_manager
+- [ ] Test user approval flow after fix

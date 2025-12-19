@@ -2,8 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
-import { TabsWithDropdown, TabItem } from "@/components/TabsWithDropdown";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { 
@@ -23,17 +22,15 @@ import {
   Box,
   Clock,
   FileBarChart,
-  CalendarDays,
-  Sparkles
+  CalendarDays
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
 import AssetPhotoGallery from "@/components/AssetPhotoGallery";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
-import { AIInsightsChat } from "@/components/AIInsightsChat";
 import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
-import AssetTimeline from "@/components/AssetTimeline";
+// import AssetTimeline from "@/components/AssetTimeline";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 
@@ -116,7 +113,7 @@ export default function AssetDetail() {
               onClick={() => setLocation(`/projects/${projectId}/assets`)}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Assets
+              Back to Projects
             </Button>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight">{asset.name}</h1>
@@ -132,103 +129,61 @@ export default function AssetDetail() {
         </div>
 
         {/* Tabs */}
-        <TabsWithDropdown 
-          defaultValue="dashboard" 
-          className="space-y-4"
-          tabs={[
-            {
-              value: "dashboard",
-              label: "Dashboard",
-              icon: <Building2 className="mr-2 h-4 w-4" />,
-              description: "Overview of asset statistics, assessments, and key metrics",
-              isPrimary: true
-            },
-            {
-              value: "assessments",
-              label: "Assessments",
-              icon: <ClipboardCheck className="mr-2 h-4 w-4" />,
-              description: "View and manage building component assessments",
-              isPrimary: true
-            },
-            {
-              value: "deficiencies",
-              label: "Deficiencies",
-              icon: <AlertTriangle className="mr-2 h-4 w-4" />,
-              description: "Track and prioritize maintenance issues and repairs",
-              isPrimary: true
-            },
-            {
-              value: "photos",
-              label: "Photos",
-              icon: <Camera className="mr-2 h-4 w-4" />,
-              description: "Browse and manage asset photos and visual documentation",
-              isPrimary: true
-            },
-            {
-              value: "documents",
-              label: "Documents",
-              icon: <FileText className="mr-2 h-4 w-4" />,
-              description: "Access reports, plans, and other asset documentation",
-              isPrimary: true
-            },
-            {
-              value: "ai-insights",
-              label: "AI Insights",
-              icon: <Sparkles className="mr-2 h-4 w-4" />,
-              description: "Get AI-powered analysis and recommendations for your asset",
-              isPrimary: true
-            },
-            {
-              value: "maintenance",
-              label: "Maintenance",
-              icon: <Wrench className="mr-2 h-4 w-4" />,
-              description: "Schedule and track preventive and corrective maintenance",
-              isPrimary: false
-            },
-            {
-              value: "financial",
-              label: "Financial",
-              icon: <DollarSign className="mr-2 h-4 w-4" />,
-              description: "View cost estimates, budgets, and financial projections",
-              isPrimary: false
-            },
-            {
-              value: "timeline",
-              label: "Timeline",
-              icon: <CalendarDays className="mr-2 h-4 w-4" />,
-              description: "Track asset history, events, and scheduled activities",
-              isPrimary: false
-            },
-            {
-              value: "optimization",
-              label: "Optimization",
-              icon: <Target className="mr-2 h-4 w-4" />,
-              description: "Analyze opportunities to improve asset performance and efficiency",
-              isPrimary: false
-            },
-            {
-              value: "reports",
-              label: "Reports",
-              icon: <FileBarChart className="mr-2 h-4 w-4" />,
-              description: "Generate and export comprehensive asset condition reports",
-              isPrimary: false
-            },
-            {
-              value: "compliance",
-              label: "Compliance",
-              icon: <Shield className="mr-2 h-4 w-4" />,
-              description: "Monitor regulatory compliance and safety requirements",
-              isPrimary: false
-            },
-            {
-              value: "3d-model",
-              label: "3D Model",
-              icon: <Box className="mr-2 h-4 w-4" />,
-              description: "View and interact with 3D building models and BIM data",
-              isPrimary: false
-            }
-          ] as TabItem[]}
-        >
+        <Tabs defaultValue="dashboard" className="space-y-4">
+          <TabsList className="w-full max-w-full overflow-x-auto scrollbar-hide">
+            <TabsTrigger value="dashboard" className="flex-none px-3">
+              <Building2 className="mr-2 h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="assessments" className="flex-none px-3">
+              <ClipboardCheck className="mr-2 h-4 w-4" />
+              Assessments
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="flex-none px-3">
+              <Camera className="mr-2 h-4 w-4" />
+              Photos
+            </TabsTrigger>
+            <TabsTrigger value="maintenance" className="flex-none px-3">
+              <Wrench className="mr-2 h-4 w-4" />
+              Maintenance
+            </TabsTrigger>
+            <TabsTrigger value="deficiencies" className="flex-none px-3">
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Deficiencies
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex-none px-3">
+              <FileText className="mr-2 h-4 w-4" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="financial" className="flex-none px-3">
+              <DollarSign className="mr-2 h-4 w-4" />
+              Financial
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="flex-none px-3">
+              <Shield className="mr-2 h-4 w-4" />
+              Compliance
+            </TabsTrigger>
+            <TabsTrigger value="3d-model" className="flex-none px-3">
+              <Box className="mr-2 h-4 w-4" />
+              3D Model
+            </TabsTrigger>
+            {/* <TabsTrigger value="timeline" className="flex-none px-3">
+              <Clock className="mr-2 h-4 w-4" />
+              Timeline
+            </TabsTrigger> */}
+            <TabsTrigger value="reports" className="flex-none px-3">
+              <FileBarChart className="mr-2 h-4 w-4" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="optimization" className="flex-none px-3">
+              <Target className="mr-2 h-4 w-4" />
+              Optimization
+            </TabsTrigger>
+            {/* <TabsTrigger value="timeline" className="flex-none px-3">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Timeline
+            </TabsTrigger> */}
+          </TabsList>
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-4">
@@ -597,8 +552,8 @@ export default function AssetDetail() {
             </Card>
           </TabsContent>
 
-          {/* Timeline Tab */}
-          <TabsContent value="timeline" className="space-y-4">
+          {/* Timeline Tab - Hidden due to errors */}
+          {/* <TabsContent value="timeline" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Asset Timeline</CardTitle>
@@ -612,7 +567,7 @@ export default function AssetDetail() {
                 </p>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
           {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-4">
@@ -650,8 +605,8 @@ export default function AssetDetail() {
             />
           </TabsContent>
 
-          {/* Timeline Tab */}
-          <TabsContent value="timeline" className="space-y-4">
+          {/* Timeline Tab - Hidden due to errors */}
+          {/* <TabsContent value="timeline" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Asset Timeline</CardTitle>
@@ -663,18 +618,8 @@ export default function AssetDetail() {
                 <AssetTimeline assetId={assetIdNum} projectId={projectId} />
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* AI Insights Tab */}
-          <TabsContent value="ai-insights" className="space-y-4">
-            <AIInsightsChat
-              sessionType="asset"
-              contextId={assetIdNum}
-              title={`AI Insights - ${asset?.name || 'Asset'}`}
-              className="h-[600px]"
-            />
-          </TabsContent>
-        </TabsWithDropdown>
+          </TabsContent> */}
+        </Tabs>
       </div>
     </DashboardLayout>
   );

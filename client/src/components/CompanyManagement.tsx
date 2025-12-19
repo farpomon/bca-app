@@ -32,6 +32,8 @@ import {
 import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings, Lock, LockOpen } from "lucide-react";
 import { toast } from "sonner";
 import { CompanySettingsDialog } from "@/components/CompanySettingsDialog";
+import { BulkCompanyActions } from "@/components/BulkCompanyActions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CompanyUser {
   id: number;
@@ -55,6 +57,7 @@ export function CompanyManagement() {
   const [trialDays, setTrialDays] = useState(30);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [settingsCompany, setSettingsCompany] = useState<{ id: number; name: string } | null>(null);
+  const [selectedCompanyIds, setSelectedCompanyIds] = useState<number[]>([]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -348,6 +351,13 @@ export function CompanyManagement() {
             </Select>
           </div>
 
+          {/* Bulk Actions */}
+          <BulkCompanyActions
+            selectedCompanyIds={selectedCompanyIds}
+            onClearSelection={() => setSelectedCompanyIds([])}
+            onSuccess={() => companiesQuery.refetch()}
+          />
+
           {/* Table */}
           {companiesQuery.isLoading ? (
             <div className="flex justify-center py-8">
@@ -361,6 +371,15 @@ export function CompanyManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={filteredCompanies.length > 0 && selectedCompanyIds.length === filteredCompanies.length}
+                      onCheckedChange={(checked) => {
+                        if (checked) setSelectedCompanyIds(filteredCompanies.map(c => c.id));
+                        else setSelectedCompanyIds([]);
+                      }}
+                    />
+                  </TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>City</TableHead>
                   <TableHead>Status</TableHead>
@@ -371,7 +390,16 @@ export function CompanyManagement() {
               </TableHeader>
               <TableBody>
                 {filteredCompanies.map((company) => (
-                  <TableRow key={company.id}>
+                  <TableRow key={company.id} className={selectedCompanyIds.includes(company.id) ? "bg-muted/50" : ""}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedCompanyIds.includes(company.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) setSelectedCompanyIds([...selectedCompanyIds, company.id]);
+                          else setSelectedCompanyIds(selectedCompanyIds.filter(id => id !== company.id));
+                        }}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         {company.name}
