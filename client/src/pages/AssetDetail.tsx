@@ -33,6 +33,7 @@ import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
 // import AssetTimeline from "@/components/AssetTimeline";
 import { AssetLocation } from "@/components/AssetLocation";
+import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 
@@ -43,6 +44,7 @@ export default function AssetDetail() {
   const assetIdNum = parseInt(assetId!);
 
   const { user, loading: authLoading } = useAuth();
+  const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -104,7 +106,14 @@ export default function AssetDetail() {
   const totalEstimatedCost = deficiencies?.reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
 
   return (
-    <DashboardLayout>
+    <>
+      <AssessmentDialog
+        open={showAssessmentDialog}
+        onOpenChange={setShowAssessmentDialog}
+        projectId={projectId}
+        assetId={assetIdNum}
+      />
+      <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
@@ -335,23 +344,38 @@ export default function AssetDetail() {
               </CardHeader>
               <CardContent>
                 {assessments && assessments.length > 0 ? (
-                  <div className="space-y-2">
-                    {assessments.map((assessment) => (
-                      <div key={assessment.id} className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{assessment.componentCode}</p>
-                            <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <Button onClick={() => setShowAssessmentDialog(true)}>
+                        <ClipboardCheck className="mr-2 h-4 w-4" />
+                        Start Assessment
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {assessments.map((assessment) => (
+                        <div key={assessment.id} className="p-4 border rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">{assessment.componentCode}</p>
+                              <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
+                            </div>
+                            <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
+                              {assessment.condition}
+                            </Badge>
                           </div>
-                          <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
-                            {assessment.condition}
-                          </Badge>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No assessments found for this asset</p>
+                  <div className="text-center py-8">
+                    <ClipboardCheck className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-sm text-muted-foreground mb-4">No assessments found for this asset</p>
+                    <Button onClick={() => setShowAssessmentDialog(true)}>
+                      <ClipboardCheck className="mr-2 h-4 w-4" />
+                      Start Assessment
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -639,8 +663,9 @@ export default function AssetDetail() {
               </CardContent>
             </Card>
           </TabsContent> */}
-        </Tabs>
-      </div>
-    </DashboardLayout>
+          </Tabs>
+        </div>
+      </DashboardLayout>
+    </>
   );
 }

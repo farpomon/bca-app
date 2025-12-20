@@ -28,6 +28,7 @@ import { complianceRouter } from "./routers/compliance.router";
 import { dataSecurityRouter } from "./routers/dataSecurity.router";
 import { mfaRouter } from "./mfaRouter";
 import { emailMfaRouter } from "./emailMfaRouter";
+import { logStatusChange, getProjectStatusHistory } from "./projectStatusHistoryDb";
 import { mfaMethodSwitchRouter } from "./mfaMethodSwitchRouter";
 import { mfaRecoveryRouter } from "./mfaRecoveryRouter";
 import { mfaTimeRestrictionsRouter } from "./routers/mfaTimeRestrictionsRouter";
@@ -162,6 +163,20 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         const isAdmin = ctx.user.role === 'admin';
+        
+        // If status is being changed, log it to history
+        if (data.status) {
+          const currentProject = await db.getProjectById(id, ctx.user.id, ctx.user.company, isAdmin);
+          if (currentProject && currentProject.status !== data.status) {
+            await logStatusChange({
+              projectId: id,
+              userId: ctx.user.id,
+              previousStatus: currentProject.status as any,
+              newStatus: data.status as any,
+            });
+          }
+        }
+        
         const updateData = {
           ...data,
           assessmentDate: data.assessmentDate?.toISOString(),
@@ -509,6 +524,73 @@ export const appRouter = router({
         const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
         if (!project) throw new Error("Project not found");
         return await db.calculateOverallBuildingCondition(input.projectId);
+      }),
+
+    // Get status change history for a project
+    statusHistory: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+        }
+        const history = await getProjectStatusHistory(input.projectId);
+        
+        // Fetch user names for each status change
+        const historyWithUsers = await Promise.all(
+          history.map(async (entry) => {
+            const user = await db.getUserById(entry.userId);
+            return {
+              ...entry,
+              userName: user?.name || 'Unknown User',
+              userEmail: user?.email,
+            };
+          })
+        );
+        
+        return historyWithUsers;
+      }),
+
+    // Bulk update project status
+    bulkUpdateStatus: protectedProcedure
+      .input(z.object({
+        projectIds: z.array(z.number()),
+        status: z.enum(["draft", "in_progress", "completed", "archived"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const updatedCount = { success: 0, failed: 0 };
+        
+        for (const projectId of input.projectIds) {
+          try {
+            // Verify project access
+            const project = await db.getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+            if (!project) {
+              updatedCount.failed++;
+              continue;
+            }
+            
+            // Log status change if status is different
+            if (project.status !== input.status) {
+              await logStatusChange({
+                projectId,
+                userId: ctx.user.id,
+                previousStatus: project.status as any,
+                newStatus: input.status as any,
+              });
+            }
+            
+            // Update project status
+            await db.updateProject(projectId, ctx.user.id, { status: input.status }, ctx.user.company, isAdmin);
+            updatedCount.success++;
+          } catch (error) {
+            console.error(`Failed to update project ${projectId}:`, error);
+            updatedCount.failed++;
+          }
+        }
+        
+        return updatedCount;
       }),
   }),
 

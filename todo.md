@@ -976,3 +976,39 @@ Testing:
 - [x] Updated handleEditProject to initialize status from project data
 - [x] Updated handleSaveProject to save status changes
 - [x] Tested status change functionality
+
+## Bulk Status Updates and Status Change History
+
+### Backend - Status Change History
+- [x] Create project_status_history database table
+- [x] Add database helper functions for status history
+- [x] Create tRPC endpoint to log status changes
+- [x] Create tRPC endpoint to retrieve status history
+- [x] Update projects.update to automatically log status changes
+- [x] Write tests for status history tracking
+
+### Backend - Bulk Status Updates
+- [x] Create tRPC endpoint for bulk status update
+- [x] Add authorization checks (users can only update their own projects)
+- [x] Log status changes for each project in bulk operation
+- [x] Write tests for bulk status updates
+
+### Frontend - Status Change History
+- [x] Create StatusHistoryTimeline component
+- [x] Add Status History tab/section to project detail page
+- [x] Display timeline with status changes, timestamps, and users
+- [x] Add visual indicators for status transitions
+
+### Frontend - Bulk Status Updates
+- [x] Add status change option to bulk actions toolbar
+- [x] Create status selection dialog for bulk operations
+- [x] Add confirmation dialog showing affected projects
+- [x] Show success/error notifications
+- [x] Refresh project list after bulk update
+
+## Add Assessment Creation Button to Assessments Tab
+
+- [x] Add "Start Assessment" or "Add Assessment" button to Assessments tab
+- [x] Wire button to open AssessmentDialog for creating new assessments
+- [x] Ensure button is visible when no assessments exist
+- [x] Test assessment creation flow from Assessments tab

@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { BuildingCodeDisplay } from "@/components/BuildingCodeDisplay";
 import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
+import StatusHistoryTimeline from "@/components/StatusHistoryTimeline";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { ProjectDocumentList } from "@/components/ProjectDocumentList";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin } from "lucide-react";
@@ -398,6 +399,7 @@ export default function ProjectDetail() {
               <MapPin className="h-4 w-4" />
               Map
             </TabsTrigger>
+            <TabsTrigger value="status-history">Status History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="space-y-4">
@@ -962,6 +964,10 @@ export default function ProjectDetail() {
                 <ProjectAssetsMap projectId={projectId} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="status-history" className="space-y-4">
+            <StatusHistoryTimeline projectId={projectId} />
           </TabsContent>
         </Tabs>
       </div>

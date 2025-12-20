@@ -96,6 +96,8 @@ export default function Projects() {
   // Bulk selection state
   const [selectedProjects, setSelectedProjects] = useState<Set<number>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkStatusDialogOpen, setBulkStatusDialogOpen] = useState(false);
+  const [bulkStatusValue, setBulkStatusValue] = useState<"draft" | "in_progress" | "completed" | "archived">("draft");
   const [showArchived, setShowArchived] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -373,6 +375,21 @@ export default function Projects() {
     onSuccess: (data) => {
       toast.success(`${data.count} project(s) deleted successfully`);
       setBulkDeleteDialogOpen(false);
+      setSelectedProjects(new Set());
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete projects");
+    },
+  });
+
+  const bulkUpdateStatus = trpc.projects.bulkUpdateStatus.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.success} project(s) status updated successfully`);
+      if (data.failed > 0) {
+        toast.warning(`${data.failed} project(s) failed to update`);
+      }
+      setBulkStatusDialogOpen(false);
       setSelectedProjects(new Set());
       refetch();
     },
@@ -876,14 +893,26 @@ export default function Projects() {
                 )}
                 Export Selected
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setBulkDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Selected
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBulkStatusDialogOpen(true)}
+                >
+                  <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Change Status
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setBulkDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Selected
+                </Button>
+              </div>
             </div>
           )}
 
@@ -1475,6 +1504,59 @@ export default function Projects() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Status Change Dialog */}
+      <Dialog open={bulkStatusDialogOpen} onOpenChange={setBulkStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Status for {selectedProjects.size} Projects</DialogTitle>
+            <DialogDescription>
+              Select the new status for the selected {selectedProjects.size} project(s).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">New Status</label>
+              <Select value={bulkStatusValue} onValueChange={(value: any) => setBulkStatusValue(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="bg-muted p-3 rounded-md">
+              <p className="text-sm text-muted-foreground">
+                Selected projects: {Array.from(selectedProjects).map(id => {
+                  const project = projects?.find(p => p.id === id);
+                  return project?.name;
+                }).filter(Boolean).join(", ")}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkStatusDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                bulkUpdateStatus.mutate({
+                  projectIds: Array.from(selectedProjects),
+                  status: bulkStatusValue,
+                });
+              }}
+              disabled={bulkUpdateStatus.isPending}
+            >
+              {bulkUpdateStatus.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Status
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Import Project Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>

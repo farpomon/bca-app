@@ -1601,3 +1601,24 @@ export type BulkOperationHistory = typeof bulkOperationHistory.$inferSelect;
 export type InsertBulkOperationHistory = typeof bulkOperationHistory.$inferInsert;
 export type BulkOperationSnapshot = typeof bulkOperationSnapshots.$inferSelect;
 export type InsertBulkOperationSnapshot = typeof bulkOperationSnapshots.$inferInsert;
+
+/**
+ * Project status change history table
+ * Tracks all status changes for projects with timestamps and user information
+ */
+export const projectStatusHistory = mysqlTable("project_status_history", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	userId: int().notNull(),
+	previousStatus: mysqlEnum(['planning', 'active', 'on_hold', 'completed', 'cancelled']),
+	newStatus: mysqlEnum(['planning', 'active', 'on_hold', 'completed', 'cancelled']).notNull(),
+	changedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	notes: text(),
+},
+(table) => [
+	index("idx_project_status_history").on(table.projectId, table.changedAt),
+	index("idx_user_status_history").on(table.userId),
+]);
+
+export type ProjectStatusHistory = typeof projectStatusHistory.$inferSelect;
+export type InsertProjectStatusHistory = typeof projectStatusHistory.$inferInsert;
