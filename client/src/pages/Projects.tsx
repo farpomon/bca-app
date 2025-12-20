@@ -617,16 +617,65 @@ export default function Projects() {
                       value={formData.address}
                       onChange={(address) => setFormData(prev => ({ ...prev, address }))}
                       onPlaceSelected={(components) => {
+                        console.log('[Projects] onPlaceSelected called with:', components);
+                        // Combine street number and street address
+                        const fullStreetAddress = components.streetNumber 
+                          ? `${components.streetNumber} ${components.streetAddress}`.trim()
+                          : components.streetAddress;
+                        
                         setFormData(prev => ({
                           ...prev,
-                          streetAddress: components.streetAddress,
+                          streetAddress: fullStreetAddress,
                           city: components.city,
                           province: components.province,
                           postalCode: components.postalCode,
                         }));
+                        console.log('[Projects] Form data updated');
                       }}
                       placeholder="Enter property address"
                     />
+                    
+                    {/* Address Component Fields - Auto-populated from autocomplete */}
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="streetAddress">Street Address</Label>
+                        <Input
+                          id="streetAddress"
+                          value={formData.streetAddress}
+                          onChange={(e) => setFormData(prev => ({ ...prev, streetAddress: e.target.value }))}
+                          placeholder="Auto-filled from address above"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={formData.city}
+                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                          placeholder="Auto-filled from address above"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="province">Province</Label>
+                        <Input
+                          id="province"
+                          value={formData.province}
+                          onChange={(e) => setFormData(prev => ({ ...prev, province: e.target.value }))}
+                          placeholder="Auto-filled from address above"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="postalCode">Postal Code</Label>
+                        <Input
+                          id="postalCode"
+                          value={formData.postalCode}
+                          onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
+                          placeholder="Auto-filled from address above"
+                        />
+                      </div>
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="clientName">

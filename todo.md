@@ -95,6 +95,8 @@
 
 ## Current Bug Fixes
 
+- [x] Fix address autocomplete - clicking suggestions doesn't populate fields
+
 - [x] Fix bulk delete projects error - "Unable to transform response from server"
 
 - [x] Fix "project not found" error when clicking on projects from Projects page - Fixed rate limiting issue (increased from 100 to 1000 requests per 15 min)

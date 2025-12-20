@@ -153,7 +153,16 @@ export function AddressAutocomplete({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full"
-        autoComplete="off"
+        autoComplete="new-password"
+        onKeyDown={(e) => {
+          // Prevent form submission on Enter when selecting from dropdown
+          if (e.key === 'Enter' && autocompleteRef.current) {
+            const predictions = document.querySelector('.pac-container');
+            if (predictions && predictions.children.length > 0) {
+              e.preventDefault();
+            }
+          }
+        }}
       />
       {!isLoaded && (
         <p className="text-xs text-muted-foreground">Loading address autocomplete...</p>
