@@ -49,6 +49,7 @@ export default function ProjectDetail() {
   const [projectForm, setProjectForm] = useState({
     name: "",
     address: "",
+    status: "draft" as 'draft' | 'in_progress' | 'completed' | 'archived',
     clientName: "",
     propertyType: "",
     constructionType: "",
@@ -199,6 +200,7 @@ export default function ProjectDetail() {
       setProjectForm({
         name: project.name,
         address: project.address || "",
+        status: project.status as 'draft' | 'in_progress' | 'completed' | 'archived',
         clientName: project.clientName || "",
         propertyType: project.propertyType || "",
         constructionType: project.constructionType || "",
@@ -217,6 +219,7 @@ export default function ProjectDetail() {
       id: projectId,
       name: projectForm.name,
       address: projectForm.address || undefined,
+      status: projectForm.status,
       clientName: projectForm.clientName || undefined,
       propertyType: projectForm.propertyType || undefined,
       constructionType: projectForm.constructionType || undefined,
@@ -990,6 +993,23 @@ export default function ProjectDetail() {
                   value={projectForm.address}
                   onChange={(e) => setProjectForm({ ...projectForm, address: e.target.value })}
                 />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="status">Project Status</Label>
+                <Select
+                  value={projectForm.status}
+                  onValueChange={(value) => setProjectForm({ ...projectForm, status: value as 'draft' | 'in_progress' | 'completed' | 'archived' })}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="clientName">Client Name</Label>
