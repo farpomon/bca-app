@@ -951,3 +951,10 @@ Testing:
 - [x] Update AssetLocation component to fetch project data
 - [x] Display map using project address if asset address is missing
 - [x] Test with assets that have and don't have addresses
+
+## Address Autocomplete Feature (Completed)
+- [x] Create AddressAutocomplete component using Google Places API
+- [x] Integrate autocomplete into AssetDialog for address fields
+- [x] Auto-fill street address, city, province, postal code from selected place
+- [x] Add validation to ensure selected addresses are geocodable
+- [x] Test autocomplete functionality with various address types

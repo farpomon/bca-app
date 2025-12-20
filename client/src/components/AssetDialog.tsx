@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { FieldTooltip } from "@/components/FieldTooltip";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import type { Asset } from "../../../drizzle/schema";
@@ -188,6 +189,23 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
 
           <div className="space-y-2">
             <Label>Address</Label>
+            
+            {/* Address Autocomplete */}
+            <AddressAutocomplete
+              value={address}
+              onChange={setAddress}
+              onPlaceSelected={(components) => {
+                // Auto-fill all address fields from selected place
+                setStreetNumber(components.streetNumber);
+                setStreetAddress(components.streetAddress);
+                setCity(components.city);
+                setProvince(components.province);
+                setPostalCode(components.postalCode);
+              }}
+              label="Search Address"
+              placeholder="Start typing to search for an address..."
+            />
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="streetNumber">Street Number</Label>
