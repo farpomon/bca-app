@@ -41,14 +41,20 @@ export function AssetLocation({
     { enabled: !!projectId }
   );
 
+  // Get project details for address fallback
+  const { data: project } = trpc.projects.get.useQuery(
+    { id: projectId },
+    { enabled: !!projectId }
+  );
+
   // Get all assets from the same project for multi-marker display
   const { data: projectAssets } = trpc.assets.list.useQuery(
     { projectId },
     { enabled: !!projectId }
   );
 
-  // Build full address string
-  const fullAddress = [
+  // Build full address string - use asset address if available, otherwise fallback to project address
+  const assetAddress = [
     streetNumber,
     streetAddress,
     aptUnit ? `Unit ${aptUnit}` : null,
@@ -58,6 +64,20 @@ export function AssetLocation({
   ]
     .filter(Boolean)
     .join(", ");
+
+  const projectAddress = project ? [
+    project.streetNumber,
+    project.streetAddress,
+    project.aptUnit ? `Unit ${project.aptUnit}` : null,
+    project.city,
+    project.province,
+    project.postalCode,
+  ]
+    .filter(Boolean)
+    .join(", ") : "";
+
+  const fullAddress = assetAddress || projectAddress;
+  const isUsingProjectAddress = !assetAddress && !!projectAddress;
 
   // Geocode address to coordinates
   const geocodeAddress = useCallback(async () => {
@@ -220,7 +240,7 @@ export function AssetLocation({
             Location
           </CardTitle>
           <CardDescription>
-            No address information available for this asset.
+            No address information available for this asset or project.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -236,7 +256,14 @@ export function AssetLocation({
             <MapPin className="h-5 w-5" />
             Location
           </CardTitle>
-          <CardDescription>{fullAddress}</CardDescription>
+          <CardDescription>
+            {fullAddress}
+            {isUsingProjectAddress && (
+              <Badge variant="secondary" className="ml-2">
+                Project Address
+              </Badge>
+            )}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {coordinates && (

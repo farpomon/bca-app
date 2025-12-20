@@ -942,3 +942,12 @@ Testing:
 - [x] Add city field to database schema (assets and projects)
 - [x] Add City field to asset edit form
 - [x] Fix circular dependency preventing map from rendering
+
+
+## Location Tab Address Fallback Fix
+
+- [x] Investigate why asset shows "No address information available"
+- [x] Implement fallback to use project address when asset has no address
+- [x] Update AssetLocation component to fetch project data
+- [x] Display map using project address if asset address is missing
+- [x] Test with assets that have and don't have addresses
