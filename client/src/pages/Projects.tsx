@@ -13,6 +13,7 @@ import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
 import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown, FileText } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -47,6 +48,10 @@ export default function Projects() {
   const [formData, setFormData] = useState({
     name: "",
     address: "",
+    streetAddress: "",
+    city: "",
+    province: "",
+    postalCode: "",
     clientName: "",
     propertyType: "",
     constructionType: "",
@@ -430,6 +435,10 @@ export default function Projects() {
       setFormData({
         name: "",
         address: "",
+        streetAddress: "",
+        city: "",
+        province: "",
+        postalCode: "",
         clientName: "",
         propertyType: "",
         constructionType: "",
@@ -490,6 +499,10 @@ export default function Projects() {
     createProject.mutate({
       name: formData.name,
       address: formData.address || undefined,
+      streetAddress: formData.streetAddress || undefined,
+      city: formData.city || undefined,
+      province: formData.province || undefined,
+      postalCode: formData.postalCode || undefined,
       clientName: formData.clientName || undefined,
       propertyType: formData.propertyType || undefined,
       constructionType: formData.constructionType || undefined,
@@ -600,11 +613,20 @@ export default function Projects() {
                     <Label htmlFor="address">
                       Property Address
                     </Label>
-                    <Input
-                      id="address"
+                    <AddressAutocomplete
                       value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-
+                      onChange={(address) => setFormData({ ...formData, address })}
+                      onPlaceSelected={(place) => {
+                        setFormData({
+                          ...formData,
+                          address: place.formattedAddress,
+                          streetAddress: place.streetAddress,
+                          city: place.city,
+                          province: place.province,
+                          postalCode: place.postalCode,
+                        });
+                      }}
+                      placeholder="Enter property address"
                     />
                   </div>
                   <div className="grid gap-2">
