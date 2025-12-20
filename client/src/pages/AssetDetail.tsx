@@ -22,7 +22,8 @@ import {
   Box,
   Clock,
   FileBarChart,
-  CalendarDays
+  CalendarDays,
+  MapPin
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
@@ -31,6 +32,7 @@ import AssetDocumentUpload from "@/components/AssetDocumentUpload";
 import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
 // import AssetTimeline from "@/components/AssetTimeline";
+import { AssetLocation } from "@/components/AssetLocation";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 
@@ -178,6 +180,10 @@ export default function AssetDetail() {
             <TabsTrigger value="optimization" className="flex-none px-3">
               <Target className="mr-2 h-4 w-4" />
               Optimization
+            </TabsTrigger>
+            <TabsTrigger value="location" className="flex-none px-3">
+              <MapPin className="mr-2 h-4 w-4" />
+              Location
             </TabsTrigger>
             {/* <TabsTrigger value="timeline" className="flex-none px-3">
               <CalendarDays className="mr-2 h-4 w-4" />
@@ -602,6 +608,20 @@ export default function AssetDetail() {
               assetId={assetIdNum}
               assessments={assessments}
               deficiencies={deficiencies}
+            />
+          </TabsContent>
+
+          {/* Location Tab */}
+          <TabsContent value="location" className="space-y-4">
+            <AssetLocation
+              assetId={assetIdNum}
+              projectId={projectId}
+              streetAddress={asset.streetAddress}
+              streetNumber={asset.streetNumber}
+              aptUnit={asset.aptUnit}
+              city={asset.city}
+              postalCode={asset.postalCode}
+              province={asset.province}
             />
           </TabsContent>
 

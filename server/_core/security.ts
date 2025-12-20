@@ -29,11 +29,11 @@ export function configureSecurityHeaders() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-inline needed for React
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://forge.manus.ai", "https://forge.butterfly-effect.dev", "https://*.googleapis.com", "https://*.gstatic.com"], // unsafe-inline needed for React, forge domains for Maps proxy
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:", "blob:"], // Allow S3 images
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", "https://forge.manus.ai", "https://forge.butterfly-effect.dev", "https://*.googleapis.com"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],

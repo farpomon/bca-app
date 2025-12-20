@@ -923,3 +923,22 @@ Testing:
 - [x] Test day-of-week filtering
 - [x] Test time range validation
 - [x] Test multiple overlapping restrictions
+
+## Asset Location Tab with Google Maps (Completed)
+
+- [x] Create AssetLocation component with Google Maps integration
+- [x] Add geocoding service to convert asset addresses to coordinates
+- [x] Display interactive map centered on asset location with marker
+- [x] Add Street View integration
+- [x] Add satellite/terrain view toggle
+- [x] Add "Get Directions" button
+- [x] Show all assets from same project on map with different colored markers
+- [x] Make markers clickable to navigate to asset details
+- [x] Add Location tab to Asset Detail page TabsWithDropdown
+- [x] Test with valid and incomplete addresses
+- [x] Test responsive design on mobile and desktop
+- [x] Fix CSP headers to allow Google Maps scripts
+- [x] Fix multiple script loading issue
+- [x] Add city field to database schema (assets and projects)
+- [x] Add City field to asset edit form
+- [x] Fix circular dependency preventing map from rendering

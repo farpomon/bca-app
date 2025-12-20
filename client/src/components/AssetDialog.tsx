@@ -26,6 +26,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
   const [streetNumber, setStreetNumber] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [unitNumber, setUnitNumber] = useState("");
+  const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [province, setProvince] = useState("");
   const [yearBuilt, setYearBuilt] = useState("");
@@ -72,6 +73,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
       setStreetNumber(asset.streetNumber || "");
       setStreetAddress(asset.streetAddress || "");
       setUnitNumber(asset.unitNumber || "");
+      setCity(asset.city || "");
       setPostalCode(asset.postalCode || "");
       setProvince(asset.province || "");
       setYearBuilt(asset.yearBuilt?.toString() || "");
@@ -118,6 +120,7 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
       streetNumber: streetNumber.trim() || undefined,
       streetAddress: streetAddress.trim() || undefined,
       unitNumber: unitNumber.trim() || undefined,
+      city: city.trim() || undefined,
       postalCode: postalCode.trim() || undefined,
       province: province.trim() || undefined,
       yearBuilt: yearBuilt ? parseInt(yearBuilt) : undefined,
@@ -213,6 +216,15 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                   value={unitNumber}
                   onChange={(e) => setUnitNumber(e.target.value)}
                   placeholder="Suite 100"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Toronto"
                 />
               </div>
               <div className="space-y-2">
