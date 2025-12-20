@@ -963,3 +963,5 @@ Testing:
 - [x] Integrate AddressAutocomplete component into ProjectDialog
 - [x] Update project creation form to use autocomplete for address fields
 - [x] Test autocomplete functionality in project creation workflow
+
+- [x] Fix address autocomplete click handler - clicking suggestions doesn't populate fields

@@ -616,14 +616,13 @@ export default function Projects() {
                     <AddressAutocomplete
                       value={formData.address}
                       onChange={(address) => setFormData({ ...formData, address })}
-                      onPlaceSelected={(place) => {
+                      onPlaceSelected={(components) => {
                         setFormData({
                           ...formData,
-                          address: place.formattedAddress,
-                          streetAddress: place.streetAddress,
-                          city: place.city,
-                          province: place.province,
-                          postalCode: place.postalCode,
+                          streetAddress: components.streetAddress,
+                          city: components.city,
+                          province: components.province,
+                          postalCode: components.postalCode,
                         });
                       }}
                       placeholder="Enter property address"
