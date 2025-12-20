@@ -39,6 +39,19 @@ export function AddressAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Use refs to store latest callbacks without triggering re-initialization
+  const onChangeRef = useRef(onChange);
+  const onPlaceSelectedRef = useRef(onPlaceSelected);
+  
+  // Keep refs updated with latest callbacks
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+  
+  useEffect(() => {
+    onPlaceSelectedRef.current = onPlaceSelected;
+  }, [onPlaceSelected]);
 
   useEffect(() => {
     // Load Google Maps script
@@ -63,10 +76,12 @@ export function AddressAutocomplete({
 
     // Handle place selection
     const listener = autocompleteRef.current.addListener("place_changed", () => {
+      console.log("[AddressAutocomplete] place_changed event fired");
       const place = autocompleteRef.current?.getPlace();
+      console.log("[AddressAutocomplete] Place object:", place);
       
       if (!place?.address_components) {
-        console.warn("No address components found");
+        console.warn("[AddressAutocomplete] No address components found");
         return;
       }
 
@@ -105,11 +120,13 @@ export function AddressAutocomplete({
 
       // Update input value with formatted address
       if (place.formatted_address) {
-        onChange(place.formatted_address);
+        console.log("[AddressAutocomplete] Setting formatted address:", place.formatted_address);
+        onChangeRef.current(place.formatted_address);
       }
 
       // Call parent callback with structured components
-      onPlaceSelected(components);
+      console.log("[AddressAutocomplete] Calling onPlaceSelected with components:", components);
+      onPlaceSelectedRef.current(components);
     });
 
     return () => {
@@ -117,7 +134,7 @@ export function AddressAutocomplete({
         google.maps.event.removeListener(listener);
       }
     };
-  }, [isLoaded, onChange, onPlaceSelected]);
+  }, [isLoaded]); // Only depend on isLoaded, not the callbacks
 
   return (
     <div className={`space-y-2 ${className}`}>

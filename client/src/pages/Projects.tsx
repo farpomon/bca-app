@@ -615,15 +615,15 @@ export default function Projects() {
                     </Label>
                     <AddressAutocomplete
                       value={formData.address}
-                      onChange={(address) => setFormData({ ...formData, address })}
+                      onChange={(address) => setFormData(prev => ({ ...prev, address }))}
                       onPlaceSelected={(components) => {
-                        setFormData({
-                          ...formData,
+                        setFormData(prev => ({
+                          ...prev,
                           streetAddress: components.streetAddress,
                           city: components.city,
                           province: components.province,
                           postalCode: components.postalCode,
-                        });
+                        }));
                       }}
                       placeholder="Enter property address"
                     />
