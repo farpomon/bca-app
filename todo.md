@@ -95,7 +95,7 @@
 
 ## Current Bug Fixes
 
-- [x] Fix address autocomplete - clicking suggestions doesn't populate fields
+- [x] Fix address autocomplete - clicking suggestions doesn't populate fields (rewrote with custom dropdown)
 
 - [x] Fix bulk delete projects error - "Unable to transform response from server"
 
