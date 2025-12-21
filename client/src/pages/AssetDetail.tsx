@@ -38,6 +38,8 @@ import { AssetLocation } from "@/components/AssetLocation";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
+import { ComplianceDisclaimer } from "@/components/ComplianceDisclaimer";
+import { NonComplianceList } from "@/components/NonComplianceList";
 
 export default function AssetDetail() {
   const { id, assetId } = useParams();
@@ -563,6 +565,13 @@ export default function AssetDetail() {
 
           {/* Compliance Tab */}
           <TabsContent value="compliance" className="space-y-4">
+            {/* Legal Disclaimer - Always visible at top */}
+            <ComplianceDisclaimer
+              buildingCodeTitle={buildingCodesList?.find(bc => bc.code === selectedBuildingCode)?.title}
+              buildingCodeJurisdiction={buildingCodesList?.find(bc => bc.code === selectedBuildingCode)?.jurisdiction}
+              checkedAt={new Date().toISOString()}
+              className="mb-6"
+            />
             <Card>
               <CardHeader>
                 <CardTitle>Building Code Compliance</CardTitle>
@@ -735,6 +744,35 @@ export default function AssetDetail() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Non-Compliance List - Show after bulk check */}
+            {selectedBuildingCode && assessments && assessments.length > 0 && Object.keys(complianceResults).length > 0 && (() => {
+              const nonCompliantComponents = assessments
+                .filter(assessment => {
+                  const result = complianceResults[assessment.id];
+                  return result && !result.compliant;
+                })
+                .map(assessment => ({
+                  assessmentId: assessment.id,
+                  componentCode: assessment.componentCode || '',
+                  componentName: assessment.componentName,
+                  condition: assessment.condition || 'not_assessed',
+                  conditionPercentage: assessment.conditionPercentage,
+                  complianceStatus: 'non_compliant' as const,
+                  issues: assessment.complianceIssues ? JSON.parse(assessment.complianceIssues) : [],
+                  complianceRecommendations: assessment.complianceRecommendations || '',
+                  complianceCheckedAt: assessment.complianceCheckedAt || new Date().toISOString(),
+                }));
+
+              return nonCompliantComponents.length > 0 ? (
+                <NonComplianceList
+                  components={nonCompliantComponents}
+                  buildingCodeTitle={buildingCodesList?.find(bc => bc.code === selectedBuildingCode)?.title}
+                  projectName={asset?.name}
+                  className="mt-6"
+                />
+              ) : null;
+            })()}
           </TabsContent>
 
           {/* 3D Model Tab */}

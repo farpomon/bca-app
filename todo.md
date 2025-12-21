@@ -1030,3 +1030,36 @@ Testing:
 - [x] Display bulk check progress with loading states
 - [x] Show summary of bulk compliance results (compliant vs non-compliant counts)
 - [x] Write tests for bulk compliance checking functionality
+
+## Non-Compliance Display with Legal Disclaimer
+
+### Backend
+- [ ] Update compliance check response to include detailed non-compliance information
+- [ ] Add severity classification for non-compliance issues (critical, high, medium, low)
+- [ ] Create endpoint to retrieve all non-compliant components for a project
+- [ ] Add filtering and sorting options for non-compliance list
+
+### Frontend - Legal Disclaimer Component
+- [x] Create ComplianceDisclaimer component with legally binding language
+- [x] Include AI-generated analysis disclaimer
+- [x] Add professional liability limitations
+- [x] Add requirement for licensed professional verification
+- [x] Include timestamp and version information
+- [ ] Add user acknowledgment checkbox (optional - disclaimer is always visible)
+
+### Frontend - Non-Compliance List
+- [x] Create NonComplianceList component
+- [x] Display all non-compliant components with details
+- [x] Show building code sections violated
+- [x] Display severity levels with color coding
+- [x] Add filtering by severity, component type, code section
+- [x] Add sorting by severity, component name, date checked
+- [x] Include recommendations for each non-compliance issue
+- [x] Add export functionality for non-compliance report (CSV export)
+
+### Integration
+- [x] Add disclaimer at top of Compliance tab
+- [x] Integrate non-compliance list below compliance summary
+- [x] Ensure disclaimer is always visible when viewing compliance results
+- [ ] Add disclaimer to PDF reports (future enhancement)
+- [ ] Test complete workflow
