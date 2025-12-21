@@ -240,10 +240,16 @@ export const buildingCodes = mysqlTable("building_codes", {
 	documentKey: varchar({ length: 500 }),
 	pageCount: int(),
 	isActive: int().default(1).notNull(),
+	effectiveDate: varchar({ length: 64 }),
+	status: varchar({ length: 32 }).default('active'),
+	isLatest: int().default(0).notNull(),
+	lastVerified: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
 	index("code").on(table.code),
+	index("jurisdiction_latest").on(table.jurisdiction, table.isLatest),
 ]);
 
 export const buildingComponents = mysqlTable("building_components", {

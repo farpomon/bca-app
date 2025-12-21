@@ -335,13 +335,11 @@ export default function Assessment() {
                       const componentCode = assessment.componentCode!; // Assert non-null after filter
                       const componentName = assessment.componentName || assessment.componentCode || 'Unknown Component';
                       return (
-                        <Button
+                        <button
                           key={componentCode}
-                          variant="ghost"
-                          className="w-full justify-start text-left h-auto py-2 hover:bg-accent"
+                          className="w-full p-3 border rounded-lg hover:bg-accent transition-colors text-left"
                           onClick={() => {
                             loadAssessment(componentCode, componentName);
-                            setExpandedCondition(null);
                           }}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -351,7 +349,7 @@ export default function Assessment() {
                             </div>
                             {assessment.componentCode && getConditionBadge(assessment.componentCode)}
                           </div>
-                        </Button>
+                        </button>
                       );
                     })}
                 </div>

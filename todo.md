@@ -1012,3 +1012,13 @@ Testing:
 - [x] Wire button to open AssessmentDialog for creating new assessments
 - [x] Ensure button is visible when no assessments exist
 - [x] Test assessment creation flow from Assessments tab
+- [x] Make assessment cards clickable in the Assessments tab to open assessment dialog for viewing/editing
+
+## Compliance Tab Enhancements
+
+- [x] Add building code selection dropdown to Compliance tab in Asset Detail page
+- [x] Display list of asset components with compliance check buttons
+- [x] Integrate AI compliance checking for each component against selected building code
+- [x] Create database table for building codes
+- [x] Create scheduled task to search and update building codes monthly
+- [x] Implement building code search and update logic

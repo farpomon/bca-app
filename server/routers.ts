@@ -25,6 +25,7 @@ import { assessmentDocumentsRouter } from "./routers/assessmentDocuments.router"
 import { assetDocumentsRouter } from "./routers/assetDocuments.router";
 import { documentsRouter } from "./routers/documents.router";
 import { complianceRouter } from "./routers/compliance.router";
+import { buildingCodesRouter } from "./routers/buildingCodes.router";
 import { dataSecurityRouter } from "./routers/dataSecurity.router";
 import { mfaRouter } from "./mfaRouter";
 import { emailMfaRouter } from "./emailMfaRouter";
@@ -71,6 +72,7 @@ export const appRouter = router({
   mfaRecovery: mfaRecoveryRouter,
   mfaTimeRestrictions: mfaTimeRestrictionsRouter,
   compliance: complianceRouter,
+  buildingCodes: buildingCodesRouter,
   dataSecurity: dataSecurityRouter,
   offlineSync: offlineSyncRouter,
   privacyLock: privacyLockRouter,

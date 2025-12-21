@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { invokeLLM } from "../_core/llm";
 import { getDb } from "../db";
 import { 
   userConsents, 
@@ -322,4 +323,100 @@ export const complianceRouter = router({
       auditLogsLast30Days: recentAuditLogs,
     };
   }),
+
+  /**
+   * Check component compliance against building code using AI
+   */
+  checkComponent: protectedProcedure
+    .input(
+      z.object({
+        componentName: z.string(),
+        componentLocation: z.string().optional(),
+        condition: z.string().optional(),
+        observations: z.string().optional(),
+        buildingCode: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const buildingCodeNames: Record<string, string> = {
+        "nbc-2025": "National Building Code of Canada 2025 (Proposed)",
+        "nbc-2020": "National Building Code of Canada 2020",
+        "nbc-2015": "National Building Code of Canada 2015",
+        "obc-2024": "Ontario Building Code 2024 (Effective January 1, 2025)",
+        "obc-2012": "Ontario Building Code 2012",
+        "bcbc-2024": "British Columbia Building Code 2024",
+        "bcbc-2018": "British Columbia Building Code 2018",
+        "abc-2023": "Alberta Building Code 2023 (Effective May 1, 2024)",
+        "abc-2019": "Alberta Building Code 2019",
+        "ibc-2024": "International Building Code 2024",
+        "ibc-2021": "International Building Code 2021",
+        "ibc-2018": "International Building Code 2018",
+      };
+
+      const buildingCodeName = buildingCodeNames[input.buildingCode] || input.buildingCode;
+
+      const prompt = `You are a building code compliance expert. Analyze the following building component against ${buildingCodeName}.
+
+Component Information:
+- Name: ${input.componentName}
+${input.componentLocation ? `- Location: ${input.componentLocation}` : ""}
+${input.condition ? `- Current Condition: ${input.condition}` : ""}
+${input.observations ? `- Observations: ${input.observations}` : ""}
+
+Building Code: ${buildingCodeName}
+
+Task: Determine if this component is compliant with the selected building code. Consider:
+1. Current condition and any observed deficiencies
+2. Relevant building code requirements for this type of component
+3. Safety and structural integrity standards
+4. Maintenance and lifecycle requirements
+
+Provide:
+1. A clear compliance determination (compliant or non-compliant)
+2. A detailed explanation of your assessment (2-3 sentences)
+3. Specific code sections or requirements that apply (if applicable)
+4. Recommendations for achieving or maintaining compliance (if needed)
+
+Format your response as JSON with the following structure:
+{
+  "compliant": true/false,
+  "details": "Detailed explanation here"
+}`;
+
+      try {
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "You are a building code compliance expert. Provide accurate, professional assessments based on building codes and standards.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          response_format: {
+            type: "json_object",
+          },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+          throw new Error("No response from AI service");
+        }
+
+        const result = JSON.parse(content);
+        
+        return {
+          compliant: result.compliant === true,
+          details: result.details || "No details provided",
+        };
+      } catch (error) {
+        console.error("Compliance check error:", error);
+        throw new TRPCError({ 
+          code: "INTERNAL_SERVER_ERROR", 
+          message: "Failed to check compliance. Please try again." 
+        });
+      }
+    }),
 });

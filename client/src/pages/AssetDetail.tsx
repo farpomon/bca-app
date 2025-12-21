@@ -27,6 +27,7 @@ import {
   MapPin
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
 import AssetPhotoGallery from "@/components/AssetPhotoGallery";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
@@ -46,6 +47,9 @@ export default function AssetDetail() {
 
   const { user, loading: authLoading } = useAuth();
   const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
+  const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
+  const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
+  const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string }>>({});
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -62,6 +66,11 @@ export default function AssetDetail() {
     { assetId: assetIdNum },
     { enabled: !!user && !isNaN(assetIdNum) }
   );
+  const { data: buildingCodesList } = trpc.buildingCodes.list.useQuery(
+    undefined,
+    { enabled: !!user }
+  );
+  const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
 
   if (authLoading || projectLoading || assetLoading) {
     return (
@@ -555,13 +564,121 @@ export default function AssetDetail() {
               <CardHeader>
                 <CardTitle>Building Code Compliance</CardTitle>
                 <CardDescription>
-                  Compliance status and violations for this asset
+                  Select a building code and check component compliance
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Compliance tracking coming soon. This will show building code violations and recommendations.
-                </p>
+              <CardContent className="space-y-6">
+                {/* Building Code Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Building Code</label>
+                  <Select value={selectedBuildingCode} onValueChange={setSelectedBuildingCode}>
+                    <SelectTrigger className="w-full md:w-[400px]">
+                      <SelectValue placeholder="Select a building code" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {buildingCodesList && buildingCodesList.length > 0 ? (
+                        buildingCodesList.map((code) => (
+                          <SelectItem key={code.id} value={code.code}>
+                            {code.title}
+                            {code.effectiveDate && ` (${code.effectiveDate})`}
+                            {code.status === 'proposed' && ' (Proposed)'}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="loading" disabled>
+                          Loading building codes...
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {!selectedBuildingCode && (
+                    <p className="text-xs text-muted-foreground">
+                      Select a building code to check component compliance
+                    </p>
+                  )}
+                </div>
+
+                {/* Components List */}
+                {selectedBuildingCode && assessments && assessments.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold">Asset Components</h3>
+                    <div className="space-y-3">
+                      {assessments.map((assessment) => {
+                        const isChecking = checkingCompliance[assessment.id] || false;
+                        const result = complianceResults[assessment.id];
+                        
+                        return (
+                          <div
+                            key={assessment.id}
+                            className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                          >
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{assessment.componentName}</p>
+                                {result && (
+                                  <Badge variant={result.compliant ? "default" : "destructive"}>
+                                    {result.compliant ? "Compliant" : "Non-Compliant"}
+                                  </Badge>
+                                )}
+                              </div>
+                              {assessment.componentLocation && (
+                                <p className="text-sm text-muted-foreground">
+                                  Location: {assessment.componentLocation}
+                                </p>
+                              )}
+                              {result && (
+                                <p className="text-sm mt-2">{result.details}</p>
+                              )}
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                setCheckingCompliance(prev => ({ ...prev, [assessment.id]: true }));
+                                try {
+                                  const result = await checkComplianceMutation.mutateAsync({
+                                    componentName: assessment.componentName,
+                                    componentLocation: assessment.componentLocation || undefined,
+                                    condition: assessment.condition || undefined,
+                                    observations: assessment.observations || undefined,
+                                    buildingCode: selectedBuildingCode,
+                                  });
+                                  setComplianceResults(prev => ({
+                                    ...prev,
+                                    [assessment.id]: result,
+                                  }));
+                                  toast.success('Compliance check completed');
+                                } catch (error) {
+                                  console.error('Compliance check error:', error);
+                                  toast.error('Failed to check compliance');
+                                } finally {
+                                  setCheckingCompliance(prev => ({ ...prev, [assessment.id]: false }));
+                                }
+                              }}
+                              disabled={isChecking}
+                            >
+                              {isChecking ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Checking...
+                                </>
+                              ) : (
+                                'Check Compliance'
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedBuildingCode && (!assessments || assessments.length === 0) && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No components found for this asset.</p>
+                    <p className="text-sm mt-2">Create assessments to check compliance.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
