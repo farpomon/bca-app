@@ -1022,3 +1022,11 @@ Testing:
 - [x] Create database table for building codes
 - [x] Create scheduled task to search and update building codes monthly
 - [x] Implement building code search and update logic
+
+## Bulk Compliance Checking Feature
+- [x] Create backend API endpoint for bulk compliance checking (check all components at once)
+- [x] Add progress tracking for bulk compliance checks
+- [x] Update Compliance tab UI with "Check All Components" button
+- [x] Display bulk check progress with loading states
+- [x] Show summary of bulk compliance results (compliant vs non-compliant counts)
+- [x] Write tests for bulk compliance checking functionality

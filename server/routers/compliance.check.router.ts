@@ -246,4 +246,96 @@ If the assessment is compliant, return an empty issues array. If you need more i
         },
       };
     }),
+
+  /**
+   * Check all components in a project for compliance
+   * Fetches all assessments for the project and runs compliance checks on each
+   */
+  checkAllProjectComponents: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify project access
+      const project = await db.getProjectById(input.projectId, ctx.user.id);
+      if (!project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found or access denied",
+        });
+      }
+
+      // Check if project has a building code selected
+      if (!project.buildingCodeId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Project does not have a building code selected. Please select a building code in project settings.",
+        });
+      }
+
+      // Fetch all assessments for this project
+      const assessments = await db.getAssessmentsByProject(input.projectId);
+      
+      if (assessments.length === 0) {
+        return {
+          success: true,
+          results: [],
+          errors: [],
+          summary: {
+            total: 0,
+            successful: 0,
+            failed: 0,
+            compliant: 0,
+            nonCompliant: 0,
+            needsReview: 0,
+          },
+        };
+      }
+
+      const results = [];
+      const errors = [];
+      let compliantCount = 0;
+      let nonCompliantCount = 0;
+      let needsReviewCount = 0;
+
+      // Process each assessment
+      for (const assessment of assessments) {
+        try {
+          const result = await (complianceCheckRouter as any).createCaller(ctx).checkAssessmentCompliance({
+            assessmentId: assessment.id,
+          });
+          results.push({ 
+            assessmentId: assessment.id,
+            componentName: assessment.componentName,
+            componentCode: assessment.componentCode,
+            ...result 
+          });
+          
+          // Count compliance statuses
+          if (result.result.status === 'compliant') compliantCount++;
+          else if (result.result.status === 'non_compliant') nonCompliantCount++;
+          else if (result.result.status === 'needs_review') needsReviewCount++;
+        } catch (error) {
+          errors.push({
+            assessmentId: assessment.id,
+            componentName: assessment.componentName,
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+      }
+
+      return {
+        success: true,
+        results,
+        errors,
+        summary: {
+          total: assessments.length,
+          successful: results.length,
+          failed: errors.length,
+          compliant: compliantCount,
+          nonCompliant: nonCompliantCount,
+          needsReview: needsReviewCount,
+        },
+      };
+    }),
 });

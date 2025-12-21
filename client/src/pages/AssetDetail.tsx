@@ -50,6 +50,8 @@ export default function AssetDetail() {
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
   const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string }>>({});
+  const [isBulkChecking, setIsBulkChecking] = React.useState(false);
+  const [bulkCheckProgress, setBulkCheckProgress] = React.useState({ current: 0, total: 0 });
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -71,6 +73,7 @@ export default function AssetDetail() {
     { enabled: !!user }
   );
   const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
+  const checkAllComponentsMutation = (trpc.complianceCheck as any).checkAllProjectComponents.useMutation();
 
   if (authLoading || projectLoading || assetLoading) {
     return (
@@ -569,7 +572,8 @@ export default function AssetDetail() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Building Code Selection */}
-                <div className="space-y-2">
+                <div className="flex items-end justify-between gap-4">
+                  <div className="space-y-2 flex-1">
                   <label className="text-sm font-medium">Building Code</label>
                   <Select value={selectedBuildingCode} onValueChange={setSelectedBuildingCode}>
                     <SelectTrigger className="w-full md:w-[400px]">
@@ -591,10 +595,60 @@ export default function AssetDetail() {
                       )}
                     </SelectContent>
                   </Select>
-                  {!selectedBuildingCode && (
-                    <p className="text-xs text-muted-foreground">
-                      Select a building code to check component compliance
-                    </p>
+                    {!selectedBuildingCode && (
+                      <p className="text-xs text-muted-foreground">
+                        Select a building code to check component compliance
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Bulk Check Button */}
+                  {selectedBuildingCode && assessments && assessments.length > 0 && (
+                    <Button
+                      onClick={async () => {
+                        setIsBulkChecking(true);
+                        setBulkCheckProgress({ current: 0, total: assessments.length });
+                        try {
+                          const result = await checkAllComponentsMutation.mutateAsync({
+                            projectId,
+                          });
+                          
+                          // Update compliance results for each component
+                          const newResults: Record<number, { compliant: boolean; details: string }> = {};
+                          result.results.forEach((r: any) => {
+                            newResults[r.assessmentId] = {
+                              compliant: r.result.status === 'compliant',
+                              details: r.result.summary,
+                            };
+                          });
+                          setComplianceResults(newResults);
+                          
+                          toast.success(
+                            `Bulk compliance check completed: ${result.summary.compliant} compliant, ${result.summary.nonCompliant} non-compliant, ${result.summary.needsReview} need review`
+                          );
+                        } catch (error: any) {
+                          console.error('Bulk compliance check error:', error);
+                          toast.error(error.message || 'Failed to run bulk compliance check');
+                        } finally {
+                          setIsBulkChecking(false);
+                          setBulkCheckProgress({ current: 0, total: 0 });
+                        }
+                      }}
+                      disabled={isBulkChecking}
+                      className="gap-2"
+                    >
+                      {isBulkChecking ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Checking {bulkCheckProgress.current}/{bulkCheckProgress.total}...
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="h-4 w-4" />
+                          Check All Components
+                        </>
+                      )}
+                    </Button>
                   )}
                 </div>
 
