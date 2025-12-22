@@ -1070,3 +1070,5 @@ Testing:
 - [x] Investigate why bulk compliance check API is not being called or not returning results
 - [x] Verify frontend state management for bulk check progress
 - [x] Test bulk compliance checking after fix
+
+- [x] Fix asset detail page back navigation to show "Back to Assets" instead of "Back to Projects"

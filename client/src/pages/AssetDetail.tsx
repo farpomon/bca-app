@@ -139,7 +139,7 @@ export default function AssetDetail() {
               onClick={() => setLocation(`/projects/${projectId}/assets`)}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
+              Back to Assets
             </Button>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight">{asset.name}</h1>
