@@ -86,7 +86,7 @@ Project Context:
 - Year Built: ${assessmentContext.projectInfo.yearBuilt || "Not specified"}
 - Number of Stories: ${assessmentContext.projectInfo.numberOfStories || "Not specified"}
 
-Task: Analyze this assessment for potential building code compliance issues. Return your analysis in the following JSON format:
+Task: Analyze this assessment for potential building code compliance issues. Return your analysis in the following JSON format ONLY (no additional text):
 
 {
   "status": "compliant" | "non_compliant" | "needs_review",
@@ -101,14 +101,16 @@ Task: Analyze this assessment for potential building code compliance issues. Ret
   "summary": "Brief overall compliance summary"
 }
 
-If the assessment is compliant, return an empty issues array. If you need more information to make a determination, set status to "needs_review" and explain what additional information is needed in the summary.`;
+If the assessment is compliant, return an empty issues array. If you need more information to make a determination, set status to "needs_review" and explain what additional information is needed in the summary.
+
+IMPORTANT: Return ONLY valid JSON, no markdown code blocks or additional text.`;
 
       try {
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: "You are a building code compliance expert. Analyze assessments against building codes and provide structured compliance reports in JSON format.",
+              content: "You are a building code compliance expert. Analyze assessments against building codes and provide structured compliance reports. Always respond with valid JSON only, no markdown formatting.",
             },
             {
               role: "user",
@@ -127,62 +129,67 @@ If the assessment is compliant, return an empty issues array. If you need more i
               ],
             },
           ],
+          // Use json_object mode instead of json_schema (Gemini doesn't support json_schema)
           response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "compliance_analysis",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  status: {
-                    type: "string",
-                    enum: ["compliant", "non_compliant", "needs_review"],
-                    description: "Overall compliance status",
-                  },
-                  issues: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        severity: {
-                          type: "string",
-                          enum: ["high", "medium", "low"],
-                        },
-                        codeSection: {
-                          type: "string",
-                          description: "Specific building code section reference",
-                        },
-                        description: {
-                          type: "string",
-                          description: "Description of the compliance issue",
-                        },
-                        recommendation: {
-                          type: "string",
-                          description: "Recommended action to address the issue",
-                        },
-                      },
-                      required: ["severity", "codeSection", "description", "recommendation"],
-                      additionalProperties: false,
-                    },
-                  },
-                  summary: {
-                    type: "string",
-                    description: "Overall compliance summary",
-                  },
-                },
-                required: ["status", "issues", "summary"],
-                additionalProperties: false,
-              },
-            },
+            type: "json_object",
           },
         });
 
-        const content = response.choices[0]?.message?.content;
-        if (!content || typeof content !== 'string') {
-          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid AI response' });
+        // Handle response content - can be string or array
+        let content: string;
+        const messageContent = response.choices[0]?.message?.content;
+        
+        if (!messageContent) {
+          console.error("[Compliance Check] No content in response:", JSON.stringify(response, null, 2));
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI returned empty response' });
         }
-        const complianceResult = JSON.parse(content);
+        
+        if (typeof messageContent === 'string') {
+          content = messageContent;
+        } else if (Array.isArray(messageContent)) {
+          // Extract text from array of content parts
+          const textPart = messageContent.find(part => part.type === 'text');
+          if (textPart && 'text' in textPart) {
+            content = textPart.text;
+          } else {
+            console.error("[Compliance Check] No text content in array:", JSON.stringify(messageContent, null, 2));
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI response missing text content' });
+          }
+        } else {
+          console.error("[Compliance Check] Unexpected content type:", typeof messageContent);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid AI response format' });
+        }
+
+        // Clean up the content - remove markdown code blocks if present
+        let cleanedContent = content.trim();
+        if (cleanedContent.startsWith('```json')) {
+          cleanedContent = cleanedContent.slice(7);
+        } else if (cleanedContent.startsWith('```')) {
+          cleanedContent = cleanedContent.slice(3);
+        }
+        if (cleanedContent.endsWith('```')) {
+          cleanedContent = cleanedContent.slice(0, -3);
+        }
+        cleanedContent = cleanedContent.trim();
+
+        let complianceResult;
+        try {
+          complianceResult = JSON.parse(cleanedContent);
+        } catch (parseError) {
+          console.error("[Compliance Check] JSON parse error:", parseError, "Content:", cleanedContent);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to parse AI response as JSON' });
+        }
+
+        // Validate the response structure
+        if (!complianceResult.status || !Array.isArray(complianceResult.issues)) {
+          console.error("[Compliance Check] Invalid response structure:", complianceResult);
+          // Provide default structure if missing
+          complianceResult = {
+            status: complianceResult.status || "needs_review",
+            issues: complianceResult.issues || [],
+            summary: complianceResult.summary || "Unable to determine compliance status. Please review manually.",
+          };
+        }
 
         // Update assessment with compliance results
         await db.updateAssessmentCompliance(input.assessmentId, {
@@ -203,6 +210,9 @@ If the assessment is compliant, return an empty issues array. If you need more i
         };
       } catch (error) {
         console.error("[Compliance Check] Error:", error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to perform compliance check. Please try again.",

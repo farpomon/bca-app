@@ -1,0 +1,91 @@
+{
+  "query": "SELECT id, code, title, edition, jurisdiction, year, isLatest FROM building_codes WHERE isActive = 1 ORDER BY jurisdiction, year DESC, title",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, code, title, edition, jurisdiction, year, isLatest FROM building_codes WHERE isActive = 1 ORDER BY jurisdiction, year DESC, title",
+  "rows": [
+    {
+      "id": "30005",
+      "code": "abc-2023",
+      "title": "Alberta Building Code 2023",
+      "edition": "2023",
+      "jurisdiction": "Alberta",
+      "year": "2023",
+      "isLatest": "1"
+    },
+    {
+      "id": "3",
+      "code": "NBC_2023_AB",
+      "title": "National Building Code – 2023 Alberta Edition",
+      "edition": "2023 Alberta Edition",
+      "jurisdiction": "Alberta",
+      "year": "2023",
+      "isLatest": "0"
+    },
+    {
+      "id": "2",
+      "code": "BCBC_2024",
+      "title": "British Columbia Building Code 2024",
+      "edition": "2024 Edition, Revision 1",
+      "jurisdiction": "British Columbia",
+      "year": "2024",
+      "isLatest": "0"
+    },
+    {
+      "id": "30004",
+      "code": "bcbc-2024",
+      "title": "British Columbia Building Code 2024",
+      "edition": "2024",
+      "jurisdiction": "British Columbia",
+      "year": "2024",
+      "isLatest": "1"
+    },
+    {
+      "id": "30001",
+      "code": "nbc-2025",
+      "title": "National Building Code of Canada 2025",
+      "edition": "2025",
+      "jurisdiction": "Canada",
+      "year": "2025",
+      "isLatest": "1"
+    },
+    {
+      "id": "1",
+      "code": "NBC_2020",
+      "title": "National Building Code of Canada 2020",
+      "edition": "2020 Edition",
+      "jurisdiction": "Canada",
+      "year": "2020",
+      "isLatest": "0"
+    },
+    {
+      "id": "30002",
+      "code": "nbc-2020",
+      "title": "National Building Code of Canada 2020",
+      "edition": "2020",
+      "jurisdiction": "Canada",
+      "year": "2020",
+      "isLatest": "0"
+    },
+    {
+      "id": "30006",
+      "code": "ibc-2024",
+      "title": "International Building Code 2024",
+      "edition": "2024",
+      "jurisdiction": "International",
+      "year": "2024",
+      "isLatest": "1"
+    },
+    {
+      "id": "30003",
+      "code": "obc-2024",
+      "title": "Ontario Building Code 2024",
+      "edition": "2024",
+      "jurisdiction": "Ontario",
+      "year": "2024",
+      "isLatest": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcode\ttitle\tedition\tjurisdiction\tyear\tisLatest\n30005\tabc-2023\tAlberta Building Code 2023\t2023\tAlberta\t2023\t1\n3\tNBC_2023_AB\tNational Building Code – 2023 Alberta Edition\t2023 Alberta Edition\tAlberta\t2023\t0\n2\tBCBC_2024\tBritish Columbia Building Code 2024\t2024 Edition, Revision 1\tBritish Columbia\t2024\t0\n30004\tbcbc-2024\tBritish Columbia Building Code 2024\t2024\tBritish Columbia\t2024\t1\n30001\tnbc-2025\tNational Building Code of Canada 2025\t2025\tCanada\t2025\t1\n1\tNBC_2020\tNational Building Code of Canada 2020\t2020 Edition\tCanada\t2020\t0\n30002\tnbc-2020\tNational Building Code of Canada 2020\t2020\tCanada\t2020\t0\n30006\tibc-2024\tInternational Building Code 2024\t2024\tInternational\t2024\t1\n30003\tobc-2024\tOntario Building Code 2024\t2024\tOntario\t2024\t1\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

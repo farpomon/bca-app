@@ -1,0 +1,64 @@
+{
+  "query": "SELECT id, code, title, isLatest FROM building_codes WHERE isActive = 1 ORDER BY title",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, code, title, isLatest FROM building_codes WHERE isActive = 1 ORDER BY title",
+  "rows": [
+    {
+      "id": "30005",
+      "code": "abc-2023",
+      "title": "Alberta Building Code 2023",
+      "isLatest": "1"
+    },
+    {
+      "id": "2",
+      "code": "BCBC_2024",
+      "title": "British Columbia Building Code 2024",
+      "isLatest": "0"
+    },
+    {
+      "id": "30004",
+      "code": "bcbc-2024",
+      "title": "British Columbia Building Code 2024",
+      "isLatest": "1"
+    },
+    {
+      "id": "30006",
+      "code": "ibc-2024",
+      "title": "International Building Code 2024",
+      "isLatest": "1"
+    },
+    {
+      "id": "1",
+      "code": "NBC_2020",
+      "title": "National Building Code of Canada 2020",
+      "isLatest": "0"
+    },
+    {
+      "id": "30002",
+      "code": "nbc-2020",
+      "title": "National Building Code of Canada 2020",
+      "isLatest": "0"
+    },
+    {
+      "id": "30001",
+      "code": "nbc-2025",
+      "title": "National Building Code of Canada 2025",
+      "isLatest": "1"
+    },
+    {
+      "id": "3",
+      "code": "NBC_2023_AB",
+      "title": "National Building Code – 2023 Alberta Edition",
+      "isLatest": "0"
+    },
+    {
+      "id": "30003",
+      "code": "obc-2024",
+      "title": "Ontario Building Code 2024",
+      "isLatest": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcode\ttitle\tisLatest\n30005\tabc-2023\tAlberta Building Code 2023\t1\n2\tBCBC_2024\tBritish Columbia Building Code 2024\t0\n30004\tbcbc-2024\tBritish Columbia Building Code 2024\t1\n30006\tibc-2024\tInternational Building Code 2024\t1\n1\tNBC_2020\tNational Building Code of Canada 2020\t0\n30002\tnbc-2020\tNational Building Code of Canada 2020\t0\n30001\tnbc-2025\tNational Building Code of Canada 2025\t1\n3\tNBC_2023_AB\tNational Building Code – 2023 Alberta Edition\t0\n30003\tobc-2024\tOntario Building Code 2024\t1\n",
+  "stderr": "",
+  "execution_time_ms": 877
+}

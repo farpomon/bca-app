@@ -2184,11 +2184,49 @@ export async function getAllBuildingCodes() {
   const db = await getDb();
   if (!db) return [];
   
-  return await db
+  // Get all active building codes
+  const allCodes = await db
     .select()
     .from(buildingCodes)
     .where(eq(buildingCodes.isActive, 1))
     .orderBy(buildingCodes.title);
+  
+  // Deduplicate by jurisdiction+year: prefer codes with documentUrl, then isLatest=1
+  const codeMap = new Map<string, typeof allCodes[0]>();
+  
+  for (const code of allCodes) {
+    // Create a key based on jurisdiction and year to identify duplicates
+    const key = `${code.jurisdiction}-${code.year}`;
+    const existing = codeMap.get(key);
+    
+    if (!existing) {
+      // No existing code for this jurisdiction+year, add it
+      codeMap.set(key, code);
+    } else {
+      // Compare and keep the better one:
+      // 1. Prefer codes with documentUrl (can be used for compliance checking)
+      // 2. Then prefer codes with isLatest=1
+      const existingHasDoc = !!existing.documentUrl;
+      const newHasDoc = !!code.documentUrl;
+      
+      if (newHasDoc && !existingHasDoc) {
+        // New code has document, existing doesn't - use new
+        codeMap.set(key, code);
+      } else if (!newHasDoc && existingHasDoc) {
+        // Existing has document, new doesn't - keep existing
+        // Do nothing
+      } else if (code.isLatest === 1 && existing.isLatest !== 1) {
+        // Both have same document status, but new is marked as latest
+        codeMap.set(key, code);
+      }
+      // Otherwise keep existing
+    }
+  }
+  
+  // Return deduplicated codes sorted by title
+  return Array.from(codeMap.values()).sort((a, b) => 
+    (a.title || '').localeCompare(b.title || '')
+  );
 }
 
 export async function getBuildingCodeById(id: number) {

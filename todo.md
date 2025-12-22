@@ -1072,3 +1072,9 @@ Testing:
 - [x] Test bulk compliance checking after fix
 
 - [x] Fix asset detail page back navigation to show "Back to Assets" instead of "Back to Projects"
+
+
+## Bug Fixes - December 22, 2025
+
+- [x] Fix compliance check feature error ("Failed to check compliance") - Fixed json_schema to json_object mode and proper response handling
+- [x] Show only one version of each building code in dropdown (remove duplicates) - Added deduplication logic in getAllBuildingCodes()
