@@ -38,8 +38,6 @@ import { AssetLocation } from "@/components/AssetLocation";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
-import { ComplianceDisclaimer } from "@/components/ComplianceDisclaimer";
-import { NonComplianceList } from "@/components/NonComplianceList";
 
 export default function AssetDetail() {
   const { id, assetId } = useParams();
@@ -52,8 +50,6 @@ export default function AssetDetail() {
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
   const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string }>>({});
-  const [isBulkChecking, setIsBulkChecking] = React.useState(false);
-  const [bulkCheckProgress, setBulkCheckProgress] = React.useState({ current: 0, total: 0 });
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -74,8 +70,7 @@ export default function AssetDetail() {
     undefined,
     { enabled: !!user }
   );
-  const checkComplianceMutation = (trpc.complianceCheck as any).checkAssessmentCompliance.useMutation();
-  const checkAllComponentsMutation = (trpc.complianceCheck as any).checkAllProjectComponents.useMutation();
+  const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
 
   if (authLoading || projectLoading || assetLoading) {
     return (
@@ -139,7 +134,7 @@ export default function AssetDetail() {
               onClick={() => setLocation(`/projects/${projectId}/assets`)}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Assets
+              Back to Projects
             </Button>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight">{asset.name}</h1>
@@ -565,13 +560,6 @@ export default function AssetDetail() {
 
           {/* Compliance Tab */}
           <TabsContent value="compliance" className="space-y-4">
-            {/* Legal Disclaimer - Always visible at top */}
-            <ComplianceDisclaimer
-              buildingCodeTitle={buildingCodesList?.find(bc => bc.code === selectedBuildingCode)?.title}
-              buildingCodeJurisdiction={buildingCodesList?.find(bc => bc.code === selectedBuildingCode)?.jurisdiction}
-              checkedAt={new Date().toISOString()}
-              className="mb-6"
-            />
             <Card>
               <CardHeader>
                 <CardTitle>Building Code Compliance</CardTitle>
@@ -581,8 +569,7 @@ export default function AssetDetail() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Building Code Selection */}
-                <div className="flex items-end justify-between gap-4">
-                  <div className="space-y-2 flex-1">
+                <div className="space-y-2">
                   <label className="text-sm font-medium">Building Code</label>
                   <Select value={selectedBuildingCode} onValueChange={setSelectedBuildingCode}>
                     <SelectTrigger className="w-full md:w-[400px]">
@@ -604,98 +591,10 @@ export default function AssetDetail() {
                       )}
                     </SelectContent>
                   </Select>
-                    {!selectedBuildingCode && (
-                      <p className="text-xs text-muted-foreground">
-                        Select a building code to check component compliance
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Bulk Check Button */}
-                  {selectedBuildingCode && assessments && assessments.length > 0 && (
-                    <Button
-                      onClick={async () => {
-                        if (!assessments || assessments.length === 0) {
-                          toast.error('No assessments to check');
-                          return;
-                        }
-
-                        setIsBulkChecking(true);
-                        setBulkCheckProgress({ current: 0, total: assessments.length });
-                        
-                        try {
-                          // Check assessments one by one with progress updates
-                          const newResults: Record<number, { compliant: boolean; details: string }> = {};
-                          let compliantCount = 0;
-                          let nonCompliantCount = 0;
-                          let needsReviewCount = 0;
-                          let errorCount = 0;
-
-                          for (let i = 0; i < assessments.length; i++) {
-                            const assessment = assessments[i];
-                            try {
-                              // Update progress before checking
-                              setBulkCheckProgress({ current: i, total: assessments.length });
-                              
-                              const result = await checkComplianceMutation.mutateAsync({
-                                assessmentId: assessment.id,
-                              });
-                              
-                              newResults[assessment.id] = {
-                                compliant: result.result.status === 'compliant',
-                                details: result.result.summary,
-                              };
-                              
-                              // Count statuses
-                              if (result.result.status === 'compliant') compliantCount++;
-                              else if (result.result.status === 'non_compliant') nonCompliantCount++;
-                              else if (result.result.status === 'needs_review') needsReviewCount++;
-                              
-                              // Update progress after successful check
-                              setBulkCheckProgress({ current: i + 1, total: assessments.length });
-                            } catch (error: any) {
-                              console.error(`Error checking assessment ${assessment.id}:`, error);
-                              errorCount++;
-                              // Continue with next assessment even if one fails
-                            }
-                          }
-                          
-                          setComplianceResults(newResults);
-                          
-                          // Show summary toast
-                          const successCount = compliantCount + nonCompliantCount + needsReviewCount;
-                          if (errorCount > 0) {
-                            toast.warning(
-                              `Bulk compliance check completed with errors: ${successCount} checked (${compliantCount} compliant, ${nonCompliantCount} non-compliant, ${needsReviewCount} need review), ${errorCount} failed`
-                            );
-                          } else {
-                            toast.success(
-                              `Bulk compliance check completed: ${compliantCount} compliant, ${nonCompliantCount} non-compliant, ${needsReviewCount} need review`
-                            );
-                          }
-                        } catch (error: any) {
-                          console.error('Bulk compliance check error:', error);
-                          toast.error(error.message || 'Failed to run bulk compliance check');
-                        } finally {
-                          setIsBulkChecking(false);
-                          setBulkCheckProgress({ current: 0, total: 0 });
-                        }
-                      }}
-                      disabled={isBulkChecking}
-                      className="gap-2"
-                    >
-                      {isBulkChecking ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Checking {bulkCheckProgress.current}/{bulkCheckProgress.total}...
-                        </>
-                      ) : (
-                        <>
-                          <Shield className="h-4 w-4" />
-                          Check All Components
-                        </>
-                      )}
-                    </Button>
+                  {!selectedBuildingCode && (
+                    <p className="text-xs text-muted-foreground">
+                      Select a building code to check component compliance
+                    </p>
                   )}
                 </div>
 
@@ -738,14 +637,15 @@ export default function AssetDetail() {
                                 setCheckingCompliance(prev => ({ ...prev, [assessment.id]: true }));
                                 try {
                                   const result = await checkComplianceMutation.mutateAsync({
-                                    assessmentId: assessment.id,
+                                    componentName: assessment.componentName,
+                                    componentLocation: assessment.componentLocation || undefined,
+                                    condition: assessment.condition || undefined,
+                                    observations: assessment.observations || undefined,
+                                    buildingCode: selectedBuildingCode,
                                   });
                                   setComplianceResults(prev => ({
                                     ...prev,
-                                    [assessment.id]: {
-                                      compliant: result.result.status === 'compliant',
-                                      details: result.result.summary,
-                                    },
+                                    [assessment.id]: result,
                                   }));
                                   toast.success('Compliance check completed');
                                 } catch (error) {
@@ -781,35 +681,6 @@ export default function AssetDetail() {
                 )}
               </CardContent>
             </Card>
-
-            {/* Non-Compliance List - Show after bulk check */}
-            {selectedBuildingCode && assessments && assessments.length > 0 && Object.keys(complianceResults).length > 0 && (() => {
-              const nonCompliantComponents = assessments
-                .filter(assessment => {
-                  const result = complianceResults[assessment.id];
-                  return result && !result.compliant;
-                })
-                .map(assessment => ({
-                  assessmentId: assessment.id,
-                  componentCode: assessment.componentCode || '',
-                  componentName: assessment.componentName,
-                  condition: assessment.condition || 'not_assessed',
-                  conditionPercentage: assessment.conditionPercentage,
-                  complianceStatus: 'non_compliant' as const,
-                  issues: assessment.complianceIssues ? JSON.parse(assessment.complianceIssues) : [],
-                  complianceRecommendations: assessment.complianceRecommendations || '',
-                  complianceCheckedAt: assessment.complianceCheckedAt || new Date().toISOString(),
-                }));
-
-              return nonCompliantComponents.length > 0 ? (
-                <NonComplianceList
-                  components={nonCompliantComponents}
-                  buildingCodeTitle={buildingCodesList?.find(bc => bc.code === selectedBuildingCode)?.title}
-                  projectName={asset?.name}
-                  className="mt-6"
-                />
-              ) : null;
-            })()}
           </TabsContent>
 
           {/* 3D Model Tab */}

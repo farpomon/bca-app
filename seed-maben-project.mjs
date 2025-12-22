@@ -10,7 +10,7 @@ if (!DATABASE_URL) {
 }
 
 async function seed() {
-  console.log("🌱 Seeding B³NMA 1729 Comox Avenue project...");
+  console.log("🌱 Seeding Maben 1729 Comox Avenue project...");
 
   const connection = await mysql.createConnection(DATABASE_URL);
   const db = drizzle(connection);

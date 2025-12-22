@@ -1,10 +1,6 @@
+import type { ReportTemplate, ReportSection, ReportConfiguration } from "../../drizzle/schema";
 import ExcelJS from "exceljs";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType } from "docx";
-import { reportTemplates, reportSections, reportConfigurations } from "../../drizzle/schema";
-
-type ReportTemplate = typeof reportTemplates.$inferSelect;
-type ReportSection = typeof reportSections.$inferSelect;
-type ReportConfiguration = typeof reportConfigurations.$inferSelect;
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 

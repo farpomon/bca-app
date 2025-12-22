@@ -7,9 +7,6 @@ import { TRPCError } from "@trpc/server";
 /**
  * Building Code Compliance Checking Router
  * AI-powered analysis of assessments against selected building codes
- * 
- * Note: Due to PDF size limitations (1000 page max), we use text-based prompts
- * with building code knowledge rather than attaching the full PDF document.
  */
 
 export const complianceCheckRouter: ReturnType<typeof router> = router({
@@ -47,10 +44,10 @@ export const complianceCheckRouter: ReturnType<typeof router> = router({
       }
 
       const buildingCode = await db.getBuildingCodeById(project.buildingCodeId);
-      if (!buildingCode) {
+      if (!buildingCode || !buildingCode.documentUrl) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Building code not found",
+          message: "Building code document not found",
         });
       }
 
@@ -71,44 +68,32 @@ export const complianceCheckRouter: ReturnType<typeof router> = router({
         },
       };
 
-      // Build comprehensive prompt with building code context
-      const prompt = `You are a certified building code compliance expert with extensive knowledge of ${buildingCode.title} (${buildingCode.jurisdiction}).
+      // Call LLM with building code PDF context
+      const prompt = `You are a building code compliance expert. Analyze the following building assessment against the provided building code document.
 
-BUILDING CODE REFERENCE:
-- Code: ${buildingCode.title}
-- Jurisdiction: ${buildingCode.jurisdiction}
-- Year/Edition: ${buildingCode.year || 'Current'}
+Building Code: ${buildingCode.title}
+Jurisdiction: ${buildingCode.jurisdiction}
 
-
-ASSESSMENT TO ANALYZE:
-- Component: ${assessmentContext.componentName} (Code: ${assessmentContext.componentCode})
-- Current Condition: ${assessmentContext.condition} (${assessmentContext.conditionPercentage}%)
+Assessment Details:
+- Component: ${assessmentContext.componentName} (${assessmentContext.componentCode})
+- Condition: ${assessmentContext.condition} (${assessmentContext.conditionPercentage}%)
 - Observations: ${assessmentContext.observations}
 - Review Year: ${assessmentContext.reviewYear}
 
-PROJECT CONTEXT:
+Project Context:
 - Property Type: ${assessmentContext.projectInfo.propertyType || "Not specified"}
 - Construction Type: ${assessmentContext.projectInfo.constructionType || "Not specified"}
 - Year Built: ${assessmentContext.projectInfo.yearBuilt || "Not specified"}
 - Number of Stories: ${assessmentContext.projectInfo.numberOfStories || "Not specified"}
 
-TASK:
-Based on your expert knowledge of ${buildingCode.title}, analyze this building component assessment for potential code compliance issues. Consider:
-1. Structural requirements
-2. Fire safety requirements
-3. Health and safety standards
-4. Accessibility requirements
-5. Energy efficiency standards
-6. Material and installation standards
-
-Return your analysis in the following JSON format ONLY:
+Task: Analyze this assessment for potential building code compliance issues. Return your analysis in the following JSON format:
 
 {
   "status": "compliant" | "non_compliant" | "needs_review",
   "issues": [
     {
       "severity": "high" | "medium" | "low",
-      "codeSection": "Specific code section reference (e.g., '${buildingCode.code || 'NBC'} Section X.X.X')",
+      "codeSection": "Specific code section reference (e.g., 'NBC 2020 Section 9.3.2.1')",
       "description": "Clear description of the compliance issue",
       "recommendation": "Specific action to address the issue"
     }
@@ -116,99 +101,88 @@ Return your analysis in the following JSON format ONLY:
   "summary": "Brief overall compliance summary"
 }
 
-GUIDELINES:
-- If the component appears to meet code requirements based on the observations, set status to "compliant" with an empty issues array
-- If there are clear violations or concerns, set status to "non_compliant" and list specific issues
-- If more information is needed to make a determination, set status to "needs_review"
-- Reference specific code sections when identifying issues
-- Provide actionable recommendations for any issues found
-
-Return ONLY valid JSON, no markdown code blocks or additional text.`;
+If the assessment is compliant, return an empty issues array. If you need more information to make a determination, set status to "needs_review" and explain what additional information is needed in the summary.`;
 
       try {
-        console.log("[Compliance Check] Calling LLM for:", assessmentContext.componentName);
-        console.log("[Compliance Check] Building code:", buildingCode.title);
-        
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: `You are a certified building code compliance expert specializing in ${buildingCode.jurisdiction} building codes. You have comprehensive knowledge of ${buildingCode.title} and can analyze building assessments for code compliance. Always respond with valid JSON only, no markdown formatting.`,
+              content: "You are a building code compliance expert. Analyze assessments against building codes and provide structured compliance reports in JSON format.",
             },
             {
               role: "user",
-              content: prompt,
+              content: [
+                {
+                  type: "text",
+                  text: prompt,
+                },
+                {
+                  type: "file_url",
+                  file_url: {
+                    url: buildingCode.documentUrl,
+                    mime_type: "application/pdf",
+                  },
+                },
+              ],
             },
           ],
           response_format: {
-            type: "json_object",
+            type: "json_schema",
+            json_schema: {
+              name: "compliance_analysis",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  status: {
+                    type: "string",
+                    enum: ["compliant", "non_compliant", "needs_review"],
+                    description: "Overall compliance status",
+                  },
+                  issues: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        severity: {
+                          type: "string",
+                          enum: ["high", "medium", "low"],
+                        },
+                        codeSection: {
+                          type: "string",
+                          description: "Specific building code section reference",
+                        },
+                        description: {
+                          type: "string",
+                          description: "Description of the compliance issue",
+                        },
+                        recommendation: {
+                          type: "string",
+                          description: "Recommended action to address the issue",
+                        },
+                      },
+                      required: ["severity", "codeSection", "description", "recommendation"],
+                      additionalProperties: false,
+                    },
+                  },
+                  summary: {
+                    type: "string",
+                    description: "Overall compliance summary",
+                  },
+                },
+                required: ["status", "issues", "summary"],
+                additionalProperties: false,
+              },
+            },
           },
         });
-        
-        console.log("[Compliance Check] LLM Response received");
 
-        // Handle response content - can be string or array
-        let content: string;
-        
-        // Check if response has the expected structure
-        if (!response || !response.choices || !Array.isArray(response.choices) || response.choices.length === 0) {
-          console.error("[Compliance Check] Invalid response structure:", JSON.stringify(response, null, 2));
-          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI returned invalid response structure' });
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid AI response' });
         }
-        
-        const messageContent = response.choices[0]?.message?.content;
-        
-        if (!messageContent) {
-          console.error("[Compliance Check] No content in response:", JSON.stringify(response, null, 2));
-          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI returned empty response' });
-        }
-        
-        if (typeof messageContent === 'string') {
-          content = messageContent;
-        } else if (Array.isArray(messageContent)) {
-          // Extract text from array of content parts
-          const textPart = messageContent.find(part => part.type === 'text');
-          if (textPart && 'text' in textPart) {
-            content = textPart.text;
-          } else {
-            console.error("[Compliance Check] No text content in array:", JSON.stringify(messageContent, null, 2));
-            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI response missing text content' });
-          }
-        } else {
-          console.error("[Compliance Check] Unexpected content type:", typeof messageContent);
-          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid AI response format' });
-        }
-
-        // Clean up the content - remove markdown code blocks if present
-        let cleanedContent = content.trim();
-        if (cleanedContent.startsWith('```json')) {
-          cleanedContent = cleanedContent.slice(7);
-        } else if (cleanedContent.startsWith('```')) {
-          cleanedContent = cleanedContent.slice(3);
-        }
-        if (cleanedContent.endsWith('```')) {
-          cleanedContent = cleanedContent.slice(0, -3);
-        }
-        cleanedContent = cleanedContent.trim();
-
-        let complianceResult;
-        try {
-          complianceResult = JSON.parse(cleanedContent);
-        } catch (parseError) {
-          console.error("[Compliance Check] JSON parse error:", parseError, "Content:", cleanedContent);
-          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to parse AI response as JSON' });
-        }
-
-        // Validate the response structure
-        if (!complianceResult.status || !Array.isArray(complianceResult.issues)) {
-          console.error("[Compliance Check] Invalid response structure:", complianceResult);
-          // Provide default structure if missing
-          complianceResult = {
-            status: complianceResult.status || "needs_review",
-            issues: complianceResult.issues || [],
-            summary: complianceResult.summary || "Unable to determine compliance status. Please review manually.",
-          };
-        }
+        const complianceResult = JSON.parse(content);
 
         // Update assessment with compliance results
         await db.updateAssessmentCompliance(input.assessmentId, {
@@ -229,9 +203,6 @@ Return ONLY valid JSON, no markdown code blocks or additional text.`;
         };
       } catch (error) {
         console.error("[Compliance Check] Error:", error);
-        if (error instanceof TRPCError) {
-          throw error;
-        }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to perform compliance check. Please try again.",
@@ -272,98 +243,6 @@ Return ONLY valid JSON, no markdown code blocks or additional text.`;
           total: input.assessmentIds.length,
           successful: results.length,
           failed: errors.length,
-        },
-      };
-    }),
-
-  /**
-   * Check all components in a project for compliance
-   * Fetches all assessments for the project and runs compliance checks on each
-   */
-  checkAllProjectComponents: protectedProcedure
-    .input(z.object({
-      projectId: z.number(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      // Verify project access
-      const project = await db.getProjectById(input.projectId, ctx.user.id);
-      if (!project) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Project not found or access denied",
-        });
-      }
-
-      // Check if project has a building code selected
-      if (!project.buildingCodeId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Project does not have a building code selected. Please select a building code in project settings.",
-        });
-      }
-
-      // Fetch all assessments for this project
-      const assessments = await db.getAssessmentsByProject(input.projectId);
-      
-      if (assessments.length === 0) {
-        return {
-          success: true,
-          results: [],
-          errors: [],
-          summary: {
-            total: 0,
-            successful: 0,
-            failed: 0,
-            compliant: 0,
-            nonCompliant: 0,
-            needsReview: 0,
-          },
-        };
-      }
-
-      const results = [];
-      const errors = [];
-      let compliantCount = 0;
-      let nonCompliantCount = 0;
-      let needsReviewCount = 0;
-
-      // Process each assessment
-      for (const assessment of assessments) {
-        try {
-          const result = await (complianceCheckRouter as any).createCaller(ctx).checkAssessmentCompliance({
-            assessmentId: assessment.id,
-          });
-          results.push({ 
-            assessmentId: assessment.id,
-            componentName: assessment.componentName,
-            componentCode: assessment.componentCode,
-            ...result 
-          });
-          
-          // Count compliance statuses
-          if (result.result.status === 'compliant') compliantCount++;
-          else if (result.result.status === 'non_compliant') nonCompliantCount++;
-          else if (result.result.status === 'needs_review') needsReviewCount++;
-        } catch (error) {
-          errors.push({
-            assessmentId: assessment.id,
-            componentName: assessment.componentName,
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-      }
-
-      return {
-        success: true,
-        results,
-        errors,
-        summary: {
-          total: assessments.length,
-          successful: results.length,
-          failed: errors.length,
-          compliant: compliantCount,
-          nonCompliant: nonCompliantCount,
-          needsReview: needsReviewCount,
         },
       };
     }),

@@ -102,7 +102,7 @@ interface AssessmentDialogProps {
   onSuccess: () => void;
 }
 
-// Condition percentage mappings based on B³NMA assessment standards
+// Condition percentage mappings based on Maben report
 const CONDITION_PERCENTAGES: Record<string, string> = {
   "good": "90-75% of ESL",
   "fair": "75-50% of ESL",
