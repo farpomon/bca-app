@@ -2184,11 +2184,25 @@ export async function getAllBuildingCodes() {
   const db = await getDb();
   if (!db) return [];
   
-  return await db
+  const allCodes = await db
     .select()
     .from(buildingCodes)
     .where(eq(buildingCodes.isActive, 1))
     .orderBy(buildingCodes.title);
+  
+  // Deduplicate by title, preferring entries with documentUrl
+  const uniqueCodes = new Map<string, typeof allCodes[0]>();
+  
+  for (const code of allCodes) {
+    const existing = uniqueCodes.get(code.title);
+    
+    // If no existing entry, or existing has no documentUrl but current does, use current
+    if (!existing || (!existing.documentUrl && code.documentUrl)) {
+      uniqueCodes.set(code.title, code);
+    }
+  }
+  
+  return Array.from(uniqueCodes.values()).sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export async function getBuildingCodeById(id: number) {

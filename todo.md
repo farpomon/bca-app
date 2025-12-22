@@ -95,6 +95,12 @@
 
 ## Current Bug Fixes
 
+### Building Code Dropdown Deduplication
+- [x] Update getAllBuildingCodes query to return only one version per jurisdiction+year
+- [x] Prefer entries with documentUrl over those without
+- [x] Add legal disclaimer back to compliance section
+- [x] Test dropdown displays unique building codes only
+
 - [x] Fix address autocomplete - clicking suggestions doesn't populate fields (rewrote with custom dropdown)
 
 - [x] Fix bulk delete projects error - "Unable to transform response from server"
@@ -1022,3 +1028,9 @@ Testing:
 - [x] Create database table for building codes
 - [x] Create scheduled task to search and update building codes monthly
 - [x] Implement building code search and update logic
+
+## Logo Update
+- [x] Create new B³NMA logo with 3D cube design (navy blue to teal gradient)
+- [x] Replace maben-logo.png in client/public directory
+- [x] Update APP_LOGO constant if needed
+- [x] Verify logo displays correctly in sidebar and header

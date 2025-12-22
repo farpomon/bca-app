@@ -169,6 +169,15 @@ export function ComplianceCheckButton({
                   </CardContent>
                 </Card>
               )}
+
+              {/* Legal Disclaimer */}
+              <Card className="bg-muted/50">
+                <CardContent className="pt-6">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Disclaimer:</strong> This compliance check is provided for informational purposes only and does not constitute professional engineering advice, legal opinion, or official building code interpretation. The analysis is based on AI-assisted review and may not identify all compliance issues. Users should consult with licensed professionals (engineers, architects, code officials) and relevant authorities having jurisdiction for authoritative compliance determinations. The system operators assume no liability for decisions made based on this report.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           )}
         </DialogContent>
