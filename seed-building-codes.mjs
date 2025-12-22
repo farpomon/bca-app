@@ -4,7 +4,7 @@
  */
 
 import { drizzle } from "drizzle-orm/mysql2";
-import { buildingCodes } from "./drizzle/schema.ts";
+import { buildingCodes } from "./drizzle/schema.js";
 
 const db = drizzle(process.env.DATABASE_URL);
 
@@ -40,6 +40,28 @@ const codes = [
     documentUrl: null,
     documentKey: null,
     pageCount: 1570,
+    isActive: 1,
+  },
+  {
+    code: "NFC_2020",
+    title: "National Fire Code of Canada 2020",
+    edition: "2020 Edition",
+    jurisdiction: "Canada",
+    year: 2020,
+    documentUrl: null,
+    documentKey: null,
+    pageCount: 420,
+    isActive: 1,
+  },
+  {
+    code: "NPC_2020",
+    title: "National Plumbing Code of Canada 2020",
+    edition: "2020 Edition",
+    jurisdiction: "Canada",
+    year: 2020,
+    documentUrl: null,
+    documentKey: null,
+    pageCount: 184,
     isActive: 1,
   },
 ];

@@ -407,6 +407,13 @@
       "when": 1766275079781,
       "tag": "0057_crazy_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "5",
+      "when": 1766441061175,
+      "tag": "0058_spotty_maverick",
+      "breakpoints": true
     }
   ]
 }

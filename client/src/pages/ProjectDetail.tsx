@@ -290,6 +290,11 @@ export default function ProjectDetail() {
               Back to Projects
             </Button>
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+            {project.uniqueId && (
+              <p className="text-sm font-mono text-muted-foreground">
+                ID: {project.uniqueId}
+              </p>
+            )}
             <p className="text-muted-foreground">
               {project.address || "No address specified"}
             </p>

@@ -140,6 +140,11 @@ export default function AssetDetail() {
               <h1 className="text-3xl font-bold tracking-tight">{asset.name}</h1>
               {getStatusBadge(asset.status)}
             </div>
+            {asset.uniqueId && (
+              <p className="text-sm font-mono text-muted-foreground">
+                ID: {asset.uniqueId}
+              </p>
+            )}
             {asset.address && (
               <p className="text-muted-foreground">{asset.address}</p>
             )}

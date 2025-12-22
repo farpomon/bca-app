@@ -35,7 +35,16 @@ export async function createAsset(data: InsertAsset) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(assets).values(data);
+  // Generate unique ID if not provided
+  const { generateAssetUniqueId } = await import("./utils/uniqueId.js");
+  const uniqueId = data.uniqueId || generateAssetUniqueId();
+  
+  const assetData = {
+    ...data,
+    uniqueId,
+  };
+  
+  const result = await db.insert(assets).values(assetData);
   return result[0].insertId;
 }
 

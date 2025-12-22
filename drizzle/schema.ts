@@ -170,6 +170,7 @@ export const assetDocuments = mysqlTable("asset_documents", {
 
 export const assets = mysqlTable("assets", {
 	id: int().autoincrement().notNull(),
+	uniqueId: varchar({ length: 50 }).notNull().unique(),
 	projectId: int().notNull(),
 	name: varchar({ length: 255 }).notNull(),
 	description: text(),
@@ -1115,6 +1116,7 @@ export const projectVersions = mysqlTable("project_versions", {
 
 export const projects = mysqlTable("projects", {
 	id: int().autoincrement().notNull(),
+	uniqueId: varchar({ length: 50 }).notNull().unique(),
 	userId: int().notNull(),
 	name: varchar({ length: 255 }).notNull(),
 	address: text(),

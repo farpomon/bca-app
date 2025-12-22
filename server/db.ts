@@ -246,9 +246,14 @@ export async function createProject(data: InsertProject, userCompany?: string | 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  // Generate unique ID if not provided
+  const { generateProjectUniqueId } = await import("./utils/uniqueId.js");
+  const uniqueId = data.uniqueId || generateProjectUniqueId();
+  
   // Auto-assign user's company to the project
   const projectData = {
     ...data,
+    uniqueId,
     company: userCompany || data.company,
   };
   

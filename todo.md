@@ -1034,3 +1034,40 @@ Testing:
 - [x] Replace maben-logo.png in client/public directory
 - [x] Update APP_LOGO constant if needed
 - [x] Verify logo displays correctly in sidebar and header
+
+## Add National Fire Code and Plumbing Code
+
+### Database Updates
+- [x] Add National Fire Code of Canada (current edition) to building_codes table
+- [x] Add National Plumbing Code of Canada (current edition) to building_codes table
+- [x] Verify codes are properly seeded with correct metadata
+
+### Compliance Checking Enhancement
+- [x] Update compliance check prompt to require explanations for all results
+- [x] Modify response schema to include explanation field for each issue
+- [x] Update ComplianceCheckDialog to display explanations
+- [x] Update NonComplianceList to show explanations for each issue
+- [x] Test compliance checking with new codes and verify explanations appear
+
+## Add Unique Identifiers to Projects and Assets
+
+### Database Schema Updates
+- [x] Add unique_id field to projects table (varchar, unique, auto-generated)
+- [x] Add unique_id field to assets table (varchar, unique, auto-generated)
+- [x] Create migration script to generate unique IDs for existing records
+- [x] Push schema changes to database
+
+### Backend Implementation
+- [x] Create utility function to generate unique IDs (format: PROJ-YYYYMMDD-XXXX or ASSET-YYYYMMDD-XXXX)
+- [x] Update createProject to auto-generate unique_id
+- [x] Update createAsset to auto-generate unique_id
+- [ ] Add unique_id to project and asset queries/responses
+- [ ] Add validation to ensure unique_id uniqueness
+
+### Frontend Display
+- [x] Display project unique_id in project detail page header
+- [x] Display asset unique_id in asset detail page header
+- [ ] Add unique_id column to projects table
+- [ ] Add unique_id column to assets table
+- [ ] Make unique_id searchable in project/asset lists
+- [ ] Add unique_id to export reports and PDFs

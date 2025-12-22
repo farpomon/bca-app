@@ -95,11 +95,14 @@ Task: Analyze this assessment for potential building code compliance issues. Ret
       "severity": "high" | "medium" | "low",
       "codeSection": "Specific code section reference (e.g., 'NBC 2020 Section 9.3.2.1')",
       "description": "Clear description of the compliance issue",
+      "explanation": "Short explanation (1-2 sentences) of why this is compliant or non-compliant based on the building code requirements",
       "recommendation": "Specific action to address the issue"
     }
   ],
   "summary": "Brief overall compliance summary"
 }
+
+IMPORTANT: For EVERY issue (whether compliant or non-compliant), you MUST provide a short explanation that references the specific building code requirement and explains why the assessment meets or fails to meet that requirement.
 
 If the assessment is compliant, return an empty issues array. If you need more information to make a determination, set status to "needs_review" and explain what additional information is needed in the summary.`;
 
@@ -157,12 +160,16 @@ If the assessment is compliant, return an empty issues array. If you need more i
                           type: "string",
                           description: "Description of the compliance issue",
                         },
+                        explanation: {
+                          type: "string",
+                          description: "Short explanation of why this is non-compliant or compliant",
+                        },
                         recommendation: {
                           type: "string",
                           description: "Recommended action to address the issue",
                         },
                       },
-                      required: ["severity", "codeSection", "description", "recommendation"],
+                      required: ["severity", "codeSection", "description", "explanation", "recommendation"],
                       additionalProperties: false,
                     },
                   },

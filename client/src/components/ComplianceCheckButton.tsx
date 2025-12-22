@@ -147,6 +147,12 @@ export function ComplianceCheckButton({
                           <p className="text-sm font-medium">Issue:</p>
                           <p className="text-sm text-muted-foreground">{issue.description}</p>
                         </div>
+                        {issue.explanation && (
+                          <div>
+                            <p className="text-sm font-medium">Explanation:</p>
+                            <p className="text-sm text-muted-foreground">{issue.explanation}</p>
+                          </div>
+                        )}
                         <div>
                           <p className="text-sm font-medium">Recommendation:</p>
                           <p className="text-sm text-muted-foreground">{issue.recommendation}</p>
