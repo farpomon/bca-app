@@ -95,6 +95,9 @@
 
 ## Current Bug Fixes
 
+- [x] Fix TypeScript errors in reportGenerator.service.ts (import names and type issues)
+- [x] Fix compliance check feature failing with "Failed to check compliance" error
+
 - [x] Fix address autocomplete - clicking suggestions doesn't populate fields (rewrote with custom dropdown)
 
 - [x] Fix bulk delete projects error - "Unable to transform response from server"

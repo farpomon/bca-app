@@ -400,9 +400,29 @@ Format your response as JSON with the following structure:
           },
         });
 
-        const content = response.choices[0]?.message?.content;
-        if (!content) {
-          throw new Error("No response from AI service");
+        // Handle response content - can be string or array
+        let content: string;
+        const messageContent = response.choices[0]?.message?.content;
+        
+        if (!messageContent) {
+          console.error("[Compliance Check] No content in response:", JSON.stringify(response, null, 2));
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI returned empty response' });
+        }
+        
+        if (typeof messageContent === 'string') {
+          content = messageContent;
+        } else if (Array.isArray(messageContent)) {
+          // Extract text from array of content parts
+          const textPart = messageContent.find(part => part.type === 'text');
+          if (textPart && 'text' in textPart) {
+            content = textPart.text;
+          } else {
+            console.error("[Compliance Check] No text content in array:", JSON.stringify(messageContent, null, 2));
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI response missing text content' });
+          }
+        } else {
+          console.error("[Compliance Check] Unexpected content type:", typeof messageContent);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid AI response format' });
         }
 
         const result = JSON.parse(content);
