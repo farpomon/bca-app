@@ -1081,3 +1081,15 @@ Testing:
 
 - [x] Fix compliance check feature error ("Failed to check compliance") - Fixed json_schema to json_object mode and proper response handling
 - [x] Show only one version of each building code in dropdown (remove duplicates) - Added deduplication logic in getAllBuildingCodes()
+
+## Rebranding to B³NMA
+
+- [x] Design and generate B³NMA logo (B-cubed concept, professional)
+- [x] Replace all "Maben" and "BENMA" references with "B³NMA"
+- [x] Update APP_LOGO constant to use new B³NMA logo
+- [ ] Update landing page header with B³NMA branding
+- [ ] Update email notifications to use B³NMA branding
+- [ ] Replace logo in application header
+- [ ] Update favicon with B³NMA logo (via Management UI)
+- [ ] Update APP_TITLE to "B³NMA - Building Baseline Benchmarking & Needs Management App" (via Management UI)
+- [ ] Test all pages for consistent branding
