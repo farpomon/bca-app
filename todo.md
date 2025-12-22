@@ -1063,3 +1063,10 @@ Testing:
 - [x] Ensure disclaimer is always visible when viewing compliance results
 - [ ] Add disclaimer to PDF reports (future enhancement)
 - [ ] Test complete workflow
+
+## Bug: Check All Components Not Working (FIXED)
+
+- [x] Fix "Check All Components" bulk compliance checking - stuck at "Checking 0/25..." and not progressing
+- [x] Investigate why bulk compliance check API is not being called or not returning results
+- [x] Verify frontend state management for bulk check progress
+- [x] Test bulk compliance checking after fix

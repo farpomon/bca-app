@@ -74,7 +74,7 @@ export default function AssetDetail() {
     undefined,
     { enabled: !!user }
   );
-  const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
+  const checkComplianceMutation = (trpc.complianceCheck as any).checkAssessmentCompliance.useMutation();
   const checkAllComponentsMutation = (trpc.complianceCheck as any).checkAllProjectComponents.useMutation();
 
   if (authLoading || projectLoading || assetLoading) {
@@ -615,26 +615,64 @@ export default function AssetDetail() {
                   {selectedBuildingCode && assessments && assessments.length > 0 && (
                     <Button
                       onClick={async () => {
+                        if (!assessments || assessments.length === 0) {
+                          toast.error('No assessments to check');
+                          return;
+                        }
+
                         setIsBulkChecking(true);
                         setBulkCheckProgress({ current: 0, total: assessments.length });
+                        
                         try {
-                          const result = await checkAllComponentsMutation.mutateAsync({
-                            projectId,
-                          });
-                          
-                          // Update compliance results for each component
+                          // Check assessments one by one with progress updates
                           const newResults: Record<number, { compliant: boolean; details: string }> = {};
-                          result.results.forEach((r: any) => {
-                            newResults[r.assessmentId] = {
-                              compliant: r.result.status === 'compliant',
-                              details: r.result.summary,
-                            };
-                          });
+                          let compliantCount = 0;
+                          let nonCompliantCount = 0;
+                          let needsReviewCount = 0;
+                          let errorCount = 0;
+
+                          for (let i = 0; i < assessments.length; i++) {
+                            const assessment = assessments[i];
+                            try {
+                              // Update progress before checking
+                              setBulkCheckProgress({ current: i, total: assessments.length });
+                              
+                              const result = await checkComplianceMutation.mutateAsync({
+                                assessmentId: assessment.id,
+                              });
+                              
+                              newResults[assessment.id] = {
+                                compliant: result.result.status === 'compliant',
+                                details: result.result.summary,
+                              };
+                              
+                              // Count statuses
+                              if (result.result.status === 'compliant') compliantCount++;
+                              else if (result.result.status === 'non_compliant') nonCompliantCount++;
+                              else if (result.result.status === 'needs_review') needsReviewCount++;
+                              
+                              // Update progress after successful check
+                              setBulkCheckProgress({ current: i + 1, total: assessments.length });
+                            } catch (error: any) {
+                              console.error(`Error checking assessment ${assessment.id}:`, error);
+                              errorCount++;
+                              // Continue with next assessment even if one fails
+                            }
+                          }
+                          
                           setComplianceResults(newResults);
                           
-                          toast.success(
-                            `Bulk compliance check completed: ${result.summary.compliant} compliant, ${result.summary.nonCompliant} non-compliant, ${result.summary.needsReview} need review`
-                          );
+                          // Show summary toast
+                          const successCount = compliantCount + nonCompliantCount + needsReviewCount;
+                          if (errorCount > 0) {
+                            toast.warning(
+                              `Bulk compliance check completed with errors: ${successCount} checked (${compliantCount} compliant, ${nonCompliantCount} non-compliant, ${needsReviewCount} need review), ${errorCount} failed`
+                            );
+                          } else {
+                            toast.success(
+                              `Bulk compliance check completed: ${compliantCount} compliant, ${nonCompliantCount} non-compliant, ${needsReviewCount} need review`
+                            );
+                          }
                         } catch (error: any) {
                           console.error('Bulk compliance check error:', error);
                           toast.error(error.message || 'Failed to run bulk compliance check');
