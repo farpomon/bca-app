@@ -1078,3 +1078,13 @@ Testing:
 
 - [x] Fix compliance check feature error ("Failed to check compliance") - Fixed json_schema to json_object mode and proper response handling
 - [x] Show only one version of each building code in dropdown (remove duplicates) - Added deduplication logic in getAllBuildingCodes()
+
+
+## Fix Compliance Check PDF Page Limit Error (Completed)
+
+- [x] Investigate compliance check failure with 12 failed errors
+- [x] Root cause: BC Building Code PDF has 1906 pages, exceeds LLM's 1000 page limit
+- [x] Fix: Rewrite compliance check to use text-based building code knowledge instead of PDF files
+- [x] Implement embedded building code knowledge base for all supported codes (BCBC 2024, IBC 2024, NBC 2020, OBC 2024, etc.)
+- [x] Add better error handling for LLM API responses
+- [x] Test bulk compliance check - now working (0 compliant, 1 non-compliant, 2 need review)

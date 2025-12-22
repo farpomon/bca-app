@@ -1,0 +1,26 @@
+{
+  "query": "SELECT id, code, title, jurisdiction, documentUrl, status FROM building_codes WHERE code = 'bcbc-2024' OR title LIKE '%British Columbia%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, code, title, jurisdiction, documentUrl, status FROM building_codes WHERE code = 'bcbc-2024' OR title LIKE '%British Columbia%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "2",
+      "code": "BCBC_2024",
+      "title": "British Columbia Building Code 2024",
+      "jurisdiction": "British Columbia",
+      "documentUrl": "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028353512/WXKmoGNIHyZlOCST.pdf",
+      "status": "active"
+    },
+    {
+      "id": "30004",
+      "code": "bcbc-2024",
+      "title": "British Columbia Building Code 2024",
+      "jurisdiction": "British Columbia",
+      "documentUrl": "NULL",
+      "status": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcode\ttitle\tjurisdiction\tdocumentUrl\tstatus\n2\tBCBC_2024\tBritish Columbia Building Code 2024\tBritish Columbia\thttps://files.manuscdn.com/user_upload_by_module/session_file/310419663028353512/WXKmoGNIHyZlOCST.pdf\tactive\n30004\tbcbc-2024\tBritish Columbia Building Code 2024\tBritish Columbia\tNULL\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 96
+}
