@@ -7,6 +7,9 @@ import { TRPCError } from "@trpc/server";
 /**
  * Building Code Compliance Checking Router
  * AI-powered analysis of assessments against selected building codes
+ * 
+ * Note: Due to PDF size limitations (1000 page max), we use text-based prompts
+ * with building code knowledge rather than attaching the full PDF document.
  */
 
 export const complianceCheckRouter: ReturnType<typeof router> = router({
@@ -44,10 +47,10 @@ export const complianceCheckRouter: ReturnType<typeof router> = router({
       }
 
       const buildingCode = await db.getBuildingCodeById(project.buildingCodeId);
-      if (!buildingCode || !buildingCode.documentUrl) {
+      if (!buildingCode) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Building code document not found",
+          message: "Building code not found",
         });
       }
 
@@ -68,32 +71,44 @@ export const complianceCheckRouter: ReturnType<typeof router> = router({
         },
       };
 
-      // Call LLM with building code PDF context
-      const prompt = `You are a building code compliance expert. Analyze the following building assessment against the provided building code document.
+      // Build comprehensive prompt with building code context
+      const prompt = `You are a certified building code compliance expert with extensive knowledge of ${buildingCode.title} (${buildingCode.jurisdiction}).
 
-Building Code: ${buildingCode.title}
-Jurisdiction: ${buildingCode.jurisdiction}
+BUILDING CODE REFERENCE:
+- Code: ${buildingCode.title}
+- Jurisdiction: ${buildingCode.jurisdiction}
+- Year/Edition: ${buildingCode.year || 'Current'}
 
-Assessment Details:
-- Component: ${assessmentContext.componentName} (${assessmentContext.componentCode})
-- Condition: ${assessmentContext.condition} (${assessmentContext.conditionPercentage}%)
+
+ASSESSMENT TO ANALYZE:
+- Component: ${assessmentContext.componentName} (Code: ${assessmentContext.componentCode})
+- Current Condition: ${assessmentContext.condition} (${assessmentContext.conditionPercentage}%)
 - Observations: ${assessmentContext.observations}
 - Review Year: ${assessmentContext.reviewYear}
 
-Project Context:
+PROJECT CONTEXT:
 - Property Type: ${assessmentContext.projectInfo.propertyType || "Not specified"}
 - Construction Type: ${assessmentContext.projectInfo.constructionType || "Not specified"}
 - Year Built: ${assessmentContext.projectInfo.yearBuilt || "Not specified"}
 - Number of Stories: ${assessmentContext.projectInfo.numberOfStories || "Not specified"}
 
-Task: Analyze this assessment for potential building code compliance issues. Return your analysis in the following JSON format ONLY (no additional text):
+TASK:
+Based on your expert knowledge of ${buildingCode.title}, analyze this building component assessment for potential code compliance issues. Consider:
+1. Structural requirements
+2. Fire safety requirements
+3. Health and safety standards
+4. Accessibility requirements
+5. Energy efficiency standards
+6. Material and installation standards
+
+Return your analysis in the following JSON format ONLY:
 
 {
   "status": "compliant" | "non_compliant" | "needs_review",
   "issues": [
     {
       "severity": "high" | "medium" | "low",
-      "codeSection": "Specific code section reference (e.g., 'NBC 2020 Section 9.3.2.1')",
+      "codeSection": "Specific code section reference (e.g., '${buildingCode.code || 'NBC'} Section X.X.X')",
       "description": "Clear description of the compliance issue",
       "recommendation": "Specific action to address the issue"
     }
@@ -101,42 +116,46 @@ Task: Analyze this assessment for potential building code compliance issues. Ret
   "summary": "Brief overall compliance summary"
 }
 
-If the assessment is compliant, return an empty issues array. If you need more information to make a determination, set status to "needs_review" and explain what additional information is needed in the summary.
+GUIDELINES:
+- If the component appears to meet code requirements based on the observations, set status to "compliant" with an empty issues array
+- If there are clear violations or concerns, set status to "non_compliant" and list specific issues
+- If more information is needed to make a determination, set status to "needs_review"
+- Reference specific code sections when identifying issues
+- Provide actionable recommendations for any issues found
 
-IMPORTANT: Return ONLY valid JSON, no markdown code blocks or additional text.`;
+Return ONLY valid JSON, no markdown code blocks or additional text.`;
 
       try {
+        console.log("[Compliance Check] Calling LLM for:", assessmentContext.componentName);
+        console.log("[Compliance Check] Building code:", buildingCode.title);
+        
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: "You are a building code compliance expert. Analyze assessments against building codes and provide structured compliance reports. Always respond with valid JSON only, no markdown formatting.",
+              content: `You are a certified building code compliance expert specializing in ${buildingCode.jurisdiction} building codes. You have comprehensive knowledge of ${buildingCode.title} and can analyze building assessments for code compliance. Always respond with valid JSON only, no markdown formatting.`,
             },
             {
               role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: prompt,
-                },
-                {
-                  type: "file_url",
-                  file_url: {
-                    url: buildingCode.documentUrl,
-                    mime_type: "application/pdf",
-                  },
-                },
-              ],
+              content: prompt,
             },
           ],
-          // Use json_object mode instead of json_schema (Gemini doesn't support json_schema)
           response_format: {
             type: "json_object",
           },
         });
+        
+        console.log("[Compliance Check] LLM Response received");
 
         // Handle response content - can be string or array
         let content: string;
+        
+        // Check if response has the expected structure
+        if (!response || !response.choices || !Array.isArray(response.choices) || response.choices.length === 0) {
+          console.error("[Compliance Check] Invalid response structure:", JSON.stringify(response, null, 2));
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI returned invalid response structure' });
+        }
+        
         const messageContent = response.choices[0]?.message?.content;
         
         if (!messageContent) {

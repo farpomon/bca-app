@@ -738,15 +738,14 @@ export default function AssetDetail() {
                                 setCheckingCompliance(prev => ({ ...prev, [assessment.id]: true }));
                                 try {
                                   const result = await checkComplianceMutation.mutateAsync({
-                                    componentName: assessment.componentName,
-                                    componentLocation: assessment.componentLocation || undefined,
-                                    condition: assessment.condition || undefined,
-                                    observations: assessment.observations || undefined,
-                                    buildingCode: selectedBuildingCode,
+                                    assessmentId: assessment.id,
                                   });
                                   setComplianceResults(prev => ({
                                     ...prev,
-                                    [assessment.id]: result,
+                                    [assessment.id]: {
+                                      compliant: result.result.status === 'compliant',
+                                      details: result.result.summary,
+                                    },
                                   }));
                                   toast.success('Compliance check completed');
                                 } catch (error) {

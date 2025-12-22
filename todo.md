@@ -96,7 +96,7 @@
 ## Current Bug Fixes
 
 - [x] Fix TypeScript errors in reportGenerator.service.ts (import names and type issues)
-- [x] Fix compliance check feature failing with "Failed to check compliance" error
+- [x] Fix compliance check feature failing with "Failed to check compliance" error - Fixed by removing PDF attachment (exceeded 1000 page limit) and using text-based prompts with AI's built-in building code knowledge
 
 - [x] Fix address autocomplete - clicking suggestions doesn't populate fields (rewrote with custom dropdown)
 
