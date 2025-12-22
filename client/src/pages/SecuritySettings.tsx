@@ -1,25 +1,12 @@
 import { MFASettings } from "@/components/MFASettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield } from "lucide-react";
-import { useLocation } from "wouter";
+import { Shield } from "lucide-react";
 
 export default function SecuritySettings() {
-  const [, setLocation] = useLocation();
-
   return (
     <div className="container max-w-4xl py-8">
       <div className="space-y-6">
         <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation("/")}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
           <div className="flex items-center gap-2 mb-2">
             <Shield className="h-6 w-6" />
             <h1 className="text-3xl font-bold">Security Settings</h1>
