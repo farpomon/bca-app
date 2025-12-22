@@ -1,5 +1,9 @@
 # BCA App TODO
 
+## Current Bug Fixes
+
+- [x] Add back button to Security Settings page for navigation to main menu
+
 ## 🔥 CURRENT PRIORITY: AI Import Asset with UNIFORMAT II Assessment Extraction
 
 - [x] Update AI parser to extract UNIFORMAT II component assessments from asset documents
