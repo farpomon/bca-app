@@ -1,5 +1,9 @@
 # BCA App TODO
 
+## 🎨 Branding Update
+
+- [x] Update app logo and title to match presentation branding
+
 ## 🔥 CURRENT PRIORITY: AI Import Asset with UNIFORMAT II Assessment Extraction
 
 - [x] Update AI parser to extract UNIFORMAT II component assessments from asset documents
