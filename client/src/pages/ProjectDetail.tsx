@@ -33,6 +33,7 @@ import ProjectRatingConfig from "@/components/ProjectRatingConfig";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
 import FacilitySummaryTab from "@/components/FacilitySummaryTab";
 import { BackButton } from "@/components/BackButton";
+import { AIChatBox, Message } from "@/components/AIChatBox";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -46,6 +47,7 @@ export default function ProjectDetail() {
   const [selectedAssessments, setSelectedAssessments] = useState<number[]>([]);
   const [bulkStatus, setBulkStatus] = useState<string>("");
   const [expandedDocuments, setExpandedDocuments] = useState<number | null>(null);
+  const [aiMessages, setAiMessages] = useState<Message[]>([]);
   const utils = trpc.useUtils();
   const [projectEditDialogOpen, setProjectEditDialogOpen] = useState(false);
   const [projectForm, setProjectForm] = useState({
@@ -187,6 +189,20 @@ export default function ProjectDetail() {
       toast.error("Failed to update project: " + error.message);
     },
   });
+
+  const aiChatMutation = trpc.projects.aiChat.useMutation({
+    onSuccess: (response) => {
+      setAiMessages(prev => [...prev, { role: "assistant", content: response.message }]);
+    },
+    onError: (error) => {
+      toast.error("AI chat failed: " + error.message);
+    },
+  });
+
+  const handleAIMessage = (content: string) => {
+    setAiMessages(prev => [...prev, { role: "user", content }]);
+    aiChatMutation.mutate({ projectId, message: content, conversationHistory: aiMessages });
+  };
 
   const handleBulkStatusChange = () => {
     if (!bulkStatus || selectedAssessments.length === 0) return;
@@ -400,6 +416,7 @@ export default function ProjectDetail() {
               Map
             </TabsTrigger>
             <TabsTrigger value="status-history">Status History</TabsTrigger>
+            <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="space-y-4">
@@ -968,6 +985,26 @@ export default function ProjectDetail() {
 
           <TabsContent value="status-history" className="space-y-4">
             <StatusHistoryTimeline projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="ai-insights" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Insights</CardTitle>
+                <CardDescription>
+                  Ask questions about this project, get recommendations, and explore insights powered by AI
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AIChatBox
+                  messages={aiMessages}
+                  onSendMessage={handleAIMessage}
+                  isLoading={aiChatMutation.isPending}
+                  placeholder="Ask about this project, request analysis, or get recommendations..."
+                  height="600px"
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

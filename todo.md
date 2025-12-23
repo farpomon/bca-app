@@ -1104,3 +1104,11 @@ Testing:
 ## UI Fixes
 
 - [x] Fix landing page logo size - make smaller to fit white ribbon header
+
+## AI Insights Tab Restoration
+
+- [x] Check if AIInsightsChat component exists
+- [x] Verify AI chat backend router exists
+- [x] Add AI Insights tab to ProjectDetail page
+- [x] Add AI Insights tab to AssetDetail page
+- [x] Test AI chat functionality on both pages

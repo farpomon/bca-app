@@ -37,6 +37,7 @@ import AssetReportTab from "@/components/AssetReportTab";
 import { AssetLocation } from "@/components/AssetLocation";
 import { BackButton } from "@/components/BackButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
+import { AIChatBox, Message } from "@/components/AIChatBox";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 
@@ -49,6 +50,7 @@ export default function AssetDetail() {
 
   const { user, loading: authLoading } = useAuth();
   const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
+  const [aiMessages, setAiMessages] = React.useState<Message[]>([]);
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
   const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string }>>({});
@@ -73,6 +75,20 @@ export default function AssetDetail() {
     { enabled: !!user }
   );
   const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
+
+  const aiChatMutation = trpc.assets.aiChat.useMutation({
+    onSuccess: (response) => {
+      setAiMessages(prev => [...prev, { role: "assistant", content: response.message }]);
+    },
+    onError: (error) => {
+      toast.error("AI chat failed: " + error.message);
+    },
+  });
+
+  const handleAIMessage = (content: string) => {
+    setAiMessages(prev => [...prev, { role: "user", content }]);
+    aiChatMutation.mutate({ assetId: assetIdNum, projectId, message: content, conversationHistory: aiMessages });
+  };
 
   if (authLoading || projectLoading || assetLoading) {
     return (
@@ -210,6 +226,9 @@ export default function AssetDetail() {
               <CalendarDays className="mr-2 h-4 w-4" />
               Timeline
             </TabsTrigger> */}
+            <TabsTrigger value="ai-insights" className="flex-none px-3">
+              AI Insights
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -756,6 +775,27 @@ export default function AssetDetail() {
               </CardContent>
             </Card>
           </TabsContent> */}
+
+          {/* AI Insights Tab */}
+          <TabsContent value="ai-insights" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Insights</CardTitle>
+                <CardDescription>
+                  Ask questions about this asset, get recommendations, and explore insights powered by AI
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AIChatBox
+                  messages={aiMessages}
+                  onSendMessage={handleAIMessage}
+                  isLoading={aiChatMutation.isPending}
+                  placeholder="Ask about this asset, request analysis, or get recommendations..."
+                  height="600px"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
           </Tabs>
         </div>
       </DashboardLayout>

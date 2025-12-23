@@ -602,6 +602,64 @@ export const appRouter = router({
         
         return updatedCount;
       }),
+
+    aiChat: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        message: z.string(),
+        conversationHistory: z.array(z.object({
+          role: z.enum(["system", "user", "assistant"]),
+          content: z.string(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        // Get project data for context
+        const assessments = await db.getProjectAssessments(input.projectId);
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const stats = await db.getProjectStats(input.projectId);
+        
+        // Build context
+        const systemMessage = {
+          role: "system" as const,
+          content: `You are an AI assistant helping with building condition assessment for project "${project.name}". 
+
+Project Details:
+- Address: ${project.address || 'N/A'}
+- Client: ${project.clientName || 'N/A'}
+- Property Type: ${project.propertyType || 'N/A'}
+- Year Built: ${project.yearBuilt || 'N/A'}
+- Status: ${project.status}
+
+Project Statistics:
+- Total Assessments: ${stats?.assessments || 0}
+- Total Deficiencies: ${stats?.deficiencies || 0}
+- Critical Deficiencies: ${deficiencies?.filter((d: any) => d.severity === 'critical').length || 0}
+- High Priority Deficiencies: ${deficiencies?.filter((d: any) => d.priority === 'immediate').length || 0}
+
+Provide helpful insights, recommendations, and analysis based on this project data. Be specific and actionable.`
+        };
+        
+        const messages = [
+          systemMessage,
+          ...(input.conversationHistory || []),
+          { role: "user" as const, content: input.message }
+        ];
+        
+        const response = await invokeLLM({ messages });
+        const content = response.choices[0]?.message?.content;
+        const assistantMessage = typeof content === 'string' ? content : "I apologize, but I couldn't generate a response.";
+        
+        return { message: assistantMessage };
+      }),
   }),
 
   assets: router({
@@ -1009,6 +1067,70 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
             message: `Failed to parse document: ${error.message || 'Unknown error'}`,
           });
         }
+      }),
+
+    aiChat: protectedProcedure
+      .input(z.object({
+        assetId: z.number(),
+        projectId: z.number(),
+        message: z.string(),
+        conversationHistory: z.array(z.object({
+          role: z.enum(["system", "user", "assistant"]),
+          content: z.string(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project and asset access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        }
+        
+        // Get asset data for context
+        const assessments = await db.getAssessmentsByAsset(input.assetId);
+        const deficiencies = await db.getDeficienciesByAsset(input.assetId);
+        
+        // Build context
+        const systemMessage = {
+          role: "system" as const,
+          content: `You are an AI assistant helping with building condition assessment for asset "${asset.name}" in project "${project.name}". 
+
+Asset Details:
+- Type: ${asset.assetType || 'N/A'}
+- Address: ${asset.address || asset.streetAddress || 'N/A'}
+- Year Built: ${asset.yearBuilt || 'N/A'}
+- Status: ${asset.status}
+- Gross Floor Area: ${asset.grossFloorArea || 'N/A'} sq ft
+- Number of Stories: ${asset.numberOfStories || 'N/A'}
+
+Asset Statistics:
+- Total Assessments: ${assessments?.length || 0}
+- Total Deficiencies: ${deficiencies?.length || 0}
+- Critical Deficiencies: ${deficiencies?.filter((d: any) => d.severity === 'critical').length || 0}
+- High Priority Deficiencies: ${deficiencies?.filter((d: any) => d.priority === 'immediate').length || 0}
+
+Provide helpful insights, recommendations, and analysis based on this asset data. Be specific and actionable.`
+        };
+        
+        const messages = [
+          systemMessage,
+          ...(input.conversationHistory || []),
+          { role: "user" as const, content: input.message }
+        ];
+        
+        const response = await invokeLLM({ messages });
+        const content = response.choices[0]?.message?.content;
+        const assistantMessage = typeof content === 'string' ? content : "I apologize, but I couldn't generate a response.";
+        
+        return { message: assistantMessage };
       }),
   }),
 
