@@ -70,6 +70,19 @@ export const companyAccessCodes = mysqlTable("company_access_codes", {
 	index("idx_company_code").on(table.companyId, table.code),
 ]);
 
+export const conversations = mysqlTable("conversations", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	contextType: mysqlEnum(['project','asset']).notNull(),
+	contextId: int().notNull(),
+	messages: text().notNull(), // JSON array of messages
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_conversation_context").on(table.userId, table.contextType, table.contextId),
+]);
+
 export const assetTimelineEvents = mysqlTable("asset_timeline_events", {
 	id: int().autoincrement().notNull(),
 	assetId: int().notNull(),

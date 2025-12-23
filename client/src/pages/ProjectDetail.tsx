@@ -20,7 +20,7 @@ import { ProjectDocumentList } from "@/components/ProjectDocumentList";
 import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PhotoGallery from "@/components/PhotoGallery";
 import ReportTab from "@/components/ReportTab";
 import ExportButton from "@/components/ExportButton";
@@ -48,6 +48,7 @@ export default function ProjectDetail() {
   const [bulkStatus, setBulkStatus] = useState<string>("");
   const [expandedDocuments, setExpandedDocuments] = useState<number | null>(null);
   const [aiMessages, setAiMessages] = useState<Message[]>([]);
+  const [conversationLoaded, setConversationLoaded] = useState(false);
   const utils = trpc.useUtils();
   const [projectEditDialogOpen, setProjectEditDialogOpen] = useState(false);
   const [projectForm, setProjectForm] = useState({
@@ -190,12 +191,40 @@ export default function ProjectDetail() {
     },
   });
 
+  // Load conversation history
+  const { data: conversationHistory } = trpc.projects.getConversation.useQuery(
+    { projectId },
+    { 
+      enabled: !!user && !isNaN(projectId) && !conversationLoaded,
+    }
+  );
+
+  // Update messages when conversation history loads
+  useEffect(() => {
+    if (conversationHistory && conversationHistory.length > 0 && !conversationLoaded) {
+      setAiMessages(conversationHistory);
+      setConversationLoaded(true);
+    } else if (conversationHistory && conversationHistory.length === 0 && !conversationLoaded) {
+      setConversationLoaded(true);
+    }
+  }, [conversationHistory, conversationLoaded]);
+
   const aiChatMutation = trpc.projects.aiChat.useMutation({
     onSuccess: (response) => {
       setAiMessages(prev => [...prev, { role: "assistant", content: response.message }]);
     },
     onError: (error) => {
       toast.error("AI chat failed: " + error.message);
+    },
+  });
+
+  const clearConversationMutation = trpc.projects.clearConversation.useMutation({
+    onSuccess: () => {
+      setAiMessages([]);
+      toast.success("Conversation cleared");
+    },
+    onError: (error) => {
+      toast.error("Failed to clear conversation: " + error.message);
     },
   });
 
@@ -999,6 +1028,7 @@ export default function ProjectDetail() {
                 <AIChatBox
                   messages={aiMessages}
                   onSendMessage={handleAIMessage}
+                  onClearConversation={() => clearConversationMutation.mutate({ projectId })}
                   isLoading={aiChatMutation.isPending}
                   placeholder="Ask about this project, request analysis, or get recommendations..."
                   height="600px"

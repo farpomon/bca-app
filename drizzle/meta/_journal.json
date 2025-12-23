@@ -421,6 +421,13 @@
       "when": 1766504670789,
       "tag": "0059_deep_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "5",
+      "when": 1766517947307,
+      "tag": "0060_narrow_sway",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Loader2, Send, User, Sparkles } from "lucide-react";
+import { Loader2, Send, User, Sparkles, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 
@@ -57,6 +57,11 @@ export type AIChatBoxProps = {
    * Click to send directly
    */
   suggestedPrompts?: string[];
+
+  /**
+   * Callback when user wants to clear the conversation
+   */
+  onClearConversation?: () => void;
 };
 
 /**
@@ -119,6 +124,7 @@ export function AIChatBox({
   height = "600px",
   emptyStateMessage = "Start a conversation with AI",
   suggestedPrompts,
+  onClearConversation,
 }: AIChatBoxProps) {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -196,6 +202,24 @@ export function AIChatBox({
       )}
       style={{ height }}
     >
+      {/* Header with clear button */}
+      {onClearConversation && displayMessages.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-background/50">
+          <span className="text-sm text-muted-foreground">
+            {displayMessages.length} message{displayMessages.length !== 1 ? 's' : ''}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearConversation}
+            className="h-8 text-xs"
+          >
+            <Trash2 className="size-3 mr-1" />
+            Clear
+          </Button>
+        </div>
+      )}
+
       {/* Messages Area */}
       <div ref={scrollAreaRef} className="flex-1 overflow-hidden">
         {displayMessages.length === 0 ? (

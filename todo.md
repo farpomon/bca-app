@@ -1112,3 +1112,7 @@ Testing:
 - [x] Add AI Insights tab to ProjectDetail page
 - [x] Add AI Insights tab to AssetDetail page
 - [x] Test AI chat functionality on both pages
+
+## AI Insights Conversation Persistence
+
+- [x] Implement conversation persistence for AI Insights chat so users can resume conversations when returning to projects/assets

@@ -51,6 +51,7 @@ export default function AssetDetail() {
   const { user, loading: authLoading } = useAuth();
   const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
   const [aiMessages, setAiMessages] = React.useState<Message[]>([]);
+  const [conversationLoaded, setConversationLoaded] = React.useState(false);
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
   const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string }>>({});
@@ -76,12 +77,40 @@ export default function AssetDetail() {
   );
   const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
 
+  // Load conversation history
+  const { data: conversationHistory } = trpc.assets.getConversation.useQuery(
+    { assetId: assetIdNum, projectId },
+    { 
+      enabled: !!user && !isNaN(projectId) && !isNaN(assetIdNum) && !conversationLoaded,
+    }
+  );
+
+  // Update messages when conversation history loads
+  React.useEffect(() => {
+    if (conversationHistory && conversationHistory.length > 0 && !conversationLoaded) {
+      setAiMessages(conversationHistory);
+      setConversationLoaded(true);
+    } else if (conversationHistory && conversationHistory.length === 0 && !conversationLoaded) {
+      setConversationLoaded(true);
+    }
+  }, [conversationHistory, conversationLoaded]);
+
   const aiChatMutation = trpc.assets.aiChat.useMutation({
     onSuccess: (response) => {
       setAiMessages(prev => [...prev, { role: "assistant", content: response.message }]);
     },
     onError: (error) => {
       toast.error("AI chat failed: " + error.message);
+    },
+  });
+
+  const clearConversationMutation = trpc.assets.clearConversation.useMutation({
+    onSuccess: () => {
+      setAiMessages([]);
+      toast.success("Conversation cleared");
+    },
+    onError: (error) => {
+      toast.error("Failed to clear conversation: " + error.message);
     },
   });
 
@@ -789,6 +818,7 @@ export default function AssetDetail() {
                 <AIChatBox
                   messages={aiMessages}
                   onSendMessage={handleAIMessage}
+                  onClearConversation={() => clearConversationMutation.mutate({ assetId: assetIdNum, projectId })}
                   isLoading={aiChatMutation.isPending}
                   placeholder="Ask about this asset, request analysis, or get recommendations..."
                   height="600px"

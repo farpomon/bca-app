@@ -614,6 +614,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { invokeLLM } = await import("./_core/llm");
+        const { saveConversation } = await import("./conversationsDb");
         const isAdmin = ctx.user.role === 'admin';
         
         // Verify project access
@@ -658,7 +659,47 @@ Provide helpful insights, recommendations, and analysis based on this project da
         const content = response.choices[0]?.message?.content;
         const assistantMessage = typeof content === 'string' ? content : "I apologize, but I couldn't generate a response.";
         
+        // Save conversation to database (excluding system message)
+        const conversationToSave = [
+          ...(input.conversationHistory || []),
+          { role: "user" as const, content: input.message },
+          { role: "assistant" as const, content: assistantMessage }
+        ];
+        await saveConversation(ctx.user.id, "project", input.projectId, conversationToSave);
+        
         return { message: assistantMessage };
+      }),
+
+    getConversation: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getConversation } = await import("./conversationsDb");
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        const conversation = await getConversation(ctx.user.id, "project", input.projectId);
+        return conversation?.messages || [];
+      }),
+
+    clearConversation: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { clearConversation } = await import("./conversationsDb");
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        await clearConversation(ctx.user.id, "project", input.projectId);
+        return { success: true };
       }),
   }),
 
@@ -1081,6 +1122,7 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
       }))
       .mutation(async ({ ctx, input }) => {
         const { invokeLLM } = await import("./_core/llm");
+        const { saveConversation } = await import("./conversationsDb");
         const isAdmin = ctx.user.role === 'admin';
         
         // Verify project and asset access
@@ -1132,7 +1174,57 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         const content = response.choices[0]?.message?.content;
         const assistantMessage = typeof content === 'string' ? content : "I apologize, but I couldn't generate a response.";
         
+        // Save conversation to database (excluding system message)
+        const conversationToSave = [
+          ...(input.conversationHistory || []),
+          { role: "user" as const, content: input.message },
+          { role: "assistant" as const, content: assistantMessage }
+        ];
+        await saveConversation(ctx.user.id, "asset", input.assetId, conversationToSave);
+        
         return { message: assistantMessage };
+      }),
+
+    getConversation: protectedProcedure
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getConversation } = await import("./conversationsDb");
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project and asset access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        }
+        
+        const conversation = await getConversation(ctx.user.id, "asset", input.assetId);
+        return conversation?.messages || [];
+      }),
+
+    clearConversation: protectedProcedure
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { clearConversation } = await import("./conversationsDb");
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project and asset access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        }
+        
+        await clearConversation(ctx.user.id, "asset", input.assetId);
+        return { success: true };
       }),
   }),
 
