@@ -128,7 +128,8 @@ export default function Projects() {
       const matchesSearch = 
         project.name?.toLowerCase().includes(query) ||
         project.address?.toLowerCase().includes(query) ||
-        project.clientName?.toLowerCase().includes(query);
+        project.clientName?.toLowerCase().includes(query) ||
+        project.uniqueId?.toLowerCase().includes(query);
       if (!matchesSearch) return false;
     }
 

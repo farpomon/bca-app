@@ -29,6 +29,22 @@ export async function getAssetById(assetId: number, projectId: number) {
 }
 
 /**
+ * Search for an asset by unique ID
+ */
+export async function searchAssetByUniqueId(uniqueId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db
+    .select()
+    .from(assets)
+    .where(eq(assets.uniqueId, uniqueId))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
  * Create a new asset
  */
 export async function createAsset(data: InsertAsset) {

@@ -124,6 +124,20 @@ export const appRouter = router({
         return project;
       }),
 
+    searchByUniqueId: protectedProcedure
+      .input(z.object({ uniqueId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.searchProjectByUniqueId(input.uniqueId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Project not found with this unique ID',
+          });
+        }
+        return project;
+      }),
+
     create: protectedProcedure
       .input(z.object({
         name: z.string().min(1),
@@ -619,6 +633,22 @@ export const appRouter = router({
         const asset = await assetsDb.getAssetById(input.id, input.projectId);
         if (!asset) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        }
+        return asset;
+      }),
+
+    searchByUniqueId: protectedProcedure
+      .input(z.object({ uniqueId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const asset = await assetsDb.searchAssetByUniqueId(input.uniqueId);
+        if (!asset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found with this unique ID" });
+        }
+        // Verify user has access to the project
+        const project = await db.getProjectById(asset.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Access denied to this asset" });
         }
         return asset;
       }),

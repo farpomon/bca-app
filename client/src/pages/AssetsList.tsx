@@ -1,16 +1,17 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Edit, Trash2, ArrowLeft, Loader2, ClipboardCheck, Sparkles } from "lucide-react";
+import { Building2, Plus, Edit, Trash2, ArrowLeft, Loader2, ClipboardCheck, Sparkles, Search } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AssetDialog } from "@/components/AssetDialog";
 import { AIImportAssetDialog } from "@/components/AIImportAssetDialog";
 import type { Asset } from "../../../drizzle/schema";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/_core/hooks/useAuth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +43,7 @@ export default function AssetsList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | undefined>(undefined);
   const [aiImportDialogOpen, setAiImportDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const deleteAsset = trpc.assets.delete.useMutation({
     onSuccess: () => {
@@ -69,6 +71,20 @@ export default function AssetsList() {
     setAssetDialogOpen(false);
     setEditingAsset(undefined);
   };
+
+  // Filter assets based on search query
+  const filteredAssets = useMemo(() => {
+    if (!assets) return [];
+    if (!searchQuery) return assets;
+    
+    const query = searchQuery.toLowerCase();
+    return assets.filter((asset) => 
+      asset.name?.toLowerCase().includes(query) ||
+      asset.assetType?.toLowerCase().includes(query) ||
+      asset.address?.toLowerCase().includes(query) ||
+      asset.uniqueId?.toLowerCase().includes(query)
+    );
+  }, [assets, searchQuery]);
 
   if (authLoading || projectLoading) {
     return (
@@ -111,6 +127,7 @@ export default function AssetsList() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
+        <div className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <Button variant="ghost" size="sm" onClick={() => setLocation("/projects")}>
@@ -131,15 +148,27 @@ export default function AssetsList() {
             </Button>
           </div>
         </div>
+        
+        {/* Search Bar */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, type, address, or unique ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        </div>
 
         {/* Assets Grid */}
         {assetsLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : assets && assets.length > 0 ? (
+        ) : filteredAssets && filteredAssets.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {assets.map((asset) => (
+            {filteredAssets.map((asset) => (
               <Card 
                 key={asset.id} 
                 className="hover:shadow-lg transition-shadow cursor-pointer"
@@ -233,14 +262,21 @@ export default function AssetsList() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No assets yet</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                Add your first building or facility to start assessments
-              </p>
-              <Button onClick={() => setAssetDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Asset
-              </Button>
+              {searchQuery ? (
+                <>
+                  <h3 className="text-lg font-semibold mb-2">No assets found</h3>
+                  <p className="text-muted-foreground mb-4">Try adjusting your search query</p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-semibold mb-2">No assets yet</h3>
+                  <p className="text-muted-foreground mb-4">Get started by adding your first asset</p>
+                  <Button onClick={() => setAssetDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Asset
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         )}

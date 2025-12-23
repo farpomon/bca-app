@@ -93,6 +93,25 @@
 - [x] Sync engine updated to use real backend
 - [ ] Create checkpoint after full offline implementation
 
+## New Features
+
+### Unique ID Search Functionality
+- [x] Add search functionality to find projects by unique ID (PROJ-YYYYMMDD-XXXX)
+- [x] Add search functionality to find assets by unique ID (ASSET-YYYYMMDD-XXXX)
+- [x] Implement search bar in Projects page header
+- [x] Implement search bar in Assets page header
+- [x] Add search results highlighting
+
+### Canadian Building Codes Expansion
+- [x] Add Ontario Building Code (OBC) with multiple years
+- [x] Add Quebec Construction Code (CCQ) with multiple years
+- [x] Add Alberta Building Code (ABC) with multiple years
+- [x] Add Saskatchewan Building Code (SBC)
+- [x] Add Manitoba Building Code (MBC)
+- [x] Add National Energy Code for Buildings (NECB)
+- [x] Verify all codes have proper documentUrl references
+- [ ] Test building code dropdown with expanded database
+
 ## Current Bug Fixes
 
 ### Building Code Dropdown Deduplication

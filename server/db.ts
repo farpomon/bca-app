@@ -230,6 +230,33 @@ export async function getProjectById(projectId: number, userId: number, userComp
   return project;
 }
 
+export async function searchProjectByUniqueId(uniqueId: string, userId: number, userCompany?: string | null, isAdmin?: boolean) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  // Search project by unique ID
+  const result = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.uniqueId, uniqueId))
+    .limit(1);
+  
+  if (result.length === 0) return undefined;
+  
+  const project = result[0];
+  
+  // Admin can see all projects
+  if (isAdmin) return project;
+  
+  // Non-admin users can only see projects from their company
+  if (userCompany && project.company !== userCompany) {
+    console.warn(`[Security] User ${userId} from company "${userCompany}" attempted to access project with uniqueId ${uniqueId} from company "${project.company}"`);
+    return undefined;
+  }
+  
+  return project;
+}
+
 /**
  * Helper function to verify that a project belongs to the user's company.
  * Admins bypass this check.
