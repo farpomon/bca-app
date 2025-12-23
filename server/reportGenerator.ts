@@ -309,6 +309,193 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
     yPos += 5;
   });
 
+  // Financial KPIs Page
+  doc.addPage();
+  addMabenHeader();
+  yPos = 25;
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Financial KPIs & Cost Analysis", 10, yPos);
+  yPos += 15;
+
+  // Calculate additional financial metrics
+  const totalDeferredMaintenance = data.fciData.totalRepairCost;
+  const crv = data.fciData.totalReplacementValue;
+  const fci = data.fciData.fci;
+  const fciRating = data.fciData.rating;
+
+  // Calculate cost by priority from financial planning data
+  const immediateYear = data.financialPlanning.find(p => p.period === "Year 1") || { structure: 0, enclosure: 0, interior: 0, mep: 0, site: 0 };
+  const immediateCost = immediateYear.structure + immediateYear.enclosure + immediateYear.interior + immediateYear.mep + immediateYear.site;
+  
+  const shortTermYears = data.financialPlanning.filter(p => p.period === "Year 2" || p.period === "Year 3");
+  const shortTermCost = shortTermYears.reduce((sum, y) => sum + y.structure + y.enclosure + y.interior + y.mep + y.site, 0);
+  
+  const mediumTermYears = data.financialPlanning.filter(p => p.period === "Year 4" || p.period === "Year 5");
+  const mediumTermCost = mediumTermYears.reduce((sum, y) => sum + y.structure + y.enclosure + y.interior + y.mep + y.site, 0);
+
+  // Key Financial Metrics Section
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Key Financial Metrics", 10, yPos);
+  yPos += 8;
+
+  const keyMetrics: string[][] = [
+    ["Total Deferred Maintenance", `$${totalDeferredMaintenance.toLocaleString()}`],
+    ["Current Replacement Value (CRV)", `$${crv.toLocaleString()}`],
+    ["Facility Condition Index (FCI)", `${fci.toFixed(2)}%`],
+    ["FCI Rating", fciRating],
+    ["5-Year Capital Requirement", `$${grandTotal.toLocaleString()}`],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    body: keyMetrics,
+    theme: "plain",
+    styles: { fontSize: 10 },
+    columnStyles: {
+      0: { cellWidth: 100, fontStyle: "bold" },
+      1: { cellWidth: 70 },
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Cost by Priority Section
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Cost by Priority", 10, yPos);
+  yPos += 8;
+
+  const costByPriorityRows: string[][] = [
+    ["Immediate (Year 1)", `$${immediateCost.toLocaleString()}`, grandTotal > 0 ? `${((immediateCost / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Short Term (Years 2-3)", `$${shortTermCost.toLocaleString()}`, grandTotal > 0 ? `${((shortTermCost / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Medium Term (Years 4-5)", `$${mediumTermCost.toLocaleString()}`, grandTotal > 0 ? `${((mediumTermCost / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Total 5-Year Capital Need", `$${grandTotal.toLocaleString()}`, "100%"],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Priority", "Estimated Cost", "% of Total"]],
+    body: costByPriorityRows,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+    },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.row.index === costByPriorityRows.length - 1) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = HEADER_GRAY;
+      }
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Cost by Building System Section
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Cost by Building System", 10, yPos);
+  yPos += 8;
+
+  const costBySystemRows: string[][] = [
+    ["Structure", `$${totals.structure.toLocaleString()}`, grandTotal > 0 ? `${((totals.structure / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Building Enclosure", `$${totals.enclosure.toLocaleString()}`, grandTotal > 0 ? `${((totals.enclosure / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Interior", `$${totals.interior.toLocaleString()}`, grandTotal > 0 ? `${((totals.interior / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Mechanical/Electrical", `$${totals.mep.toLocaleString()}`, grandTotal > 0 ? `${((totals.mep / grandTotal) * 100).toFixed(1)}%` : "0%"],
+    ["Site Improvements", `$${totals.site.toLocaleString()}`, grandTotal > 0 ? `${((totals.site / grandTotal) * 100).toFixed(1)}%` : "0%"],
+  ];
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Building System", "Estimated Cost", "% of Total"]],
+    body: costBySystemRows,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Annual Budget Projection
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Annual Budget Projection", 10, yPos);
+  yPos += 8;
+
+  const currentYear = new Date().getFullYear();
+  const budgetProjection: string[][] = data.financialPlanning.map((period, index) => {
+    const yearTotal = period.structure + period.enclosure + period.interior + period.mep + period.site;
+    return [
+      `${currentYear + index}`,
+      `$${yearTotal.toLocaleString()}`,
+      grandTotal > 0 ? `${((yearTotal / grandTotal) * 100).toFixed(1)}%` : "0%",
+    ];
+  });
+
+  budgetProjection.push(["Total", `$${grandTotal.toLocaleString()}`, "100%"]);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Year", "Projected Cost", "% of Total"]],
+    body: budgetProjection,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 50 },
+    },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.row.index === budgetProjection.length - 1) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = HEADER_GRAY;
+      }
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // FCI Interpretation Guide
+  if (yPos < 220) {
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("FCI Rating Guide", 10, yPos);
+    yPos += 8;
+
+    const fciGuide: string[][] = [
+      ["0% - 5%", "Good", "Facility in good condition, routine maintenance only"],
+      ["5% - 10%", "Fair", "Some deferred maintenance, plan for repairs"],
+      ["10% - 30%", "Poor", "Significant deferred maintenance, prioritize repairs"],
+      [">30%", "Critical", "Major investment needed, consider replacement"],
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["FCI Range", "Rating", "Interpretation"]],
+      body: fciGuide,
+      theme: "striped",
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+      columnStyles: {
+        0: { cellWidth: 35 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 105 },
+      },
+    });
+  }
+
   // Building Components Inventory
   doc.addPage();
   addMabenHeader();

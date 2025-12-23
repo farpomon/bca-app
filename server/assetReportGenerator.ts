@@ -302,62 +302,223 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     });
   }
 
-  // Cost Summary Page
-  if (data.deficiencies.length > 0) {
-    doc.addPage();
-    addMabenHeader();
-    yPos = 25;
+  // Financial KPIs Page
+  doc.addPage();
+  addMabenHeader();
+  yPos = 25;
 
-    doc.setFontSize(16);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Financial KPIs & Cost Analysis", 10, yPos);
+  yPos += 15;
+
+  // Calculate financial metrics
+  const costByPriority: Record<string, number> = {
+    immediate: 0,
+    short_term: 0,
+    medium_term: 0,
+    long_term: 0,
+  };
+
+  const costBySeverity: Record<string, number> = {
+    critical: 0,
+    major: 0,
+    moderate: 0,
+    minor: 0,
+  };
+
+  data.deficiencies.forEach(d => {
+    const priority = d.priority || 'long_term';
+    const severity = d.severity || 'minor';
+    costByPriority[priority] += d.estimatedCost || 0;
+    costBySeverity[severity] += d.estimatedCost || 0;
+  });
+
+  // Current Replacement Value (CRV) - estimate based on gross floor area
+  const estimatedCRV = data.asset.grossFloorArea ? data.asset.grossFloorArea * 350 : totalCost * 10; // $350/sq ft average or 10x deferred maintenance
+  
+  // Facility Condition Index (FCI) = Deferred Maintenance / CRV
+  const fci = estimatedCRV > 0 ? (totalCost / estimatedCRV) * 100 : 0;
+  const fciRating = fci <= 5 ? "Good" : fci <= 10 ? "Fair" : fci <= 30 ? "Poor" : "Critical";
+
+  // Key Financial Metrics Section
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Key Financial Metrics", 10, yPos);
+  yPos += 8;
+
+  const keyMetrics: string[][] = [
+    ["Total Deferred Maintenance", `$${totalCost.toLocaleString()}`],
+    ["Estimated Current Replacement Value (CRV)", `$${estimatedCRV.toLocaleString()}`],
+    ["Facility Condition Index (FCI)", `${fci.toFixed(2)}%`],
+    ["FCI Rating", fciRating],
+    ["Average Cost per Deficiency", totalDeficiencies > 0 ? `$${Math.round(totalCost / totalDeficiencies).toLocaleString()}` : "N/A"],
+  ];
+
+  if (data.asset.grossFloorArea) {
+    keyMetrics.push(["Cost per Square Foot", `$${(totalCost / data.asset.grossFloorArea).toFixed(2)}`]);
+  }
+
+  autoTable(doc, {
+    startY: yPos,
+    body: keyMetrics,
+    theme: "plain",
+    styles: { fontSize: 10 },
+    columnStyles: {
+      0: { cellWidth: 100, fontStyle: "bold" },
+      1: { cellWidth: 70 },
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Cost by Priority Section
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Cost by Priority", 10, yPos);
+  yPos += 8;
+
+  const priorityLabels: Record<string, string> = {
+    immediate: "Immediate (0-1 year)",
+    short_term: "Short Term (1-2 years)",
+    medium_term: "Medium Term (2-5 years)",
+    long_term: "Long Term (5+ years)",
+  };
+
+  const costByPriorityRows = Object.entries(costByPriority).map(([priority, cost]) => [
+    priorityLabels[priority],
+    `$${cost.toLocaleString()}`,
+    totalCost > 0 ? `${((cost / totalCost) * 100).toFixed(1)}%` : "0%",
+  ]);
+
+  costByPriorityRows.push([
+    "Total Deferred Maintenance",
+    `$${totalCost.toLocaleString()}`,
+    "100%",
+  ]);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Priority", "Estimated Cost", "% of Total"]],
+    body: costByPriorityRows,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+    },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.row.index === costByPriorityRows.length - 1) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = HEADER_GRAY;
+      }
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Cost by Severity Section
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Cost by Severity", 10, yPos);
+  yPos += 8;
+
+  const severityLabels: Record<string, string> = {
+    critical: "Critical",
+    major: "Major",
+    moderate: "Moderate",
+    minor: "Minor",
+  };
+
+  const costBySeverityRows = Object.entries(costBySeverity).map(([severity, cost]) => [
+    severityLabels[severity] || severity,
+    `$${cost.toLocaleString()}`,
+    totalCost > 0 ? `${((cost / totalCost) * 100).toFixed(1)}%` : "0%",
+  ]);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Severity", "Estimated Cost", "% of Total"]],
+    body: costBySeverityRows,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Budget Projection Section (5-Year)
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("5-Year Budget Projection", 10, yPos);
+  yPos += 8;
+
+  const currentYear = new Date().getFullYear();
+  const budgetProjection: string[][] = [
+    [`Year 1 (${currentYear})`, `$${costByPriority.immediate.toLocaleString()}`, "Immediate priorities"],
+    [`Year 2 (${currentYear + 1})`, `$${Math.round(costByPriority.short_term * 0.5).toLocaleString()}`, "Short-term (50%)"],
+    [`Year 3 (${currentYear + 2})`, `$${Math.round(costByPriority.short_term * 0.5).toLocaleString()}`, "Short-term (50%)"],
+    [`Year 4 (${currentYear + 3})`, `$${Math.round(costByPriority.medium_term * 0.33).toLocaleString()}`, "Medium-term (33%)"],
+    [`Year 5 (${currentYear + 4})`, `$${Math.round(costByPriority.medium_term * 0.33).toLocaleString()}`, "Medium-term (33%)"],
+  ];
+
+  const fiveYearTotal = costByPriority.immediate + costByPriority.short_term + Math.round(costByPriority.medium_term * 0.66);
+  budgetProjection.push(["5-Year Total", `$${fiveYearTotal.toLocaleString()}`, "Projected capital needs"]);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Year", "Projected Cost", "Notes"]],
+    body: budgetProjection,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 70 },
+    },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.row.index === budgetProjection.length - 1) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = HEADER_GRAY;
+      }
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // FCI Interpretation Guide
+  if (yPos < 240) {
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Cost Summary", 10, yPos);
-    yPos += 10;
+    doc.text("FCI Rating Guide", 10, yPos);
+    yPos += 8;
 
-    const costByPriority: Record<string, number> = {
-      immediate: 0,
-      short_term: 0,
-      medium_term: 0,
-      long_term: 0,
-    };
-
-    data.deficiencies.forEach(d => {
-      const priority = d.priority || 'long_term';
-      costByPriority[priority] += d.estimatedCost || 0;
-    });
-
-    const priorityLabels: Record<string, string> = {
-      immediate: "Immediate (0-1 year)",
-      short_term: "Short Term (1-2 years)",
-      medium_term: "Medium Term (2-5 years)",
-      long_term: "Long Term (5+ years)",
-    };
-
-    const costRows = Object.entries(costByPriority).map(([priority, cost]) => [
-      priorityLabels[priority],
-      `$${cost.toLocaleString()}`,
-    ]);
-
-    costRows.push([
-      "Total",
-      `$${totalCost.toLocaleString()}`,
-    ]);
+    const fciGuide: string[][] = [
+      ["0% - 5%", "Good", "Asset in good condition, routine maintenance only"],
+      ["5% - 10%", "Fair", "Some deferred maintenance, plan for repairs"],
+      ["10% - 30%", "Poor", "Significant deferred maintenance, prioritize repairs"],
+      [">30%", "Critical", "Major investment needed, consider replacement"],
+    ];
 
     autoTable(doc, {
       startY: yPos,
-      head: [["Priority", "Estimated Cost"]],
-      body: costRows,
+      head: [["FCI Range", "Rating", "Interpretation"]],
+      body: fciGuide,
       theme: "striped",
-      styles: { fontSize: 10 },
+      styles: { fontSize: 9 },
       headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
       columnStyles: {
-        0: { cellWidth: 100, fontStyle: "bold" },
-        1: { cellWidth: 60 },
-      },
-      didParseCell: (data) => {
-        if (data.section === 'body' && data.row.index === costRows.length - 1) {
-          data.cell.styles.fontStyle = "bold";
-          data.cell.styles.fillColor = HEADER_GRAY;
-        }
+        0: { cellWidth: 35 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 105 },
       },
     });
   }

@@ -208,6 +208,9 @@ export default function AssetDetail() {
               <Building2 className="mr-2 h-4 w-4" />
               Dashboard
             </TabsTrigger>
+            <TabsTrigger value="ai-insights" className="flex-none px-3">
+              AI Insights
+            </TabsTrigger>
             <TabsTrigger value="assessments" className="flex-none px-3">
               <ClipboardCheck className="mr-2 h-4 w-4" />
               Assessments
@@ -260,9 +263,6 @@ export default function AssetDetail() {
               <CalendarDays className="mr-2 h-4 w-4" />
               Timeline
             </TabsTrigger> */}
-            <TabsTrigger value="ai-insights" className="flex-none px-3">
-              AI Insights
-            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}

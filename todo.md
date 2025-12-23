@@ -1127,3 +1127,30 @@ Testing:
 ## Bug Fixes
 
 - [x] Fix jsPDF2 is not a constructor error in asset report generation
+
+## Financial Metrics in BCA Reports
+
+### Presentation Updates
+- [x] Add financial metrics slides to BCA presentation
+- [x] Include cost estimation methodology
+- [x] Add budget projection charts
+- [x] Include ROI analysis for repairs
+- [x] Add lifecycle cost analysis
+
+### Web App Financial Features
+- [ ] Add cost summary dashboard widget
+- [ ] Implement financial report generation
+- [ ] Add budget vs actual tracking
+- [ ] Include cost per square foot metrics
+- [ ] Add financial export to PDF/Excel
+
+
+## UI and Report Updates (Dec 23, 2025)
+
+### Tab Navigation
+- [x] Move AI Insights tab next to Dashboard tab in Asset Detail page
+
+### Financial KPIs in PDF Reports
+- [x] Add financial KPIs section to asset PDF report generator (assetReportGenerator.ts)
+- [x] Add financial KPIs section to project PDF report generator (reportGenerator.ts)
+- [x] Include: Total deferred maintenance, cost by priority, FCI metrics, budget projections
