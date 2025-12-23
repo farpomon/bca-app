@@ -1095,8 +1095,10 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
         }
         
         // Get asset data for context
-        const assessments = await db.getAssessmentsByAsset(input.assetId);
-        const deficiencies = await db.getDeficienciesByAsset(input.assetId);
+        const assessments = await db.getAssessmentsByProject(input.projectId);
+        const assetAssessments = assessments?.filter((a: any) => a.assetId === input.assetId) || [];
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const assetDeficiencies = deficiencies?.filter((d: any) => d.assetId === input.assetId) || [];
         
         // Build context
         const systemMessage = {
@@ -1112,10 +1114,10 @@ Asset Details:
 - Number of Stories: ${asset.numberOfStories || 'N/A'}
 
 Asset Statistics:
-- Total Assessments: ${assessments?.length || 0}
-- Total Deficiencies: ${deficiencies?.length || 0}
-- Critical Deficiencies: ${deficiencies?.filter((d: any) => d.severity === 'critical').length || 0}
-- High Priority Deficiencies: ${deficiencies?.filter((d: any) => d.priority === 'immediate').length || 0}
+- Total Assessments: ${assetAssessments.length}
+- Total Deficiencies: ${assetDeficiencies.length}
+- Critical Deficiencies: ${assetDeficiencies.filter((d: any) => d.severity === 'critical').length}
+- High Priority Deficiencies: ${assetDeficiencies.filter((d: any) => d.priority === 'immediate').length}
 
 Provide helpful insights, recommendations, and analysis based on this asset data. Be specific and actionable.`
         };
