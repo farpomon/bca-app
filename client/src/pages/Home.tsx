@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_TITLE, APP_LOGO, getLoginUrl } from "@/const";
+import { APP_TITLE, APP_LOGO, APP_TAGLINE, getLoginUrl } from "@/const";
 import { Building2, ClipboardCheck, FileText, TrendingUp, CheckCircle2, Shield, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
@@ -37,10 +37,9 @@ export default function Home() {
           <div className="flex h-16 items-center justify-between gap-2">
             {/* Logo */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
-              <img src={APP_LOGO} alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
-              <div className="hidden sm:flex flex-col leading-none">
-                <span className="font-bold text-base">MABEN</span>
-                <span className="font-bold text-base">CONSULTING</span>
+              <img src={APP_LOGO} alt="B³NMA Logo" className="h-8 sm:h-10 flex-shrink-0" />
+              <div className="hidden lg:flex flex-col leading-none">
+                <span className="text-xs text-muted-foreground">{APP_TAGLINE}</span>
               </div>
               {/* Canadian Badge */}
               <div className="hidden lg:flex items-center gap-1.5 ml-3 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">

@@ -19,7 +19,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -76,6 +76,9 @@ export default function DashboardLayout({
             </div>
             <div className="text-center space-y-2">
               <h1 className="text-2xl font-bold tracking-tight">{APP_TITLE}</h1>
+              <p className="text-xs text-muted-foreground font-medium">
+                {APP_TAGLINE}
+              </p>
               <p className="text-sm text-muted-foreground">
                 Please sign in to continue
               </p>
