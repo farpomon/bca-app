@@ -1159,3 +1159,5 @@ Testing:
 
 - [x] Add legal disclaimer under AI compliance check tab in Asset Detail page
 - [x] Eliminate building code duplicates by deduplicating by jurisdiction + year in getActiveBuildingCodes
+- [x] Add checkbox requiring users to acknowledge legal disclaimer before running compliance checks
+- [x] Disable "Check Compliance" buttons until checkbox is checked
