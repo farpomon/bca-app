@@ -36,6 +36,7 @@ import { BulkAccessRequestActions } from "@/components/BulkAccessRequestActions"
 import { Checkbox } from "@/components/ui/checkbox";
 import { UndoHistory } from "@/components/UndoHistory";
 import { MFATimeRestrictionDialog } from "@/components/MFATimeRestrictionDialog";
+import { BackButton } from "@/components/BackButton";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -203,6 +204,7 @@ export default function Admin() {
   return (
     <DashboardLayout>
     <div className="container mx-auto py-8 space-y-8">
+      <BackButton to="dashboard" />
       <div className="flex items-center gap-3">
         <Shield className="w-8 h-8 text-primary" />
         <div>

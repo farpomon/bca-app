@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { BackButton } from "@/components/BackButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,6 +68,7 @@ export default function DeletedProjects() {
 
   return (
     <div className="container py-8">
+      <BackButton to="dashboard" />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Deleted Projects</h1>
         <p className="text-muted-foreground">

@@ -1096,3 +1096,5 @@ Testing:
 - [ ] Add unique_id column to assets table
 - [ ] Make unique_id searchable in project/asset lists
 - [ ] Add unique_id to export reports and PDFs
+
+- [x] Add 'Back to Dashboard' button to all pages for easier navigation

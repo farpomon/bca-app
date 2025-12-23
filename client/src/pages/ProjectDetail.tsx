@@ -17,7 +17,7 @@ import { ComplianceCheckButton } from "@/components/ComplianceCheckButton";
 import StatusHistoryTimeline from "@/components/StatusHistoryTimeline";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { ProjectDocumentList } from "@/components/ProjectDocumentList";
-import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, ArrowLeft, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin } from "lucide-react";
+import { Building2, ClipboardCheck, AlertTriangle, DollarSign, Image, Loader2, Edit, FileText, Plus, Trash2, Download, Target, Archive, MapPin } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -32,6 +32,7 @@ import ProjectHierarchyConfig from "@/components/ProjectHierarchyConfig";
 import ProjectRatingConfig from "@/components/ProjectRatingConfig";
 import BuildingSectionsManager from "@/components/BuildingSectionsManager";
 import FacilitySummaryTab from "@/components/FacilitySummaryTab";
+import { BackButton } from "@/components/BackButton";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -263,10 +264,7 @@ export default function ProjectDetail() {
           <p className="text-muted-foreground mb-4">
             {projectError?.message || "The project you're looking for doesn't exist or you don't have access to it."}
           </p>
-          <Button onClick={() => setLocation("/projects")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Projects
-          </Button>
+          <BackButton to="/" label="Back to Projects" />
         </div>
       </DashboardLayout>
     );
@@ -285,10 +283,7 @@ export default function ProjectDetail() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/projects")}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Button>
+            <BackButton to="/" label="Back to Projects" />
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
             {project.uniqueId && (
               <p className="text-sm font-mono text-muted-foreground">

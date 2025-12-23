@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { 
   Building2, 
-  ArrowLeft, 
   Loader2, 
   ClipboardCheck, 
   Download, 
@@ -35,6 +34,7 @@ import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
 // import AssetTimeline from "@/components/AssetTimeline";
 import { AssetLocation } from "@/components/AssetLocation";
+import { BackButton } from "@/components/BackButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
@@ -88,10 +88,7 @@ export default function AssetDetail() {
       <DashboardLayout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">Asset not found</h2>
-          <Button onClick={() => setLocation(`/projects/${projectId}/assets`)}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Assets
-          </Button>
+          <BackButton to={`/projects/${projectId}/assets`} label="Back to Assets" />
         </div>
       </DashboardLayout>
     );
@@ -134,14 +131,7 @@ export default function AssetDetail() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setLocation(`/projects/${projectId}/assets`)}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Button>
+            <BackButton to={`/projects/${projectId}/assets`} label="Back to Assets" />
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight">{asset.name}</h1>
               {getStatusBadge(asset.status)}

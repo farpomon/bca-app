@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Edit, Trash2, ArrowLeft, Loader2, ClipboardCheck, Sparkles, Search } from "lucide-react";
+import { Building2, Plus, Edit, Trash2, Loader2, ClipboardCheck, Sparkles, Search } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import { AssetDialog } from "@/components/AssetDialog";
 import { AIImportAssetDialog } from "@/components/AIImportAssetDialog";
 import type { Asset } from "../../../drizzle/schema";
+import { BackButton } from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -101,10 +102,7 @@ export default function AssetsList() {
       <DashboardLayout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">Project not found</h2>
-          <Button onClick={() => setLocation("/projects")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Projects
-          </Button>
+          <BackButton to="/" label="Back to Projects" />
         </div>
       </DashboardLayout>
     );
@@ -130,10 +128,7 @@ export default function AssetsList() {
         <div className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/projects")}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Button>
+            <BackButton to="/" label="Back to Projects" />
             <h1 className="text-3xl font-bold tracking-tight">Assets</h1>
             <p className="text-muted-foreground">{project.name}</p>
           </div>
