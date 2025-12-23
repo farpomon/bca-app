@@ -1123,3 +1123,7 @@ Testing:
 - [x] Make suggested questions clickable to auto-populate chat input
 - [x] Show loading state when fetching suggested questions
 - [x] Test suggested questions on project and asset pages
+
+## Bug Fixes
+
+- [x] Fix jsPDF2 is not a constructor error in asset report generation
