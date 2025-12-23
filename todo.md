@@ -1098,3 +1098,5 @@ Testing:
 - [ ] Add unique_id to export reports and PDFs
 
 - [x] Add 'Back to Dashboard' button to all pages for easier navigation
+
+- [x] Fix report generation function not working for assets (PDF and Excel buttons inactive)

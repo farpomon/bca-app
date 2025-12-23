@@ -32,6 +32,7 @@ import AssetPhotoGallery from "@/components/AssetPhotoGallery";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
 import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
+import AssetReportTab from "@/components/AssetReportTab";
 // import AssetTimeline from "@/components/AssetTimeline";
 import { AssetLocation } from "@/components/AssetLocation";
 import { BackButton } from "@/components/BackButton";
@@ -715,29 +716,7 @@ export default function AssetDetail() {
 
           {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Asset Reports</CardTitle>
-                <CardDescription>
-                  Generate customized reports for this asset
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Generate comprehensive reports in PDF or Excel format
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" disabled>
-                    <Download className="mr-2 h-4 w-4" />
-                    PDF Report
-                  </Button>
-                  <Button variant="outline" disabled>
-                    <Download className="mr-2 h-4 w-4" />
-                    Excel Report
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <AssetReportTab assetId={assetIdNum} projectId={projectId} />
           </TabsContent>
 
           {/* Optimization Tab */}

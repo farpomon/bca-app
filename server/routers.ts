@@ -48,6 +48,7 @@ import * as assetsDb from "./db-assets";
 import * as customComponentsDb from "./db-custom-components";
 import * as dashboardData from "./dashboardData";
 import { generateBCAReport } from "./reportGenerator";
+import { generateAssetReport } from "./assetReportGenerator";
 import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
 import { assessPhotoWithAI } from "./photoAssessment";
 
@@ -1687,6 +1688,47 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
 
         // Upload to S3
         const fileKey = `projects/${input.projectId}/reports/BCA-Report-${Date.now()}.pdf`;
+        const { url } = await storagePut(fileKey, pdfBuffer, "application/pdf");
+
+        return { url, fileKey };
+      }),
+
+    generateAsset: protectedProcedure
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Get asset
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) throw new Error("Asset not found");
+
+        // Get project name
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new Error("Project not found");
+
+        // Get assessments for this asset
+        const assessments = await db.getAssetAssessments(input.assetId);
+        
+        // Fetch photos for each assessment
+        const assessmentsWithPhotos = await Promise.all(
+          assessments.map(async (assessment: any) => {
+            const photos = await db.getAssessmentPhotos(assessment.id);
+            return { ...assessment, photos };
+          })
+        );
+
+        // Get deficiencies for this asset (join through assessments)
+        const deficiencies = await db.getAssetDeficiencies(input.assetId);
+
+        const pdfBuffer = await generateAssetReport({
+          asset,
+          projectName: project.name,
+          assessments: assessmentsWithPhotos,
+          deficiencies,
+        });
+
+        // Upload to S3
+        const fileKey = `assets/${input.assetId}/reports/Asset-Report-${Date.now()}.pdf`;
         const { url } = await storagePut(fileKey, pdfBuffer, "application/pdf");
 
         return { url, fileKey };
