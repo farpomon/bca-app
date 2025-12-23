@@ -6,17 +6,39 @@ export type BuildingCode = typeof buildingCodes.$inferSelect;
 export type InsertBuildingCode = typeof buildingCodes.$inferInsert;
 
 /**
- * Get all active building codes
+ * Get all active building codes (deduplicated by jurisdiction + year)
+ * Prefers entries with documentUrl over those without
  */
 export async function getActiveBuildingCodes() {
   const db = await getDb();
   if (!db) return [];
 
-  return await db
+  const allCodes = await db
     .select()
     .from(buildingCodes)
     .where(eq(buildingCodes.isActive, 1))
     .orderBy(desc(buildingCodes.year), buildingCodes.jurisdiction);
+  
+  // Deduplicate by jurisdiction + year, preferring entries with documentUrl
+  const uniqueCodes = new Map<string, typeof allCodes[0]>();
+  
+  for (const code of allCodes) {
+    // Create a unique key based on jurisdiction and year
+    const key = `${code.jurisdiction || 'unknown'}_${code.year || 'unknown'}`;
+    const existing = uniqueCodes.get(key);
+    
+    // If no existing entry, or existing has no documentUrl but current does, use current
+    if (!existing || (!existing.documentUrl && code.documentUrl)) {
+      uniqueCodes.set(key, code);
+    }
+  }
+  
+  // Sort by year descending, then jurisdiction
+  return Array.from(uniqueCodes.values()).sort((a, b) => {
+    const yearDiff = (b.year || 0) - (a.year || 0);
+    if (yearDiff !== 0) return yearDiff;
+    return (a.jurisdiction || '').localeCompare(b.jurisdiction || '');
+  });
 }
 
 /**

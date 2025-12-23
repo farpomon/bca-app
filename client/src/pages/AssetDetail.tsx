@@ -729,6 +729,19 @@ export default function AssetDetail() {
                     <p className="text-sm mt-2">Create assessments to check compliance.</p>
                   </div>
                 )}
+
+                {/* Legal Disclaimer */}
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg border">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>LEGAL DISCLAIMER:</strong> This AI-assisted compliance check is provided for informational and preliminary screening purposes only. It does not constitute professional engineering advice, legal opinion, official building code interpretation, or certification of compliance. The analysis is generated using artificial intelligence and may not identify all compliance issues, code violations, or safety concerns. This tool should not be relied upon as a substitute for a thorough review by qualified professionals.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Users must consult with licensed professionals including but not limited to engineers, architects, building inspectors, and code officials, as well as relevant authorities having jurisdiction (AHJ), for authoritative compliance determinations and official certifications. Building codes are subject to local amendments, interpretations, and updates that may not be reflected in this analysis.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    <strong>LIMITATION OF LIABILITY:</strong> The system operators, developers, and affiliated parties assume no responsibility or liability for any decisions, actions, or omissions made based on the results of this compliance check. Users assume all risk associated with the use of this tool and agree to hold harmless all parties involved in its development and operation.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
