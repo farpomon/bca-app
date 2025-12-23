@@ -1157,6 +1157,10 @@ export default function Projects() {
                               setFormData({
                                 name: project.name,
                                 address: project.address || "",
+                                streetAddress: project.streetAddress || "",
+                                city: project.city || "",
+                                province: project.province || "",
+                                postalCode: project.postalCode || "",
                                 clientName: project.clientName || "",
                                 propertyType: project.propertyType || "",
                                 constructionType: project.constructionType || "",

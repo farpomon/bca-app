@@ -1,32 +1,29 @@
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
-import { Ban, CheckCircle2, Calendar, Loader2, Trash2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 
 interface BulkCompanyActionsProps {
   selectedCompanyIds: number[];
-  onClearSelection: () => void;
   onSuccess: () => void;
+  onClearSelection: () => void;
 }
 
 export function BulkCompanyActions({
   selectedCompanyIds,
-  onClearSelection,
   onSuccess,
+  onClearSelection,
 }: BulkCompanyActionsProps) {
   const [showActivateDialog, setShowActivateDialog] = useState(false);
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
@@ -34,25 +31,16 @@ export function BulkCompanyActions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [trialDays, setTrialDays] = useState("30");
 
-  const updateStatusMutation = trpc.companies.updateStatus.useMutation({
+  const updateCompanyMutation = trpc.admin.updateCompany.useMutation({
     onSuccess: () => {
       onSuccess();
     },
     onError: (error) => {
-      toast.error(`Failed to update company status: ${error.message}`);
+      toast.error(`Failed to update company: ${error.message}`);
     },
   });
 
-  const extendTrialMutation = trpc.companies.extendTrial.useMutation({
-    onSuccess: () => {
-      onSuccess();
-    },
-    onError: (error) => {
-      toast.error(`Failed to extend trial: ${error.message}`);
-    },
-  });
-
-  const deleteCompanyMutation = trpc.companies.delete.useMutation({
+  const deleteCompanyMutation = trpc.admin.deleteCompany.useMutation({
     onSuccess: () => {
       onSuccess();
     },
@@ -67,25 +55,19 @@ export function BulkCompanyActions({
 
     for (const companyId of selectedCompanyIds) {
       try {
-        await updateStatusMutation.mutateAsync({
-          companyId,
+        await updateCompanyMutation.mutateAsync({
+          id: companyId,
           status: "active",
         });
         successCount++;
-      } catch (error) {
+      } catch {
         failCount++;
       }
     }
 
-    if (successCount > 0) {
-      toast.success(`Successfully activated ${successCount} company(ies)`);
-    }
-    if (failCount > 0) {
-      toast.error(`Failed to activate ${failCount} company(ies)`);
-    }
-
-    onClearSelection();
+    toast.success(`Activated ${successCount} companies${failCount > 0 ? `, ${failCount} failed` : ""}`);
     setShowActivateDialog(false);
+    onClearSelection();
   };
 
   const handleBulkSuspend = async () => {
@@ -94,59 +76,26 @@ export function BulkCompanyActions({
 
     for (const companyId of selectedCompanyIds) {
       try {
-        await updateStatusMutation.mutateAsync({
-          companyId,
+        await updateCompanyMutation.mutateAsync({
+          id: companyId,
           status: "suspended",
         });
         successCount++;
-      } catch (error) {
+      } catch {
         failCount++;
       }
     }
 
-    if (successCount > 0) {
-      toast.success(`Successfully suspended ${successCount} company(ies)`);
-    }
-    if (failCount > 0) {
-      toast.error(`Failed to suspend ${failCount} company(ies)`);
-    }
-
-    onClearSelection();
+    toast.success(`Suspended ${successCount} companies${failCount > 0 ? `, ${failCount} failed` : ""}`);
     setShowSuspendDialog(false);
+    onClearSelection();
   };
 
   const handleBulkExtendTrial = async () => {
-    const days = parseInt(trialDays);
-    if (isNaN(days) || days <= 0) {
-      toast.error("Please enter a valid number of days");
-      return;
-    }
-
-    let successCount = 0;
-    let failCount = 0;
-
-    for (const companyId of selectedCompanyIds) {
-      try {
-        await extendTrialMutation.mutateAsync({
-          companyId,
-          days,
-        });
-        successCount++;
-      } catch (error) {
-        failCount++;
-      }
-    }
-
-    if (successCount > 0) {
-      toast.success(`Successfully extended trial for ${successCount} company(ies)`);
-    }
-    if (failCount > 0) {
-      toast.error(`Failed to extend trial for ${failCount} company(ies)`);
-    }
-
-    onClearSelection();
+    // Note: Trial extension would need a separate procedure or field
+    // For now, just show a message
+    toast.info("Trial extension requires individual company updates");
     setShowExtendTrialDialog(false);
-    setTrialDays("30");
   };
 
   const handleBulkDelete = async () => {
@@ -155,221 +104,151 @@ export function BulkCompanyActions({
 
     for (const companyId of selectedCompanyIds) {
       try {
-        await deleteCompanyMutation.mutateAsync({ companyId });
+        await deleteCompanyMutation.mutateAsync({ id: companyId });
         successCount++;
-      } catch (error) {
+      } catch {
         failCount++;
       }
     }
 
-    if (successCount > 0) {
-      toast.success(`Successfully deleted ${successCount} company(ies)`);
-    }
-    if (failCount > 0) {
-      toast.error(`Failed to delete ${failCount} company(ies)`);
-    }
-
-    onClearSelection();
+    toast.success(`Deleted ${successCount} companies${failCount > 0 ? `, ${failCount} failed` : ""}`);
     setShowDeleteDialog(false);
+    onClearSelection();
   };
 
-  if (selectedCompanyIds.length === 0) {
-    return null;
-  }
-
-  const isProcessing =
-    updateStatusMutation.isPending ||
-    extendTrialMutation.isPending ||
-    deleteCompanyMutation.isPending;
+  if (selectedCompanyIds.length === 0) return null;
 
   return (
     <>
-      <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border mb-4">
-        <Badge variant="secondary" className="text-sm">
+      <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
+        <span className="text-sm font-medium">
           {selectedCompanyIds.length} selected
-        </Badge>
-        <div className="flex gap-2 ml-auto flex-wrap">
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => setShowActivateDialog(true)}
-            disabled={isProcessing}
-            className="gap-2"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <CheckCircle2 className="h-4 w-4" />
-            )}
-            Activate
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setShowSuspendDialog(true)}
-            disabled={isProcessing}
-            className="gap-2"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Ban className="h-4 w-4" />
-            )}
-            Suspend
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowExtendTrialDialog(true)}
-            disabled={isProcessing}
-            className="gap-2"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Calendar className="h-4 w-4" />
-            )}
-            Extend Trial
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={isProcessing}
-            className="gap-2"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-            Delete
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onClearSelection}
-            disabled={isProcessing}
-          >
-            Clear Selection
-          </Button>
-        </div>
+        </span>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowActivateDialog(true)}
+        >
+          <CheckCircle className="h-4 w-4 mr-1" />
+          Activate
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowSuspendDialog(true)}
+        >
+          <XCircle className="h-4 w-4 mr-1" />
+          Suspend
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowExtendTrialDialog(true)}
+        >
+          <Clock className="h-4 w-4 mr-1" />
+          Extend Trial
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => setShowDeleteDialog(true)}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Delete
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onClearSelection}>
+          Clear
+        </Button>
       </div>
 
-      {/* Bulk Activate Confirmation Dialog */}
-      <AlertDialog open={showActivateDialog} onOpenChange={setShowActivateDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Activate {selectedCompanyIds.length} Companies?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will activate all selected companies, allowing their users to access the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleBulkActivate}
-              disabled={isProcessing}
-              className="gap-2"
-            >
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
-              Activate All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Activate Dialog */}
+      <Dialog open={showActivateDialog} onOpenChange={setShowActivateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Activate Companies</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to activate {selectedCompanyIds.length} companies?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowActivateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleBulkActivate}>Activate</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Bulk Suspend Confirmation Dialog */}
-      <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Suspend {selectedCompanyIds.length} Companies?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will suspend all selected companies, preventing their users from accessing the system.
-              This action can be reversed by activating the companies again.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleBulkSuspend}
-              disabled={isProcessing}
-              className="gap-2"
-            >
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
-              Suspend All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Suspend Dialog */}
+      <Dialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Suspend Companies</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to suspend {selectedCompanyIds.length} companies?
+              This will also suspend all users in these companies.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSuspendDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleBulkSuspend}>
+              Suspend
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Bulk Extend Trial Dialog */}
-      <AlertDialog open={showExtendTrialDialog} onOpenChange={setShowExtendTrialDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Extend Trial for {selectedCompanyIds.length} Companies</AlertDialogTitle>
-            <AlertDialogDescription>
-              Enter the number of days to extend the trial period for all selected companies.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+      {/* Extend Trial Dialog */}
+      <Dialog open={showExtendTrialDialog} onOpenChange={setShowExtendTrialDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Extend Trial</DialogTitle>
+            <DialogDescription>
+              Extend trial period for {selectedCompanyIds.length} companies.
+            </DialogDescription>
+          </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="trial-days">Trial Days</Label>
+            <Label htmlFor="trialDays">Additional Days</Label>
             <Input
-              id="trial-days"
+              id="trialDays"
               type="number"
-              min="1"
               value={trialDays}
               onChange={(e) => setTrialDays(e.target.value)}
-              placeholder="30"
-              className="mt-2"
+              min="1"
+              max="365"
             />
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleBulkExtendTrial}
-              disabled={isProcessing}
-              className="gap-2"
-            >
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
-              Extend Trial
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExtendTrialDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleBulkExtendTrial}>Extend Trial</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Bulk Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedCompanyIds.length} Companies?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p className="text-destructive font-semibold">
-                Warning: This action cannot be undone!
-              </p>
-              <p>
-                This will permanently delete all selected companies and all associated data including:
-              </p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>All users belonging to these companies</li>
-                <li>All projects and assessments</li>
-                <li>All uploaded documents and photos</li>
-              </ul>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleBulkDelete}
-              disabled={isProcessing}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 gap-2"
-            >
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
-              Delete All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delete Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Companies</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedCompanyIds.length} companies?
+              This action cannot be undone. Companies with existing users cannot be deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

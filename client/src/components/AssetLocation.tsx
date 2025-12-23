@@ -68,7 +68,7 @@ export function AssetLocation({
   const projectAddress = project ? [
     project.streetNumber,
     project.streetAddress,
-    project.aptUnit ? `Unit ${project.aptUnit}` : null,
+    project.unitNumber ? `Unit ${project.unitNumber}` : null,
     project.city,
     project.province,
     project.postalCode,
@@ -134,7 +134,7 @@ export function AssetLocation({
     const currentMarker = new google.maps.Marker({
       position: coordinates,
       map,
-      title: currentAsset?.assetName || "Current Asset",
+      title: currentAsset?.name || "Current Asset",
       icon: {
         url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
       },
@@ -143,7 +143,7 @@ export function AssetLocation({
     const currentInfoWindow = new google.maps.InfoWindow({
       content: `
         <div style="padding: 8px;">
-          <h3 style="margin: 0 0 4px 0; font-weight: 600;">${currentAsset?.assetName || "Asset"}</h3>
+          <h3 style="margin: 0 0 4px 0; font-weight: 600;">${currentAsset?.name || "Asset"}</h3>
           <p style="margin: 0; font-size: 13px; color: #666;">${fullAddress}</p>
         </div>
       `,
@@ -163,7 +163,7 @@ export function AssetLocation({
         const assetAddress = [
           asset.streetNumber,
           asset.streetAddress,
-          asset.aptUnit ? `Unit ${asset.aptUnit}` : null,
+          asset.unitNumber ? `Unit ${asset.unitNumber}` : null,
           asset.city,
           asset.province,
           asset.postalCode,
@@ -180,7 +180,7 @@ export function AssetLocation({
             const marker = new google.maps.Marker({
               position: location,
               map,
-              title: asset.assetName || "Asset",
+              title: asset.name || "Asset",
               icon: {
                 url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
               },
@@ -189,7 +189,7 @@ export function AssetLocation({
             const infoWindow = new google.maps.InfoWindow({
               content: `
                 <div style="padding: 8px;">
-                  <h3 style="margin: 0 0 4px 0; font-weight: 600;">${asset.assetName || "Asset"}</h3>
+                  <h3 style="margin: 0 0 4px 0; font-weight: 600;">${asset.name || "Asset"}</h3>
                   <p style="margin: 0; font-size: 13px; color: #666;">${assetAddress}</p>
                   <a href="/assets/${asset.id}" style="font-size: 13px; color: #0066cc; text-decoration: none;">View Details →</a>
                 </div>

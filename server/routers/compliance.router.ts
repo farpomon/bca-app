@@ -405,7 +405,8 @@ Format your response as JSON with the following structure:
           throw new Error("No response from AI service");
         }
 
-        const result = JSON.parse(content);
+        const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+        const result = JSON.parse(contentStr);
         
         return {
           compliant: result.compliant === true,

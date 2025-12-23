@@ -20,6 +20,23 @@ export const buildingCodesRouter = router({
   }),
 
   /**
+   * Get building code by ID
+   */
+  get: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      try {
+        return await buildingCodesDb.getBuildingCodeById(input.id);
+      } catch (error) {
+        console.error("Error fetching building code:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch building code",
+        });
+      }
+    }),
+
+  /**
    * Get latest building code for a jurisdiction
    */
   getLatest: protectedProcedure

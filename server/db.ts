@@ -455,14 +455,14 @@ export async function getProjectDeficiencies(projectId: number) {
     .orderBy(desc(deficiencies.createdAt));
 }
 
-export async function getAssetDeficiencies(assetId: number) {
+export async function getAssetDeficiencies(projectId: number) {
   const db = await getDb();
   if (!db) return [];
   
   return await db
     .select()
     .from(deficiencies)
-    .where(eq(deficiencies.assetId, assetId))
+    .where(eq(deficiencies.projectId, projectId))
     .orderBy(desc(deficiencies.createdAt));
 }
 

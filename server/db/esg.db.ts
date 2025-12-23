@@ -12,7 +12,7 @@ import {
   type InsertEmissionsData,
   type InsertSustainabilityGoal,
   type InsertGreenUpgrade,
-  type InsertESGScore,
+  type InsertEsgScore,
 } from "../../drizzle/schema";
 
 export async function recordUtilityConsumption(data: InsertUtilityConsumption) {
@@ -142,7 +142,7 @@ export async function updateGreenUpgrade(
     .where(eq(greenUpgrades.id, upgradeId));
 }
 
-export async function recordESGScore(data: InsertESGScore) {
+export async function recordESGScore(data: InsertEsgScore) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   

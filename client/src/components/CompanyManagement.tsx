@@ -404,9 +404,9 @@ export function CompanyManagement() {
                       <div className="flex items-center gap-2">
                         {company.name}
                         {company.privacyLockEnabled ? (
-                          <Lock className="h-3.5 w-3.5 text-green-600" title="Privacy Lock Enabled" />
+                          <Lock className="h-3.5 w-3.5 text-green-600" aria-label="Privacy Lock Enabled" />
                         ) : (
-                          <LockOpen className="h-3.5 w-3.5 text-muted-foreground" title="Privacy Lock Disabled" />
+                          <LockOpen className="h-3.5 w-3.5 text-muted-foreground" aria-label="Privacy Lock Disabled" />
                         )}
                       </div>
                     </TableCell>

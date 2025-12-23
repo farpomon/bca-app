@@ -58,8 +58,8 @@ export function BulkAccessRequestActions({
         await approveMutation.mutateAsync({
           requestId,
           // Default values for bulk approval
-          companyName: "", // Will need to be set by admin individually for proper approval
-          city: "",
+          company: "Default Company", // Will need to be set by admin individually for proper approval
+          city: "Default City",
           role: "viewer",
           accountStatus: "trial",
           trialDays: 30,

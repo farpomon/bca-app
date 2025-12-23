@@ -260,6 +260,5 @@ export async function logMfaAuditEvent(event: {
     ipAddress: event.ipAddress,
     userAgent: event.userAgent,
     failureReason: event.failureReason || null,
-    createdAt: new Date().toISOString(),
   });
 }

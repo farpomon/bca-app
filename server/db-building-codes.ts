@@ -102,3 +102,19 @@ export async function markAsLatest(codeId: number, jurisdiction: string) {
     .set({ isLatest: 1 })
     .where(eq(buildingCodes.id, codeId));
 }
+
+/**
+ * Get building code by ID
+ */
+export async function getBuildingCodeById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const results = await db
+    .select()
+    .from(buildingCodes)
+    .where(eq(buildingCodes.id, id))
+    .limit(1);
+
+  return results[0] || null;
+}

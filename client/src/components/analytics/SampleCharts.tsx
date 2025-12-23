@@ -34,6 +34,7 @@ export function PortfolioHealthGauge() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        // @ts-ignore - Chart.js doughnut options
         circumference: 180,
         rotation: 270,
         cutout: "75%",
@@ -294,8 +295,9 @@ export function BudgetAllocationChart() {
               label: (context) => {
                 const label = context.label || "";
                 const value = context.parsed;
-                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
+                const data = context.dataset.data as number[];
+                const total = data.reduce((a: number, b: number) => (a || 0) + (b || 0), 0);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
                 return `${label}: $${value}K (${percentage}%)`;
               },
             },
@@ -594,7 +596,7 @@ export function SystemRankingChart() {
           tooltip: {
             callbacks: {
               label: (context) => {
-                const value = context.parsed.x;
+                const value = context.parsed.x ?? 0;
                 let status = "Good";
                 if (value < 70) status = "Needs Investment";
                 if (value < 60) status = "Critical";

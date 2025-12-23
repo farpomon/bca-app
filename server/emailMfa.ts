@@ -75,8 +75,7 @@ export async function createVerificationCode(
       purpose,
       attempts: 0,
       verified: 0,
-      expiresAt: expiresAt,
-      createdAt: new Date(),
+      expiresAt: expiresAt.toISOString().slice(0, 19).replace('T', ' '),
     });
 
     // Send email

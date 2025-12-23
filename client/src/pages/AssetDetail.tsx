@@ -44,6 +44,7 @@ export default function AssetDetail() {
   const [, setLocation] = useLocation();
   const projectId = parseInt(id!);
   const assetIdNum = parseInt(assetId!);
+  const utils = trpc.useUtils();
 
   const { user, loading: authLoading } = useAuth();
   const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
@@ -122,6 +123,11 @@ export default function AssetDetail() {
         onOpenChange={setShowAssessmentDialog}
         projectId={projectId}
         assetId={assetIdNum}
+        componentCode="GENERAL"
+        componentName="General Assessment"
+        onSuccess={() => {
+          utils.assessments.list.invalidate();
+        }}
       />
       <DashboardLayout>
       <div className="space-y-6">
@@ -236,7 +242,7 @@ export default function AssetDetail() {
                 />
                 <ExportButton
                   projectId={projectId}
-                  type="cost-estimates"
+                  type="costs"
                   label="Cost Estimates"
                 />
               </CardContent>
@@ -337,12 +343,7 @@ export default function AssetDetail() {
                       <p className="text-sm font-medium">{asset.constructionType}</p>
                     </div>
                   )}
-                  {asset.occupancyType && (
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Occupancy</h3>
-                      <p className="text-sm font-medium">{asset.occupancyType}</p>
-                    </div>
-                  )}
+
                 </div>
               </CardContent>
             </Card>
@@ -642,7 +643,7 @@ export default function AssetDetail() {
                                 setCheckingCompliance(prev => ({ ...prev, [assessment.id]: true }));
                                 try {
                                   const result = await checkComplianceMutation.mutateAsync({
-                                    componentName: assessment.componentName,
+                                    componentName: assessment.componentName || 'Unknown Component',
                                     componentLocation: assessment.componentLocation || undefined,
                                     condition: assessment.condition || undefined,
                                     observations: assessment.observations || undefined,
@@ -765,7 +766,7 @@ export default function AssetDetail() {
               projectId={projectId}
               streetAddress={asset.streetAddress}
               streetNumber={asset.streetNumber}
-              aptUnit={asset.aptUnit}
+              aptUnit={asset.unitNumber}
               city={asset.city}
               postalCode={asset.postalCode}
               province={asset.province}

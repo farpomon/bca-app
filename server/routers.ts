@@ -90,17 +90,6 @@ export const appRouter = router({
 
   complianceCheck: complianceCheckRouter,
 
-  buildingCodes: router({
-    list: publicProcedure.query(async () => {
-      return await db.getAllBuildingCodes();
-    }),
-    get: publicProcedure
-      .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        return await db.getBuildingCodeById(input.id);
-      }),
-  }),
-
   projects: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const isAdmin = ctx.user.role === "admin";
@@ -142,6 +131,10 @@ export const appRouter = router({
       .input(z.object({
         name: z.string().min(1),
         address: z.string().optional(),
+        streetAddress: z.string().optional(),
+        city: z.string().optional(),
+        province: z.string().optional(),
+        postalCode: z.string().optional(),
         clientName: z.string().optional(),
         propertyType: z.string().optional(),
         constructionType: z.string().optional(),

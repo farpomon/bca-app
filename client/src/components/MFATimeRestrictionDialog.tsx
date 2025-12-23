@@ -51,7 +51,7 @@ export function MFATimeRestrictionDialog({
   const [restrictionType, setRestrictionType] = useState<RestrictionType>('always');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
-  const [selectedDays, setSelectedDays] = useState<string[]>(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+  const [selectedDays, setSelectedDays] = useState<('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday')[]>(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
   const [timezone, setTimezone] = useState('America/Vancouver');
   const [description, setDescription] = useState('');
 
@@ -91,7 +91,9 @@ export function MFATimeRestrictionDialog({
     },
   });
 
-  const handleDayToggle = (day: string) => {
+  type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  
+  const handleDayToggle = (day: DayOfWeek) => {
     setSelectedDays(prev =>
       prev.includes(day)
         ? prev.filter(d => d !== day)

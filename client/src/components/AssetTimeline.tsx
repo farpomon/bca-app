@@ -31,6 +31,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  type LucideIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -55,7 +56,7 @@ interface AssetTimelineProps {
 
 const eventTypeConfig: Record<
   EventType,
-  { icon: React.ElementType; label: string; color: string; bgColor: string }
+  { icon: LucideIcon; label: string; color: string; bgColor: string }
 > = {
   assessment: {
     icon: ClipboardList,
@@ -102,6 +103,21 @@ const dateRangeOptions = [
   { value: "365", label: "Last Year" },
 ];
 
+// Helper function to format event dates
+const formatEventDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isPast = date < now;
+    return {
+      formatted: format(date, "MMM dd, yyyy 'at' h:mm a"),
+      isPast,
+    };
+  } catch {
+    return { formatted: dateString, isPast: true };
+  }
+};
+
 export default function AssetTimeline({ assetId, projectId }: AssetTimelineProps) {
   const [selectedEventTypes, setSelectedEventTypes] = useState<EventType[]>([]);
   const [dateRange, setDateRange] = useState<string>("all");
@@ -138,23 +154,9 @@ export default function AssetTimeline({ assetId, projectId }: AssetTimelineProps
     );
   };
 
-  const formatEventDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const isPast = date < now;
-      return {
-        formatted: format(date, "MMM dd, yyyy 'at' h:mm a"),
-        isPast,
-      };
-    } catch {
-      return { formatted: dateString, isPast: true };
-    }
-  };
-
   const getEventIcon = (type: EventType) => {
-    const Icon = eventTypeConfig[type].icon;
-    return <Icon className="h-5 w-5" />;
+    const IconComponent = eventTypeConfig[type].icon;
+    return <IconComponent className="h-5 w-5" />;
   };
 
   if (isLoading) {
@@ -330,7 +332,7 @@ interface TimelineEventCardProps {
 function TimelineEventCard({ event, onSelect }: TimelineEventCardProps) {
   const config = eventTypeConfig[event.eventType];
   const { formatted, isPast } = formatEventDate(event.eventDate);
-  const Icon = config.icon;
+  const IconComponent = config.icon;
 
   return (
     <Card
@@ -340,7 +342,7 @@ function TimelineEventCard({ event, onSelect }: TimelineEventCardProps) {
     >
       <div className="flex items-start gap-4">
         <div className={`p-2 rounded-lg ${config.bgColor}`}>
-          <Icon className={`h-5 w-5 ${config.color}`} />
+          <IconComponent className={`h-5 w-5 ${config.color}`} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">

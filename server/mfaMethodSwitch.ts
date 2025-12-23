@@ -101,7 +101,7 @@ export async function completeMethodSwitch(
     .update(userMfaSettings)
     .set({
       mfaMethod: newMethod,
-      secret: newSecret || null,
+      secret: newSecret || undefined,
       updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
     })
     .where(eq(userMfaSettings.userId, userId));

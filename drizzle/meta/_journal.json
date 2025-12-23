@@ -414,6 +414,13 @@
       "when": 1766441061175,
       "tag": "0058_spotty_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "5",
+      "when": 1766504670789,
+      "tag": "0059_deep_goliath",
+      "breakpoints": true
     }
   ]
 }
