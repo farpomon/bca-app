@@ -118,6 +118,8 @@
 
 ## Current Bug Fixes
 
+- [x] Fix B³NMA logo not loading on homepage
+
 ### Building Code Dropdown Deduplication
 - [x] Update getAllBuildingCodes query to return only one version per jurisdiction+year
 - [x] Prefer entries with documentUrl over those without
