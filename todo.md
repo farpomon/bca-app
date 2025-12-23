@@ -1100,3 +1100,7 @@ Testing:
 - [x] Add 'Back to Dashboard' button to all pages for easier navigation
 
 - [x] Fix report generation function not working for assets (PDF and Excel buttons inactive)
+
+## UI Fixes
+
+- [x] Fix landing page logo size - make smaller to fit white ribbon header

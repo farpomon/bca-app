@@ -69,7 +69,7 @@ export default function Contact() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src={APP_LOGO} alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10" />
+              <img src={APP_LOGO} alt="Logo" style={{ height: '40px', maxWidth: '120px', width: 'auto' }} className="object-contain" />
               <span className="font-semibold text-base sm:text-lg whitespace-nowrap">{APP_TITLE}</span>
             </div>
             <Button variant="ghost" size="sm" asChild>
@@ -229,7 +229,7 @@ export default function Contact() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
+              <img src={APP_LOGO} alt="Logo" style={{ height: '32px', maxWidth: '100px', width: 'auto' }} className="object-contain" />
               <span className="text-sm text-muted-foreground">© 2025 Maben Consulting. All rights reserved.</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">

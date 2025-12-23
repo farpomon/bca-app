@@ -37,7 +37,7 @@ export default function Home() {
           <div className="flex h-16 items-center justify-between gap-2">
             {/* Logo */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
-              <img src={APP_LOGO} alt="B³NMA Logo" className="h-8 sm:h-10 flex-shrink-0" />
+              <img src={APP_LOGO} alt="B³NMA Logo" style={{ height: '40px', maxWidth: '120px', width: 'auto' }} className="object-contain flex-shrink-0" />
               <div className="hidden lg:flex flex-col leading-none">
                 <span className="text-xs text-muted-foreground">{APP_TAGLINE}</span>
               </div>
@@ -354,7 +354,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="flex items-center gap-3">
-                <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
+                <img src={APP_LOGO} alt="Logo" style={{ height: '32px', maxWidth: '100px', width: 'auto' }} className="object-contain" />
                 <span className="text-sm text-muted-foreground">© 2025 Maben Consulting. All rights reserved.</span>
               </div>
               {/* Canadian Badge */}
