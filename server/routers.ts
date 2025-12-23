@@ -701,6 +701,63 @@ Provide helpful insights, recommendations, and analysis based on this project da
         await clearConversation(ctx.user.id, "project", input.projectId);
         return { success: true };
       }),
+
+    getSuggestedQuestions: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        // Get project data for context
+        const assessments = await db.getProjectAssessments(input.projectId);
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const stats = await db.getProjectStats(input.projectId);
+        
+        const questions: string[] = [];
+        
+        // Generate questions based on project data
+        if (stats && stats.assessments > 0) {
+          questions.push("What is the overall condition of this building?");
+          questions.push("Which components need immediate attention?");
+        }
+        
+        if (deficiencies && deficiencies.length > 0) {
+          const criticalCount = deficiencies.filter((d: any) => d.severity === 'critical').length;
+          const immediateCount = deficiencies.filter((d: any) => d.priority === 'immediate').length;
+          
+          if (criticalCount > 0) {
+            questions.push(`Summarize the ${criticalCount} critical deficiencies`);
+          }
+          
+          if (immediateCount > 0) {
+            questions.push("What are the high-priority repairs needed?");
+          }
+          
+          questions.push("Estimate the total cost of repairs");
+        }
+        
+        if (project.yearBuilt) {
+          const age = new Date().getFullYear() - parseInt(String(project.yearBuilt));
+          if (age > 20) {
+            questions.push("What are typical maintenance issues for a building of this age?");
+          }
+        }
+        
+        // Default questions if no specific data
+        if (questions.length === 0) {
+          questions.push("What should I assess first in this project?");
+          questions.push("How do I prioritize building assessments?");
+          questions.push("What are common building deficiencies to look for?");
+        }
+        
+        // Limit to 4 questions
+        return questions.slice(0, 4);
+      }),
   }),
 
   assets: router({
@@ -1225,6 +1282,69 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         
         await clearConversation(ctx.user.id, "asset", input.assetId);
         return { success: true };
+      }),
+
+    getSuggestedQuestions: protectedProcedure
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Verify project and asset access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+        
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        }
+        
+        // Get asset data for context
+        const assessments = await db.getAssessmentsByProject(input.projectId);
+        const assetAssessments = assessments?.filter((a: any) => a.assetId === input.assetId) || [];
+        const deficiencies = await db.getProjectDeficiencies(input.projectId);
+        const assetDeficiencies = deficiencies?.filter((d: any) => d.assetId === input.assetId) || [];
+        
+        const questions: string[] = [];
+        
+        // Generate questions based on asset data
+        if (assetAssessments.length > 0) {
+          questions.push("What is the overall condition of this asset?");
+          questions.push("Which systems or components need attention?");
+        }
+        
+        if (assetDeficiencies.length > 0) {
+          const criticalCount = assetDeficiencies.filter((d: any) => d.severity === 'critical').length;
+          const immediateCount = assetDeficiencies.filter((d: any) => d.priority === 'immediate').length;
+          
+          if (criticalCount > 0) {
+            questions.push(`Summarize the ${criticalCount} critical deficiencies`);
+          }
+          
+          if (immediateCount > 0) {
+            questions.push("What repairs should be prioritized?");
+          }
+          
+          questions.push("Estimate the total repair costs for this asset");
+        }
+        
+        if (asset.yearBuilt) {
+          const age = new Date().getFullYear() - parseInt(String(asset.yearBuilt));
+          if (age > 20) {
+            questions.push(`What are typical issues for a ${age}-year-old ${asset.assetType || 'building'}?`);
+          }
+        }
+        
+        // Default questions if no specific data
+        if (questions.length === 0) {
+          questions.push("What should I assess first in this asset?");
+          questions.push("What are common maintenance issues to look for?");
+          questions.push("How do I prioritize component assessments?");
+        }
+        
+        // Limit to 4 questions
+        return questions.slice(0, 4);
       }),
   }),
 

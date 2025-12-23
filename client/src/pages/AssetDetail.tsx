@@ -85,6 +85,11 @@ export default function AssetDetail() {
     }
   );
 
+  const { data: suggestedQuestions, isLoading: suggestedQuestionsLoading } = trpc.assets.getSuggestedQuestions.useQuery(
+    { assetId: assetIdNum, projectId },
+    { enabled: !!user && !isNaN(projectId) && !isNaN(assetIdNum) }
+  );
+
   // Update messages when conversation history loads
   React.useEffect(() => {
     if (conversationHistory && conversationHistory.length > 0 && !conversationLoaded) {
@@ -819,9 +824,10 @@ export default function AssetDetail() {
                   messages={aiMessages}
                   onSendMessage={handleAIMessage}
                   onClearConversation={() => clearConversationMutation.mutate({ assetId: assetIdNum, projectId })}
-                  isLoading={aiChatMutation.isPending}
+                  isLoading={aiChatMutation.isPending || suggestedQuestionsLoading}
                   placeholder="Ask about this asset, request analysis, or get recommendations..."
                   height="600px"
+                  suggestedPrompts={suggestedQuestions}
                 />
               </CardContent>
             </Card>

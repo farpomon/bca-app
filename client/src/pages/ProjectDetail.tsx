@@ -194,9 +194,12 @@ export default function ProjectDetail() {
   // Load conversation history
   const { data: conversationHistory } = trpc.projects.getConversation.useQuery(
     { projectId },
-    { 
-      enabled: !!user && !isNaN(projectId) && !conversationLoaded,
-    }
+    { enabled: !!user && !isNaN(projectId) }
+  );
+
+  const { data: suggestedQuestions, isLoading: suggestedQuestionsLoading } = trpc.projects.getSuggestedQuestions.useQuery(
+    { projectId },
+    { enabled: !!user && !isNaN(projectId) }
   );
 
   // Update messages when conversation history loads
@@ -1029,9 +1032,10 @@ export default function ProjectDetail() {
                   messages={aiMessages}
                   onSendMessage={handleAIMessage}
                   onClearConversation={() => clearConversationMutation.mutate({ projectId })}
-                  isLoading={aiChatMutation.isPending}
+                  isLoading={aiChatMutation.isPending || suggestedQuestionsLoading}
                   placeholder="Ask about this project, request analysis, or get recommendations..."
                   height="600px"
+                  suggestedPrompts={suggestedQuestions}
                 />
               </CardContent>
             </Card>

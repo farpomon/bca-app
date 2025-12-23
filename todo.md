@@ -1116,3 +1116,10 @@ Testing:
 ## AI Insights Conversation Persistence
 
 - [x] Implement conversation persistence for AI Insights chat so users can resume conversations when returning to projects/assets
+
+## AI Chatbot Suggested Questions
+
+- [x] Display suggested questions in AI chat interface
+- [x] Make suggested questions clickable to auto-populate chat input
+- [x] Show loading state when fetching suggested questions
+- [x] Test suggested questions on project and asset pages
