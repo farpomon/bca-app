@@ -14,7 +14,8 @@ import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertica
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useFilterPersistence } from "@/hooks/useFilterPersistence";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -64,10 +65,29 @@ export default function Projects() {
   const [showObservationsVoice, setShowObservationsVoice] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
-  // Filter and search state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [dateRangeFilter, setDateRangeFilter] = useState<{start: string, end: string}>({start: "", end: ""});
+  // Filter and search state with URL persistence
+  const { filters, setFilter, clearFilters: clearAllFilters, activeFiltersCount } = useFilterPersistence({
+    search: "",
+    status: "all",
+    dateStart: "",
+    dateEnd: "",
+  });
+  
+  // Derived filter values for easier access
+  const searchQuery = filters.search;
+  const statusFilter = filters.status;
+  const dateRangeFilter = useMemo(() => ({
+    start: filters.dateStart,
+    end: filters.dateEnd,
+  }), [filters.dateStart, filters.dateEnd]);
+  
+  // Setter functions that update URL
+  const setSearchQuery = useCallback((value: string) => setFilter("search", value), [setFilter]);
+  const setStatusFilter = useCallback((value: string) => setFilter("status", value), [setFilter]);
+  const setDateRangeFilter = useCallback((value: {start: string, end: string}) => {
+    setFilter("dateStart", value.start);
+    setFilter("dateEnd", value.end);
+  }, [setFilter]);
   
   // Sort state with localStorage persistence
   const [sortBy, setSortBy] = useState<string>(() => {
@@ -199,18 +219,8 @@ export default function Projects() {
     return sorted;
   }, [projects, searchQuery, statusFilter, dateRangeFilter, showArchived, sortBy, sortDirection]);
 
-  // Count active filters
-  const activeFiltersCount = 
-    (searchQuery ? 1 : 0) +
-    (statusFilter !== "all" ? 1 : 0) +
-    (dateRangeFilter.start || dateRangeFilter.end ? 1 : 0);
-
-  // Clear all filters
-  const clearFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("all");
-    setDateRangeFilter({start: "", end: ""});
-  };
+  // Clear all filters (uses the hook's clearFilters)
+  const clearFilters = clearAllFilters;
 
   // Bulk selection helpers
   const toggleProjectSelection = (projectId: number) => {

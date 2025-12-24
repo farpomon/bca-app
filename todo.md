@@ -1169,3 +1169,21 @@ Testing:
 - [x] Display non-compliance reasons in the compliance check results UI
 
 - [x] Make component assessment items clickable to access assessment details
+
+## Filter Persistence (Dec 23, 2024)
+
+- [ ] Implement filter persistence when navigating back to assets list
+- [ ] Implement filter persistence when navigating back to projects list
+
+
+## Compliance Disclaimer Update (Dec 23, 2024)
+
+- [ ] Remove checkbox/acknowledgment button from compliance disclaimer
+- [ ] Replace with passive statement "By using this feature, I understand that AI-assisted compliance check is for informational purposes only..."
+
+
+## Compliance Disclaimer Update (Dec 23, 2024)
+
+- [x] Remove checkbox acknowledgment button from compliance check section
+- [x] Replace with passive acknowledgment statement
+- [x] Remove disabled state dependency on checkbox for Check Compliance button

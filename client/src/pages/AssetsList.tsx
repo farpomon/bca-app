@@ -6,7 +6,8 @@ import { trpc } from "@/lib/trpc";
 import { Building2, Plus, Edit, Trash2, Loader2, ClipboardCheck, Sparkles, Search } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useFilterPersistence } from "@/hooks/useFilterPersistence";
 import { AssetDialog } from "@/components/AssetDialog";
 import { AIImportAssetDialog } from "@/components/AIImportAssetDialog";
 import type { Asset } from "../../../drizzle/schema";
@@ -44,7 +45,13 @@ export default function AssetsList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | undefined>(undefined);
   const [aiImportDialogOpen, setAiImportDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Filter state with URL persistence
+  const { filters, setFilter, clearFilters } = useFilterPersistence({
+    search: "",
+  });
+  const searchQuery = filters.search;
+  const setSearchQuery = useCallback((value: string) => setFilter("search", value), [setFilter]);
 
   const deleteAsset = trpc.assets.delete.useMutation({
     onSuccess: () => {

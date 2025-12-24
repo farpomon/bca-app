@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
 import AssetPhotoGallery from "@/components/AssetPhotoGallery";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
@@ -56,7 +55,7 @@ export default function AssetDetail() {
   const [conversationLoaded, setConversationLoaded] = React.useState(false);
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
-  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = React.useState(false);
+  // Disclaimer acknowledgment removed - now using passive statement
   const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string; nonComplianceReasons?: Array<{ reason: string; codeReference: string; severity: string; recommendation: string }>; complianceNotes?: string | null }>>({});
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
@@ -758,7 +757,7 @@ export default function AssetDetail() {
                                   setCheckingCompliance(prev => ({ ...prev, [assessment.id]: false }));
                                 }
                               }}
-                              disabled={isChecking || !disclaimerAcknowledged}
+                              disabled={isChecking}
                             >
                               {isChecking ? (
                                 <>
@@ -795,20 +794,11 @@ export default function AssetDetail() {
                     <strong>LIMITATION OF LIABILITY:</strong> The system operators, developers, and affiliated parties assume no responsibility or liability for any decisions, actions, or omissions made based on the results of this compliance check. Users assume all risk associated with the use of this tool and agree to hold harmless all parties involved in its development and operation.
                   </p>
                   
-                  {/* Acknowledgment Checkbox */}
-                  <div className="mt-4 pt-4 border-t flex items-start gap-3">
-                    <Checkbox
-                      id="disclaimer-acknowledgment"
-                      checked={disclaimerAcknowledged}
-                      onCheckedChange={(checked) => setDisclaimerAcknowledged(checked === true)}
-                      className="mt-0.5"
-                    />
-                    <label
-                      htmlFor="disclaimer-acknowledgment"
-                      className="text-sm font-medium cursor-pointer leading-relaxed"
-                    >
-                      I acknowledge that I have read and understood the above legal disclaimer. I understand that this AI-assisted compliance check is for informational purposes only and does not replace professional consultation.
-                    </label>
+                  {/* Passive Acknowledgment Statement */}
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-muted-foreground italic">
+                      By using this feature, I understand that this AI-assisted compliance check is for informational purposes only and does not replace professional consultation with licensed engineers, architects, or code officials.
+                    </p>
                   </div>
                 </div>
               </CardContent>
