@@ -40,6 +40,7 @@ import AutomatedReports from "./pages/features/AutomatedReports";
 import ASTMCompliant from "./pages/features/ASTMCompliant";
 import OfflineMode from "./pages/features/OfflineMode";
 import AnalyticsInsights from "./pages/features/AnalyticsInsights";
+import { NotificationPermissionDialog } from "./components/NotificationPermissionDialog";
 
 function Router() {
   return (
@@ -92,6 +93,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <NotificationPermissionDialog />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

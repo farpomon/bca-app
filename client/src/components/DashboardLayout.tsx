@@ -28,6 +28,7 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { MFAGracePeriodBanner } from './MFAGracePeriodBanner';
 import { OfflineStatusBanner } from './OfflineStatusBanner';
+import { SidebarOfflineStatus } from './SidebarOfflineStatus';
 
 const menuItems = [
   { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
@@ -236,6 +237,11 @@ function DashboardLayoutContent({
                 );
               })}
             </SidebarMenu>
+
+            {/* Offline Status Section */}
+            <div className="mt-auto px-2 py-2 border-t">
+              <SidebarOfflineStatus isCollapsed={isCollapsed} />
+            </div>
           </SidebarContent>
 
           <SidebarFooter className="p-3">

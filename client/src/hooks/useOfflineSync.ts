@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { getSyncEngine, type SyncProgress, type SyncResult, type SyncEvent } from "@/lib/syncEngine";
 import { getStorageStats, type StorageStats } from "@/lib/offlineStorage";
 import { toast } from "sonner";
+import { sendSyncNotification, sendOfflineNotification } from "./useNotificationPermission";
 
 export interface OfflineSyncState {
   isOnline: boolean;
@@ -29,6 +30,39 @@ export interface OfflineSyncActions {
 /**
  * Hook for managing offline sync
  */
+// Get notification functions from localStorage preference
+function getNotificationPreference() {
+  try {
+    const stored = localStorage.getItem("bca-notification-preference");
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error("Failed to read notification preference:", error);
+  }
+  return { enabled: false, syncComplete: true, offlineWarning: true };
+}
+
+function sendBrowserNotification(title: string, options?: NotificationOptions) {
+  const pref = getNotificationPreference();
+  if (!pref.enabled || Notification.permission !== "granted") return;
+  
+  try {
+    const notification = new Notification(title, {
+      icon: "/favicon.ico",
+      badge: "/favicon.ico",
+      ...options,
+    });
+    setTimeout(() => notification.close(), 5000);
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+  }
+}
+
 export function useOfflineSync(): OfflineSyncState & OfflineSyncActions {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -86,10 +120,26 @@ export function useOfflineSync(): OfflineSyncState & OfflineSyncActions {
       
       if (result.success) {
         toast.success(`Sync complete! ${result.synced} items synced.`);
+        // Send browser notification
+        const pref = getNotificationPreference();
+        if (pref.syncComplete) {
+          sendBrowserNotification("Sync Complete", {
+            body: `Successfully synced ${result.synced} item${result.synced !== 1 ? "s" : ""}.`,
+            tag: "sync-complete",
+          });
+        }
       } else {
         toast.warning(
           `Sync completed with errors. ${result.synced} synced, ${result.failed} failed.`
         );
+        // Send browser notification for partial sync
+        const pref = getNotificationPreference();
+        if (pref.syncComplete) {
+          sendBrowserNotification("Sync Completed with Errors", {
+            body: `Synced ${result.synced} item${result.synced !== 1 ? "s" : ""}, ${result.failed} failed.`,
+            tag: "sync-complete",
+          });
+        }
       }
       
       await refreshStats();
@@ -167,6 +217,14 @@ export function useOfflineSync(): OfflineSyncState & OfflineSyncActions {
     const handleOffline = () => {
       setIsOnline(false);
       toast.warning("You are offline. Changes will be saved locally.");
+      // Send browser notification
+      const pref = getNotificationPreference();
+      if (pref.offlineWarning) {
+        sendBrowserNotification("You're Offline", {
+          body: "Your changes will be saved locally and synced when you're back online.",
+          tag: "offline-warning",
+        });
+      }
     };
 
     window.addEventListener("online", handleOnline);

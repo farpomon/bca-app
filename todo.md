@@ -1348,3 +1348,19 @@ Testing:
 - [x] Build offline status panel with sync progress
 - [x] Create offline search for cached data
 - [x] Implement conflict resolution UI
+
+
+## Dashboard Offline Status Integration
+
+- [x] Integrate OfflineStatusPanel into DashboardLayout sidebar
+- [x] Show offline status indicator in sidebar navigation
+- [x] Display pending sync count badge in sidebar
+- [x] Add collapsible offline status section to sidebar
+
+## Push Notification Permissions
+
+- [x] Request push notification permission on first app load
+- [x] Create notification permission request dialog
+- [x] Send browser notification when sync completes
+- [x] Handle notification permission denied gracefully
+- [x] Store notification preference in localStorage
