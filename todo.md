@@ -1187,3 +1187,7 @@ Testing:
 - [x] Remove checkbox acknowledgment button from compliance check section
 - [x] Replace with passive acknowledgment statement
 - [x] Remove disabled state dependency on checkbox for Check Compliance button
+
+## Landing Page Enhancement
+
+- [x] Add B³NMA acronym explanation to landing page (Building Better Baselines for Needs, Modernization & Assets)

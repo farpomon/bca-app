@@ -40,6 +40,7 @@ export default function Home() {
               <img src={APP_LOGO} alt="B³NMA Logo" style={{ height: '40px', maxWidth: '120px', width: 'auto' }} className="object-contain flex-shrink-0" />
               <div className="hidden lg:flex flex-col leading-none">
                 <span className="text-xs text-muted-foreground">{APP_TAGLINE}</span>
+                <span className="text-[10px] text-muted-foreground/70 mt-0.5">Building Better Baselines for Needs, Modernization & Assets</span>
               </div>
               {/* Canadian Badge */}
               <div className="hidden lg:flex items-center gap-1.5 ml-3 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
