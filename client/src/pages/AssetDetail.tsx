@@ -51,12 +51,13 @@ export default function AssetDetail() {
 
   const { user, loading: authLoading } = useAuth();
   const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
+  const [selectedAssessment, setSelectedAssessment] = React.useState<any>(null);
   const [aiMessages, setAiMessages] = React.useState<Message[]>([]);
   const [conversationLoaded, setConversationLoaded] = React.useState(false);
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
   const [disclaimerAcknowledged, setDisclaimerAcknowledged] = React.useState(false);
-  const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string }>>({});
+  const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string; nonComplianceReasons?: Array<{ reason: string; codeReference: string; severity: string; recommendation: string }>; complianceNotes?: string | null }>>({});
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -170,13 +171,18 @@ export default function AssetDetail() {
     <>
       <AssessmentDialog
         open={showAssessmentDialog}
-        onOpenChange={setShowAssessmentDialog}
+        onOpenChange={(open) => {
+          setShowAssessmentDialog(open);
+          if (!open) setSelectedAssessment(null);
+        }}
         projectId={projectId}
         assetId={assetIdNum}
-        componentCode="GENERAL"
-        componentName="General Assessment"
+        componentCode={selectedAssessment?.componentCode || "GENERAL"}
+        componentName={selectedAssessment?.componentName || "General Assessment"}
+        existingAssessment={selectedAssessment}
         onSuccess={() => {
-          utils.assessments.list.invalidate();
+          utils.assessments.listByAsset.invalidate();
+          setSelectedAssessment(null);
         }}
       />
       <DashboardLayout>
@@ -415,7 +421,14 @@ export default function AssetDetail() {
                     </div>
                     <div className="space-y-2">
                       {assessments.map((assessment) => (
-                        <div key={assessment.id} className="p-4 border rounded-lg">
+                        <div 
+                          key={assessment.id} 
+                          className="p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+                          onClick={() => {
+                            setSelectedAssessment(assessment);
+                            setShowAssessmentDialog(true);
+                          }}
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium">{assessment.componentCode}</p>
@@ -679,7 +692,45 @@ export default function AssetDetail() {
                                 </p>
                               )}
                               {result && (
-                                <p className="text-sm mt-2">{result.details}</p>
+                                <div className="mt-2 space-y-3">
+                                  <p className="text-sm">{result.details}</p>
+                                  
+                                  {/* Non-Compliance Reasons */}
+                                  {!result.compliant && result.nonComplianceReasons && result.nonComplianceReasons.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                      <p className="text-sm font-semibold text-destructive">Non-Compliance Reasons:</p>
+                                      {result.nonComplianceReasons.map((item, idx) => (
+                                        <div key={idx} className="p-3 bg-destructive/10 border border-destructive/20 rounded-md space-y-1">
+                                          <div className="flex items-start justify-between gap-2">
+                                            <p className="text-sm font-medium text-destructive">{item.reason}</p>
+                                            <Badge variant={item.severity === 'high' ? 'destructive' : item.severity === 'medium' ? 'secondary' : 'outline'} className="shrink-0">
+                                              {item.severity?.toUpperCase()}
+                                            </Badge>
+                                          </div>
+                                          {item.codeReference && (
+                                            <p className="text-xs text-muted-foreground">
+                                              <span className="font-medium">Code Reference:</span> {item.codeReference}
+                                            </p>
+                                          )}
+                                          {item.recommendation && (
+                                            <p className="text-xs text-muted-foreground">
+                                              <span className="font-medium">Recommendation:</span> {item.recommendation}
+                                            </p>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  
+                                  {/* Compliance Notes */}
+                                  {result.complianceNotes && (
+                                    <div className="mt-2 p-2 bg-muted/50 rounded-md">
+                                      <p className="text-xs text-muted-foreground">
+                                        <span className="font-medium">Additional Notes:</span> {result.complianceNotes}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </div>
                             <Button

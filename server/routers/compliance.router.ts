@@ -371,17 +371,25 @@ Task: Determine if this component is compliant with the selected building code. 
 3. Safety and structural integrity standards
 4. Maintenance and lifecycle requirements
 
-Provide:
-1. A clear compliance determination (compliant or non-compliant)
-2. A detailed explanation of your assessment (2-3 sentences)
-3. Specific code sections or requirements that apply (if applicable)
-4. Recommendations for achieving or maintaining compliance (if needed)
+IMPORTANT: For EVERY non-compliant finding, you MUST provide a specific reason explaining WHY the component fails to meet the building code requirements. Reference specific code sections where applicable.
 
 Format your response as JSON with the following structure:
 {
-  "compliant": true/false,
-  "details": "Detailed explanation here"
-}`;
+  "compliant": true or false,
+  "details": "Brief overall summary of the compliance assessment",
+  "nonComplianceReasons": [
+    {
+      "reason": "Specific reason why this component is non-compliant",
+      "codeReference": "Relevant building code section (e.g., NBC 2020 Section 9.3.2.1)",
+      "severity": "high or medium or low",
+      "recommendation": "Specific action to address this issue"
+    }
+  ],
+  "complianceNotes": "Additional notes about compliant aspects or areas that meet requirements (if any)"
+}
+
+If the component is COMPLIANT, set compliant to true, provide a positive summary in details, and leave nonComplianceReasons as an empty array.
+If the component is NON-COMPLIANT, set compliant to false and populate the nonComplianceReasons array with ALL specific reasons for non-compliance.`;
 
       try {
         const response = await invokeLLM({
@@ -411,6 +419,8 @@ Format your response as JSON with the following structure:
         return {
           compliant: result.compliant === true,
           details: result.details || "No details provided",
+          nonComplianceReasons: result.nonComplianceReasons || [],
+          complianceNotes: result.complianceNotes || null,
         };
       } catch (error) {
         console.error("Compliance check error:", error);

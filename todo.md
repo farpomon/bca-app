@@ -1161,3 +1161,11 @@ Testing:
 - [x] Eliminate building code duplicates by deduplicating by jurisdiction + year in getActiveBuildingCodes
 - [x] Add checkbox requiring users to acknowledge legal disclaimer before running compliance checks
 - [x] Disable "Check Compliance" buttons until checkbox is checked
+
+
+## AI Compliance Check Enhancement (Dec 23, 2025)
+
+- [x] Enhance AI compliance check to provide detailed reasons for non-compliant components
+- [x] Display non-compliance reasons in the compliance check results UI
+
+- [x] Make component assessment items clickable to access assessment details
