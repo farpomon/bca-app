@@ -1191,3 +1191,160 @@ Testing:
 ## Landing Page Enhancement
 
 - [x] Add B³NMA acronym explanation to landing page (Building Better Baselines for Needs, Modernization & Assets)
+
+
+## 3D BIM Viewer Integration (Autodesk Forge)
+
+### Phase 1: Forge Infrastructure Setup
+- [ ] Create Autodesk Forge account and obtain API credentials
+- [ ] Set up Forge Model Derivative API for file conversion
+- [ ] Configure environment variables for Forge authentication
+- [ ] Create backend service for Forge token management
+- [ ] Implement model upload and conversion endpoints
+
+### Phase 2: Database Schema
+- [ ] Add forge_model_urn and forge_model_url to assets table
+- [ ] Add x_coordinate, y_coordinate, z_coordinate to deficiencies table
+- [ ] Add bim_element_guid to deficiencies table
+- [ ] Create bim_elements table for element mapping
+- [ ] Add model_viewpoints table for saved camera positions
+
+### Phase 3: Forge Viewer Component
+- [ ] Install Forge Viewer npm packages
+- [ ] Create ForgeViewer React component
+- [ ] Implement basic viewer initialization and model loading
+- [ ] Add navigation controls (orbit, pan, zoom, section)
+- [ ] Implement model tree/hierarchy view
+- [ ] Add measurement tools
+
+### Phase 4: Deficiency Hotspots
+- [ ] Create deficiency marker overlay system
+- [ ] Implement 3D coordinate capture on model click
+- [ ] Add color-coded markers by priority level
+- [ ] Create hotspot info panel component
+- [ ] Implement filter controls (priority, status, system)
+- [ ] Add click handlers to view deficiency details
+
+### Phase 5: Upload Interface
+- [ ] Create BIM model upload dialog component
+- [ ] Add file type validation (RVT, IFC, NWD, DWG)
+- [ ] Implement upload progress tracking
+- [ ] Add conversion status monitoring
+- [ ] Update Asset Detail 3D Model tab with viewer
+- [ ] Add model management UI (delete, re-upload)
+
+### Phase 6: Testing & Polish
+- [ ] Test with sample BIM models
+- [ ] Verify deficiency hotspot accuracy
+- [ ] Test on mobile devices
+- [ ] Add loading states and error handling
+- [ ] Write comprehensive tests
+- [ ] Update documentation
+
+
+## Offline Capabilities Optimization
+
+### Performance Optimizations
+- [ ] Implement lazy loading for IndexedDB data (load on demand vs all at once)
+- [ ] Add database indexing for faster offline queries
+- [ ] Optimize photo compression algorithm (better quality/size ratio)
+- [ ] Implement chunked file uploads for large photos (resume on failure)
+- [ ] Add memory management for large offline datasets
+- [ ] Implement virtual scrolling for offline data lists
+
+### Sync Engine Improvements
+- [ ] Add delta sync (only sync changed fields, not entire records)
+- [ ] Implement smart conflict resolution (field-level merge vs record-level)
+- [ ] Add sync prioritization (critical data first, photos last)
+- [ ] Implement background sync using Service Worker
+- [ ] Add sync batching to reduce API calls
+- [ ] Implement sync queue persistence across browser restarts
+
+### Storage Optimizations
+- [ ] Implement automatic storage cleanup for old cached data
+- [ ] Add storage quota monitoring and warnings
+- [ ] Implement tiered storage (hot/warm/cold data)
+- [ ] Add data compression for text content in IndexedDB
+- [ ] Implement selective caching (user-defined priorities)
+
+### Reliability Improvements
+- [ ] Add comprehensive error recovery for failed syncs
+- [ ] Implement data integrity checks (checksums)
+- [ ] Add automatic retry with smarter backoff strategy
+- [ ] Implement offline data validation before sync
+- [ ] Add sync transaction rollback on partial failures
+
+### User Experience Enhancements
+- [ ] Add offline mode indicator in all pages (not just dashboard)
+- [ ] Implement offline search functionality
+- [ ] Add offline data freshness indicators (last updated timestamps)
+- [ ] Implement offline-first form validation
+- [ ] Add sync conflict resolution UI for users
+- [ ] Implement offline notifications queue
+
+### Testing & Monitoring
+- [ ] Add offline performance metrics collection
+- [ ] Create automated offline scenario tests
+- [ ] Implement sync health monitoring dashboard
+- [ ] Add offline usage analytics
+- [ ] Create stress tests for large offline datasets
+
+## Offline Optimization - Comprehensive Enhancement
+
+### Phase 1: IndexedDB Storage Optimization
+- [ ] Implement lazy loading for large datasets (pagination with cursor-based iteration)
+- [ ] Add database versioning with migration support for schema changes
+- [ ] Implement storage quota management with automatic cleanup
+- [ ] Add compound indexes for complex queries (projectId + syncStatus)
+- [ ] Implement transaction batching for bulk operations
+
+### Phase 2: Enhanced Sync Engine
+- [ ] Implement delta sync (only sync changed fields, not entire records)
+- [ ] Add smart conflict resolution with merge strategies
+- [ ] Implement chunked photo uploads for large files
+- [ ] Add sync priority queue with dependency tracking
+- [ ] Implement parallel sync for independent items
+- [ ] Add network quality detection for adaptive sync
+
+### Phase 3: Service Worker Implementation
+- [ ] Create service worker for background sync
+- [ ] Implement offline page caching strategy
+- [ ] Add push notification for sync completion
+- [ ] Implement periodic background sync
+- [ ] Add sync event handling for reliable background operations
+
+### Phase 4: Storage Management
+- [ ] Implement storage usage tracking and reporting
+- [ ] Add automatic cleanup of old synced data
+- [ ] Implement LRU cache eviction for photos
+- [ ] Add storage quota warnings to UI
+- [ ] Implement data compression for text fields
+
+### Phase 5: Offline UX Improvements
+- [ ] Add offline search capability for cached data
+- [ ] Implement conflict resolution UI for manual merge
+- [ ] Add sync queue management UI with reorder/cancel
+- [ ] Implement offline data export/import
+- [ ] Add detailed sync error reporting with resolution suggestions
+
+
+
+## Offline Optimization - Comprehensive (Completed)
+- [x] Optimize IndexedDB storage with lazy loading and pagination
+- [x] Add database versioning with migration support
+- [x] Implement compound indexes for complex queries
+- [x] Add transaction batching for bulk operations
+- [x] Enhance sync engine with delta sync (only changed fields)
+- [x] Implement smart conflict resolution with merge strategies
+- [x] Add parallel sync for independent items
+- [x] Create Service Worker for background sync
+- [x] Implement offline page caching
+- [x] Add push notifications for sync completion
+- [x] Create storage quota management
+- [x] Implement LRU cache eviction for photos
+- [x] Add automatic cleanup of old synced data
+- [x] Create storage usage visualization
+- [x] Add export/import for offline data backup
+- [x] Build offline status panel with sync progress
+- [x] Create offline search for cached data
+- [x] Implement conflict resolution UI
