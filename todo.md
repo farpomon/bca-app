@@ -1398,3 +1398,13 @@ Testing:
 - [x] Identify test projects in database (CI/FCI Test, History Test, Consultant Upload Test, etc.)
 - [x] Delete test projects and their associated data (deleted 799 projects, kept 2 Comox projects)
 - [x] Verify project count after cleanup (2 projects, 2 assets, 59 assessments remaining)
+
+## Demo Project & Business Case (Dec 25, 2024)
+
+- [x] Create demo project "City of Vancouver Municipal Complex"
+- [x] Add 10 diverse assets covering different building types
+- [x] Add comprehensive UNIFORMAT II assessments for each asset
+- [x] Add deficiencies with varying priorities and severities
+- [ ] Test AI features (compliance checking, AI insights chat)
+- [x] Create business case document showcasing all features
+- [ ] Verify all features work with demo data
