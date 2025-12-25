@@ -40,6 +40,7 @@ import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { AIChatBox, Message } from "@/components/AIChatBox";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
+import { Asset3DModelTab } from "@/components/Asset3DModelTab";
 
 export default function AssetDetail() {
   const { id, assetId } = useParams();
@@ -807,19 +808,7 @@ export default function AssetDetail() {
 
           {/* 3D Model Tab */}
           <TabsContent value="3d-model" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>3D Digital Twin</CardTitle>
-                <CardDescription>
-                  Interactive 3D model with clickable annotations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  3D model viewer coming soon. This will display digital twin models with linked assessments.
-                </p>
-              </CardContent>
-            </Card>
+            <Asset3DModelTab assetId={assetIdNum} projectId={projectId} />
           </TabsContent>
 
           {/* Timeline Tab - Hidden due to errors */}

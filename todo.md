@@ -1364,3 +1364,17 @@ Testing:
 - [x] Send browser notification when sync completes
 - [x] Handle notification permission denied gracefully
 - [x] Store notification preference in localStorage
+
+
+## 3D Model Viewer Feature
+
+- [x] Install Three.js and related dependencies (@react-three/fiber, @react-three/drei)
+- [x] Create ThreeModelViewer component with orbit controls
+- [x] Support glTF/GLB 3D model format loading
+- [x] Implement model upload functionality with S3 storage (already existed)
+- [x] Add model upload UI to asset detail 3D Model tab
+- [x] Create backend endpoints for 3D model management (upload, get, delete) (already existed)
+- [x] Update database schema for 3D model storage (facilityModels table already existed)
+- [x] Integrate viewer into asset detail page replacing placeholder
+- [x] Add loading states and error handling for 3D viewer
+- [x] Test 3D model upload and viewing functionality
