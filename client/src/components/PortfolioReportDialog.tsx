@@ -6,6 +6,7 @@
  */
 
 import { useState } from "react";
+import { generatePortfolioPDF, type PortfolioReportData } from "@/utils/portfolioPdfGenerator";
 import { trpc } from "@/lib/trpc";
 import {
   Dialog,
@@ -39,8 +40,12 @@ import {
   Download,
   Loader2,
   Info,
-  LucideIcon
+  LucideIcon,
+  Wallet,
+  Target
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
@@ -161,6 +166,8 @@ function MetricCard({
 export function PortfolioReportDialog({ projectId, projectName, trigger }: PortfolioReportDialogProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("summary");
+  const [availableBudget, setAvailableBudget] = useState<string>("");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   
   const generateReport = trpc.portfolioReport.generate.useMutation();
   
@@ -221,11 +228,12 @@ export function PortfolioReportDialog({ projectId, projectName, trigger }: Portf
           </div>
         ) : report ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="summary">Summary</TabsTrigger>
               <TabsTrigger value="assets">Assets</TabsTrigger>
               <TabsTrigger value="categories">Categories</TabsTrigger>
               <TabsTrigger value="priorities">Priorities</TabsTrigger>
+              <TabsTrigger value="budget">Budget</TabsTrigger>
               <TabsTrigger value="forecast">Forecast</TabsTrigger>
             </TabsList>
             
@@ -514,6 +522,203 @@ export function PortfolioReportDialog({ projectId, projectName, trigger }: Portf
               </Card>
             </TabsContent>
             
+            {/* Budget Allocation Tab */}
+            <TabsContent value="budget" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5" />
+                    Budget Allocation & Funding Gap Analysis
+                  </CardTitle>
+                  <CardDescription>
+                    Enter your available budget to see funding gap analysis and prioritized spending recommendations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Budget Input */}
+                  <div className="flex items-end gap-4">
+                    <div className="flex-1 max-w-xs">
+                      <Label htmlFor="budget">Available Budget ($)</Label>
+                      <Input
+                        id="budget"
+                        type="number"
+                        placeholder="Enter available budget"
+                        value={availableBudget}
+                        onChange={(e) => setAvailableBudget(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Funding Gap Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-600 font-medium">Total Required</p>
+                      <p className="text-2xl font-bold text-blue-800">
+                        {formatCurrency(report.summary.totalDeferredMaintenanceCost)}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-600 font-medium">Available Budget</p>
+                      <p className="text-2xl font-bold text-green-800">
+                        {availableBudget ? formatCurrency(parseFloat(availableBudget)) : '$0'}
+                      </p>
+                    </div>
+                    <div className={`p-4 rounded-lg border ${
+                      availableBudget && parseFloat(availableBudget) >= report.summary.totalDeferredMaintenanceCost
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-red-50 border-red-200'
+                    }`}>
+                      <p className={`text-sm font-medium ${
+                        availableBudget && parseFloat(availableBudget) >= report.summary.totalDeferredMaintenanceCost
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }`}>Funding Gap</p>
+                      <p className={`text-2xl font-bold ${
+                        availableBudget && parseFloat(availableBudget) >= report.summary.totalDeferredMaintenanceCost
+                          ? 'text-green-800'
+                          : 'text-red-800'
+                      }`}>
+                        {availableBudget 
+                          ? formatCurrency(Math.max(0, report.summary.totalDeferredMaintenanceCost - parseFloat(availableBudget)))
+                          : formatCurrency(report.summary.totalDeferredMaintenanceCost)
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Budget Coverage */}
+                  {availableBudget && parseFloat(availableBudget) > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">Budget Coverage by Priority</h4>
+                      <div className="space-y-3">
+                        {(() => {
+                          const budget = parseFloat(availableBudget);
+                          let remainingBudget = budget;
+                          const priorities = ['immediate', 'short_term', 'medium_term', 'long_term'] as const;
+                          const priorityLabels: Record<string, string> = {
+                            immediate: 'Immediate (0-1 year)',
+                            short_term: 'Short Term (1-3 years)',
+                            medium_term: 'Medium Term (3-5 years)',
+                            long_term: 'Long Term (5+ years)'
+                          };
+                          
+                          return priorities.map((priority) => {
+                            const priorityData = report.priorityMatrix.find((p: { priority: string }) => p.priority === priority);
+                            const required = priorityData?.totalCost || 0;
+                            const allocated = Math.min(remainingBudget, required);
+                            remainingBudget = Math.max(0, remainingBudget - allocated);
+                            const coverage = required > 0 ? (allocated / required) * 100 : 100;
+                            
+                            return (
+                              <div key={priority} className="space-y-1">
+                                <div className="flex justify-between text-sm">
+                                  <span className="font-medium">{priorityLabels[priority]}</span>
+                                  <span>
+                                    {formatCurrency(allocated)} / {formatCurrency(required)}
+                                    <span className={`ml-2 ${
+                                      coverage >= 100 ? 'text-green-600' : coverage >= 50 ? 'text-yellow-600' : 'text-red-600'
+                                    }`}>
+                                      ({coverage.toFixed(0)}%)
+                                    </span>
+                                  </span>
+                                </div>
+                                <Progress value={Math.min(coverage, 100)} className="h-2" />
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Recommendations */}
+                  {availableBudget && parseFloat(availableBudget) > 0 && (
+                    <Card className="bg-muted/50">
+                      <CardHeader>
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Target className="h-4 w-4" />
+                          Prioritized Spending Recommendations
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3 text-sm">
+                          {(() => {
+                            const budget = parseFloat(availableBudget);
+                            const totalRequired = report.summary.totalDeferredMaintenanceCost;
+                            const immediateNeeds = report.priorityMatrix.find((p: { priority: string }) => p.priority === 'immediate')?.totalCost || 0;
+                            const shortTermNeeds = report.priorityMatrix.find((p: { priority: string }) => p.priority === 'short_term')?.totalCost || 0;
+                            
+                            const recommendations: string[] = [];
+                            
+                            if (budget >= totalRequired) {
+                              recommendations.push('✅ Your budget fully covers all identified maintenance needs.');
+                              recommendations.push('Consider allocating surplus funds to preventive maintenance programs.');
+                            } else if (budget >= immediateNeeds + shortTermNeeds) {
+                              recommendations.push('✅ Budget covers all immediate and short-term needs.');
+                              recommendations.push(`⚠️ Funding gap of ${formatCurrency(totalRequired - budget)} for medium and long-term items.`);
+                              recommendations.push('Recommend phasing medium-term items over the next 2-3 fiscal years.');
+                            } else if (budget >= immediateNeeds) {
+                              recommendations.push('✅ Budget covers all immediate safety and critical needs.');
+                              recommendations.push(`⚠️ Shortfall of ${formatCurrency(immediateNeeds + shortTermNeeds - budget)} for short-term items.`);
+                              recommendations.push('Prioritize items with highest risk of failure or safety impact.');
+                              recommendations.push('Consider phased approach or seeking additional funding sources.');
+                            } else {
+                              recommendations.push(`🚨 Critical: Budget shortfall of ${formatCurrency(immediateNeeds - budget)} for immediate needs.`);
+                              recommendations.push('Immediate action required: Prioritize safety-critical items first.');
+                              recommendations.push('Recommend emergency funding request or capital reserve allocation.');
+                              recommendations.push('Consider temporary mitigation measures for deferred items.');
+                            }
+                            
+                            return recommendations.map((rec, idx) => (
+                              <p key={idx}>{rec}</p>
+                            ));
+                          })()}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  {/* Priority Breakdown Table */}
+                  <div>
+                    <h4 className="font-semibold mb-3">Cost Breakdown by Priority</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Priority</TableHead>
+                          <TableHead className="text-right">Items</TableHead>
+                          <TableHead className="text-right">Total Cost</TableHead>
+                          <TableHead className="text-right">% of Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {report.priorityMatrix.map((priority: { priority: string; count: number; totalCost: number; percentageOfTotal: number }) => (
+                          <TableRow key={priority.priority}>
+                            <TableCell className="font-medium">
+                              {getPriorityLabel(priority.priority)}
+                            </TableCell>
+                            <TableCell className="text-right">{priority.count}</TableCell>
+                            <TableCell className="text-right">{formatCurrency(priority.totalCost)}</TableCell>
+                            <TableCell className="text-right">{formatPercentage(priority.percentageOfTotal)}</TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow className="font-bold bg-muted/50">
+                          <TableCell>Total</TableCell>
+                          <TableCell className="text-right">
+                            {report.priorityMatrix.reduce((sum: number, p: { count: number }) => sum + p.count, 0)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(report.summary.totalDeferredMaintenanceCost)}
+                          </TableCell>
+                          <TableCell className="text-right">100%</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
             {/* Forecast Tab */}
             <TabsContent value="forecast" className="space-y-4">
               <Card>
@@ -618,9 +823,47 @@ export function PortfolioReportDialog({ projectId, projectName, trigger }: Portf
               ) : null}
               Refresh Report
             </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export PDF (Coming Soon)
+            <Button 
+              variant="default" 
+              className="gap-2"
+              onClick={() => {
+                setIsExportingPdf(true);
+                try {
+                  // Add budget allocation data if available
+                  const reportWithBudget: PortfolioReportData = {
+                    ...report,
+                    budgetAllocation: availableBudget && parseFloat(availableBudget) > 0 ? {
+                      availableBudget: parseFloat(availableBudget),
+                      fundingGap: Math.max(0, report.summary.totalDeferredMaintenanceCost - parseFloat(availableBudget)),
+                      allocations: (() => {
+                        let remaining = parseFloat(availableBudget);
+                        return report.priorityMatrix.map((p: { priority: string; totalCost: number }) => {
+                          const allocated = Math.min(remaining, p.totalCost);
+                          remaining = Math.max(0, remaining - allocated);
+                          return {
+                            priority: p.priority,
+                            allocated,
+                            required: p.totalCost,
+                            coverage: p.totalCost > 0 ? (allocated / p.totalCost) * 100 : 100
+                          };
+                        });
+                      })(),
+                      recommendations: []
+                    } : undefined
+                  };
+                  generatePortfolioPDF(reportWithBudget);
+                } finally {
+                  setIsExportingPdf(false);
+                }
+              }}
+              disabled={isExportingPdf}
+            >
+              {isExportingPdf ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              Export PDF
             </Button>
           </div>
         )}

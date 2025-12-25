@@ -1464,3 +1464,27 @@ Testing:
 - [ ] Test portfolio report generation with multiple assets (ready for user testing)
 - [ ] Document financial metrics methodology
 - [ ] Add tooltips explaining each metric to users
+
+
+## PDF Export & Budget Allocation (Dec 25, 2024)
+
+### PDF Export for Portfolio Reports
+- [x] Install jsPDF and jspdf-autotable packages
+- [x] Create portfolioPdfGenerator.ts utility
+- [x] Add PDF export button to PortfolioReportDialog
+- [x] Include all report sections in PDF (summary, assets, categories, priorities, forecast)
+- [x] Add budget allocation data to PDF export
+
+### Budget Allocation Integration
+- [x] Add budget input field to portfolio report
+- [x] Implement funding gap calculation
+- [x] Create prioritized spending recommendations
+- [x] Show budget coverage by priority level
+- [x] Add Budget tab to portfolio report dialog
+
+### Comprehensive Demo Project
+- [x] Create demo project "Metro Vancouver Public Works Portfolio"
+- [x] Add 10 diverse assets covering different building types
+- [x] Add comprehensive UNIFORMAT II assessments for each asset (251 assessments)
+- [x] Add deficiencies with varying priorities and severities (52 deficiencies)
+- [x] Verify all features work with demo data
