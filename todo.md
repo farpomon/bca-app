@@ -1418,3 +1418,49 @@ Testing:
 - [ ] Test AI features (compliance checking, AI insights chat)
 - [x] Create business case document showcasing all features
 - [ ] Verify all features work with demo data
+
+
+## Portfolio-Level Report Generation with Financial Metrics
+
+### Phase 1: Financial Metrics Calculations
+- [x] Implement Facility Condition Index (FCI) calculation per asset
+- [x] Implement FCI aggregation at project/portfolio level
+- [x] Calculate Deferred Maintenance Backlog (total repair costs)
+- [x] Calculate Current Replacement Value (CRV) per asset
+- [x] Calculate Funding Gap Analysis (required vs available)
+- [x] Implement 5-year Capital Renewal Forecast
+- [x] Calculate Remaining Useful Life (RUL) by component
+- [x] Implement Priority Weighted Scoring for repairs
+
+### Phase 2: Portfolio Report Data Model
+- [x] Create portfolio report schema in database
+- [ ] Add report generation history tracking (future enhancement)
+- [ ] Store report snapshots for historical comparison (future enhancement)
+- [x] Add report configuration options (metrics to include)
+
+### Phase 3: Backend Report Generation
+- [x] Create reports.generatePortfolioReport procedure
+- [x] Aggregate assessments across all assets in project
+- [x] Calculate weighted averages for condition scores
+- [x] Generate executive summary with key metrics
+- [x] Create detailed breakdown by asset
+- [x] Create breakdown by UNIFORMAT II category
+- [x] Generate repair priority matrix
+- [ ] Add PDF export capability for portfolio reports (future enhancement)
+
+### Phase 4: Portfolio Report UI
+- [x] Add "Generate Portfolio Report" button to project detail page
+- [x] Create PortfolioReportDialog component
+- [x] Add report configuration options (select metrics, date range)
+- [x] Display executive summary dashboard
+- [x] Add FCI gauge/visualization per asset
+- [x] Create deferred maintenance chart
+- [x] Add capital renewal forecast chart (5-year projection)
+- [x] Create asset comparison table with key metrics
+- [ ] Add export options (PDF, Excel) (future enhancement)
+
+### Phase 5: Testing & Documentation
+- [x] Write vitest tests for financial metric calculations (31 tests passing)
+- [ ] Test portfolio report generation with multiple assets (ready for user testing)
+- [ ] Document financial metrics methodology
+- [ ] Add tooltips explaining each metric to users
