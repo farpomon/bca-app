@@ -1391,3 +1391,10 @@ Testing:
 - [x] Add Suspense boundaries with loading fallbacks (PageLoader component)
 - [x] Split large page components for better performance (30+ pages now lazy loaded)
 - [x] Verify application works correctly after code splitting
+
+
+## Database Cleanup - Test Projects (Dec 25, 2024)
+
+- [x] Identify test projects in database (CI/FCI Test, History Test, Consultant Upload Test, etc.)
+- [x] Delete test projects and their associated data (deleted 799 projects, kept 2 Comox projects)
+- [x] Verify project count after cleanup (2 projects, 2 assets, 59 assessments remaining)
