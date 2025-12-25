@@ -652,6 +652,19 @@ export default function ProjectDetail() {
                           <div className="flex-1">
                             <div className="font-medium">{assessment.componentCode}</div>
                             <div className="text-sm text-muted-foreground line-clamp-1">{assessment.observations}</div>
+                            {(assessment.estimatedRepairCost || assessment.replacementValue) && (
+                              <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+                                {assessment.estimatedRepairCost && (
+                                  <span className="flex items-center">
+                                    <DollarSign className="h-3 w-3 mr-0.5" />
+                                    Repair: ${assessment.estimatedRepairCost.toLocaleString()}
+                                  </span>
+                                )}
+                                {assessment.replacementValue && (
+                                  <span>Replacement: ${assessment.replacementValue.toLocaleString()}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                           {/* Status Badge */}

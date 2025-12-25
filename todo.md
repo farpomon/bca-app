@@ -167,6 +167,10 @@
 - [ ] Test with MARINA document to verify OpenAI/Gemini fallback works
 - [ ] Create checkpoint after successful testing
 
+## Repair Cost Display
+
+- [x] Add repair cost display to assessment results
+
 ## Fix AI Import Deficiency Undefined Values
 
 - [x] Investigate "Invalid input: expected string, received undefined" error in deficiencies

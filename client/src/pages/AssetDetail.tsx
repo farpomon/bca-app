@@ -433,6 +433,21 @@ export default function AssetDetail() {
                             <div>
                               <p className="font-medium">{assessment.componentCode}</p>
                               <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
+                              {(assessment.estimatedRepairCost || assessment.replacementValue) && (
+                                <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+                                  {assessment.estimatedRepairCost && (
+                                    <span>
+                                      <DollarSign className="inline h-3 w-3 mr-0.5" />
+                                      Repair: ${assessment.estimatedRepairCost.toLocaleString()}
+                                    </span>
+                                  )}
+                                  {assessment.replacementValue && (
+                                    <span>
+                                      Replacement: ${assessment.replacementValue.toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
                               {assessment.condition}
