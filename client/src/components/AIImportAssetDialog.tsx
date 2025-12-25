@@ -359,10 +359,13 @@ export function AIImportAssetDialog({
                                 Location: {assessment.componentLocation}
                               </div>
                             )}
-                            <div className="flex gap-4 mt-2 text-xs">
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs">
                               <span className="font-medium">Condition: <span className="font-normal capitalize">{assessment.condition}</span></span>
-                              {assessment.estimatedRepairCost && (
-                                <span className="font-medium">Cost: <span className="font-normal">${assessment.estimatedRepairCost.toLocaleString()}</span></span>
+                              {assessment.estimatedRepairCost != null && assessment.estimatedRepairCost > 0 && (
+                                <span className="font-medium">Repair Cost: <span className="font-normal text-amber-600">${assessment.estimatedRepairCost.toLocaleString()}</span></span>
+                              )}
+                              {assessment.replacementValue != null && assessment.replacementValue > 0 && (
+                                <span className="font-medium">Replacement: <span className="font-normal text-blue-600">${assessment.replacementValue.toLocaleString()}</span></span>
                               )}
                               {assessment.remainingUsefulLife && (
                                 <span className="font-medium">RUL: <span className="font-normal">{assessment.remainingUsefulLife} years</span></span>

@@ -37,8 +37,8 @@ type ExtractedData = {
     recommendations?: string | null;
     remainingUsefulLife?: number | null;
     expectedUsefulLife?: number | null;
-    estimatedRepairCost?: number | null;
-    replacementValue?: number | null;
+    estimatedRepairCost?: number | null; // Cost to repair/maintain the component
+    replacementValue?: number | null; // Full cost to replace the entire component
   }>;
   deficiencies: Array<{
     componentCode: string;
@@ -392,6 +392,64 @@ export function AIImportDialog({ open, onOpenChange, onSuccess }: AIImportDialog
                 <p className="text-2xl font-bold">{editedData.photos?.length || 0}</p>
               </div>
             </div>
+
+            {/* Cost Summary */}
+            {(() => {
+              const totalRepairCost = editedData.assessments.reduce((sum, a) => sum + (a.estimatedRepairCost || 0), 0);
+              const totalReplacementValue = editedData.assessments.reduce((sum, a) => sum + (a.replacementValue || 0), 0);
+              if (totalRepairCost > 0 || totalReplacementValue > 0) {
+                return (
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg border">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Repair Cost</p>
+                      <p className="text-xl font-bold text-amber-600">
+                        ${totalRepairCost.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Replacement Value</p>
+                      <p className="text-xl font-bold text-blue-600">
+                        ${totalReplacementValue.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Assessments Preview */}
+            {editedData.assessments.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold">Extracted Assessments ({editedData.assessments.length})</h3>
+                <div className="max-h-60 overflow-y-auto space-y-2 bg-muted/30 p-3 rounded-lg">
+                  {editedData.assessments.map((assessment, index) => (
+                    <div key={index} className="bg-background p-3 rounded border text-sm">
+                      <div className="font-medium">
+                        {assessment.componentCode} - {assessment.componentName}
+                      </div>
+                      {assessment.componentLocation && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Location: {assessment.componentLocation}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs">
+                        <span className="font-medium">Condition: <span className="font-normal capitalize">{assessment.condition}</span></span>
+                        {assessment.estimatedRepairCost != null && assessment.estimatedRepairCost > 0 && (
+                          <span className="font-medium">Repair: <span className="font-normal text-amber-600">${assessment.estimatedRepairCost.toLocaleString()}</span></span>
+                        )}
+                        {assessment.replacementValue != null && assessment.replacementValue > 0 && (
+                          <span className="font-medium">Replacement: <span className="font-normal text-blue-600">${assessment.replacementValue.toLocaleString()}</span></span>
+                        )}
+                        {assessment.remainingUsefulLife && (
+                          <span className="font-medium">RUL: <span className="font-normal">{assessment.remainingUsefulLife} years</span></span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Photos Preview */}
             {editedData.photos && editedData.photos.length > 0 && (

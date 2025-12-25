@@ -179,9 +179,16 @@ Extract the following information:
    - Remaining Useful Life (RUL) in years (if mentioned)
    - Review year (when was this assessment done)
    - Last action year (when was last maintenance/repair done)
-   - Estimated repair cost (if mentioned)
-   - Replacement value (if mentioned)
+   - Estimated repair cost (if mentioned) - the cost to repair/maintain the component in its current state
+   - Replacement value/cost (if mentioned) - the full cost to replace the entire component with new
    - Action year (when should action be taken)
+   
+   IMPORTANT FOR COSTS:
+   - Look for repair costs, maintenance costs, remediation costs - these are "estimatedRepairCost"
+   - Look for replacement costs, replacement value, capital renewal costs - these are "replacementValue"
+   - Extract numeric values only (no currency symbols)
+   - If costs are given as ranges, use the higher value
+   - If costs are given per unit (e.g., per sq ft), calculate total if area is available
 
 3. DEFICIENCIES:
    For each deficiency or issue mentioned, extract:

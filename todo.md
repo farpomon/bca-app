@@ -171,6 +171,12 @@
 
 - [x] Add repair cost display to assessment results
 
+## AI Parse Cost Capture Enhancement
+
+- [x] Add replacement cost capture to AI parse feature
+- [x] Add repair cost capture to AI parse feature
+- [x] Update UI to display replacement and repair costs in AI import preview
+
 ## Fix AI Import Deficiency Undefined Values
 
 - [x] Investigate "Invalid input: expected string, received undefined" error in deficiencies
