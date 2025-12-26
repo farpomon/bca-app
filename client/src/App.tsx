@@ -23,6 +23,8 @@ import CapitalBudgetPlanner from "./pages/CapitalBudgetPlanner";
 import LPOptimizationDashboard from "./pages/LPOptimizationDashboard";
 import Model3DViewer from "./pages/Model3DViewer";
 import PortfolioBIDashboard from "./pages/PortfolioBIDashboard";
+import PortfolioAnalytics from "./pages/PortfolioAnalytics";
+import PortfolioReport from "./pages/PortfolioReport";
 import Admin from "./pages/Admin";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
@@ -76,7 +78,9 @@ function Router() {
       <Route path={"/capital-budget"} component={CapitalBudgetPlanner} />
       <Route path={"/lp-optimization"} component={LPOptimizationDashboard} />
       <Route path={"/projects/:id/3d-model"} component={Model3DViewer} />
-      <Route path={"/portfolio-analytics"} component={PortfolioBIDashboard} />
+      <Route path={"/portfolio-bi"} component={PortfolioBIDashboard} />
+      <Route path={"/portfolio-analytics"} component={PortfolioAnalytics} />
+      <Route path={"/portfolio-report"} component={PortfolioReport} />
       <Route path={"/admin/compliance"} component={ComplianceDashboard} />
       <Route path={"/admin/data-security"} component={DataSecurity} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />

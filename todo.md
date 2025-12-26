@@ -1488,3 +1488,45 @@ Testing:
 - [x] Add comprehensive UNIFORMAT II assessments for each asset (251 assessments)
 - [x] Add deficiencies with varying priorities and severities (52 deficiencies)
 - [x] Verify all features work with demo data
+
+## Portfolio-Wide Analytics and Aggregation
+
+### Database and Backend
+- [x] Create portfolio analytics database queries for cross-portfolio aggregation
+- [x] Add portfolio-wide condition distribution analysis
+- [x] Add portfolio-wide cost breakdown by UNIFORMAT category
+- [x] Add portfolio-wide deficiency trends over time
+- [x] Add building comparison metrics (FCI, condition, costs)
+- [x] Add geographic distribution analysis (by city/province)
+- [x] Add property type distribution analysis
+
+### API Endpoints
+- [x] Create portfolioAnalytics router with comprehensive endpoints
+- [x] Add getPortfolioOverview endpoint (summary metrics)
+- [x] Add getConditionDistribution endpoint
+- [x] Add getCostBreakdown endpoint (by category, priority, building)
+- [x] Add getBuildingComparison endpoint
+- [x] Add getDeficiencyTrends endpoint
+- [x] Add getGeographicDistribution endpoint
+- [x] Add exportPortfolioReport endpoint (PDF generation via print)
+
+### Frontend UI
+- [x] Create PortfolioAnalytics page with comprehensive dashboard
+- [x] Add portfolio overview cards (total buildings, CRV, FCI, deficiencies)
+- [x] Add condition distribution pie chart
+- [x] Add cost breakdown bar chart by UNIFORMAT category
+- [x] Add building comparison table with sorting
+- [x] Add deficiency trends line chart
+- [x] Add geographic distribution list
+- [x] Add property type breakdown chart
+- [x] Add export/download functionality for reports (print to PDF)
+- [x] Add navigation to portfolio analytics from dashboard
+
+### Portfolio Report Feature
+- [x] Create PDF portfolio report generator (print-based)
+- [x] Include executive summary section
+- [x] Include portfolio metrics and KPIs
+- [x] Include building-by-building breakdown
+- [x] Include capital planning forecast
+- [x] Include priority recommendations
+- [x] Add report customization options

@@ -39,6 +39,7 @@ import { contactRouter } from "./routers/contact.router";
 import { timelineRouter } from "./routers/timeline.router";
 import { undoRouter } from "./routers/undoRouter";
 import { portfolioReportRouter } from "./routers/portfolioReport.router";
+import { portfolioAnalyticsRouter } from "./routers/portfolioAnalytics.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -80,6 +81,7 @@ export const appRouter = router({
   privacyLock: privacyLockRouter,
   contact: contactRouter,
   portfolioReport: portfolioReportRouter,
+  portfolioAnalytics: portfolioAnalyticsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

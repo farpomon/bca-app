@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2 } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -33,6 +33,7 @@ import { SidebarOfflineStatus } from './SidebarOfflineStatus';
 const menuItems = [
   { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
   { icon: LayoutDashboard, label: "Projects", path: "/" },
+  { icon: BarChart3, label: "Portfolio Analytics", path: "/portfolio-analytics" },
   { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 
