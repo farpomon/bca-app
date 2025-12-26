@@ -1,0 +1,90 @@
+{
+  "query": "SELECT \n  d.id as deficiency_id, \n  d.assessmentId, \n  d.projectId, \n  d.estimatedCost,\n  a.id as assessment_id,\n  a.assetId\nFROM deficiencies d\nLEFT JOIN assessments a ON d.assessmentId = a.id\nWHERE d.estimatedCost > 0\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT \n  d.id as deficiency_id, \n  d.assessmentId, \n  d.projectId, \n  d.estimatedCost,\n  a.id as assessment_id,\n  a.assetId\nFROM deficiencies d\nLEFT JOIN assessments a ON d.assessmentId = a.id\nWHERE d.estimatedCost > 0\nLIMIT 10;",
+  "rows": [
+    {
+      "deficiency_id": "2",
+      "assessmentId": "NULL",
+      "projectId": "14",
+      "estimatedCost": "1000000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "3",
+      "assessmentId": "NULL",
+      "projectId": "18",
+      "estimatedCost": "1500000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "4",
+      "assessmentId": "NULL",
+      "projectId": "27",
+      "estimatedCost": "500000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "8",
+      "assessmentId": "NULL",
+      "projectId": "34",
+      "estimatedCost": "1000000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "9",
+      "assessmentId": "NULL",
+      "projectId": "36",
+      "estimatedCost": "1500000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "10",
+      "assessmentId": "NULL",
+      "projectId": "37",
+      "estimatedCost": "750000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "30001",
+      "assessmentId": "NULL",
+      "projectId": "60012",
+      "estimatedCost": "500000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "30005",
+      "assessmentId": "NULL",
+      "projectId": "60019",
+      "estimatedCost": "1000000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "30006",
+      "assessmentId": "NULL",
+      "projectId": "60021",
+      "estimatedCost": "1500000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    },
+    {
+      "deficiency_id": "30007",
+      "assessmentId": "NULL",
+      "projectId": "60022",
+      "estimatedCost": "750000",
+      "assessment_id": "NULL",
+      "assetId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "deficiency_id\tassessmentId\tprojectId\testimatedCost\tassessment_id\tassetId\n2\tNULL\t14\t1000000\tNULL\tNULL\n3\tNULL\t18\t1500000\tNULL\tNULL\n4\tNULL\t27\t500000\tNULL\tNULL\n8\tNULL\t34\t1000000\tNULL\tNULL\n9\tNULL\t36\t1500000\tNULL\tNULL\n10\tNULL\t37\t750000\tNULL\tNULL\n30001\tNULL\t60012\t500000\tNULL\tNULL\n30005\tNULL\t60019\t1000000\tNULL\tNULL\n30006\tNULL\t60021\t1500000\tNULL\tNULL\n30007\tNULL\t60022\t750000\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

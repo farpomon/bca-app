@@ -133,7 +133,16 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
   const totalAssessments = data.assessments.length;
   const totalDeficiencies = data.deficiencies.length;
   const criticalDeficiencies = data.deficiencies.filter(d => d.severity === 'critical').length;
-  const totalCost = data.deficiencies.reduce((sum, d) => sum + (d.estimatedCost || 0), 0);
+  
+  // Calculate total repair cost from assessments (primary source)
+  const assessmentRepairCost = data.assessments.reduce((sum, a) => sum + (a.estimatedRepairCost || 0), 0);
+  // Also include deficiency costs as secondary source
+  const deficiencyCost = data.deficiencies.reduce((sum, d) => sum + (d.estimatedCost || 0), 0);
+  // Use the larger of the two, or sum them if both exist
+  const totalCost = assessmentRepairCost > 0 ? assessmentRepairCost : deficiencyCost;
+  
+  // Calculate total replacement value from assessments
+  const totalReplacementValue = data.assessments.reduce((sum, a) => sum + (a.replacementValue || 0), 0);
 
   const summaryStats: string[][] = [
     ["Total Assessments:", totalAssessments.toString()],
@@ -312,7 +321,13 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
   doc.text("Financial KPIs & Cost Analysis", 10, yPos);
   yPos += 15;
 
-  // Calculate financial metrics
+  // Use the totalCost and totalReplacementValue calculated earlier in the Assessment Summary section
+  // These are already calculated from assessments.estimatedRepairCost and assessments.replacementValue
+  
+  // Get deficiency cost for priority/severity breakdown
+  const deficiencyCostTotal = data.deficiencies.reduce((sum, d) => sum + (d.estimatedCost || 0), 0);
+
+  // Calculate financial metrics by priority from deficiencies
   const costByPriority: Record<string, number> = {
     immediate: 0,
     short_term: 0,
@@ -327,18 +342,47 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     minor: 0,
   };
 
-  data.deficiencies.forEach(d => {
-    const priority = d.priority || 'long_term';
-    const severity = d.severity || 'minor';
-    costByPriority[priority] += d.estimatedCost || 0;
-    costBySeverity[severity] += d.estimatedCost || 0;
-  });
+  // If we have deficiency costs, use them for priority/severity breakdown
+  if (deficiencyCostTotal > 0 && data.deficiencies.length > 0) {
+    data.deficiencies.forEach(d => {
+      const priority = d.priority || 'long_term';
+      const severity = d.severity || 'minor';
+      costByPriority[priority] += d.estimatedCost || 0;
+      costBySeverity[severity] += d.estimatedCost || 0;
+    });
+  } else if (totalCost > 0) {
+    // If no deficiency costs but we have assessment repair costs,
+    // distribute based on condition ratings
+    data.assessments.forEach(a => {
+      const repairCost = a.estimatedRepairCost || 0;
+      if (repairCost > 0) {
+        const condition = a.condition || 'not_assessed';
+        // Map condition to priority and severity
+        if (condition === 'poor') {
+          costByPriority.immediate += repairCost;
+          costBySeverity.critical += repairCost;
+        } else if (condition === 'fair') {
+          costByPriority.short_term += repairCost;
+          costBySeverity.major += repairCost;
+        } else if (condition === 'good') {
+          costByPriority.medium_term += repairCost;
+          costBySeverity.moderate += repairCost;
+        } else {
+          costByPriority.long_term += repairCost;
+          costBySeverity.minor += repairCost;
+        }
+      }
+    });
+  }
 
-  // Current Replacement Value (CRV) - estimate based on gross floor area
-  const estimatedCRV = data.asset.grossFloorArea ? data.asset.grossFloorArea * 350 : totalCost * 10; // $350/sq ft average or 10x deferred maintenance
+  // Current Replacement Value (CRV) - use assessment replacement values if available, otherwise estimate
+  const estimatedCRV = totalReplacementValue > 0 
+    ? totalReplacementValue 
+    : (data.asset.grossFloorArea ? data.asset.grossFloorArea * 350 : totalCost * 10); // $350/sq ft average or 10x deferred maintenance
   
   // Facility Condition Index (FCI) = Deferred Maintenance / CRV
   const fci = estimatedCRV > 0 ? (totalCost / estimatedCRV) * 100 : 0;
+  
   const fciRating = fci <= 5 ? "Good" : fci <= 10 ? "Fair" : fci <= 30 ? "Poor" : "Critical";
 
   // Key Financial Metrics Section

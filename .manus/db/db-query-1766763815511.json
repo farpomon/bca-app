@@ -1,0 +1,16 @@
+{
+  "query": "SELECT \n  COUNT(*) as total,\n  SUM(CASE WHEN assessmentId IS NULL THEN 1 ELSE 0 END) as null_assessment,\n  SUM(CASE WHEN assessmentId IS NOT NULL THEN 1 ELSE 0 END) as has_assessment,\n  SUM(estimatedCost) as total_cost\nFROM deficiencies;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT \n  COUNT(*) as total,\n  SUM(CASE WHEN assessmentId IS NULL THEN 1 ELSE 0 END) as null_assessment,\n  SUM(CASE WHEN assessmentId IS NOT NULL THEN 1 ELSE 0 END) as has_assessment,\n  SUM(estimatedCost) as total_cost\nFROM deficiencies;",
+  "rows": [
+    {
+      "total": "490",
+      "null_assessment": "415",
+      "has_assessment": "75",
+      "total_cost": "236755851"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tnull_assessment\thas_assessment\ttotal_cost\n490\t415\t75\t236755851\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

@@ -1532,3 +1532,8 @@ Testing:
 - [x] Include capital planning forecast
 - [x] Include priority recommendations
 - [x] Add report customization options
+
+
+## Bug Fixes
+
+- [x] BUG: Repair costs showing $0 in Financial KPIs & Cost Analysis page - Fixed by using assessments.estimatedRepairCost instead of deficiencies.estimatedCost

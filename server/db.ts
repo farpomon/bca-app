@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, sql, like, or, isNull, ne, gte } from "drizzle-orm";
+import { eq, and, desc, asc, sql, like, or, isNull, ne, gte, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
@@ -456,14 +456,25 @@ export async function getProjectDeficiencies(projectId: number) {
     .orderBy(desc(deficiencies.createdAt));
 }
 
-export async function getAssetDeficiencies(projectId: number) {
+export async function getAssetDeficiencies(assetId: number) {
   const db = await getDb();
   if (!db) return [];
   
+  // First get all assessment IDs for this asset
+  const assetAssessments = await db
+    .select({ id: assessments.id })
+    .from(assessments)
+    .where(eq(assessments.assetId, assetId));
+  
+  if (assetAssessments.length === 0) return [];
+  
+  const assessmentIds = assetAssessments.map(a => a.id);
+  
+  // Then get deficiencies linked to those assessments
   return await db
     .select()
     .from(deficiencies)
-    .where(eq(deficiencies.projectId, projectId))
+    .where(inArray(deficiencies.assessmentId, assessmentIds))
     .orderBy(desc(deficiencies.createdAt));
 }
 
