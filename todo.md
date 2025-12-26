@@ -1491,6 +1491,8 @@ Testing:
 
 ## Portfolio-Wide Analytics and Aggregation
 
+- [x] Portfolio analytics should only be displayed in projects with multiple assets
+
 ### Database and Backend
 - [x] Create portfolio analytics database queries for cross-portfolio aggregation
 - [x] Add portfolio-wide condition distribution analysis

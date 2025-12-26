@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -133,6 +134,12 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  
+  // Check if any project has multiple assets for portfolio analytics visibility
+  const { data: hasMultiAssetProjects } = trpc.projects.hasMultiAssetProjects.useQuery(
+    undefined,
+    { enabled: !!user }
+  );
 
   useEffect(() => {
     if (isCollapsed) {
@@ -219,7 +226,13 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.filter(item => !item.adminOnly || user?.role === 'admin').map(item => {
+              {menuItems.filter(item => {
+                // Hide admin-only items for non-admins
+                if (item.adminOnly && user?.role !== 'admin') return false;
+                // Hide portfolio analytics if no projects have multiple assets
+                if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
+                return true;
+              }).map(item => {
                 const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>

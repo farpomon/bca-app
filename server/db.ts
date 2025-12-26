@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
   projects,
+  assets,
   buildingCodes,
   buildingComponents,
   assessments,
@@ -643,11 +644,18 @@ export async function getProjectStats(projectId: number) {
     .from(projectDocuments)
     .where(eq(projectDocuments.projectId, projectId));
   
+  // Count assets
+  const [assetCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(assets)
+    .where(eq(assets.projectId, projectId));
+  
   return {
     deficiencies: deficiencyCount?.count || 0,
     assessments: assessmentCount?.count || 0,
     photos: photoCount?.count || 0,
     documents: documentCount?.count || 0,
+    assets: assetCount?.count || 0,
     totalEstimatedCost: totalCost?.total || 0,
   };
 }
@@ -692,7 +700,40 @@ export async function getProjectFCI(projectId: number) {
   };
 }
 
-
+// Check if any project has multiple assets (for portfolio analytics visibility)
+export async function hasMultiAssetProjects(
+  userId: number,
+  company: string | null,
+  isAdmin: boolean
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  // Build condition based on user role
+  let projectCondition;
+  if (isAdmin) {
+    projectCondition = company ? eq(projects.company, company) : sql`1=1`;
+  } else {
+    projectCondition = company
+      ? sql`(${projects.userId} = ${userId} OR ${projects.company} = ${company})`
+      : eq(projects.userId, userId);
+  }
+  
+  // Query to find any project with more than 1 asset
+  const result = await db
+    .select({
+      projectId: assets.projectId,
+      assetCount: sql<number>`count(*)`
+    })
+    .from(assets)
+    .innerJoin(projects, eq(assets.projectId, projects.id))
+    .where(projectCondition)
+    .groupBy(assets.projectId)
+    .having(sql`count(*) > 1`)
+    .limit(1);
+  
+  return result.length > 0;
+}
 
 // ==================== Hierarchy Management ====================
 

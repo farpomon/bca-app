@@ -492,6 +492,12 @@ export const appRouter = router({
         return await db.getProjectStats(input.projectId);
       }),
 
+    hasMultiAssetProjects: protectedProcedure
+      .query(async ({ ctx }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        return await db.hasMultiAssetProjects(ctx.user.id, ctx.user.company, isAdmin);
+      }),
+
     fci: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {

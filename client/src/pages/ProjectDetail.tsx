@@ -352,7 +352,9 @@ export default function ProjectDetail() {
               <Target className="mr-2 h-4 w-4" />
               Optimization
             </Button>
-            <PortfolioReportDialog projectId={projectId} projectName={project.name} />
+            {stats && stats.assets > 1 && (
+              <PortfolioReportDialog projectId={projectId} projectName={project.name} />
+            )}
             <Button variant="outline" className="flex-none" onClick={handleEditProject}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
