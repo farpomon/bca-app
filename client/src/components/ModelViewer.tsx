@@ -350,7 +350,7 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
               No 3D model uploaded yet
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Upload a GLB or GLTF file to view your building model
+              Upload a GLB, GLTF, SketchUp, Revit, or DWG/DXF file to view your building model
             </p>
           </div>
         </div>

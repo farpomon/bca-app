@@ -225,7 +225,7 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
                 <h3 className="text-lg font-semibold mb-2">No 3D Model Available</h3>
                 <p className="text-muted-foreground max-w-md mx-auto mb-4">
                   Upload a 3D model of your asset to enable immersive visualization. 
-                  Supported formats include GLB, GLTF, FBX, and OBJ.
+                  Supported formats include GLB, GLTF, FBX, OBJ, SketchUp (SKP), Revit (RVT/RFA), and DWG/DXF.
                 </p>
                 <Button onClick={() => setUploadDialogOpen(true)}>
                   <Upload className="mr-2 h-4 w-4" />

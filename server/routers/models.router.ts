@@ -12,7 +12,7 @@ export const modelsRouter = router({
         name: z.string(),
         description: z.string().optional(),
         fileData: z.string(), // Base64 encoded file data
-        format: z.enum(["glb", "gltf", "fbx", "obj"]),
+        format: z.enum(["glb", "gltf", "fbx", "obj", "skp", "rvt", "rfa", "dwg", "dxf"]),
         metadata: z.any().optional(),
       })
     )

@@ -18,7 +18,7 @@ interface ModelUploadDialogProps {
 export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUploadDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj">("glb");
+  const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj" | "skp" | "rvt" | "rfa" | "dwg" | "dxf">("glb");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -103,7 +103,7 @@ export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUpload
         <DialogHeader>
           <DialogTitle>Upload 3D Model</DialogTitle>
           <DialogDescription>
-            Upload a 3D model of your facility. Supported formats: GLB, GLTF, FBX, OBJ (max 500MB)
+            Upload a 3D model of your facility. Supported formats: GLB, GLTF, FBX, OBJ, SketchUp (SKP), Revit (RVT/RFA), DWG/DXF (max 500MB)
           </DialogDescription>
         </DialogHeader>
 
@@ -114,7 +114,7 @@ export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUpload
               <Input
                 id="file"
                 type="file"
-                accept=".glb,.gltf,.fbx,.obj"
+                accept=".glb,.gltf,.fbx,.obj,.skp,.rvt,.rfa,.dwg,.dxf"
                 onChange={handleFileChange}
                 disabled={uploading}
               />
@@ -148,6 +148,11 @@ export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUpload
                 <SelectItem value="gltf">GLTF</SelectItem>
                 <SelectItem value="fbx">FBX</SelectItem>
                 <SelectItem value="obj">OBJ</SelectItem>
+                <SelectItem value="skp">SketchUp (SKP)</SelectItem>
+                <SelectItem value="rvt">Revit (RVT)</SelectItem>
+                <SelectItem value="rfa">Revit Family (RFA)</SelectItem>
+                <SelectItem value="dwg">AutoCAD (DWG)</SelectItem>
+                <SelectItem value="dxf">DXF</SelectItem>
               </SelectContent>
             </Select>
           </div>

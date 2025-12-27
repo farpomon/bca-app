@@ -701,7 +701,7 @@ export const facilityModels = mysqlTable("facility_models", {
 	fileUrl: varchar({ length: 1024 }).notNull(),
 	fileKey: varchar({ length: 512 }).notNull(),
 	fileSize: int(),
-	format: mysqlEnum(['glb','gltf','fbx','obj']).notNull(),
+	format: mysqlEnum(['glb','gltf','fbx','obj','skp','rvt','rfa','dwg','dxf']).notNull(),
 	version: int().default(1).notNull(),
 	isActive: tinyint().default(1).notNull(),
 	metadata: json(),

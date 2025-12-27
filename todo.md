@@ -1388,6 +1388,9 @@ Testing:
 - [x] Integrate viewer into asset detail page replacing placeholder
 - [x] Add loading states and error handling for 3D viewer
 - [x] Test 3D model upload and viewing functionality
+- [x] Add support for SketchUp (.skp) file format
+- [x] Add support for Revit (.rvt, .rfa) file formats
+- [x] Add support for DWG/DXF (.dwg, .dxf) file formats
 
 
 ## Cleanup and Optimization
