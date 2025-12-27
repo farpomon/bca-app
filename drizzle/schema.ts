@@ -1644,6 +1644,240 @@ export const projectStatusHistory = mysqlTable("project_status_history", {
 export type ProjectStatusHistory = typeof projectStatusHistory.$inferSelect;
 export type InsertProjectStatusHistory = typeof projectStatusHistory.$inferInsert;
 
+/**
+ * Portfolio Metrics History Table
+ * Tracks historical portfolio-level metrics for trend analysis
+ */
+export const portfolioMetricsHistory = mysqlTable("portfolio_metrics_history", {
+	id: int().autoincrement().notNull().primaryKey(),
+	snapshotDate: timestamp({ mode: 'string' }).notNull(),
+	companyId: int(),
+	// Financial metrics
+	totalReplacementValue: decimal({ precision: 15, scale: 2 }),
+	totalDeferredMaintenance: decimal({ precision: 15, scale: 2 }),
+	totalRepairCosts: decimal({ precision: 15, scale: 2 }),
+	annualCapitalSpend: decimal({ precision: 15, scale: 2 }),
+	// Index metrics
+	portfolioFci: decimal({ precision: 10, scale: 4 }),
+	portfolioCi: decimal({ precision: 10, scale: 4 }),
+	// Asset counts
+	totalAssets: int(),
+	assetsGoodCondition: int(),
+	assetsFairCondition: int(),
+	assetsPoorCondition: int(),
+	// Deficiency metrics
+	totalDeficiencies: int(),
+	criticalDeficiencies: int(),
+	highPriorityDeficiencies: int(),
+	// Project metrics
+	activeProjects: int(),
+	completedProjects: int(),
+	// Economic indicators
+	inflationRate: decimal({ precision: 5, scale: 2 }),
+	discountRate: decimal({ precision: 5, scale: 2 }),
+	metadata: json(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_snapshot_date").on(table.snapshotDate),
+	index("idx_company").on(table.companyId),
+]);
+
+/**
+ * Financial Forecasts Table
+ * Stores predictive financial data and scenarios
+ */
+export const financialForecasts = mysqlTable("financial_forecasts", {
+	id: int().autoincrement().notNull().primaryKey(),
+	forecastDate: timestamp({ mode: 'string' }).notNull(),
+	companyId: int(),
+	projectId: int(),
+	assetId: int(),
+	forecastYear: int().notNull(),
+	scenarioType: mysqlEnum(['best_case', 'most_likely', 'worst_case', 'optimized']).default('most_likely').notNull(),
+	// Cost forecasts
+	predictedMaintenanceCost: decimal({ precision: 15, scale: 2 }),
+	predictedRepairCost: decimal({ precision: 15, scale: 2 }),
+	predictedReplacementCost: decimal({ precision: 15, scale: 2 }),
+	predictedCapitalRequirement: decimal({ precision: 15, scale: 2 }),
+	// Confidence metrics
+	confidenceLevel: decimal({ precision: 5, scale: 2 }),
+	predictionModel: varchar({ length: 100 }),
+	// Condition forecasts
+	predictedFci: decimal({ precision: 10, scale: 4 }),
+	predictedCi: decimal({ precision: 10, scale: 4 }),
+	predictedConditionScore: int(),
+	// Risk metrics
+	failureProbability: decimal({ precision: 5, scale: 2 }),
+	riskScore: decimal({ precision: 10, scale: 2 }),
+	metadata: json(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_forecast_year").on(table.forecastYear),
+	index("idx_company").on(table.companyId),
+	index("idx_project").on(table.projectId),
+	index("idx_asset").on(table.assetId),
+	index("idx_scenario").on(table.scenarioType),
+]);
+
+/**
+ * Benchmark Data Table
+ * Stores industry benchmarks for comparison
+ */
+export const benchmarkData = mysqlTable("benchmark_data", {
+	id: int().autoincrement().notNull().primaryKey(),
+	benchmarkType: mysqlEnum(['industry', 'sector', 'region', 'asset_type', 'custom']).notNull(),
+	category: varchar({ length: 100 }).notNull(),
+	subcategory: varchar({ length: 100 }),
+	// Benchmark metrics
+	medianFci: decimal({ precision: 10, scale: 4 }),
+	medianCi: decimal({ precision: 10, scale: 4 }),
+	medianCostPerSqft: decimal({ precision: 10, scale: 2 }),
+	medianMaintenanceRatio: decimal({ precision: 5, scale: 2 }),
+	// Percentile ranges
+	p25Fci: decimal({ precision: 10, scale: 4 }),
+	p75Fci: decimal({ precision: 10, scale: 4 }),
+	p25Ci: decimal({ precision: 10, scale: 4 }),
+	p75Ci: decimal({ precision: 10, scale: 4 }),
+	// Sample data
+	sampleSize: int(),
+	dataSource: varchar({ length: 255 }),
+	effectiveDate: date(),
+	expiryDate: date(),
+	isActive: int().default(1).notNull(),
+	metadata: json(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_benchmark_type").on(table.benchmarkType),
+	index("idx_category").on(table.category),
+	index("idx_active").on(table.isActive),
+]);
+
+/**
+ * Economic Indicators Table
+ * Stores economic data for financial calculations
+ */
+export const economicIndicators = mysqlTable("economic_indicators", {
+	id: int().autoincrement().notNull().primaryKey(),
+	indicatorDate: date().notNull(),
+	region: varchar({ length: 100 }).default('Canada').notNull(),
+	// Inflation rates
+	cpiInflationRate: decimal({ precision: 5, scale: 2 }),
+	constructionInflationRate: decimal({ precision: 5, scale: 2 }),
+	materialInflationRate: decimal({ precision: 5, scale: 2 }),
+	laborInflationRate: decimal({ precision: 5, scale: 2 }),
+	// Interest rates
+	primeRate: decimal({ precision: 5, scale: 2 }),
+	bondYield10Year: decimal({ precision: 5, scale: 2 }),
+	// Discount rates
+	recommendedDiscountRate: decimal({ precision: 5, scale: 2 }),
+	riskFreeRate: decimal({ precision: 5, scale: 2 }),
+	// Economic indicators
+	gdpGrowthRate: decimal({ precision: 5, scale: 2 }),
+	unemploymentRate: decimal({ precision: 5, scale: 2 }),
+	// Currency
+	exchangeRateUSD: decimal({ precision: 10, scale: 4 }),
+	metadata: json(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_indicator_date").on(table.indicatorDate),
+	index("idx_region").on(table.region),
+]);
+
+/**
+ * Portfolio Targets Table
+ * Stores KPI goals and targets for portfolio management
+ */
+export const portfolioTargets = mysqlTable("portfolio_targets", {
+	id: int().autoincrement().notNull().primaryKey(),
+	companyId: int(),
+	targetYear: int().notNull(),
+	targetType: mysqlEnum(['fci', 'ci', 'budget', 'deficiency_reduction', 'condition_improvement', 'custom']).notNull(),
+	metricName: varchar({ length: 100 }).notNull(),
+	targetValue: decimal({ precision: 15, scale: 4 }).notNull(),
+	currentValue: decimal({ precision: 15, scale: 4 }),
+	baselineValue: decimal({ precision: 15, scale: 4 }),
+	baselineYear: int(),
+	// Progress tracking
+	progressPercentage: decimal({ precision: 5, scale: 2 }),
+	status: mysqlEnum(['on_track', 'at_risk', 'off_track', 'achieved']).default('on_track').notNull(),
+	// Target details
+	description: text(),
+	strategicAlignment: text(),
+	accountableParty: varchar({ length: 255 }),
+	reviewFrequency: mysqlEnum(['monthly', 'quarterly', 'semi_annual', 'annual']).default('quarterly').notNull(),
+	lastReviewDate: date(),
+	nextReviewDate: date(),
+	metadata: json(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_company").on(table.companyId),
+	index("idx_target_year").on(table.targetYear),
+	index("idx_target_type").on(table.targetType),
+	index("idx_status").on(table.status),
+]);
+
+/**
+ * Investment Analysis Table
+ * Stores ROI, NPV, and payback analysis for projects
+ */
+export const investmentAnalysis = mysqlTable("investment_analysis", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	assetId: int(),
+	analysisDate: timestamp({ mode: 'string' }).notNull(),
+	analysisType: mysqlEnum(['roi', 'npv', 'payback', 'tco', 'lcca', 'benefit_cost']).notNull(),
+	// Investment details
+	initialInvestment: decimal({ precision: 15, scale: 2 }).notNull(),
+	annualOperatingCost: decimal({ precision: 15, scale: 2 }),
+	annualMaintenanceCost: decimal({ precision: 15, scale: 2 }),
+	annualEnergySavings: decimal({ precision: 15, scale: 2 }),
+	annualCostAvoidance: decimal({ precision: 15, scale: 2 }),
+	// Financial metrics
+	netPresentValue: decimal({ precision: 15, scale: 2 }),
+	internalRateOfReturn: decimal({ precision: 5, scale: 2 }),
+	returnOnInvestment: decimal({ precision: 5, scale: 2 }),
+	paybackPeriodYears: decimal({ precision: 5, scale: 2 }),
+	benefitCostRatio: decimal({ precision: 5, scale: 2 }),
+	// Analysis parameters
+	discountRate: decimal({ precision: 5, scale: 2 }).notNull(),
+	analysisHorizonYears: int().notNull(),
+	inflationRate: decimal({ precision: 5, scale: 2 }),
+	// Results
+	recommendation: mysqlEnum(['proceed', 'defer', 'reject', 'requires_review']),
+	confidenceLevel: mysqlEnum(['high', 'medium', 'low']),
+	notes: text(),
+	metadata: json(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_project").on(table.projectId),
+	index("idx_asset").on(table.assetId),
+	index("idx_analysis_type").on(table.analysisType),
+]);
+
+export type PortfolioMetricsHistory = typeof portfolioMetricsHistory.$inferSelect;
+export type InsertPortfolioMetricsHistory = typeof portfolioMetricsHistory.$inferInsert;
+export type FinancialForecast = typeof financialForecasts.$inferSelect;
+export type InsertFinancialForecast = typeof financialForecasts.$inferInsert;
+export type BenchmarkData = typeof benchmarkData.$inferSelect;
+export type InsertBenchmarkData = typeof benchmarkData.$inferInsert;
+export type EconomicIndicator = typeof economicIndicators.$inferSelect;
+export type InsertEconomicIndicator = typeof economicIndicators.$inferInsert;
+export type PortfolioTarget = typeof portfolioTargets.$inferSelect;
+export type InsertPortfolioTarget = typeof portfolioTargets.$inferInsert;
+export type InvestmentAnalysis = typeof investmentAnalysis.$inferSelect;
+export type InsertInvestmentAnalysis = typeof investmentAnalysis.$inferInsert;
+
 // Type exports for all tables
 export type AccessRequest = typeof accessRequests.$inferSelect;
 export type InsertAccessRequest = typeof accessRequests.$inferInsert;

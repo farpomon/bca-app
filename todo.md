@@ -1575,3 +1575,108 @@ Testing:
 - [x] Add financial recommendations based on asset condition
 - [x] Add 5-year period summary for capital planning
 - [x] Add category-level FCI calculations in cost breakdown
+
+## 📊 Portfolio Analytics Enhancement (Senior Engineer Review)
+
+### Advanced Financial Metrics & Analytics
+- [x] Add Net Present Value (NPV) calculations for capital investments
+- [x] Implement Return on Investment (ROI) tracking for completed projects
+- [x] Add Total Cost of Ownership (TCO) analysis per asset
+- [x] Implement lifecycle cost analysis with inflation adjustments
+- [ ] Add budget variance analysis (planned vs actual spending)
+- [ ] Implement cost per square foot metrics
+- [ ] Add depreciation tracking and asset value calculations
+- [x] Implement financial risk scoring based on deferred maintenance
+
+### Predictive Analytics & Forecasting
+- [x] Add predictive maintenance cost forecasting using historical data
+- [x] Implement asset failure probability predictions
+- [x] Add budget requirement forecasting with confidence intervals
+- [x] Implement condition deterioration rate predictions
+- [x] Add scenario modeling (best case, worst case, most likely)
+- [ ] Implement what-if analysis for budget allocation strategies
+
+### Risk Assessment & Management
+- [ ] Add comprehensive risk scoring matrix (financial, operational, safety, compliance)
+- [ ] Implement risk heat maps for portfolio visualization
+- [ ] Add risk mitigation cost-benefit analysis
+- [ ] Implement criticality scoring for assets
+- [ ] Add vulnerability assessments for high-risk components
+- [ ] Implement risk trend analysis over time
+
+### Performance Benchmarking
+- [x] Add industry benchmark comparisons for FCI/CI metrics
+- [ ] Implement peer portfolio comparison capabilities
+- [x] Add performance targets and KPI tracking
+- [ ] Implement efficiency metrics (cost per unit, maintenance per sqft)
+- [ ] Add year-over-year performance comparisons
+- [ ] Implement portfolio maturity scoring
+
+### Advanced Visualizations
+- [ ] Add interactive portfolio heat maps with drill-down capabilities
+- [ ] Implement Sankey diagrams for cost flow analysis
+- [ ] Add waterfall charts for budget allocation visualization
+- [ ] Implement scatter plots for risk vs cost analysis
+- [ ] Add Gantt charts for capital planning timeline
+- [ ] Implement treemap visualizations for hierarchical cost breakdown
+- [ ] Add sparklines for trend indicators in summary cards
+
+### Economic Analysis Tools
+- [ ] Add inflation rate adjustments for multi-year planning
+- [ ] Implement discount rate calculations for NPV
+- [ ] Add economic life vs physical life analysis
+- [ ] Implement replacement vs repair economic analysis
+- [ ] Add opportunity cost calculations
+- [ ] Implement payback period calculations for investments
+
+### Portfolio Optimization
+- [ ] Add budget optimization recommendations using linear programming
+- [ ] Implement priority scoring algorithms with multiple criteria
+- [ ] Add resource allocation optimization
+- [ ] Implement maintenance schedule optimization
+- [ ] Add portfolio rebalancing recommendations
+- [ ] Implement constraint-based planning (budget, timeline, resources)
+
+### Data Export & Reporting
+- [ ] Add comprehensive Excel export with multiple worksheets
+- [ ] Implement PDF report generation with executive summary
+- [ ] Add customizable report templates
+- [ ] Implement scheduled report generation and email delivery
+- [ ] Add data export for external BI tools
+- [ ] Implement audit trail for all analytics queries
+
+### Database Schema Enhancements
+- [x] Create portfolio_metrics table for historical tracking
+- [x] Add financial_forecasts table for predictive data
+- [x] Create benchmark_data table for industry comparisons
+- [ ] Add optimization_scenarios table for what-if analysis
+- [x] Create economic_indicators table (inflation, discount rates)
+- [x] Add portfolio_targets table for KPI goals
+- [x] Add investment_analysis table for ROI/NPV/IRR tracking
+
+### Testing & Documentation
+- [x] Write comprehensive unit tests for all new calculations
+- [ ] Add integration tests for analytics procedures
+- [x] Create user documentation for new features
+- [x] Add API documentation for new endpoints
+- [x] Create example use cases and tutorialsgy documentation
+- [ ] Add inline code documentation for complex algorithms
+
+### Performance & Scalability
+- [ ] Implement caching for expensive calculations
+- [ ] Add database indexes for analytics queries
+- [ ] Implement pagination for large datasets
+- [ ] Add query optimization for complex aggregations
+- [ ] Implement background jobs for heavy computations
+- [ ] Add progress indicators for long-running calculations
+
+
+### Frontend Implementation Completed
+- [x] Created PortfolioAnalyticsEnhanced page with advanced visualizations
+- [x] Implemented metrics trend charts with time period selection
+- [x] Added financial forecast visualizations with scenario analysis
+- [x] Implemented portfolio targets tracking with progress indicators
+- [x] Added risk analysis visualizations (failure probability, risk scores)
+- [x] Integrated all enhanced analytics API endpoints
+- [x] Added navigation link from existing portfolio analytics page
+- [x] Implemented responsive design for all analytics components

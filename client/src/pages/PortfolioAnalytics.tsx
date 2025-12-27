@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -148,6 +149,20 @@ export default function PortfolioAnalytics() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container py-6 space-y-6">
+        {/* Enhanced Analytics Banner */}
+        <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+          <AlertDescription className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <span className="text-sm">
+              🚀 <strong>New!</strong> Advanced Portfolio Analytics with predictive forecasting, financial modeling, and benchmarking is now available.
+            </span>
+            <Link href="/portfolio-analytics-enhanced">
+              <Button variant="default" size="sm">
+                Try Enhanced Analytics
+              </Button>
+            </Link>
+          </AlertDescription>
+        </Alert>
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
