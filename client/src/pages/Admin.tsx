@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail, TrendingUp, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +31,8 @@ import { MFAComplianceReport } from "@/components/MFAComplianceReport";
 import { AdminMFARecovery } from "@/components/AdminMFARecovery";
 import { CompanyManagement } from "@/components/CompanyManagement";
 import EmailDeliveryLogs from "@/components/EmailDeliveryLogs";
+import EconomicIndicators from "./EconomicIndicators";
+import PortfolioTargets from "./PortfolioTargets";
 import { BulkUserActions } from "@/components/BulkUserActions";
 import { BulkAccessRequestActions } from "@/components/BulkAccessRequestActions";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -251,6 +253,14 @@ export default function Admin() {
           <TabsTrigger value="email-logs" className="gap-2">
             <Mail className="w-4 h-4" />
             Email Logs
+          </TabsTrigger>
+          <TabsTrigger value="economic-indicators" className="gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Economic Indicators
+          </TabsTrigger>
+          <TabsTrigger value="portfolio-targets" className="gap-2">
+            <Target className="w-4 h-4" />
+            Portfolio Targets
           </TabsTrigger>
         </TabsList>
 
@@ -793,6 +803,16 @@ export default function Admin() {
         {/* Email Logs Tab */}
         <TabsContent value="email-logs" className="space-y-4">
           <EmailDeliveryLogs />
+        </TabsContent>
+
+        {/* Economic Indicators Tab */}
+        <TabsContent value="economic-indicators" className="space-y-4">
+          <EconomicIndicators />
+        </TabsContent>
+
+        {/* Portfolio Targets Tab */}
+        <TabsContent value="portfolio-targets" className="space-y-4">
+          <PortfolioTargets />
         </TabsContent>
       </Tabs>
 

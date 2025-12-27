@@ -1680,3 +1680,44 @@ Testing:
 - [x] Integrated all enhanced analytics API endpoints
 - [x] Added navigation link from existing portfolio analytics page
 - [x] Implemented responsive design for all analytics components
+
+## Economic Indicators & Portfolio Targets
+
+### Database Schema
+- [x] Create economic_indicators table (construction inflation rates, discount rates, regional data)
+- [x] Create portfolio_targets table (FCI goals, timeline, KPI tracking)
+- [x] Add database migration for new tables
+
+### Backend Implementation
+- [x] Implement economicIndicators.create mutation
+- [x] Implement economicIndicators.update mutation
+- [x] Implement economicIndicators.list query
+- [x] Implement economicIndicators.getLatest query (get current active indicators)
+- [x] Implement portfolioTargets.create mutation
+- [x] Implement portfolioTargets.update mutation
+- [x] Implement portfolioTargets.list query
+- [x] Implement portfolioTargets.getActive query (get current active targets)
+- [x] Add validation for economic indicator values (percentage ranges, dates)
+- [x] Add validation for portfolio target values (FCI ranges, dates)
+
+### Frontend UI
+- [x] Create EconomicIndicatorsManagement page in Admin section
+- [x] Create PortfolioTargetsManagement page in Admin section
+- [x] Add forms for creating/editing economic indicators
+- [x] Add forms for creating/editing portfolio targets
+- [x] Add data tables for viewing indicators and targets
+- [x] Add navigation links in Admin section
+
+### Integration
+- [ ] Update NPV calculation to use economic indicators (discount rates, inflation)
+- [ ] Update financial forecasting to use economic indicators
+- [ ] Update portfolio dashboard to display target progress
+- [ ] Add FCI trend visualization with target overlay
+- [ ] Add KPI tracking cards showing progress toward targets
+
+### Testing
+- [ ] Write tests for economic indicators CRUD operations
+- [ ] Write tests for portfolio targets CRUD operations
+- [ ] Write tests for NPV calculations with economic indicators
+- [ ] Test UI forms and validation
+- [ ] Test integration with existing financial calculations

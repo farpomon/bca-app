@@ -41,6 +41,8 @@ import { undoRouter } from "./routers/undoRouter";
 import { portfolioReportRouter } from "./routers/portfolioReport.router";
 import { portfolioAnalyticsRouter } from "./routers/portfolioAnalytics.router";
 import { portfolioAnalyticsEnhancedRouter } from "./routers/portfolioAnalyticsEnhanced.router";
+import { economicIndicatorsRouter } from "./economicIndicatorsRouter";
+import { portfolioTargetsRouter } from "./portfolioTargetsRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -84,6 +86,8 @@ export const appRouter = router({
   portfolioReport: portfolioReportRouter,
   portfolioAnalytics: portfolioAnalyticsRouter,
   portfolioAnalyticsEnhanced: portfolioAnalyticsEnhancedRouter,
+  economicIndicators: economicIndicatorsRouter,
+  portfolioTargets: portfolioTargetsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
