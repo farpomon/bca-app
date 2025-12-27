@@ -30,6 +30,7 @@ import Admin from "./pages/Admin";
 import EconomicIndicators from "./pages/EconomicIndicators";
 import PortfolioTargets from "./pages/PortfolioTargets";
 import Analytics from "./pages/Analytics";
+import ProjectAnalytics from "./pages/ProjectAnalytics";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
@@ -68,6 +69,7 @@ function Router() {
       <Route path={"/projects"} component={Projects} />
       <Route path={"/projects/:id/dashboard"} component={ProjectDashboard} />
       <Route path={"/projects/:id/assets"} component={AssetsList} />
+      <Route path={"/projects/:id/analytics"} component={ProjectAnalytics} />
       <Route path={"/projects/:id/assets/:assetId/assess"} component={Assessment} />
       <Route path={"/projects/:id/assets/:assetId"} component={AssetDetail} />
       <Route path={"/projects/:id"} component={ProjectDetail} />

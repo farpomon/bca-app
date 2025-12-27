@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Edit, Trash2, Loader2, ClipboardCheck, Sparkles, Search } from "lucide-react";
+import { Building2, Plus, Edit, Trash2, Loader2, ClipboardCheck, Sparkles, Search, BarChart3 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo, useCallback } from "react";
@@ -140,6 +140,12 @@ export default function AssetsList() {
             <p className="text-muted-foreground">{project.name}</p>
           </div>
           <div className="flex gap-2">
+            {assets && assets.length > 1 && (
+              <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/analytics`)}>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Analytics
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setAiImportDialogOpen(true)}>
               <Sparkles className="mr-2 h-4 w-4" />
               AI Import

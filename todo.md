@@ -1754,3 +1754,54 @@ Testing:
 - [x] Add date range filters for analytics
 - [ ] Add export analytics data to CSV/Excel
 - [ ] Test analytics calculations and visualizations
+
+
+## 3D Model File Conversion & Viewing (Dec 27, 2024)
+
+### Requirement: Support for RVT, RFA, DWG, DXF, SKP, FBX, OBJ files
+
+### Phase 1: Three.js Native Format Support (FBX, OBJ)
+- [ ] Add FBXLoader to Three.js viewer for native FBX support
+- [ ] Add OBJLoader to Three.js viewer for native OBJ support
+- [ ] Update ModelViewer to detect and use appropriate loader
+- [ ] Test FBX and OBJ file loading in browser
+
+### Phase 2: Autodesk Platform Services Integration
+- [ ] Request APS credentials from user (Client ID, Client Secret)
+- [ ] Create APS authentication service for token management
+- [ ] Implement file upload to Autodesk OSS (Object Storage Service)
+- [ ] Create translation job endpoint for Model Derivative API
+- [ ] Add translation status polling/webhook handling
+- [ ] Store translation URN and status in database
+
+### Phase 3: Autodesk Viewer Integration
+- [ ] Install Autodesk Viewer SDK
+- [ ] Create AutodeskViewer React component
+- [ ] Implement viewer initialization with access token
+- [ ] Add model loading from translated URN
+- [ ] Integrate viewer controls (orbit, pan, zoom, section)
+
+### Phase 4: Hybrid Viewer Strategy
+- [ ] Update ModelViewer to detect file format
+- [ ] Route GLB/GLTF/FBX/OBJ to Three.js viewer
+- [ ] Route RVT/RFA/DWG/DXF/SKP to Autodesk Viewer
+- [ ] Add conversion progress indicator
+- [ ] Handle conversion errors gracefully
+
+### Phase 5: Testing & Documentation
+- [ ] Test with sample RVT file
+- [ ] Test with sample DWG file
+- [ ] Test with sample SKP file
+- [ ] Test with sample FBX file
+- [ ] Test with sample OBJ file
+- [ ] Document supported formats and limitations
+
+
+## Move Analytics to Project Assets Page (Dec 27, 2024)
+
+- [x] Add Analytics button to Assets page header (next to AI Import and Add Asset)
+- [x] Only show Analytics button when project has more than 1 asset
+- [x] Create ProjectAnalytics page component with charts and metrics
+- [x] Add route for /projects/:id/analytics
+- [x] Link Analytics button to ProjectAnalytics page
+- [x] Test Analytics button visibility with single vs multiple assets
