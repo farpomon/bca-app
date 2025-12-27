@@ -118,6 +118,8 @@
 
 ## Current Bug Fixes
 
+- [x] Fix: 3D model loading stops working when switching browser tabs
+
 - [x] Fix B³NMA logo not loading on homepage
 
 ### Building Code Dropdown Deduplication

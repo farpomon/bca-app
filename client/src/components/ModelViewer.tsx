@@ -2,7 +2,7 @@ import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Grid, Environment, PerspectiveCamera, useGLTF, Html, Center, useProgress } from "@react-three/drei";
 import { Suspense, useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Maximize2, Minimize2, Home, RotateCcw, Grid3X3, Eye, EyeOff } from "lucide-react";
+import { Loader2, Maximize2, Minimize2, Home, RotateCcw, Grid3X3, Eye, EyeOff, RefreshCw } from "lucide-react";
 import * as THREE from "three";
 
 interface ModelViewerProps {
@@ -17,14 +17,52 @@ interface ModelViewerProps {
   height?: string;
 }
 
-// Loading progress component
-function Loader() {
-  const { progress } = useProgress();
+// Loading progress component with visibility awareness
+function Loader({ onVisibilityIssue }: { onVisibilityIssue?: () => void }) {
+  const { progress, active, errors, item, loaded, total } = useProgress();
+  const [stalled, setStalled] = useState(false);
+  const lastProgressRef = useRef(progress);
+  const stallTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Detect stalled loading (no progress for 5 seconds while still active)
+  useEffect(() => {
+    if (active && progress < 100) {
+      // Clear existing timer
+      if (stallTimerRef.current) {
+        clearTimeout(stallTimerRef.current);
+      }
+
+      // If progress hasn't changed, start stall detection
+      if (progress === lastProgressRef.current) {
+        stallTimerRef.current = setTimeout(() => {
+          setStalled(true);
+          onVisibilityIssue?.();
+        }, 5000);
+      } else {
+        setStalled(false);
+        lastProgressRef.current = progress;
+      }
+    }
+
+    return () => {
+      if (stallTimerRef.current) {
+        clearTimeout(stallTimerRef.current);
+      }
+    };
+  }, [progress, active, onVisibilityIssue]);
+
   return (
     <Html center>
       <div className="flex flex-col items-center gap-2 bg-card/90 backdrop-blur-sm p-4 rounded-lg border">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading model... {progress.toFixed(0)}%</p>
+        <p className="text-sm text-muted-foreground">
+          Loading model... {progress.toFixed(0)}%
+        </p>
+        {stalled && (
+          <p className="text-xs text-amber-500">
+            Loading may have stalled. Try refreshing if it doesn't complete.
+          </p>
+        )}
       </div>
     </Html>
   );
@@ -43,12 +81,37 @@ function ErrorFallback({ error }: { error: string }) {
 }
 
 // The actual 3D model component that loads GLB/GLTF files
-function Model({ url, onLoad }: { url: string; onLoad?: () => void }) {
-  const { scene } = useGLTF(url);
+function Model({ url, onLoad, onError }: { url: string; onLoad?: () => void; onError?: (error: string) => void }) {
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  
+  // Clear cache and reload on visibility restore
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Small delay to let browser recover
+        setTimeout(() => {
+          setLoadAttempt(prev => prev + 1);
+        }, 100);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  return <ModelLoader key={`${url}-${loadAttempt}`} url={url} onLoad={onLoad} onError={onError} />;
+}
+
+// Separate component to handle the actual loading
+function ModelLoader({ url, onLoad, onError }: { url: string; onLoad?: () => void; onError?: (error: string) => void }) {
+  const { scene } = useGLTF(url, true); // true enables draco compression support
   const modelRef = useRef<THREE.Group>(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    if (scene) {
+    if (scene && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      
       // Center and scale the model
       const box = new THREE.Box3().setFromObject(scene);
       const center = box.getCenter(new THREE.Vector3());
@@ -115,6 +178,39 @@ function CameraController({
   return null;
 }
 
+// WebGL context recovery handler
+function ContextRecoveryHandler({ onContextLost, onContextRestored }: { 
+  onContextLost?: () => void; 
+  onContextRestored?: () => void;
+}) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      console.warn('WebGL context lost');
+      onContextLost?.();
+    };
+
+    const handleContextRestored = () => {
+      console.log('WebGL context restored');
+      onContextRestored?.();
+    };
+
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored);
+
+    return () => {
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+    };
+  }, [gl, onContextLost, onContextRestored]);
+
+  return null;
+}
+
 // Annotation marker component
 function AnnotationMarker({ 
   annotation, 
@@ -167,6 +263,9 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
   const [resetTrigger, setResetTrigger] = useState(0);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const [needsReload, setNeedsReload] = useState(false);
+  const [modelKey, setModelKey] = useState(0); // Key to force re-mount of model
   const controlsRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -186,7 +285,37 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
   const handleModelLoad = useCallback(() => {
     setModelLoaded(true);
     setLoadError(null);
+    setNeedsReload(false);
   }, []);
+
+  const handleModelError = useCallback((error: string) => {
+    setLoadError(error);
+    setModelLoaded(false);
+  }, []);
+
+  const handleReload = useCallback(() => {
+    // Clear the GLTF cache for this URL
+    if (modelUrl) {
+      useGLTF.clear(modelUrl);
+    }
+    setModelLoaded(false);
+    setLoadError(null);
+    setNeedsReload(false);
+    setModelKey(prev => prev + 1);
+  }, [modelUrl]);
+
+  const handleVisibilityIssue = useCallback(() => {
+    setNeedsReload(true);
+  }, []);
+
+  const handleContextLost = useCallback(() => {
+    setNeedsReload(true);
+  }, []);
+
+  const handleContextRestored = useCallback(() => {
+    // Trigger a reload after context is restored
+    handleReload();
+  }, [handleReload]);
 
   // Listen for fullscreen changes
   useEffect(() => {
@@ -196,6 +325,27 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  // Handle visibility changes - pause rendering when tab is not visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const visible = document.visibilityState === 'visible';
+      setIsVisible(visible);
+      
+      if (visible && !modelLoaded && modelUrl) {
+        // Tab became visible and model wasn't loaded - might need reload
+        // Give it a moment to see if loading resumes
+        setTimeout(() => {
+          if (!modelLoaded) {
+            setNeedsReload(true);
+          }
+        }, 2000);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [modelLoaded, modelUrl]);
 
   // Determine if we have a valid model URL
   const hasValidModel = modelUrl && modelUrl.length > 0 && !modelUrl.includes('placeholder');
@@ -244,7 +394,28 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
             {showAnnotations ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           </Button>
         )}
+        {hasValidModel && (
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={handleReload}
+            title="Reload Model"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        )}
       </div>
+
+      {/* Reload Banner - shown when loading may have stalled */}
+      {needsReload && hasValidModel && !modelLoaded && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <span className="text-sm">Model loading interrupted</span>
+          <Button size="sm" variant="secondary" onClick={handleReload}>
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Reload
+          </Button>
+        </div>
+      )}
 
       {/* Info Overlay */}
       <div className="absolute bottom-4 left-4 z-10 bg-card/90 backdrop-blur-sm border rounded-lg p-3 text-sm max-w-[200px]">
@@ -266,9 +437,28 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
         </div>
       )}
 
-      {/* 3D Canvas */}
-      <Canvas shadows>
+      {/* 3D Canvas - use frameloop="demand" when not visible to save resources */}
+      <Canvas 
+        shadows 
+        frameloop={isVisible ? "always" : "demand"}
+        key={modelKey}
+        gl={{ 
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance",
+          antialias: true,
+        }}
+        onCreated={({ gl }) => {
+          // Ensure WebGL context is properly configured
+          gl.setClearColor(0x000000, 0);
+        }}
+      >
         <PerspectiveCamera makeDefault position={[5, 5, 5]} fov={50} />
+        
+        {/* Context recovery handler */}
+        <ContextRecoveryHandler 
+          onContextLost={handleContextLost}
+          onContextRestored={handleContextRestored}
+        />
         
         {/* Lighting */}
         <ambientLight intensity={0.4} />
@@ -305,10 +495,10 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
         )}
         
         {/* Model */}
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={<Loader onVisibilityIssue={handleVisibilityIssue} />}>
           <Center>
             {hasValidModel ? (
-              <Model url={modelUrl} onLoad={handleModelLoad} />
+              <Model url={modelUrl} onLoad={handleModelLoad} onError={handleModelError} />
             ) : (
               <PlaceholderModel />
             )}
