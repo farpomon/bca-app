@@ -177,6 +177,57 @@ export const offlineSyncRouter = router({
     }),
 
   /**
+   * Sync offline deficiency to server
+   * Creates a deficiency that was created while offline
+   */
+  syncDeficiency: protectedProcedure
+    .input(z.object({
+      // Offline metadata
+      offlineId: z.string(), // Temporary ID from IndexedDB
+      createdAt: z.string(), // ISO timestamp when created offline
+      
+      // Deficiency data
+      projectId: z.number(),
+      assessmentId: z.number().optional(),
+      componentCode: z.string().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      severity: z.enum(["low", "medium", "high", "critical"]).optional(),
+      priority: z.enum(["immediate", "short_term", "medium_term", "long_term"]).optional(),
+      estimatedCost: z.number().optional(),
+      status: z.enum(["open", "in_progress", "resolved", "deferred"]).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { offlineId, createdAt, ...deficiencyData } = input;
+      
+      // Verify project ownership
+      const isAdmin = ctx.user.role === 'admin';
+      const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+      if (!project) {
+        throw new Error("Project not found or access denied");
+      }
+      
+      // Create deficiency with required fields
+      const deficiencyId = await db.createDeficiency({
+        projectId: input.projectId,
+        componentCode: input.componentCode || "UNKNOWN",
+        title: input.title || "Offline Deficiency",
+        description: input.description || null,
+        severity: input.severity || "medium",
+        priority: input.priority || "medium_term",
+        estimatedCost: input.estimatedCost || null,
+        status: input.status || "open",
+        assessmentId: input.assessmentId || null,
+        createdAt: createdAt,
+      });
+      
+      return {
+        deficiencyId,
+        offlineId, // Return for mapping in sync engine
+      };
+    }),
+
+  /**
    * Batch sync multiple assessments at once
    * More efficient than individual syncs for large queues
    */

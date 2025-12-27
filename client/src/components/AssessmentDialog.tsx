@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
   const { data: photos, isLoading, refetch } = trpc.photos.byAssessment.useQuery({ assessmentId });
+  const [offlinePhotos, setOfflinePhotos] = useState<Array<{ id: string; url: string; caption: string | null }>>([]);
+  
   const deletePhoto = trpc.photos.delete.useMutation({
     onSuccess: () => {
       toast.success("Photo deleted successfully");
@@ -28,6 +30,46 @@ function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
     },
   });
 
+  // Load offline photos from IndexedDB
+  useEffect(() => {
+    const loadOfflinePhotos = async () => {
+      try {
+        const { initOfflineDB, STORES } = await import('@/lib/offlineStorage');
+        const db = await initOfflineDB();
+        const tx = db.transaction(STORES.PHOTOS, 'readonly');
+        const store = tx.objectStore(STORES.PHOTOS);
+        const allOfflinePhotos = await store.getAll();
+        
+        // Filter photos for this assessment
+        const relevantPhotos = allOfflinePhotos.filter(
+          (p: any) => p.assessmentId === assessmentId.toString() && p.syncStatus !== 'synced'
+        );
+        
+        // Convert blobs to URLs for display
+        const photosWithUrls = await Promise.all(
+          relevantPhotos.map(async (p: any) => ({
+            id: p.id,
+            url: URL.createObjectURL(p.blob),
+            caption: p.caption,
+          }))
+        );
+        
+        setOfflinePhotos(photosWithUrls);
+      } catch (error) {
+        console.error('Failed to load offline photos:', error);
+      }
+    };
+    
+    if (assessmentId) {
+      loadOfflinePhotos();
+    }
+    
+    // Cleanup object URLs on unmount
+    return () => {
+      offlinePhotos.forEach(p => URL.revokeObjectURL(p.url));
+    };
+  }, [assessmentId]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -36,7 +78,9 @@ function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
     );
   }
 
-  if (!photos || photos.length === 0) {
+  const allPhotos = [...(photos || []), ...offlinePhotos.map(p => ({ ...p, id: p.id, isOffline: true }))];
+
+  if (allPhotos.length === 0) {
     return (
       <div className="text-sm text-muted-foreground p-4 border rounded-lg text-center">
         No photos uploaded yet
@@ -46,25 +90,33 @@ function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      {photos.map((photo) => (
+      {allPhotos.map((photo) => (
         <div key={photo.id} className="relative group border rounded-lg overflow-hidden">
           <img
             src={photo.url}
             alt={photo.caption || "Assessment photo"}
             className="w-full h-32 object-cover"
           />
-          <Button
-            variant="destructive"
-            size="icon"
-            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
-            onClick={() => {
-              if (confirm("Delete this photo?")) {
-                deletePhoto.mutate({ id: photo.id });
-              }
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {(photo as any).isOffline && (
+            <Badge variant="outline" className="absolute top-1 left-1 text-xs bg-amber-50 text-amber-700 border-amber-200">
+              <WifiOff className="w-3 h-3 mr-1" />
+              Offline
+            </Badge>
+          )}
+          {!(photo as any).isOffline && (
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+              onClick={() => {
+                if (confirm("Delete this photo?")) {
+                  deletePhoto.mutate({ id: photo.id as number });
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
           {photo.caption && (
             <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate">
               {photo.caption}
@@ -920,7 +972,15 @@ export function AssessmentDialog({
 
           {/* Photo Upload */}
           <div className="space-y-2">
-            <Label htmlFor="photo">Upload Photos (Optional)</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="photo">Upload Photos (Optional)</Label>
+              {!isOnline && (
+                <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                  <WifiOff className="w-3 h-3 mr-1" />
+                  Saved Locally
+                </Badge>
+              )}
+            </div>
             <div 
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
                 isDragging 

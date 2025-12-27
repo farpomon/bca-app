@@ -66,7 +66,7 @@
 ### Phase 7: Backend Sync Integration
 - [x] Implement assessments.createOffline mutation for syncing offline assessments
 - [x] Implement photos.createOffline mutation for syncing offline photos
-- [ ] Implement deficiencies.createOffline mutation for syncing offline deficiencies
+- [x] Implement deficiencies.createOffline mutation for syncing offline deficiencies
 - [x] Add batch sync endpoint for multiple items at once
 - [x] Add conflict resolution logic (server-wins strategy)
 
@@ -77,9 +77,9 @@
 - [ ] Integrate useOfflineAssessment hook into AssessmentDialog component (ready to use)
 - [ ] Integrate useOfflinePhoto hook into photo upload components (ready to use)
 - [x] Add offline indicator badge to AssessmentDialog header
-- [ ] Add offline indicator badge to photo upload section
+- [x] Add offline indicator badge to photo upload section
 - [x] Show "Saving offline..." message when offline
-- [ ] Update ExistingPhotosDisplay to show offline photos from IndexedDB
+- [x] Update ExistingPhotosDisplay to show offline photos from IndexedDB
 
 ### Phase 9: Testing & Documentation
 - [x] Create comprehensive offline testing guide with 10 test scenarios
@@ -1100,8 +1100,8 @@ Testing:
 - [x] Create utility function to generate unique IDs (format: PROJ-YYYYMMDD-XXXX or ASSET-YYYYMMDD-XXXX)
 - [x] Update createProject to auto-generate unique_id
 - [x] Update createAsset to auto-generate unique_id
-- [ ] Add unique_id to project and asset queries/responses
-- [ ] Add validation to ensure unique_id uniqueness
+- [x] Add unique_id to project and asset queries/responses
+- [x] Add validation to ensure unique_id uniqueness
 
 ### Frontend Display
 - [x] Display project unique_id in project detail page header
@@ -1805,3 +1805,133 @@ Testing:
 - [x] Add route for /projects/:id/analytics
 - [x] Link Analytics button to ProjectAnalytics page
 - [x] Test Analytics button visibility with single vs multiple assets
+
+
+## 📊 Enhanced Projects Analytics - 15 Comprehensive Features (Dec 27, 2024)
+
+### 1. Executive Summary Dashboard
+- [ ] Add project health score gauge (0-100) based on weighted FCI, deficiency count, and condition distribution
+- [ ] Add key performance indicators (KPIs) row: Total CRV, Deferred Maintenance, Average FCI, Critical Deficiencies
+- [ ] Add quick action buttons: Export Report, Schedule Assessment, View Critical Items
+- [ ] Add project completion percentage based on assessed vs total components
+- [ ] Add comparison to portfolio average benchmarks
+
+### 2. Facility Condition Index (FCI) Analytics
+- [ ] Add FCI gauge visualization with color-coded zones (Good <5%, Fair 5-10%, Poor >10%)
+- [ ] Add FCI trend chart showing historical FCI values over time
+- [ ] Add FCI breakdown by UNIFORMAT II category (A-G)
+- [ ] Add FCI comparison across assets within the project
+- [ ] Add FCI target setting and tracking against goals
+- [ ] Add FCI forecasting based on deterioration rates
+
+### 3. Capital Planning & Budget Forecasting
+- [ ] Add 5-year capital expenditure forecast chart with year-by-year breakdown
+- [ ] Add budget allocation by priority (Immediate, Short-term, Medium-term, Long-term)
+- [ ] Add funding gap analysis (required vs available budget)
+- [ ] Add cost escalation projections with adjustable inflation rates
+- [ ] Add scenario modeling: deferred maintenance impact analysis
+- [ ] Add ROI calculator for proposed repairs/replacements
+
+### 4. Deficiency Management Analytics
+- [ ] Add deficiency aging report (days since identified)
+- [ ] Add deficiency resolution rate tracking (closed vs open over time)
+- [ ] Add deficiency heatmap by building component category
+- [ ] Add deficiency cost distribution by severity and priority
+- [ ] Add deficiency trend analysis (new vs resolved per month)
+- [ ] Add critical deficiency alert panel with countdown timers
+
+### 5. Component Lifecycle Analysis
+- [ ] Add component age distribution chart
+- [ ] Add remaining useful life (RUL) visualization by component
+- [ ] Add replacement schedule timeline (Gantt-style view)
+- [ ] Add component failure probability predictions
+- [ ] Add lifecycle cost comparison (repair vs replace scenarios)
+- [ ] Add component warranty tracking and expiration alerts
+
+### 6. Assessment Coverage & Progress
+- [ ] Add assessment completion percentage by UNIFORMAT category
+- [ ] Add assessment coverage map/matrix showing assessed vs unassessed components
+- [ ] Add assessment frequency tracking (last assessed date per component)
+- [ ] Add overdue assessment alerts (components not assessed in X months)
+- [ ] Add assessor productivity metrics (assessments per day/week)
+- [ ] Add assessment quality score based on completeness and photo documentation
+
+### 7. Cost Analysis & Benchmarking
+- [ ] Add cost per square foot analysis by building type
+- [ ] Add cost comparison to industry benchmarks (RSMeans data)
+- [ ] Add cost breakdown by repair type (routine, major, capital)
+- [ ] Add cost variance analysis (estimated vs actual)
+- [ ] Add cost efficiency metrics by contractor/vendor
+- [ ] Add historical cost trend analysis with inflation adjustment
+
+### 8. Risk Assessment Dashboard
+- [ ] Add risk score matrix (likelihood x impact) for each asset
+- [ ] Add risk heat map visualization across all assets
+- [ ] Add safety-related deficiency prioritization panel
+- [ ] Add compliance risk tracking (code violations, accessibility)
+- [ ] Add environmental risk indicators (hazmat, water intrusion)
+- [ ] Add insurance and liability risk scoring
+
+### 9. Energy & Sustainability Metrics
+- [ ] Add energy efficiency rating tracking per asset
+- [ ] Add estimated energy savings from proposed upgrades
+- [ ] Add carbon footprint impact analysis
+- [ ] Add sustainability improvement recommendations
+- [ ] Add utility cost projections based on component conditions
+- [ ] Add green building certification tracking (LEED, BOMA BEST)
+
+### 10. Photo Documentation Analytics
+- [ ] Add photo coverage statistics (photos per component, per assessment)
+- [ ] Add photo timeline showing condition progression
+- [ ] Add before/after comparison viewer for repairs
+- [ ] Add photo quality scoring (resolution, clarity, relevance)
+- [ ] Add automated deficiency detection from photos (AI-powered)
+- [ ] Add photo location mapping on floor plans
+
+### 11. Compliance & Code Tracking
+- [ ] Add building code compliance checklist status
+- [ ] Add code violation tracking and resolution timeline
+- [ ] Add accessibility compliance scoring (AODA, ADA)
+- [ ] Add fire safety inspection status tracking
+- [ ] Add permit and inspection schedule calendar
+- [ ] Add regulatory deadline alerts and notifications
+
+### 12. Comparative Asset Analysis
+- [ ] Add side-by-side asset comparison tool
+- [ ] Add asset ranking by FCI, condition, cost
+- [ ] Add best/worst performing asset identification
+- [ ] Add asset clustering by condition similarity
+- [ ] Add peer group benchmarking within portfolio
+- [ ] Add asset performance trends comparison chart
+
+### 13. Work Order & Maintenance Integration
+- [ ] Add work order status tracking dashboard
+- [ ] Add maintenance backlog visualization
+- [ ] Add preventive vs reactive maintenance ratio
+- [ ] Add work order completion rate metrics
+- [ ] Add maintenance cost tracking by asset/component
+- [ ] Add contractor performance scorecards
+
+### 14. Custom Report Builder
+- [ ] Add drag-and-drop report section builder
+- [ ] Add customizable chart and metric selection
+- [ ] Add report template library (executive, technical, financial)
+- [ ] Add scheduled report generation and email delivery
+- [ ] Add multi-format export (PDF, Excel, PowerPoint)
+- [ ] Add white-label report branding options
+
+### 15. Interactive Data Explorer
+- [ ] Add filterable data grid with all assessment data
+- [ ] Add advanced search with multiple criteria
+- [ ] Add data pivot table functionality
+- [ ] Add custom calculated fields
+- [ ] Add data export with selected columns
+- [ ] Add saved views and filter presets
+
+### Implementation Priority Order
+- [ ] Phase 1 (High Priority): Features 1, 2, 4 - Core dashboard and FCI analytics
+- [ ] Phase 2 (Medium Priority): Features 3, 5, 6 - Capital planning and lifecycle
+- [ ] Phase 3 (Enhancement): Features 7, 8, 12 - Cost analysis and risk
+- [ ] Phase 4 (Advanced): Features 9, 10, 11 - Sustainability and compliance
+- [ ] Phase 5 (Power User): Features 13, 14, 15 - Integration and customization
+
