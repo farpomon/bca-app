@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
-import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown, FileText } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown, FileText, BarChart3 } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
@@ -585,6 +585,16 @@ export default function Projects() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setLocation('/portfolio-analytics')}
+              className="shadow-sm text-xs md:text-sm"
+              size="sm"
+            >
+              <BarChart3 className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Portfolio Analytics</span>
+              <span className="sm:hidden">Analytics</span>
+            </Button>
             <Button
               variant="outline"
               onClick={() => setImportDialogOpen(true)}

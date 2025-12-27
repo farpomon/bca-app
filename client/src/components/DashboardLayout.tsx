@@ -34,7 +34,6 @@ import { SidebarOfflineStatus } from './SidebarOfflineStatus';
 const menuItems = [
   { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
   { icon: LayoutDashboard, label: "Projects", path: "/" },
-  { icon: BarChart3, label: "Portfolio Analytics", path: "/portfolio-analytics" },
   { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 

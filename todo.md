@@ -1537,3 +1537,9 @@ Testing:
 ## Bug Fixes
 
 - [x] BUG: Repair costs showing $0 in Financial KPIs & Cost Analysis page - Fixed by using assessments.estimatedRepairCost instead of deficiencies.estimatedCost
+
+- [x] Update report generation to replace Maben Consulting with B³NMA logo and branding
+- [x] Remove Maben Consulting footer from reports and replace with client name/address
+- [x] Move Portfolio Analytics from left sidebar to Projects section
+
+- [x] Fix FCI (Facility Condition Index) not displaying properly in Financial tab - created getAssetFCI function and assets.fci endpoint

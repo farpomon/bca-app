@@ -9,9 +9,9 @@ interface AssetReportData {
   deficiencies: Deficiency[];
 }
 
-// Maben brand colors
-const MABEN_ORANGE: [number, number, number] = [255, 153, 51];
-const MABEN_NAVY: [number, number, number] = [25, 25, 112];
+// B³NMA brand colors
+const B3NMA_TEAL: [number, number, number] = [64, 182, 176]; // Teal from logo
+const B3NMA_NAVY: [number, number, number] = [44, 62, 80]; // Navy from logo
 const HEADER_GRAY: [number, number, number] = [240, 240, 240];
 
 // Condition colors
@@ -27,34 +27,45 @@ const CONDITION_COLORS: Record<string, [number, number, number]> = {
 export async function generateAssetReport(data: AssetReportData): Promise<Buffer> {
   const doc = new jsPDF();
   
-  // Helper to add Maben header to each page
-  const addMabenHeader = () => {
-    doc.setFillColor(...MABEN_ORANGE);
-    doc.rect(0, 0, 210, 15, "F");
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.text("MABEN", 10, 10);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("CONSULTING", 35, 10);
-    doc.setTextColor(0, 0, 0);
+  // Helper to add B³NMA header to each page
+  const addB3NMAHeader = () => {
+    // Add B³NMA logo
+    try {
+      // Logo will be added via image - for now use text header
+      doc.setFillColor(...B3NMA_NAVY);
+      doc.rect(0, 0, 210, 15, "F");
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text("B³NMA", 10, 10);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Building Better Business through Needs and Maintenance Analysis", 40, 10);
+      doc.setTextColor(0, 0, 0);
+    } catch (error) {
+      console.error("Error adding header:", error);
+    }
   };
 
-  // Helper to add page footer
+  // Helper to add page footer with client information
   const addFooter = (pageNum: number, totalPages: number) => {
     doc.setFontSize(9);
     doc.setTextColor(128, 128, 128);
-    doc.text(`www.mabenconsulting.ca`, 10, 290);
-    doc.text(`tfaria@mabenconsulting.ca`, 80, 290);
-    doc.text(`+1 604-802-9184`, 160, 290);
-    doc.text(data.asset.address || data.asset.streetAddress || "", 10, 295);
+    // Client name and address
+    doc.text(data.projectName || "", 10, 290);
+    const clientAddress = data.asset.address || 
+      [data.asset.streetNumber, data.asset.streetAddress, data.asset.city, data.asset.province, data.asset.postalCode]
+        .filter(Boolean)
+        .join(", ");
+    if (clientAddress) {
+      doc.text(clientAddress, 10, 295);
+    }
     doc.text(`Page ${pageNum}`, 190, 295, { align: "right" });
     doc.setTextColor(0, 0, 0);
   };
 
   // Cover Page
-  addMabenHeader();
+  addB3NMAHeader();
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   doc.text("Asset Condition Report", 105, 80, { align: "center" });
@@ -86,7 +97,7 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
 
   // Asset Overview Page
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   let yPos = 25;
   
   doc.setFontSize(16);
@@ -199,7 +210,7 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
   // Assessments Details
   if (data.assessments.length > 0) {
     doc.addPage();
-    addMabenHeader();
+    addB3NMAHeader();
     yPos = 25;
 
     doc.setFontSize(16);
@@ -241,7 +252,7 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
   // Deficiencies Details
   if (data.deficiencies.length > 0) {
     doc.addPage();
-    addMabenHeader();
+    addB3NMAHeader();
     yPos = 25;
 
     doc.setFontSize(16);
@@ -276,7 +287,7 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
 
       if (yPos > 250) {
         doc.addPage();
-        addMabenHeader();
+        addB3NMAHeader();
         yPos = 25;
       }
 
@@ -313,7 +324,7 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
 
   // Financial KPIs Page
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   yPos = 25;
 
   doc.setFontSize(16);

@@ -25,12 +25,12 @@ interface ReportData {
   }[];
 }
 
-// Maben brand colors
-const MABEN_ORANGE: [number, number, number] = [255, 153, 51]; // RGB for Maben orange
-const MABEN_NAVY: [number, number, number] = [25, 25, 112]; // RGB for Maben navy
+// B³NMA brand colors
+const B3NMA_TEAL: [number, number, number] = [64, 182, 176]; // Teal from logo
+const B3NMA_NAVY: [number, number, number] = [44, 62, 80]; // Navy from logo
 const HEADER_GRAY: [number, number, number] = [240, 240, 240];
 
-// Condition colors matching Maben report
+// Condition colors
 const CONDITION_COLORS: Record<string, [number, number, number]> = {
   excellent: [76, 175, 80],    // Green
   good: [139, 195, 74],         // Light green
@@ -42,34 +42,43 @@ const CONDITION_COLORS: Record<string, [number, number, number]> = {
 export async function generateBCAReport(data: ReportData): Promise<Buffer> {
   const doc = new jsPDF();
   
-  // Helper to add Maben header to each page
-  const addMabenHeader = () => {
-    doc.setFillColor(...MABEN_ORANGE);
-    doc.rect(0, 0, 210, 15, "F");
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.text("MABEN", 10, 10);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("CONSULTING", 35, 10);
-    doc.setTextColor(0, 0, 0);
+  // Helper to add B³NMA header to each page
+  const addB3NMAHeader = () => {
+    // Add B³NMA logo
+    try {
+      // Logo will be added via image - for now use text header
+      doc.setFillColor(...B3NMA_NAVY);
+      doc.rect(0, 0, 210, 15, "F");
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text("B³NMA", 10, 10);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("Building Better Business through Needs and Maintenance Analysis", 40, 10);
+      doc.setTextColor(0, 0, 0);
+    } catch (error) {
+      console.error("Error adding header:", error);
+    }
   };
 
-  // Helper to add page footer
+  // Helper to add page footer with client information
   const addFooter = (pageNum: number, totalPages: number) => {
     doc.setFontSize(9);
     doc.setTextColor(128, 128, 128);
-    doc.text(`www.mabenconsulting.ca`, 10, 290);
-    doc.text(`tfaria@mabenconsulting.ca`, 80, 290);
-    doc.text(`+1 604-802-9184`, 160, 290);
-    doc.text(data.project.address || "", 10, 295);
+    // Client name and address
+    if (data.project.clientName) {
+      doc.text(data.project.clientName, 10, 290);
+    }
+    if (data.project.address) {
+      doc.text(data.project.address, 10, 295);
+    }
     doc.text(`Page ${pageNum} of ${totalPages}`, 190, 295, { align: "right" });
     doc.setTextColor(0, 0, 0);
   };
 
   // Cover Page
-  addMabenHeader();
+  addB3NMAHeader();
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   doc.text("Building Condition Assessment", 105, 80, { align: "center" });
@@ -97,7 +106,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
 
   // Dashboard Page
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   let yPos = 25;
   
   doc.setFontSize(16);
@@ -171,7 +180,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
 
   // Condition Matrix
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   yPos = 25;
   
   doc.setFontSize(14);
@@ -207,7 +216,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
 
   // Financial Planning
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   yPos = 25;
   
   doc.setFontSize(14);
@@ -311,7 +320,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
 
   // Financial KPIs Page
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   yPos = 25;
 
   doc.setFontSize(16);
@@ -498,7 +507,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
 
   // Building Components Inventory
   doc.addPage();
-  addMabenHeader();
+  addB3NMAHeader();
   yPos = 25;
   
   doc.setFontSize(16);
@@ -538,7 +547,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
     const level1 = sortedKeys[sectionIndex];
     if (sectionIndex > 0) {
       doc.addPage();
-      addMabenHeader();
+      addB3NMAHeader();
       yPos = 25;
     }
 
@@ -552,7 +561,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
       // Check if we need a new page
       if (yPos > 240) {
         doc.addPage();
-        addMabenHeader();
+        addB3NMAHeader();
         yPos = 25;
       }
 
@@ -642,7 +651,7 @@ export async function generateBCAReport(data: ReportData): Promise<Buffer> {
           // Check if we need a new page
           if (yPos + photoHeight > 270) {
             doc.addPage();
-            addMabenHeader();
+            addB3NMAHeader();
             yPos = 25;
             xPos = 10;
             photosInRow = 0;
