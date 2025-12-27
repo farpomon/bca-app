@@ -17,35 +17,46 @@ export const modelsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Decode base64 file data
-      const buffer = Buffer.from(input.fileData, "base64");
-      const fileSize = buffer.length;
+      try {
+        console.log(`[Model Upload] Starting upload for project ${input.projectId}, format: ${input.format}`);
+        
+        // Decode base64 file data
+        const buffer = Buffer.from(input.fileData, "base64");
+        const fileSize = buffer.length;
+        console.log(`[Model Upload] File size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`);
 
-      // Validate file size (max 500MB)
-      if (fileSize > 500 * 1024 * 1024) {
-        throw new Error("File size exceeds 500MB limit");
+        // Validate file size (max 500MB)
+        if (fileSize > 500 * 1024 * 1024) {
+          throw new Error("File size exceeds 500MB limit");
+        }
+
+        // Upload to S3
+        const fileKey = `models/${input.projectId}/${Date.now()}-${input.name}.${input.format}`;
+        console.log(`[Model Upload] Uploading to S3 with key: ${fileKey}`);
+        const { url } = await storagePut(fileKey, buffer, `model/${input.format}`);
+        console.log(`[Model Upload] S3 upload successful, URL: ${url}`);
+
+        // Create database record
+        await modelsDb.createFacilityModel({
+          projectId: input.projectId,
+          name: input.name,
+          description: input.description,
+          fileUrl: url,
+          fileKey,
+          fileSize,
+          format: input.format,
+          version: 1,
+          isActive: 1,
+          metadata: input.metadata,
+          uploadedBy: ctx.user.id,
+        });
+        console.log(`[Model Upload] Database record created successfully`);
+
+        return { success: true, url };
+      } catch (error) {
+        console.error(`[Model Upload] Error:`, error);
+        throw new Error(`Failed to upload model: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-
-      // Upload to S3
-      const fileKey = `models/${input.projectId}/${Date.now()}-${input.name}.${input.format}`;
-      const { url } = await storagePut(fileKey, buffer, `model/${input.format}`);
-
-      // Create database record
-      await modelsDb.createFacilityModel({
-        projectId: input.projectId,
-        name: input.name,
-        description: input.description,
-        fileUrl: url,
-        fileKey,
-        fileSize,
-        format: input.format,
-        version: 1,
-        isActive: 1,
-        metadata: input.metadata,
-        uploadedBy: ctx.user.id,
-      });
-
-      return { success: true, url };
     }),
 
   // Get a specific model

@@ -104,37 +104,71 @@ function Model({ url, onLoad, onError }: { url: string; onLoad?: () => void; onE
 
 // Separate component to handle the actual loading
 function ModelLoader({ url, onLoad, onError }: { url: string; onLoad?: () => void; onError?: (error: string) => void }) {
-  const { scene } = useGLTF(url, true); // true enables draco compression support
   const modelRef = useRef<THREE.Group>(null);
   const hasLoadedRef = useRef(false);
+  const [loadError, setLoadError] = useState<Error | null>(null);
+  
+  // Use try-catch wrapper for useGLTF to handle loading errors
+  let scene: THREE.Group | null = null;
+  let gltfError: Error | null = null;
+  
+  try {
+    const gltf = useGLTF(url, true); // true enables draco compression support
+    scene = gltf.scene;
+  } catch (error) {
+    gltfError = error as Error;
+    console.error('GLTF loading error:', error);
+  }
 
   useEffect(() => {
-    if (scene && !hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      
-      // Center and scale the model
-      const box = new THREE.Box3().setFromObject(scene);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-      
-      // Scale to fit within a reasonable size
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = maxDim > 10 ? 10 / maxDim : 1;
-      
-      scene.scale.setScalar(scale);
-      scene.position.sub(center.multiplyScalar(scale));
-      
-      // Enable shadows on all meshes
-      scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-      
-      onLoad?.();
+    if (gltfError && !loadError) {
+      setLoadError(gltfError);
+      onError?.(gltfError.message || 'Failed to load model');
     }
-  }, [scene, onLoad]);
+  }, [gltfError, loadError, onError]);
+
+  useEffect(() => {
+    if (scene && !hasLoadedRef.current && !loadError) {
+      try {
+        hasLoadedRef.current = true;
+        
+        // Center and scale the model
+        const box = new THREE.Box3().setFromObject(scene);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        // Scale to fit within a reasonable size
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 10 ? 10 / maxDim : 1;
+        
+        scene.scale.setScalar(scale);
+        scene.position.sub(center.multiplyScalar(scale));
+        
+        // Enable shadows on all meshes
+        scene.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        
+        onLoad?.();
+      } catch (error) {
+        console.error('Error processing model:', error);
+        const errorMsg = error instanceof Error ? error.message : 'Failed to process model';
+        setLoadError(error as Error);
+        onError?.(errorMsg);
+      }
+    }
+  }, [scene, onLoad, onError, loadError]);
+
+  if (loadError) {
+    return <ErrorFallback error={loadError.message} />;
+  }
+
+  if (!scene) {
+    return null;
+  }
 
   return <primitive ref={modelRef} object={scene} />;
 }

@@ -119,6 +119,7 @@
 ## Current Bug Fixes
 
 - [x] Fix: 3D model loading stops working when switching browser tabs
+- [x] Fix: 3D model loading crash during upload and initial load phase
 
 - [x] Fix B³NMA logo not loading on homepage
 

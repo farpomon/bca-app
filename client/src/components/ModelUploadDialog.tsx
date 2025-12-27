@@ -71,22 +71,29 @@ export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUpload
       // Read file as base64
       const reader = new FileReader();
       reader.onload = async () => {
-        const base64 = reader.result?.toString().split(",")[1];
-        if (!base64) {
-          toast.error("Failed to read file");
-          setUploading(false);
-          return;
-        }
+        try {
+          const base64 = reader.result?.toString().split(",")[1];
+          if (!base64) {
+            toast.error("Failed to read file");
+            setUploading(false);
+            return;
+          }
 
-        await uploadMutation.mutateAsync({
-          projectId,
-          name,
-          description,
-          fileData: base64,
-          format,
-        });
+          await uploadMutation.mutateAsync({
+            projectId,
+            name,
+            description,
+            fileData: base64,
+            format,
+          });
+        } catch (error) {
+          console.error("Upload mutation error:", error);
+          toast.error(error instanceof Error ? error.message : "Upload failed");
+          setUploading(false);
+        }
       };
-      reader.onerror = () => {
+      reader.onerror = (error) => {
+        console.error("FileReader error:", error);
         toast.error("Failed to read file");
         setUploading(false);
       };
