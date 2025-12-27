@@ -1543,3 +1543,29 @@ Testing:
 - [x] Move Portfolio Analytics from left sidebar to Projects section
 
 - [x] Fix FCI (Facility Condition Index) not displaying properly in Financial tab - created getAssetFCI function and assets.fci endpoint
+
+## Financial Analysis Tab Enhancement
+
+- [ ] Enhance Financial Analysis tab with comprehensive metrics
+- [ ] Add FCI (Facility Condition Index) calculation and gauge display
+- [ ] Add capital planning timeline/forecast visualization
+- [ ] Add cost breakdown by category chart
+- [ ] Add ROI and lifecycle cost analysis
+- [ ] Add budget vs actual tracking
+- [ ] Add depreciation and asset value metrics
+- [ ] Add financial risk assessment indicators
+- [ ] Add cost escalation projections
+- [ ] Add funding gap analysis
+
+## Financial Analysis Tab Enhancement (Completed)
+
+- [x] Enhance Financial Analysis tab with comprehensive metrics
+- [x] Add FCI gauge visualization with industry-standard ratings (Good 0-5%, Fair 5-10%, Poor 10-30%, Critical >30%)
+- [x] Add key financial metrics (CRV, deferred maintenance, per sq ft costs)
+- [x] Add 20-year capital planning forecast with Chart.js visualization
+- [x] Add cost breakdown by UNIFORMAT building system with horizontal bar chart
+- [x] Add financial risk assessment with risk indicators (FCI Risk Level, Immediate Needs Ratio, Age Risk Factor)
+- [x] Add funding scenario modeling (100%, 75%, 50%, 25% funding levels)
+- [x] Add financial recommendations based on asset condition
+- [x] Add 5-year period summary for capital planning
+- [x] Add category-level FCI calculations in cost breakdown

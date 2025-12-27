@@ -41,6 +41,7 @@ import { AIChatBox, Message } from "@/components/AIChatBox";
 import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 import { Asset3DModelTab } from "@/components/Asset3DModelTab";
+import { AssetFinancialTab } from "@/components/AssetFinancialTab";
 
 export default function AssetDetail() {
   const { id, assetId } = useParams();
@@ -608,34 +609,13 @@ export default function AssetDetail() {
             </Card>
           </TabsContent>
 
-          {/* Financial Summary Tab */}
+          {/* Financial Analysis Tab */}
           <TabsContent value="financial" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Financial Summary</CardTitle>
-                <CardDescription>
-                  Cost breakdown and budget allocation for this asset
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Estimated Costs</h3>
-                    <p className="text-3xl font-bold">${totalEstimatedCost.toLocaleString()}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Repair Costs</h3>
-                      <p className="text-xl font-semibold">${totalEstimatedCost.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1">FCI</h3>
-                      <p className="text-xl font-semibold">-</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <AssetFinancialTab 
+              asset={asset}
+              assessments={assessments}
+              deficiencies={deficiencies}
+            />
           </TabsContent>
 
           {/* Compliance Tab */}
