@@ -110,6 +110,7 @@ export default function Model3DViewer() {
 
             <ModelViewer
               modelUrl={activeModel.fileUrl}
+              modelFormat={activeModel.format}
               annotations={annotations.map((a) => ({
                 id: a.id,
                 title: a.title,

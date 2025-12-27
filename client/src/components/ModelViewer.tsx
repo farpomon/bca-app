@@ -2,11 +2,12 @@ import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Grid, Environment, PerspectiveCamera, useGLTF, Html, Center, useProgress } from "@react-three/drei";
 import { Suspense, useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Maximize2, Minimize2, Home, RotateCcw, Grid3X3, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Loader2, Maximize2, Minimize2, Home, RotateCcw, Grid3X3, Eye, EyeOff, RefreshCw, Download, ExternalLink } from "lucide-react";
 import * as THREE from "three";
 
 interface ModelViewerProps {
   modelUrl: string;
+  modelFormat?: string; // Add format prop to determine rendering strategy
   annotations?: Array<{
     id: number;
     title: string;
@@ -15,6 +16,20 @@ interface ModelViewerProps {
   }>;
   onAnnotationClick?: (annotationId: number) => void;
   height?: string;
+}
+
+// Helper function to determine if format is natively supported by Three.js
+function isNativelySupported(format?: string): boolean {
+  if (!format) return false;
+  const supported = ['glb', 'gltf'];
+  return supported.includes(format.toLowerCase());
+}
+
+// Helper function to determine if format needs conversion
+function needsConversion(format?: string): boolean {
+  if (!format) return false;
+  const conversionFormats = ['rvt', 'rfa', 'dwg', 'dxf', 'skp', 'fbx', 'obj'];
+  return conversionFormats.includes(format.toLowerCase());
 }
 
 // Loading progress component with visibility awareness
@@ -72,9 +87,9 @@ function Loader({ onVisibilityIssue }: { onVisibilityIssue?: () => void }) {
 function ErrorFallback({ error }: { error: string }) {
   return (
     <Html center>
-      <div className="flex flex-col items-center gap-2 bg-destructive/10 backdrop-blur-sm p-4 rounded-lg border border-destructive">
+      <div className="flex flex-col items-center gap-2 bg-destructive/10 backdrop-blur-sm p-4 rounded-lg border border-destructive max-w-md">
         <p className="text-sm text-destructive font-medium">Failed to load model</p>
-        <p className="text-xs text-muted-foreground">{error}</p>
+        <p className="text-xs text-muted-foreground text-center">{error}</p>
       </div>
     </Html>
   );
@@ -290,7 +305,74 @@ function AnnotationMarker({
   );
 }
 
-export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, height = "600px" }: ModelViewerProps) {
+// Conversion notice component for non-native formats
+function ConversionNotice({ format, modelUrl }: { format: string; modelUrl: string }) {
+  const formatNames: Record<string, string> = {
+    rvt: 'Autodesk Revit',
+    rfa: 'Revit Family',
+    dwg: 'AutoCAD DWG',
+    dxf: 'AutoCAD DXF',
+    skp: 'SketchUp',
+    fbx: 'Autodesk FBX',
+    obj: 'Wavefront OBJ'
+  };
+
+  const formatName = formatNames[format.toLowerCase()] || format.toUpperCase();
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-6">
+      <div className="bg-card border rounded-lg p-8 max-w-2xl text-center space-y-6 shadow-lg">
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold">3D Model Uploaded</h3>
+          <p className="text-muted-foreground">
+            {formatName} file detected
+          </p>
+        </div>
+
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
+          <p className="text-sm text-blue-900 dark:text-blue-100">
+            <strong>Native CAD Format Detected</strong>
+          </p>
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            This file format requires conversion to GLB/GLTF for web viewing. To view your model in the 3D viewer:
+          </p>
+          <ol className="text-sm text-blue-800 dark:text-blue-200 text-left space-y-2 ml-6 list-decimal">
+            <li>Download your {formatName} file using the button below</li>
+            <li>Convert it to GLB format using tools like:
+              <ul className="ml-6 mt-1 list-disc space-y-1">
+                <li><a href="https://www.autodesk.com/products/fbx/overview" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Autodesk FBX Converter</a> (for Revit, DWG)</li>
+                <li><a href="https://www.sketchup.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">SketchUp Web</a> (for SKP files)</li>
+                <li><a href="https://products.aspose.app/3d/conversion" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Online 3D Converter</a> (various formats)</li>
+              </ul>
+            </li>
+            <li>Upload the converted GLB file as a new model version</li>
+          </ol>
+        </div>
+
+        <div className="flex gap-3 justify-center">
+          <Button asChild variant="default">
+            <a href={modelUrl} download>
+              <Download className="mr-2 h-4 w-4" />
+              Download {format.toUpperCase()} File
+            </a>
+          </Button>
+          <Button asChild variant="outline">
+            <a href="https://products.aspose.app/3d/conversion" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open Converter
+            </a>
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Your file is safely stored and can be downloaded anytime. Once converted to GLB, upload it as a new version to enable 3D visualization.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function ModelViewer({ modelUrl, modelFormat, annotations = [], onAnnotationClick, height = "600px" }: ModelViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
   const [showAnnotations, setShowAnnotations] = useState(true);
@@ -302,6 +384,10 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
   const [modelKey, setModelKey] = useState(0); // Key to force re-mount of model
   const controlsRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Determine rendering strategy based on format
+  const showConversionNotice = needsConversion(modelFormat);
+  const canRenderNatively = isNativelySupported(modelFormat);
 
   const handleFullscreen = useCallback(() => {
     if (!isFullscreen) {
@@ -329,14 +415,14 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
 
   const handleReload = useCallback(() => {
     // Clear the GLTF cache for this URL
-    if (modelUrl) {
+    if (modelUrl && canRenderNatively) {
       useGLTF.clear(modelUrl);
     }
     setModelLoaded(false);
     setLoadError(null);
     setNeedsReload(false);
     setModelKey(prev => prev + 1);
-  }, [modelUrl]);
+  }, [modelUrl, canRenderNatively]);
 
   const handleVisibilityIssue = useCallback(() => {
     setNeedsReload(true);
@@ -366,7 +452,7 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
       const visible = document.visibilityState === 'visible';
       setIsVisible(visible);
       
-      if (visible && !modelLoaded && modelUrl) {
+      if (visible && !modelLoaded && modelUrl && canRenderNatively) {
         // Tab became visible and model wasn't loaded - might need reload
         // Give it a moment to see if loading resumes
         setTimeout(() => {
@@ -379,10 +465,25 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [modelLoaded, modelUrl]);
+  }, [modelLoaded, modelUrl, canRenderNatively]);
 
   // Determine if we have a valid model URL
   const hasValidModel = modelUrl && modelUrl.length > 0 && !modelUrl.includes('placeholder');
+
+  // If the format needs conversion, show the conversion notice instead of the 3D viewer
+  if (showConversionNotice && hasValidModel && modelFormat) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative bg-muted/30 rounded-lg overflow-hidden ${
+          isFullscreen ? "fixed inset-0 z-50" : ""
+        }`}
+        style={{ height: isFullscreen ? '100vh' : height }}
+      >
+        <ConversionNotice format={modelFormat} modelUrl={modelUrl} />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -428,7 +529,7 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
             {showAnnotations ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           </Button>
         )}
-        {hasValidModel && (
+        {hasValidModel && canRenderNatively && (
           <Button
             size="icon"
             variant="secondary"
@@ -441,7 +542,7 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
       </div>
 
       {/* Reload Banner - shown when loading may have stalled */}
-      {needsReload && hasValidModel && !modelLoaded && (
+      {needsReload && hasValidModel && !modelLoaded && canRenderNatively && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-white px-4 py-2 rounded-lg flex items-center gap-2">
           <span className="text-sm">Model loading interrupted</span>
           <Button size="sm" variant="secondary" onClick={handleReload}>
@@ -452,119 +553,123 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
       )}
 
       {/* Info Overlay */}
-      <div className="absolute bottom-4 left-4 z-10 bg-card/90 backdrop-blur-sm border rounded-lg p-3 text-sm max-w-[200px]">
-        <div className="space-y-1">
-          <div className="font-medium">Controls</div>
-          <div className="text-xs text-muted-foreground space-y-0.5">
-            <div>Left click + drag: Rotate</div>
-            <div>Right click + drag: Pan</div>
-            <div>Scroll: Zoom</div>
-            {annotations.length > 0 && <div>Click markers: View details</div>}
+      {canRenderNatively && (
+        <div className="absolute bottom-4 left-4 z-10 bg-card/90 backdrop-blur-sm border rounded-lg p-3 text-sm max-w-[200px]">
+          <div className="space-y-1">
+            <div className="font-medium">Controls</div>
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              <div>Left click + drag: Rotate</div>
+              <div>Right click + drag: Pan</div>
+              <div>Scroll: Zoom</div>
+              {annotations.length > 0 && <div>Click markers: View details</div>}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Model info */}
-      {hasValidModel && modelLoaded && (
+      {hasValidModel && modelLoaded && canRenderNatively && (
         <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-sm border rounded-lg px-3 py-2">
           <p className="text-xs text-muted-foreground">Model loaded successfully</p>
         </div>
       )}
 
-      {/* 3D Canvas - use frameloop="demand" when not visible to save resources */}
-      <Canvas 
-        shadows 
-        frameloop={isVisible ? "always" : "demand"}
-        key={modelKey}
-        gl={{ 
-          preserveDrawingBuffer: true,
-          powerPreference: "high-performance",
-          antialias: true,
-        }}
-        onCreated={({ gl }) => {
-          // Ensure WebGL context is properly configured
-          gl.setClearColor(0x000000, 0);
-        }}
-      >
-        <PerspectiveCamera makeDefault position={[5, 5, 5]} fov={50} />
-        
-        {/* Context recovery handler */}
-        <ContextRecoveryHandler 
-          onContextLost={handleContextLost}
-          onContextRestored={handleContextRestored}
-        />
-        
-        {/* Lighting */}
-        <ambientLight intensity={0.4} />
-        <directionalLight
-          position={[10, 10, 5]}
-          intensity={1}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-camera-far={50}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
-        />
-        <directionalLight position={[-5, 5, -5]} intensity={0.3} />
-        
-        {/* Environment */}
-        <Environment preset="city" />
-        
-        {/* Grid */}
-        {showGrid && (
-          <Grid 
-            infiniteGrid 
-            fadeDistance={30} 
-            fadeStrength={5}
-            cellSize={1}
-            cellThickness={0.5}
-            cellColor="#6b7280"
-            sectionSize={5}
-            sectionThickness={1}
-            sectionColor="#374151"
+      {/* 3D Canvas - only render for natively supported formats */}
+      {canRenderNatively && (
+        <Canvas 
+          shadows 
+          frameloop={isVisible ? "always" : "demand"}
+          key={modelKey}
+          gl={{ 
+            preserveDrawingBuffer: true,
+            powerPreference: "high-performance",
+            antialias: true,
+          }}
+          onCreated={({ gl }) => {
+            // Ensure WebGL context is properly configured
+            gl.setClearColor(0x000000, 0);
+          }}
+        >
+          <PerspectiveCamera makeDefault position={[5, 5, 5]} fov={50} />
+          
+          {/* Context recovery handler */}
+          <ContextRecoveryHandler 
+            onContextLost={handleContextLost}
+            onContextRestored={handleContextRestored}
           />
-        )}
-        
-        {/* Model */}
-        <Suspense fallback={<Loader onVisibilityIssue={handleVisibilityIssue} />}>
-          <Center>
-            {hasValidModel ? (
-              <Model url={modelUrl} onLoad={handleModelLoad} onError={handleModelError} />
-            ) : (
-              <PlaceholderModel />
-            )}
-          </Center>
-        </Suspense>
-        
-        {/* Annotations */}
-        {showAnnotations && annotations.map((annotation) => (
-          <AnnotationMarker
-            key={annotation.id}
-            annotation={annotation}
-            onClick={onAnnotationClick}
+          
+          {/* Lighting */}
+          <ambientLight intensity={0.4} />
+          <directionalLight
+            position={[10, 10, 5]}
+            intensity={1}
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-camera-far={50}
+            shadow-camera-left={-10}
+            shadow-camera-right={10}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-10}
           />
-        ))}
-        
-        {/* Controls */}
-        <OrbitControls
-          ref={controlsRef}
-          enableDamping
-          dampingFactor={0.05}
-          minDistance={1}
-          maxDistance={100}
-          maxPolarAngle={Math.PI * 0.9}
-          enablePan
-          panSpeed={0.5}
-          rotateSpeed={0.5}
-          zoomSpeed={0.8}
-        />
-        
-        {/* Camera controller for reset */}
-        <CameraController controlsRef={controlsRef} resetTrigger={resetTrigger} />
-      </Canvas>
+          <directionalLight position={[-5, 5, -5]} intensity={0.3} />
+          
+          {/* Environment */}
+          <Environment preset="city" />
+          
+          {/* Grid */}
+          {showGrid && (
+            <Grid 
+              infiniteGrid 
+              fadeDistance={30} 
+              fadeStrength={5}
+              cellSize={1}
+              cellThickness={0.5}
+              cellColor="#6b7280"
+              sectionSize={5}
+              sectionThickness={1}
+              sectionColor="#374151"
+            />
+          )}
+          
+          {/* Model */}
+          <Suspense fallback={<Loader onVisibilityIssue={handleVisibilityIssue} />}>
+            <Center>
+              {hasValidModel ? (
+                <Model url={modelUrl} onLoad={handleModelLoad} onError={handleModelError} />
+              ) : (
+                <PlaceholderModel />
+              )}
+            </Center>
+          </Suspense>
+          
+          {/* Annotations */}
+          {showAnnotations && annotations.map((annotation) => (
+            <AnnotationMarker
+              key={annotation.id}
+              annotation={annotation}
+              onClick={onAnnotationClick}
+            />
+          ))}
+          
+          {/* Controls */}
+          <OrbitControls
+            ref={controlsRef}
+            enableDamping
+            dampingFactor={0.05}
+            minDistance={1}
+            maxDistance={100}
+            maxPolarAngle={Math.PI * 0.9}
+            enablePan
+            panSpeed={0.5}
+            rotateSpeed={0.5}
+            zoomSpeed={0.8}
+          />
+          
+          {/* Camera controller for reset */}
+          <CameraController controlsRef={controlsRef} resetTrigger={resetTrigger} />
+        </Canvas>
+      )}
 
       {/* No model placeholder overlay */}
       {!hasValidModel && (
@@ -574,7 +679,7 @@ export function ModelViewer({ modelUrl, annotations = [], onAnnotationClick, hei
               No 3D model uploaded yet
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Upload a GLB, GLTF, SketchUp, Revit, or DWG/DXF file to view your building model
+              Upload a GLB or GLTF file to view your building model in 3D
             </p>
           </div>
         </div>

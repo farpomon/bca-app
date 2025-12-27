@@ -199,6 +199,7 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
           <CardContent className="p-0">
             <ModelViewer
               modelUrl={activeModel.fileUrl}
+              modelFormat={activeModel.format}
               annotations={annotations.map((a) => ({
                 id: a.id,
                 title: a.title,

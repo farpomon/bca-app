@@ -120,6 +120,7 @@
 
 - [x] Fix: 3D model loading stops working when switching browser tabs
 - [x] Fix: 3D model loading crash during upload and initial load phase
+- [x] Fix 3D model viewer failing to load Revit (.rvt) files with JSON parsing error
 
 - [x] Fix B³NMA logo not loading on homepage
 
