@@ -43,6 +43,7 @@ import { portfolioAnalyticsRouter } from "./routers/portfolioAnalytics.router";
 import { portfolioAnalyticsEnhancedRouter } from "./routers/portfolioAnalyticsEnhanced.router";
 import { economicIndicatorsRouter } from "./economicIndicatorsRouter";
 import { portfolioTargetsRouter } from "./portfolioTargetsRouter";
+import { analyticsRouter } from "./analyticsRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -88,6 +89,7 @@ export const appRouter = router({
   portfolioAnalyticsEnhanced: portfolioAnalyticsEnhancedRouter,
   economicIndicators: economicIndicatorsRouter,
   portfolioTargets: portfolioTargetsRouter,
+  analytics: analyticsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

@@ -1763,7 +1763,7 @@ export const benchmarkData = mysqlTable("benchmark_data", {
  */
 export const economicIndicators = mysqlTable("economic_indicators", {
 	id: int().autoincrement().notNull().primaryKey(),
-	indicatorDate: date().notNull(),
+	indicatorDate: timestamp({ mode: 'string' }).notNull(),
 	region: varchar({ length: 100 }).default('Canada').notNull(),
 	// Inflation rates
 	cpiInflationRate: decimal({ precision: 5, scale: 2 }),
@@ -1812,8 +1812,8 @@ export const portfolioTargets = mysqlTable("portfolio_targets", {
 	strategicAlignment: text(),
 	accountableParty: varchar({ length: 255 }),
 	reviewFrequency: mysqlEnum(['monthly', 'quarterly', 'semi_annual', 'annual']).default('quarterly').notNull(),
-	lastReviewDate: date(),
-	nextReviewDate: date(),
+	lastReviewDate: timestamp({ mode: 'string' }),
+	nextReviewDate: timestamp({ mode: 'string' }),
 	metadata: json(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),

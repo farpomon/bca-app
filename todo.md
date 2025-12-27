@@ -1721,3 +1721,35 @@ Testing:
 - [ ] Write tests for NPV calculations with economic indicators
 - [ ] Test UI forms and validation
 - [ ] Test integration with existing financial calculations
+
+## Restructure Analysis to Projects Hierarchy
+
+- [ ] Update database schema to add companies table
+- [ ] Create hierarchical relationship: companies → projects → assets
+- [ ] Add database helpers for companies CRUD operations
+- [ ] Create tRPC procedures for companies management
+- [ ] Build Companies list page
+- [ ] Build Company detail page with projects list
+- [ ] Update Project detail page to show company context
+- [ ] Update Asset detail page to show project and company context
+- [ ] Update navigation to reflect new hierarchy (Companies → Projects → Assets)
+- [ ] Remove old flat analysis structure from navigation
+
+## Analytics Feature Implementation
+
+- [x] Fix existing TypeScript errors in portfolioTargetsRouter.ts
+- [x] Fix duplicate exports in schema.ts (economicIndicators, portfolioTargets)
+- [x] Design analytics database schema for metrics tracking
+- [x] Create analytics aggregation queries (condition trends, deficiency stats, cost projections)
+- [x] Build analytics tRPC router with endpoints
+- [x] Create Analytics dashboard page with overview cards
+- [x] Add condition distribution chart (pie/donut chart)
+- [x] Add assessment trends over time chart (line chart)
+- [x] Add deficiency priority breakdown chart (bar chart)
+- [x] Add cost analysis charts (repair vs replacement costs)
+- [x] Add component-level analytics (UNIFORMAT II breakdown)
+- [x] Add project-level analytics filtering
+- [x] Add company-level analytics filtering
+- [x] Add date range filters for analytics
+- [ ] Add export analytics data to CSV/Excel
+- [ ] Test analytics calculations and visualizations

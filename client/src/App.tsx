@@ -29,6 +29,7 @@ import PortfolioReport from "./pages/PortfolioReport";
 import Admin from "./pages/Admin";
 import EconomicIndicators from "./pages/EconomicIndicators";
 import PortfolioTargets from "./pages/PortfolioTargets";
+import Analytics from "./pages/Analytics";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
@@ -89,6 +90,7 @@ function Router() {
       <Route path={"/admin/data-security"} component={DataSecurity} />
       <Route path={"/admin/economic-indicators"} component={EconomicIndicators} />
       <Route path={"/admin/portfolio-targets"} component={PortfolioTargets} />
+      <Route path={"/analytics"} component={Analytics} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />
       <Route path={"/settings/security"} component={SecuritySettings} />
       <Route path={"/404"} component={NotFound} />
