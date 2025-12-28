@@ -18,6 +18,7 @@ import {
   configureCORS,
   limitRequestSize,
 } from "./security";
+import { startBackupScheduler } from "../services/backupScheduler";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -100,6 +101,9 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Start backup scheduler for automated daily backups
+    startBackupScheduler();
   });
 }
 

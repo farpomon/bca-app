@@ -2048,7 +2048,7 @@ Testing:
 - [x] Add restore button with confirmation dialog
 - [x] Add delete button for old backups
 - [x] Show restore progress and status
-- [ ] Add backup scheduling options (future enhancement)
+- [x] Add backup scheduling options (daily at 3 AM Eastern with encryption)
 
 ### Phase 3: Testing and Validation
 - [x] Write vitest tests for backup creation
@@ -2056,3 +2056,32 @@ Testing:
 - [ ] Test with real data to verify integrity
 - [ ] Verify all tables are included in backup
 - [ ] Test restore with partial data scenarios
+
+
+## Automated Scheduled Backups with Encryption
+
+### Phase 1: Backup Encryption Infrastructure
+- [x] Create backup encryption service using AES-256-GCM
+- [x] Generate and securely store encryption keys
+- [x] Implement encrypt/decrypt functions for backup data
+- [x] Add encryption metadata to backup records
+
+### Phase 2: Scheduled Backup Implementation
+- [x] Create backup scheduler service with cron-like scheduling
+- [x] Implement daily backup job at 3 AM Eastern time
+- [x] Add backup retention policy (configurable, default 30 days)
+- [x] Implement automatic cleanup of old encrypted backups
+- [x] Add backup job status tracking and logging
+
+### Phase 3: Admin UI for Backup Scheduling
+- [x] Add backup schedule configuration to BackupManagement page
+- [x] Display next scheduled backup time
+- [x] Show backup job history with success/failure status
+- [x] Add manual trigger for scheduled backup
+- [x] Add encryption status indicator for each backup
+
+### Phase 4: Testing and Validation
+- [x] Write vitest tests for backup encryption
+- [x] Write vitest tests for scheduled backup execution
+- [ ] Test encryption key rotation (future enhancement)
+- [ ] Verify encrypted backup restoration (ready for user testing)

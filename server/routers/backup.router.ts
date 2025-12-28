@@ -12,7 +12,23 @@ import { getDb } from "../db";
 import { storagePut, storageGet } from "../storage";
 import { eq, desc, sql } from "drizzle-orm";
 import {
+  encryptBackupString,
+  decryptBackupString,
+  calculateChecksum as cryptoChecksum,
+} from "../services/backupEncryption";
+import {
+  getBackupSchedules,
+  updateBackupSchedule,
+  deleteBackupSchedule,
+  executeScheduledBackup,
+  getScheduleStats,
+  parseNextRunTime,
+  ensureDefaultScheduleExists,
+  cleanupOldBackups,
+} from "../services/backupScheduler";
+import {
   databaseBackups,
+  backupSchedules,
   users,
   projects,
   assets,
@@ -544,6 +560,278 @@ export const backupRouter = router({
       totalStorageUsed: totalSize,
       lastBackupDate: lastBackup?.createdAt || null,
       lastBackupStatus: lastBackup?.status || null,
+    };
+  }),
+
+  // ==================== ENCRYPTION ENDPOINTS ====================
+
+  /**
+   * Create an encrypted backup
+   */
+  createEncrypted: adminProcedure
+    .input(z.object({
+      description: z.string().optional(),
+    }).optional())
+    .mutation(async ({ ctx, input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Create backup record with pending status
+      const backupResult = await database.insert(databaseBackups).values({
+        backupType: "manual",
+        status: "in_progress",
+        createdBy: ctx.user.id,
+        isEncrypted: 1,
+        metadata: JSON.stringify({
+          description: input?.description || "Manual encrypted backup",
+          initiatedBy: ctx.user.name || ctx.user.email,
+          encrypted: true,
+        }),
+      });
+
+      const backupId = Number(backupResult[0].insertId);
+
+      try {
+        // Collect all data from tables
+        const backupData: Record<string, any[]> = {};
+        let totalRecords = 0;
+
+        for (const { name, table } of BACKUP_TABLES) {
+          try {
+            const records = await database.select().from(table);
+            backupData[name] = records;
+            totalRecords += records.length;
+          } catch (error) {
+            console.warn(`[Backup] Warning: Could not backup table ${name}:`, error);
+            backupData[name] = [];
+          }
+        }
+
+        // Create backup JSON with metadata
+        const backup = {
+          version: "1.0",
+          encrypted: true,
+          createdAt: new Date().toISOString(),
+          createdBy: ctx.user.id,
+          description: input?.description || "Manual encrypted backup",
+          tables: Object.keys(backupData),
+          recordCounts: Object.fromEntries(
+            Object.entries(backupData).map(([key, value]) => [key, value.length])
+          ),
+          totalRecords,
+          data: backupData,
+        };
+
+        const backupJson = JSON.stringify(backup, null, 2);
+        
+        // Encrypt the backup
+        const encrypted = await encryptBackupString(backupJson);
+        
+        // Create encrypted backup file
+        const encryptedBackup = JSON.stringify({
+          encrypted: true,
+          algorithm: encrypted.algorithm,
+          iv: encrypted.iv,
+          authTag: encrypted.authTag,
+          keyId: encrypted.keyId,
+          data: encrypted.encrypted,
+          checksum: cryptoChecksum(encrypted.encrypted),
+        });
+
+        const fileSize = Buffer.byteLength(encryptedBackup, "utf8");
+
+        // Upload to S3
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const fileName = `bca-backup-${timestamp}-${randomSuffix}.encrypted.json`;
+        const fileKey = `backups/${fileName}`;
+        const { url } = await storagePut(fileKey, encryptedBackup, "application/json");
+
+        // Update backup record with success
+        await database
+          .update(databaseBackups)
+          .set({
+            status: "completed",
+            fileSize,
+            recordCount: totalRecords,
+            backupPath: url,
+            completedAt: sql`CURRENT_TIMESTAMP`,
+            isEncrypted: 1,
+            encryptionKeyId: encrypted.keyId,
+            encryptionAlgorithm: encrypted.algorithm,
+            encryptionIv: encrypted.iv,
+            metadata: JSON.stringify({
+              description: input?.description || "Manual encrypted backup",
+              initiatedBy: ctx.user.name || ctx.user.email,
+              fileName,
+              fileKey,
+              tables: Object.keys(backupData),
+              recordCounts: backup.recordCounts,
+              encrypted: true,
+              authTag: encrypted.authTag,
+            }),
+          })
+          .where(eq(databaseBackups.id, backupId));
+
+        return {
+          success: true,
+          backupId,
+          fileName,
+          fileSize,
+          recordCount: totalRecords,
+          url,
+          encrypted: true,
+        };
+      } catch (error) {
+        // Update backup record with failure
+        await database
+          .update(databaseBackups)
+          .set({
+            status: "failed",
+            metadata: JSON.stringify({
+              description: input?.description || "Manual encrypted backup",
+              error: error instanceof Error ? error.message : "Unknown error",
+            }),
+          })
+          .where(eq(databaseBackups.id, backupId));
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Encrypted backup failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        });
+      }
+    }),
+
+  // ==================== SCHEDULING ENDPOINTS ====================
+
+  /**
+   * List all backup schedules
+   */
+  listSchedules: adminProcedure.query(async () => {
+    const schedules = await getBackupSchedules();
+    return schedules;
+  }),
+
+  /**
+   * Get schedule statistics
+   */
+  getScheduleStats: adminProcedure.query(async () => {
+    return getScheduleStats();
+  }),
+
+  /**
+   * Create a new backup schedule
+   */
+  createSchedule: adminProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      cronExpression: z.string().default("0 3 * * *"), // Default: 3 AM daily
+      timezone: z.string().default("America/New_York"),
+      retentionDays: z.number().min(1).max(365).default(30),
+      encryptionEnabled: z.boolean().default(true),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Calculate next run time
+      const nextRun = parseNextRunTime(input.cronExpression, input.timezone);
+
+      const result = await database.insert(backupSchedules).values({
+        name: input.name,
+        description: input.description || null,
+        cronExpression: input.cronExpression,
+        timezone: input.timezone,
+        isEnabled: 1,
+        retentionDays: input.retentionDays,
+        encryptionEnabled: input.encryptionEnabled ? 1 : 0,
+        nextRunAt: nextRun.toISOString(),
+        createdBy: ctx.user.id,
+      });
+
+      return {
+        success: true,
+        scheduleId: Number(result[0].insertId),
+        nextRunAt: nextRun.toISOString(),
+      };
+    }),
+
+  /**
+   * Update a backup schedule
+   */
+  updateSchedule: adminProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      description: z.string().optional(),
+      cronExpression: z.string().optional(),
+      timezone: z.string().optional(),
+      isEnabled: z.boolean().optional(),
+      retentionDays: z.number().min(1).max(365).optional(),
+      encryptionEnabled: z.boolean().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      await updateBackupSchedule(input.id, {
+        name: input.name,
+        description: input.description,
+        cronExpression: input.cronExpression,
+        timezone: input.timezone,
+        isEnabled: input.isEnabled !== undefined ? (input.isEnabled ? 1 : 0) : undefined,
+        retentionDays: input.retentionDays,
+        encryptionEnabled: input.encryptionEnabled !== undefined ? (input.encryptionEnabled ? 1 : 0) : undefined,
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Delete a backup schedule
+   */
+  deleteSchedule: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await deleteBackupSchedule(input.id);
+      return { success: true };
+    }),
+
+  /**
+   * Manually trigger a scheduled backup
+   */
+  triggerScheduledBackup: adminProcedure
+    .input(z.object({ scheduleId: z.number() }))
+    .mutation(async ({ input }) => {
+      const result = await executeScheduledBackup(input.scheduleId);
+      
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error || "Scheduled backup failed",
+        });
+      }
+
+      return {
+        success: true,
+        backupId: result.backupId,
+      };
+    }),
+
+  /**
+   * Initialize default backup schedule (3 AM Eastern daily)
+   */
+  initializeDefaultSchedule: adminProcedure.mutation(async () => {
+    await ensureDefaultScheduleExists();
+    return { success: true };
+  }),
+
+  /**
+   * Clean up old backups based on retention policy
+   */
+  cleanupOldBackups: adminProcedure.mutation(async () => {
+    const result = await cleanupOldBackups();
+    return {
+      success: true,
+      deletedCount: result.deleted,
     };
   }),
 });

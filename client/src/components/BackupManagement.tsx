@@ -55,7 +55,22 @@ import {
   FileJson,
   AlertTriangle,
   RotateCcw,
+  Shield,
+  Timer,
+  Play,
+  Settings,
+  Lock,
+  Unlock,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Format bytes to human readable
 function formatBytes(bytes: number): string {
@@ -95,16 +110,29 @@ export function BackupManagement() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<any>(null);
   const [description, setDescription] = useState("");
   const [restoreFile, setRestoreFile] = useState<File | null>(null);
   const [clearExisting, setClearExisting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [useEncryption, setUseEncryption] = useState(true);
+  const [activeTab, setActiveTab] = useState("backups");
+  
+  // Schedule form state
+  const [scheduleName, setScheduleName] = useState("");
+  const [scheduleDescription, setScheduleDescription] = useState("");
+  const [scheduleHour, setScheduleHour] = useState("3");
+  const [scheduleMinute, setScheduleMinute] = useState("0");
+  const [scheduleRetention, setScheduleRetention] = useState("30");
+  const [scheduleEncryption, setScheduleEncryption] = useState(true);
 
   // Queries
   const backupsQuery = trpc.backup.list.useQuery({ limit: 20, offset: 0 });
   const statsQuery = trpc.backup.getStats.useQuery();
+  const schedulesQuery = trpc.backup.listSchedules.useQuery();
+  const scheduleStatsQuery = trpc.backup.getScheduleStats.useQuery();
 
   // Mutations
   const createBackupMutation = trpc.backup.create.useMutation({
@@ -163,9 +191,128 @@ export function BackupManagement() {
     },
   });
 
+  // Encrypted backup mutation
+  const createEncryptedBackupMutation = trpc.backup.createEncrypted.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Encrypted backup created! ${data.recordCount} records backed up with AES-256-GCM encryption.`);
+      setCreateDialogOpen(false);
+      setDescription("");
+      backupsQuery.refetch();
+      statsQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Encrypted backup failed: ${error.message}`);
+    },
+    onSettled: () => {
+      setIsCreating(false);
+    },
+  });
+
+  // Schedule mutations
+  const createScheduleMutation = trpc.backup.createSchedule.useMutation({
+    onSuccess: () => {
+      toast.success("Backup schedule created successfully");
+      setScheduleDialogOpen(false);
+      resetScheduleForm();
+      schedulesQuery.refetch();
+      scheduleStatsQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to create schedule: ${error.message}`);
+    },
+  });
+
+  const updateScheduleMutation = trpc.backup.updateSchedule.useMutation({
+    onSuccess: () => {
+      toast.success("Schedule updated");
+      schedulesQuery.refetch();
+      scheduleStatsQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update schedule: ${error.message}`);
+    },
+  });
+
+  const deleteScheduleMutation = trpc.backup.deleteSchedule.useMutation({
+    onSuccess: () => {
+      toast.success("Schedule deleted");
+      schedulesQuery.refetch();
+      scheduleStatsQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete schedule: ${error.message}`);
+    },
+  });
+
+  const triggerBackupMutation = trpc.backup.triggerScheduledBackup.useMutation({
+    onSuccess: () => {
+      toast.success("Scheduled backup triggered successfully");
+      backupsQuery.refetch();
+      schedulesQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to trigger backup: ${error.message}`);
+    },
+  });
+
+  const initDefaultScheduleMutation = trpc.backup.initializeDefaultSchedule.useMutation({
+    onSuccess: () => {
+      toast.success("Default daily backup schedule initialized");
+      schedulesQuery.refetch();
+      scheduleStatsQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to initialize schedule: ${error.message}`);
+    },
+  });
+
+  const cleanupMutation = trpc.backup.cleanupOldBackups.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Cleaned up ${data.deletedCount} old backups`);
+      backupsQuery.refetch();
+      statsQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Cleanup failed: ${error.message}`);
+    },
+  });
+
+  const resetScheduleForm = () => {
+    setScheduleName("");
+    setScheduleDescription("");
+    setScheduleHour("3");
+    setScheduleMinute("0");
+    setScheduleRetention("30");
+    setScheduleEncryption(true);
+  };
+
   const handleCreateBackup = () => {
     setIsCreating(true);
-    createBackupMutation.mutate({ description: description || undefined });
+    if (useEncryption) {
+      createEncryptedBackupMutation.mutate({ description: description || undefined });
+    } else {
+      createBackupMutation.mutate({ description: description || undefined });
+    }
+  };
+
+  const handleCreateSchedule = () => {
+    const cronExpression = `${scheduleMinute} ${scheduleHour} * * *`;
+    createScheduleMutation.mutate({
+      name: scheduleName || `Daily Backup at ${scheduleHour}:${scheduleMinute.padStart(2, '0')} ET`,
+      description: scheduleDescription || undefined,
+      cronExpression,
+      timezone: "America/New_York",
+      retentionDays: parseInt(scheduleRetention),
+      encryptionEnabled: scheduleEncryption,
+    });
+  };
+
+  const handleToggleSchedule = (scheduleId: number, isEnabled: boolean) => {
+    updateScheduleMutation.mutate({ id: scheduleId, isEnabled });
+  };
+
+  const handleTriggerBackup = (scheduleId: number) => {
+    triggerBackupMutation.mutate({ scheduleId });
   };
 
   const handleDownload = (backupId: number) => {
@@ -219,7 +366,7 @@ export function BackupManagement() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Backups</CardTitle>
@@ -267,6 +414,23 @@ export function BackupManagement() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Next Scheduled</CardTitle>
+            <Timer className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {scheduleStatsQuery.data?.nextScheduledBackup
+                ? new Date(scheduleStatsQuery.data.nextScheduledBackup).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : "None"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {scheduleStatsQuery.data?.enabledSchedules || 0} active schedules
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Failed Backups</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -279,137 +443,307 @@ export function BackupManagement() {
         </Card>
       </div>
 
-      {/* Actions Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="w-5 h-5" />
-            Backup Management
-          </CardTitle>
-          <CardDescription>
-            Create, download, and restore database backups. Backups include all system data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-4">
-            <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-              <Database className="w-4 h-4" />
-              Create Backup
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSelectedBackup(null);
-                setRestoreDialogOpen(true);
-              }}
-              className="gap-2"
-            >
-              <Upload className="w-4 h-4" />
-              Restore from File
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => backupsQuery.refetch()}
-              disabled={backupsQuery.isFetching}
-              className="gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${backupsQuery.isFetching ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
+      {/* Tabbed Interface */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="backups" className="gap-2">
+            <Database className="w-4 h-4" />
+            Backups
+          </TabsTrigger>
+          <TabsTrigger value="schedules" className="gap-2">
+            <Timer className="w-4 h-4" />
+            Schedules
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Backups Table */}
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Records</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {backupsQuery.isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                    </TableCell>
-                  </TableRow>
-                ) : backupsQuery.data?.backups.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No backups found. Create your first backup to get started.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  backupsQuery.data?.backups.map((backup) => (
-                    <TableRow key={backup.id}>
-                      <TableCell className="font-medium">
-                        {formatDate(backup.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{backup.backupType}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={backup.status} />
-                      </TableCell>
-                      <TableCell>{backup.recordCount?.toLocaleString() || "-"}</TableCell>
-                      <TableCell>{backup.fileSize ? formatBytes(backup.fileSize) : "-"}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">
-                        {backup.metadata?.description || "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          {backup.status === "completed" && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDownload(backup.id)}
-                                title="Download backup"
-                              >
-                                <Download className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleRestoreFromBackup(backup)}
-                                title="Restore from this backup"
-                              >
-                                <RotateCcw className="w-4 h-4" />
-                              </Button>
-                            </>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(backup)}
-                            title="Delete backup"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+        {/* Backups Tab */}
+        <TabsContent value="backups">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="w-5 h-5" />
+                Backup Management
+              </CardTitle>
+              <CardDescription>
+                Create, download, and restore database backups. Backups include all system data with optional AES-256-GCM encryption.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-4 flex-wrap">
+                <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+                  <Shield className="w-4 h-4" />
+                  Create Backup
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedBackup(null);
+                    setRestoreDialogOpen(true);
+                  }}
+                  className="gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Restore from File
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => cleanupMutation.mutate()}
+                  disabled={cleanupMutation.isPending}
+                  className="gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Cleanup Old Backups
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => backupsQuery.refetch()}
+                  disabled={backupsQuery.isFetching}
+                  className="gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${backupsQuery.isFetching ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              {/* Backups Table */}
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Encrypted</TableHead>
+                      <TableHead>Records</TableHead>
+                      <TableHead>Size</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {backupsQuery.isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ) : backupsQuery.data?.backups.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No backups found. Create your first backup to get started.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      backupsQuery.data?.backups.map((backup: any) => (
+                        <TableRow key={backup.id}>
+                          <TableCell className="font-medium">
+                            {formatDate(backup.createdAt)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{backup.backupType}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={backup.status} />
+                          </TableCell>
+                          <TableCell>
+                            {backup.isEncrypted ? (
+                              <Badge variant="default" className="gap-1 bg-green-600">
+                                <Lock className="w-3 h-3" />
+                                Yes
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="gap-1">
+                                <Unlock className="w-3 h-3" />
+                                No
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{backup.recordCount?.toLocaleString() || "-"}</TableCell>
+                          <TableCell>{backup.fileSize ? formatBytes(backup.fileSize) : "-"}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              {backup.status === "completed" && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDownload(backup.id)}
+                                    title="Download backup"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRestoreFromBackup(backup)}
+                                    title="Restore from this backup"
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(backup)}
+                                title="Delete backup"
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Schedules Tab */}
+        <TabsContent value="schedules">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Timer className="w-5 h-5" />
+                Backup Schedules
+              </CardTitle>
+              <CardDescription>
+                Configure automated backup schedules. Default: Daily at 3:00 AM Eastern Time with AES-256-GCM encryption.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-4 flex-wrap">
+                <Button onClick={() => setScheduleDialogOpen(true)} className="gap-2">
+                  <Timer className="w-4 h-4" />
+                  Create Schedule
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => initDefaultScheduleMutation.mutate()}
+                  disabled={initDefaultScheduleMutation.isPending}
+                  className="gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Initialize Default (3 AM ET)
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => schedulesQuery.refetch()}
+                  disabled={schedulesQuery.isFetching}
+                  className="gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${schedulesQuery.isFetching ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              {/* Schedules Table */}
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Schedule</TableHead>
+                      <TableHead>Timezone</TableHead>
+                      <TableHead>Encryption</TableHead>
+                      <TableHead>Retention</TableHead>
+                      <TableHead>Next Run</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {schedulesQuery.isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ) : !schedulesQuery.data || schedulesQuery.data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          No schedules configured. Click "Initialize Default" to set up daily backups at 3 AM Eastern.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      schedulesQuery.data.map((schedule: any) => (
+                        <TableRow key={schedule.id}>
+                          <TableCell className="font-medium">{schedule.name}</TableCell>
+                          <TableCell>
+                            <code className="text-xs bg-muted px-2 py-1 rounded">
+                              {schedule.cronExpression}
+                            </code>
+                          </TableCell>
+                          <TableCell>{schedule.timezone}</TableCell>
+                          <TableCell>
+                            {schedule.encryptionEnabled ? (
+                              <Badge variant="default" className="gap-1 bg-green-600">
+                                <Lock className="w-3 h-3" />
+                                AES-256
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline">None</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{schedule.retentionDays} days</TableCell>
+                          <TableCell>
+                            {schedule.nextRunAt
+                              ? new Date(schedule.nextRunAt).toLocaleString()
+                              : "Not scheduled"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={!!schedule.isEnabled}
+                                onCheckedChange={(checked) => handleToggleSchedule(schedule.id, checked)}
+                              />
+                              <span className="text-sm">
+                                {schedule.isEnabled ? "Active" : "Disabled"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleTriggerBackup(schedule.id)}
+                                disabled={triggerBackupMutation.isPending}
+                                title="Run backup now"
+                              >
+                                <Play className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deleteScheduleMutation.mutate({ id: schedule.id })}
+                                title="Delete schedule"
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Create Backup Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Database className="w-5 h-5" />
+              <Shield className="w-5 h-5" />
               Create New Backup
             </DialogTitle>
             <DialogDescription>
@@ -427,6 +761,24 @@ export function BackupManagement() {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+            
+            {/* Encryption Option */}
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="space-y-0.5">
+                <Label className="flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  Enable Encryption
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Encrypt backup with AES-256-GCM (recommended)
+                </p>
+              </div>
+              <Switch
+                checked={useEncryption}
+                onCheckedChange={setUseEncryption}
+              />
+            </div>
+
             <div className="bg-muted p-4 rounded-lg space-y-2">
               <h4 className="font-medium flex items-center gap-2">
                 <FileJson className="w-4 h-4" />
@@ -442,6 +794,20 @@ export function BackupManagement() {
                 <li>All configuration data</li>
               </ul>
             </div>
+
+            {useEncryption && (
+              <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-green-800 dark:text-green-200">Encryption Enabled</p>
+                    <p className="text-green-700 dark:text-green-300">
+                      Your backup will be encrypted using AES-256-GCM with a secure key derived from the system secret.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
@@ -451,12 +817,12 @@ export function BackupManagement() {
               {isCreating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
+                  {useEncryption ? "Encrypting..." : "Creating..."}
                 </>
               ) : (
                 <>
-                  <Database className="w-4 h-4 mr-2" />
-                  Create Backup
+                  {useEncryption ? <Lock className="w-4 h-4 mr-2" /> : <Database className="w-4 h-4 mr-2" />}
+                  {useEncryption ? "Create Encrypted Backup" : "Create Backup"}
                 </>
               )}
             </Button>
@@ -601,6 +967,144 @@ export function BackupManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create Schedule Dialog */}
+      <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Timer className="w-5 h-5" />
+              Create Backup Schedule
+            </DialogTitle>
+            <DialogDescription>
+              Configure automated backups to run at a specific time each day.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="scheduleName">Schedule Name</Label>
+              <Input
+                id="scheduleName"
+                placeholder="e.g., Daily Backup"
+                value={scheduleName}
+                onChange={(e) => setScheduleName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="scheduleDescription">Description (optional)</Label>
+              <Textarea
+                id="scheduleDescription"
+                placeholder="Enter a description for this schedule..."
+                value={scheduleDescription}
+                onChange={(e) => setScheduleDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Time (Eastern)</Label>
+                <div className="flex gap-2">
+                  <Select value={scheduleHour} onValueChange={setScheduleHour}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Hour" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i.toString().padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="flex items-center">:</span>
+                  <Select value={scheduleMinute} onValueChange={setScheduleMinute}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Minute" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[0, 15, 30, 45].map((m) => (
+                        <SelectItem key={m} value={m.toString()}>
+                          {m.toString().padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Retention Period</Label>
+                <Select value={scheduleRetention} onValueChange={setScheduleRetention}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Days" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="14">14 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                    <SelectItem value="60">60 days</SelectItem>
+                    <SelectItem value="90">90 days</SelectItem>
+                    <SelectItem value="180">180 days</SelectItem>
+                    <SelectItem value="365">365 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Encryption Option */}
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="space-y-0.5">
+                <Label className="flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  Enable Encryption
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Encrypt scheduled backups with AES-256-GCM
+                </p>
+              </div>
+              <Switch
+                checked={scheduleEncryption}
+                onCheckedChange={setScheduleEncryption}
+              />
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Clock className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-medium text-blue-800 dark:text-blue-200">Schedule Summary</p>
+                  <p className="text-blue-700 dark:text-blue-300">
+                    Backup will run daily at {scheduleHour.padStart(2, '0')}:{scheduleMinute.padStart(2, '0')} Eastern Time.
+                    Old backups will be automatically deleted after {scheduleRetention} days.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setScheduleDialogOpen(false);
+              resetScheduleForm();
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateSchedule} disabled={createScheduleMutation.isPending}>
+              {createScheduleMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Timer className="w-4 h-4 mr-2" />
+                  Create Schedule
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

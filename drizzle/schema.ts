@@ -594,10 +594,37 @@ export const databaseBackups = mysqlTable("database_backups", {
 	createdBy: int(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	completedAt: timestamp({ mode: 'string' }),
+	// Encryption fields
+	isEncrypted: int().default(0).notNull(),
+	encryptionKeyId: varchar({ length: 255 }),
+	encryptionAlgorithm: varchar({ length: 50 }),
+	encryptionIv: varchar({ length: 64 }),
 },
 (table) => [
 	index("idx_status").on(table.status),
 	index("idx_created").on(table.createdAt),
+]);
+
+export const backupSchedules = mysqlTable("backup_schedules", {
+	id: int().autoincrement().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	cronExpression: varchar({ length: 100 }).notNull(),
+	timezone: varchar({ length: 50 }).default('America/New_York').notNull(),
+	isEnabled: int().default(1).notNull(),
+	retentionDays: int().default(30).notNull(),
+	encryptionEnabled: int().default(1).notNull(),
+	lastRunAt: timestamp({ mode: 'string' }),
+	nextRunAt: timestamp({ mode: 'string' }),
+	lastRunStatus: mysqlEnum(['success','failed','skipped']),
+	lastRunBackupId: int(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_enabled").on(table.isEnabled),
+	index("idx_next_run").on(table.nextRunAt),
 ]);
 
 export const deficiencies = mysqlTable("deficiencies", {
@@ -1961,6 +1988,8 @@ export type DataRetentionPolicy = typeof dataRetentionPolicies.$inferSelect;
 export type InsertDataRetentionPolicy = typeof dataRetentionPolicies.$inferInsert;
 export type DatabaseBackup = typeof databaseBackups.$inferSelect;
 export type InsertDatabaseBackup = typeof databaseBackups.$inferInsert;
+export type BackupSchedule = typeof backupSchedules.$inferSelect;
+export type InsertBackupSchedule = typeof backupSchedules.$inferInsert;
 export type Deficiency = typeof deficiencies.$inferSelect;
 export type InsertDeficiency = typeof deficiencies.$inferInsert;
 export type DeficiencyVersion = typeof deficiencyVersions.$inferSelect;
