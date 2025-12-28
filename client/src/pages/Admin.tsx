@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail, TrendingUp, Target } from "lucide-react";
+import { Shield, Users, FolderKanban, BarChart3, Loader2, AlertCircle, ChevronDown, Search, X, UserPlus, Building2, Mail, TrendingUp, Target, Database } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -38,6 +38,7 @@ import { BulkAccessRequestActions } from "@/components/BulkAccessRequestActions"
 import { Checkbox } from "@/components/ui/checkbox";
 import { UndoHistory } from "@/components/UndoHistory";
 import { MFATimeRestrictionDialog } from "@/components/MFATimeRestrictionDialog";
+import { BackupManagement } from "@/components/BackupManagement";
 import { BackButton } from "@/components/BackButton";
 
 export default function Admin() {
@@ -261,6 +262,10 @@ export default function Admin() {
           <TabsTrigger value="portfolio-targets" className="gap-2">
             <Target className="w-4 h-4" />
             Portfolio Targets
+          </TabsTrigger>
+          <TabsTrigger value="backup" className="gap-2">
+            <Database className="w-4 h-4" />
+            Backup & Restore
           </TabsTrigger>
         </TabsList>
 
@@ -813,6 +818,11 @@ export default function Admin() {
         {/* Portfolio Targets Tab */}
         <TabsContent value="portfolio-targets" className="space-y-4">
           <PortfolioTargets />
+        </TabsContent>
+
+        {/* Backup & Restore Tab */}
+        <TabsContent value="backup" className="space-y-4">
+          <BackupManagement />
         </TabsContent>
       </Tabs>
 

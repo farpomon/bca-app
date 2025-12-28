@@ -41,6 +41,7 @@ import { undoRouter } from "./routers/undoRouter";
 import { portfolioReportRouter } from "./routers/portfolioReport.router";
 import { portfolioAnalyticsRouter } from "./routers/portfolioAnalytics.router";
 import { portfolioAnalyticsEnhancedRouter } from "./routers/portfolioAnalyticsEnhanced.router";
+import { backupRouter } from "./routers/backup.router";
 import { economicIndicatorsRouter } from "./economicIndicatorsRouter";
 import { portfolioTargetsRouter } from "./portfolioTargetsRouter";
 import { analyticsRouter } from "./analyticsRouter";
@@ -90,6 +91,7 @@ export const appRouter = router({
   economicIndicators: economicIndicatorsRouter,
   portfolioTargets: portfolioTargetsRouter,
   analytics: analyticsRouter,
+  backup: backupRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

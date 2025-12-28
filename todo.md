@@ -2024,3 +2024,35 @@ Testing:
 - [x] Add proper timeout handling for large file uploads - 10 minute timeout
 - [x] Improve error feedback when upload fails - better error messages
 - [x] Fix file upload cancellation when switching browser tabs
+
+
+## Backup and Restore Feature (Industry Best Practices)
+
+### Phase 1: Backend API Implementation
+- [x] Create backup router with admin-only procedures
+- [x] Implement createBackup mutation (exports all tables to JSON)
+- [x] Implement listBackups query (returns backup history)
+- [x] Implement getBackupDetails query (returns backup metadata)
+- [x] Implement downloadBackup mutation (generates downloadable backup file)
+- [x] Implement restoreBackup mutation (restores from backup file)
+- [x] Implement deleteBackup mutation (removes old backups)
+- [x] Store backup metadata in databaseBackups table
+- [x] Upload backup files to S3 storage
+- [x] Add backup validation and integrity checks
+
+### Phase 2: Admin UI Implementation
+- [x] Create BackupManagement page in admin section
+- [x] Add "Create Backup" button with progress indicator
+- [x] Display backup history table with status, size, date
+- [x] Add download button for each backup
+- [x] Add restore button with confirmation dialog
+- [x] Add delete button for old backups
+- [x] Show restore progress and status
+- [ ] Add backup scheduling options (future enhancement)
+
+### Phase 3: Testing and Validation
+- [x] Write vitest tests for backup creation
+- [x] Write vitest tests for backup restoration
+- [ ] Test with real data to verify integrity
+- [ ] Verify all tables are included in backup
+- [ ] Test restore with partial data scenarios
