@@ -198,6 +198,8 @@ async function getSignedS3UploadUrls(
 
 /**
  * Complete the S3 upload by notifying APS
+ * Note: eTags must be a simple array of strings where the index corresponds to the part number.
+ * The APS API expects "eTags": ["etag1", "etag2", ...] NOT [{partNumber: 1, eTag: "etag1"}, ...]
  */
 async function completeS3Upload(
   bucketKey: string,
@@ -205,7 +207,7 @@ async function completeS3Upload(
   accessToken: string,
   uploadKey: string,
   size: number,
-  eTags: Array<{ partNumber: number; eTag: string }>
+  eTags: string[]
 ): Promise<CompleteUploadResponse> {
   const response = await fetch(
     `${APS_BASE_URL}/oss/v2/buckets/${bucketKey}/objects/${encodeURIComponent(objectKey)}/signeds3upload`,
@@ -295,14 +297,14 @@ async function uploadObjectSinglePart(
   // Get ETag from response
   const eTag = uploadResponse.headers.get('ETag') || '';
   
-  // Complete the upload
+  // Complete the upload - eTags is a simple string array where index = part number - 1
   const completeResponse = await completeS3Upload(
     bucketKey,
     objectKey,
     accessToken,
     signedUrlResponse.uploadKey,
     fileBuffer.length,
-    [{ partNumber: 1, eTag: eTag.replace(/"/g, '') }]
+    [eTag.replace(/"/g, '')]
   );
   
   return {
@@ -330,7 +332,9 @@ async function uploadObjectMultipart(
   const MAX_URLS_PER_REQUEST = 25; // APS returns max 25 URLs per request
   const fileSize = fileBuffer.length;
   
-  const eTags: Array<{ partNumber: number; eTag: string }> = [];
+  // eTags is a simple string array where index corresponds to part number - 1
+  // The APS API expects "eTags": ["etag1", "etag2", ...] NOT [{partNumber: 1, eTag: "etag1"}, ...]
+  const eTags: string[] = new Array(numParts).fill('');
   let uploadKey: string | undefined;
   
   // Upload in batches of up to 25 parts
@@ -377,9 +381,9 @@ async function uploadObjectMultipart(
         throw new Error(`Failed to upload part ${partNumber}/${numParts}: ${uploadResponse.status} - ${errorText}`);
       }
       
-      // Get ETag from response
+      // Get ETag from response and store at the correct index (partNumber - 1)
       const eTag = uploadResponse.headers.get('ETag') || '';
-      eTags.push({ partNumber, eTag: eTag.replace(/"/g, '') });
+      eTags[partNumber - 1] = eTag.replace(/"/g, '');
     }
   }
   

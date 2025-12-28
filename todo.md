@@ -1996,3 +1996,9 @@ Testing:
 - [x] Fix APS upload error: "Legacy endpoint is deprecated" (403) when uploading chunks
 - [x] Update APS upload endpoint from deprecated legacy to current API (switched to S3 signed URL workflow)
 - [ ] Test model conversion flow after fix - Ready for user testing
+
+## Fix APS S3 Upload eTag Error (Dec 28, 2024)
+- [x] Fix APS S3 upload error: eTag field type mismatch (400 error during Revit file conversion)
+- [x] Investigate APS upload code to find where eTag is being sent incorrectly
+- [x] Update code to send eTag as string array instead of object array (APS API expects simple string array)
+- [ ] Test model conversion flow after fix - Ready for user testing
