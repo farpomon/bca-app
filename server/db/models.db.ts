@@ -175,3 +175,54 @@ export async function deleteModelViewpoint(id: number) {
 
   await db.delete(modelViewpoints).where(eq(modelViewpoints.id, id));
 }
+
+
+// APS (Autodesk Platform Services) related functions
+
+export interface ApsModelData {
+  apsObjectKey?: string | null;
+  apsBucketKey?: string | null;
+  apsUrn?: string | null;
+  apsTranslationStatus?: 'pending' | 'in_progress' | 'success' | 'failed' | 'timeout' | null;
+  apsTranslationProgress?: number | null;
+  apsTranslationMessage?: string | null;
+  apsDerivativeUrn?: string | null;
+  apsUploadedAt?: string | null;
+  apsTranslationStartedAt?: string | null;
+  apsTranslationCompletedAt?: string | null;
+}
+
+export async function updateFacilityModelApsData(id: number, apsData: ApsModelData) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(facilityModels)
+    .set(apsData)
+    .where(eq(facilityModels.id, id));
+}
+
+export async function getModelsWithPendingTranslation() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(facilityModels)
+    .where(eq(facilityModels.apsTranslationStatus, 'in_progress'));
+
+  return result;
+}
+
+export async function getModelByApsUrn(apsUrn: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(facilityModels)
+    .where(eq(facilityModels.apsUrn, apsUrn))
+    .limit(1);
+
+  return result[0];
+}

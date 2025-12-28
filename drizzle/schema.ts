@@ -701,13 +701,24 @@ export const facilityModels = mysqlTable("facility_models", {
 	fileUrl: varchar({ length: 1024 }).notNull(),
 	fileKey: varchar({ length: 512 }).notNull(),
 	fileSize: int(),
-	format: mysqlEnum(['glb','gltf','fbx','obj','skp','rvt','rfa','dwg','dxf']).notNull(),
+	format: mysqlEnum(['glb','gltf','fbx','obj','skp','rvt','rfa','dwg','dxf','ifc','nwd','nwc']).notNull(),
 	version: int().default(1).notNull(),
 	isActive: tinyint().default(1).notNull(),
 	metadata: json(),
 	uploadedBy: int().notNull(),
 	uploadedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	// APS (Autodesk Platform Services) integration fields
+	apsObjectKey: varchar({ length: 512 }),
+	apsBucketKey: varchar({ length: 128 }),
+	apsUrn: varchar({ length: 512 }),
+	apsTranslationStatus: mysqlEnum(['pending','in_progress','success','failed','timeout']).default('pending'),
+	apsTranslationProgress: int().default(0),
+	apsTranslationMessage: text(),
+	apsDerivativeUrn: varchar({ length: 512 }),
+	apsUploadedAt: timestamp({ mode: 'string' }),
+	apsTranslationStartedAt: timestamp({ mode: 'string' }),
+	apsTranslationCompletedAt: timestamp({ mode: 'string' }),
 });
 
 export const floorPlans = mysqlTable("floor_plans", {

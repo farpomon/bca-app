@@ -1942,4 +1942,36 @@ Testing:
 - [x] Integrate useOfflinePhoto hook into AssessmentDialog component
 - [ ] Test offline assessment creation with photos (ready for user testing)
 - [ ] Verify automatic sync when connection returns (ready for user testing)
-- [ ] Create checkpoint after successful offline integration
+- [x] Create checkpoint after successful offline integration
+
+## APS (Autodesk Platform Services) Integration
+
+### Phase 1: APS Credentials Setup
+- [x] Configure APS Client ID via webdev_request_secrets
+- [x] Configure APS Client Secret via webdev_request_secrets
+- [x] Create APS authentication helper functions
+- [x] Test APS token generation
+
+### Phase 2: APS Viewer Enhancement
+- [x] Review existing Forge Viewer implementation
+- [x] Ensure proper APS authentication flow
+- [x] Create ForgeViewer React component
+- [x] Create ModelUpload component with APS integration
+- [x] Create ModelViewerPanel component
+- [ ] Test model loading with user's APS credentials (ready for testing)
+- [ ] Verify markup/annotation tools work correctly (ready for testing)
+
+### Phase 3: Model Upload & Management
+- [x] Implement direct model upload to APS
+- [x] Store model URNs in database (added APS fields to facility_models)
+- [x] Link models to buildings/assets
+- [x] Add model status tracking (processing, ready, failed)
+- [x] Add translation status polling
+- [x] Add retry translation functionality
+
+### Phase 4: Testing & Documentation
+- [x] Write vitest tests for APS authentication (3 tests passing)
+- [x] Write vitest tests for APS service utilities (10 tests passing)
+- [ ] Test full model upload workflow (ready for testing)
+- [ ] Document APS integration setup
+- [ ] Create checkpoint after APS integration

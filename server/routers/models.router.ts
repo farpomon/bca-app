@@ -2,9 +2,22 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { storagePut } from "../storage";
 import * as modelsDb from "../db/models.db";
+import { getApsViewerToken } from "../_core/aps";
+import {
+  createBucket,
+  uploadObject,
+  translateModel,
+  getTranslationStatus,
+  parseTranslationProgress,
+  objectIdToUrn,
+  generateBucketKey,
+} from "../_core/apsService";
+
+// Default bucket key for the application
+const APP_BUCKET_KEY = process.env.APS_BUCKET_KEY || generateBucketKey('bca-models');
 
 export const modelsRouter = router({
-  // Upload a new 3D model
+  // Upload a new 3D model with optional APS integration
   upload: protectedProcedure
     .input(
       z.object({
@@ -12,8 +25,9 @@ export const modelsRouter = router({
         name: z.string(),
         description: z.string().optional(),
         fileData: z.string(), // Base64 encoded file data
-        format: z.enum(["glb", "gltf", "fbx", "obj", "skp", "rvt", "rfa", "dwg", "dxf"]),
+        format: z.enum(["glb", "gltf", "fbx", "obj", "skp", "rvt", "rfa", "dwg", "dxf", "ifc", "nwd", "nwc"]),
         metadata: z.any().optional(),
+        uploadToAps: z.boolean().optional().default(true), // Whether to upload to APS for Forge Viewer
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -30,14 +44,15 @@ export const modelsRouter = router({
           throw new Error("File size exceeds 500MB limit");
         }
 
-        // Upload to S3
-        const fileKey = `models/${input.projectId}/${Date.now()}-${input.name}.${input.format}`;
+        // Upload to S3 for backup/storage
+        const timestamp = Date.now();
+        const fileKey = `models/${input.projectId}/${timestamp}-${input.name}.${input.format}`;
         console.log(`[Model Upload] Uploading to S3 with key: ${fileKey}`);
         const { url } = await storagePut(fileKey, buffer, `model/${input.format}`);
         console.log(`[Model Upload] S3 upload successful, URL: ${url}`);
 
-        // Create database record
-        await modelsDb.createFacilityModel({
+        // Create initial database record
+        const modelData: any = {
           projectId: input.projectId,
           name: input.name,
           description: input.description,
@@ -49,13 +64,155 @@ export const modelsRouter = router({
           isActive: 1,
           metadata: input.metadata,
           uploadedBy: ctx.user.id,
-        });
+        };
+
+        // If APS upload is requested, upload to APS and start translation
+        if (input.uploadToAps) {
+          try {
+            console.log(`[Model Upload] Starting APS upload...`);
+            
+            // Ensure bucket exists
+            await createBucket(APP_BUCKET_KEY);
+            
+            // Generate unique object key
+            const apsObjectKey = `${input.projectId}/${timestamp}-${input.name}.${input.format}`;
+            
+            // Upload to APS
+            const uploadResult = await uploadObject(
+              APP_BUCKET_KEY,
+              apsObjectKey,
+              buffer,
+              `application/octet-stream`
+            );
+            console.log(`[Model Upload] APS upload successful, objectId: ${uploadResult.objectId}`);
+            
+            // Convert to URN and start translation
+            const urn = objectIdToUrn(uploadResult.objectId);
+            console.log(`[Model Upload] Starting translation for URN: ${urn}`);
+            
+            const translationResult = await translateModel(urn);
+            console.log(`[Model Upload] Translation started, result: ${translationResult.result}`);
+            
+            // Add APS data to model record
+            modelData.apsObjectKey = apsObjectKey;
+            modelData.apsBucketKey = APP_BUCKET_KEY;
+            modelData.apsUrn = urn;
+            modelData.apsTranslationStatus = 'in_progress';
+            modelData.apsTranslationProgress = 0;
+            modelData.apsUploadedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            modelData.apsTranslationStartedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          } catch (apsError) {
+            console.error(`[Model Upload] APS upload failed:`, apsError);
+            // Continue with S3-only upload, mark APS as failed
+            modelData.apsTranslationStatus = 'failed';
+            modelData.apsTranslationMessage = apsError instanceof Error ? apsError.message : 'APS upload failed';
+          }
+        }
+
+        // Create database record
+        await modelsDb.createFacilityModel(modelData);
         console.log(`[Model Upload] Database record created successfully`);
 
-        return { success: true, url };
+        return { 
+          success: true, 
+          url,
+          apsUrn: modelData.apsUrn,
+          apsStatus: modelData.apsTranslationStatus,
+        };
       } catch (error) {
         console.error(`[Model Upload] Error:`, error);
         throw new Error(`Failed to upload model: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }),
+
+  // Get APS viewer token for client-side Forge Viewer
+  getViewerToken: protectedProcedure
+    .query(async () => {
+      try {
+        const token = await getApsViewerToken();
+        return { accessToken: token };
+      } catch (error) {
+        console.error('[APS] Failed to get viewer token:', error);
+        throw new Error('Failed to get viewer token');
+      }
+    }),
+
+  // Check and update translation status for a model
+  checkTranslationStatus: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const model = await modelsDb.getFacilityModel(input.id);
+      if (!model) {
+        throw new Error("Model not found");
+      }
+
+      if (!model.apsUrn) {
+        return { 
+          status: 'not_uploaded', 
+          message: 'Model not uploaded to APS' 
+        };
+      }
+
+      try {
+        const statusResponse = await getTranslationStatus(model.apsUrn);
+        const parsed = parseTranslationProgress(statusResponse);
+
+        // Update database with latest status
+        await modelsDb.updateFacilityModelApsData(input.id, {
+          apsTranslationStatus: parsed.status,
+          apsTranslationProgress: parsed.progress,
+          apsTranslationMessage: parsed.message,
+          ...(parsed.status === 'success' && {
+            apsTranslationCompletedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          }),
+        });
+
+        return {
+          status: parsed.status,
+          progress: parsed.progress,
+          message: parsed.message,
+          urn: model.apsUrn,
+        };
+      } catch (error) {
+        console.error('[APS] Failed to check translation status:', error);
+        throw new Error('Failed to check translation status');
+      }
+    }),
+
+  // Retry failed translation
+  retryTranslation: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const model = await modelsDb.getFacilityModel(input.id);
+      if (!model) {
+        throw new Error("Model not found");
+      }
+
+      if (!model.apsUrn) {
+        throw new Error("Model not uploaded to APS");
+      }
+
+      try {
+        // Restart translation
+        const translationResult = await translateModel(model.apsUrn);
+        
+        // Update database
+        await modelsDb.updateFacilityModelApsData(input.id, {
+          apsTranslationStatus: 'in_progress',
+          apsTranslationProgress: 0,
+          apsTranslationMessage: 'Translation restarted',
+          apsTranslationStartedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          apsTranslationCompletedAt: null,
+        });
+
+        return { 
+          success: true, 
+          message: 'Translation restarted',
+          result: translationResult.result,
+        };
+      } catch (error) {
+        console.error('[APS] Failed to retry translation:', error);
+        throw new Error('Failed to retry translation');
       }
     }),
 
