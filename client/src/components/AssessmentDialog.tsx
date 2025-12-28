@@ -14,6 +14,8 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { DocumentList } from "@/components/DocumentList";
 import { Badge } from "@/components/ui/badge";
+import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
+import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
@@ -239,6 +241,26 @@ export function AssessmentDialog({
   const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
   const [dragOverPhotoIndex, setDragOverPhotoIndex] = useState<number | null>(null);
 
+  // Offline-capable hooks
+  const { saveAssessment, isSaving: isSavingOffline, isOnline } = useOfflineAssessment({
+    projectId,
+    onSuccess: (assessmentId) => {
+      console.log("Assessment saved with ID:", assessmentId);
+    },
+    onError: (error) => {
+      console.error("Failed to save assessment:", error);
+    },
+  });
+
+  const { uploadPhoto: uploadPhotoOffline, uploadPhotos: uploadPhotosOffline, isUploading: isUploadingOffline } = useOfflinePhoto({
+    onUploadSuccess: (result) => {
+      console.log("Photo uploaded:", result);
+    },
+    onUploadError: (error) => {
+      console.error("Failed to upload photo:", error);
+    },
+  });
+
   const upsertAssessment = trpc.assessments.upsert.useMutation();
   const checkValidation = trpc.validation.check.useMutation();
   const logOverride = trpc.validation.logOverride.useMutation();
@@ -273,71 +295,58 @@ export function AssessmentDialog({
   const handleSaveWithPhoto = async () => {
     // First save the assessment to get the assessment ID
     try {
-      const result = await upsertAssessment.mutateAsync({
+      // Use offline-capable save
+      const assessmentData = {
         projectId,
         assetId,
         componentCode,
-        condition: condition as "good" | "fair" | "poor" | "not_assessed",
-        status: status,
-        conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
-        componentName: componentNameField || undefined,
-        componentLocation: componentLocationField || undefined,
-        observations: observations || undefined,
-        recommendations: recommendations || undefined,
-        remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
-        expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
-        reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
-        lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
-        estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
-        replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
-        actionYear: actionYear ? parseInt(actionYear) : undefined,
-      });
+        componentName: componentNameField || null,
+        componentLocation: componentLocationField || null,
+        condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
+        status: status as "initial" | "active" | "completed" | null,
+        observations: observations || null,
+        recommendations: recommendations || null,
+        estimatedServiceLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
+        reviewYear: reviewYear ? parseInt(reviewYear) : null,
+        lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : null,
+        estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
+        replacementValue: replacementValue ? parseFloat(replacementValue) : null,
+        actionYear: actionYear ? parseInt(actionYear) : null,
+      };
+
+      const assessmentId = await saveAssessment(assessmentData);
 
       // Then upload photos with the assessment ID
       if (photoFiles.length > 0) {
         setUploadingPhoto(true);
-        let uploadedCount = 0;
         const totalPhotos = photoFiles.length;
         
-        photoFiles.forEach((file, index) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64 = (reader.result as string).split(",")[1];
-            uploadPhoto.mutate({
-              projectId,
-              assessmentId: result.id, // Link photo to assessment
-              fileData: base64,
-              fileName: file.name,
-              mimeType: file.type,
-              componentCode,
-              caption: `${componentCode} - ${componentName} (${index + 1}/${totalPhotos})`,
-              latitude: photoGeolocation?.latitude,
-              longitude: photoGeolocation?.longitude,
-              altitude: photoGeolocation?.altitude,
-              locationAccuracy: photoGeolocation?.accuracy,
-              performOCR: true, // Enable OCR for all uploaded photos
-            }, {
-              onSuccess: () => {
-                uploadedCount++;
-                if (uploadedCount === totalPhotos) {
-                  // All photos uploaded
-                  setUploadingPhoto(false);
-                  toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved successfully`);
-                  onSuccess();
-                  handleClose();
-                }
-              },
-              onError: (error) => {
-                toast.error(`Failed to upload photo ${index + 1}: ${error.message}`);
-                uploadedCount++;
-                if (uploadedCount === totalPhotos) {
-                  setUploadingPhoto(false);
-                }
-              }
-            });
-          };
-          reader.readAsDataURL(file);
-        });
+        // Use offline-capable photo upload
+        const photoUploadPromises = photoFiles.map((file, index) => 
+          uploadPhotoOffline({
+            assessmentId: assessmentId.toString(),
+            projectId,
+            file,
+            caption: `${componentCode} - ${componentName} (${index + 1}/${totalPhotos})`,
+            location: photoGeolocation ? {
+              latitude: photoGeolocation.latitude,
+              longitude: photoGeolocation.longitude,
+              altitude: photoGeolocation.altitude,
+              accuracy: photoGeolocation.accuracy,
+            } : undefined,
+          })
+        );
+
+        try {
+          await Promise.all(photoUploadPromises);
+          setUploadingPhoto(false);
+          toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved successfully`);
+          onSuccess();
+          handleClose();
+        } catch (error: any) {
+          toast.error(`Failed to upload photos: ${error.message}`);
+          setUploadingPhoto(false);
+        }
       } else {
         toast.success("Assessment saved successfully");
         onSuccess();
@@ -389,9 +398,8 @@ export function AssessmentDialog({
     proceedWithSave();
   };
 
-  const proceedWithSave = () => {
+  const proceedWithSave = async () => {
     // Show offline notification if not online
-    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
     if (!isOnline) {
       toast.info("Saving offline... Data will sync when connection is restored", {
         duration: 5000,
@@ -400,29 +408,34 @@ export function AssessmentDialog({
 
     if (photoFiles.length > 0) {
       // If there are photos, use the async handler to link them to the assessment
-      handleSaveWithPhoto();
+      await handleSaveWithPhoto();
     } else {
-      // No photo, just save the assessment
-      upsertAssessment.mutate({
-        projectId,
-        assetId,
-        componentCode,
-        condition: condition as "good" | "fair" | "poor" | "not_assessed",
-        conditionPercentage: CONDITION_PERCENTAGES[condition] || undefined,
-        componentName: componentNameField || undefined,
-        componentLocation: componentLocationField || undefined,
-        observations: observations || undefined,
-        recommendations: recommendations || undefined,
-        remainingUsefulLife: remainingUsefulLife ? parseInt(remainingUsefulLife) : undefined,
-        expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : undefined,
-        reviewYear: reviewYear ? parseInt(reviewYear) : undefined,
-        lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : undefined,
-        estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : undefined,
-        replacementValue: replacementValue ? parseFloat(replacementValue) : undefined,
-        actionYear: actionYear ? parseInt(actionYear) : undefined,
-        hasValidationOverrides: validationOverrides.size > 0 ? 1 : 0,
-        validationWarnings: validationOverrides.size > 0 ? JSON.stringify(Array.from(validationOverrides.keys())) : undefined,
-      });
+      // No photo, just save the assessment using offline-capable hook
+      try {
+        const assessmentData = {
+          projectId,
+          assetId,
+          componentCode,
+          componentName: componentNameField || null,
+          componentLocation: componentLocationField || null,
+          condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
+          status: status as "initial" | "active" | "completed" | null,
+          observations: observations || null,
+          recommendations: recommendations || null,
+          estimatedServiceLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
+          reviewYear: reviewYear ? parseInt(reviewYear) : null,
+          lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : null,
+          estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
+          replacementValue: replacementValue ? parseFloat(replacementValue) : null,
+          actionYear: actionYear ? parseInt(actionYear) : null,
+        };
+
+        await saveAssessment(assessmentData);
+        onSuccess();
+        handleClose();
+      } catch (error: any) {
+        toast.error("Failed to save assessment: " + error.message);
+      }
     }
   };
 
@@ -665,9 +678,6 @@ export function AssessmentDialog({
     setPhotoPreviews([]);
     onOpenChange(false);
   };
-
-  // Check if online
-  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

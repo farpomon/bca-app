@@ -74,8 +74,8 @@
 - [x] Update useOfflineAssessment hook to use real tRPC mutations
 - [x] Update syncEngine to call backend sync endpoints
 - [x] Add project and component caching functions
-- [ ] Integrate useOfflineAssessment hook into AssessmentDialog component (ready to use)
-- [ ] Integrate useOfflinePhoto hook into photo upload components (ready to use)
+- [x] Integrate useOfflineAssessment hook into AssessmentDialog component
+- [x] Integrate useOfflinePhoto hook into AssessmentDialog component
 - [x] Add offline indicator badge to AssessmentDialog header
 - [x] Add offline indicator badge to photo upload section
 - [x] Show "Saving offline..." message when offline
@@ -1935,3 +1935,11 @@ Testing:
 - [ ] Phase 4 (Advanced): Features 9, 10, 11 - Sustainability and compliance
 - [ ] Phase 5 (Power User): Features 13, 14, 15 - Integration and customization
 
+
+## Complete Offline Integration
+
+- [x] Integrate useOfflineAssessment hook into AssessmentDialog component
+- [x] Integrate useOfflinePhoto hook into AssessmentDialog component
+- [ ] Test offline assessment creation with photos (ready for user testing)
+- [ ] Verify automatic sync when connection returns (ready for user testing)
+- [ ] Create checkpoint after successful offline integration
