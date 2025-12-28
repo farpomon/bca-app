@@ -2015,3 +2015,6 @@ Testing:
 ## 3D Model Upload Issues (Dec 28, 2024)
 - [x] Fix 3D model upload stopping when switching browser tabs
 - [x] Add upload progress bar with percentage indicator
+
+## 3D Model Delete Bug (Dec 28, 2024)
+- [x] Fix 3D model delete not refreshing the list after deletion (toast shows success but model still visible)

@@ -66,10 +66,13 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
 
   // Delete mutation
   const deleteMutation = trpc.models.delete.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Model deleted successfully");
-      utils.models.list.invalidate({ projectId, assetId });
-      utils.models.getActive.invalidate({ projectId, assetId });
+      // Force refetch the queries to ensure UI updates
+      await Promise.all([
+        utils.models.list.invalidate(),
+        utils.models.getActive.invalidate(),
+      ]);
       setDeleteModelId(null);
     },
     onError: (error) => {
@@ -201,8 +204,8 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
           apsTranslationStatus={activeModel.apsTranslationStatus}
           apsTranslationProgress={activeModel.apsTranslationProgress}
           onStatusChange={() => {
-            utils.models.getActive.invalidate({ projectId });
-            utils.models.list.invalidate({ projectId });
+            utils.models.getActive.invalidate({ projectId, assetId });
+            utils.models.list.invalidate({ projectId, assetId });
           }}
         />
       )}
@@ -230,8 +233,8 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
               onAnnotationClick={handleAnnotationClick}
               onApsStatusChange={() => {
                 // Refetch model data when APS conversion starts
-                utils.models.getActive.invalidate({ projectId });
-                utils.models.list.invalidate({ projectId });
+                utils.models.getActive.invalidate({ projectId, assetId });
+                utils.models.list.invalidate({ projectId, assetId });
               }}
               height="500px"
             />
