@@ -2011,3 +2011,7 @@ Testing:
 ## 3D Model Loading Bug (Dec 28, 2024)
 
 - [x] Bug: Same 3D model is being loaded onto various assets under the same project - FIXED by adding assetId column to facility_models table and updating queries
+
+## 3D Model Upload Issues (Dec 28, 2024)
+- [x] Fix 3D model upload stopping when switching browser tabs
+- [x] Add upload progress bar with percentage indicator

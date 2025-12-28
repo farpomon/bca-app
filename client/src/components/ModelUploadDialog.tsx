@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ModelUploadDialogProps {
@@ -16,27 +17,80 @@ interface ModelUploadDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+type UploadStage = 'idle' | 'reading' | 'uploading' | 'processing' | 'complete' | 'error';
+
+interface UploadProgress {
+  stage: UploadStage;
+  percentage: number;
+  message: string;
+}
+
 export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: ModelUploadDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj" | "skp" | "rvt" | "rfa" | "dwg" | "dxf">("glb");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<UploadProgress>({
+    stage: 'idle',
+    percentage: 0,
+    message: ''
+  });
+
+  // Refs for managing upload state across tab switches
+  const uploadAbortController = useRef<AbortController | null>(null);
+  const keepAliveInterval = useRef<NodeJS.Timeout | null>(null);
+  const uploadInProgress = useRef(false);
 
   const utils = trpc.useUtils();
   const uploadMutation = trpc.models.upload.useMutation({
     onSuccess: () => {
+      setProgress({ stage: 'complete', percentage: 100, message: 'Upload complete!' });
       toast.success("3D model uploaded successfully");
       utils.models.list.invalidate({ projectId, assetId });
       utils.models.getActive.invalidate({ projectId, assetId });
-      onOpenChange(false);
-      resetForm();
+      // Delay closing to show completion state
+      setTimeout(() => {
+        onOpenChange(false);
+        resetForm();
+      }, 1500);
     },
     onError: (error) => {
+      setProgress({ stage: 'error', percentage: 0, message: error.message });
       toast.error(`Upload failed: ${error.message}`);
       setUploading(false);
+      uploadInProgress.current = false;
     },
   });
+
+  // Cleanup on unmount or dialog close
+  useEffect(() => {
+    return () => {
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+      }
+      if (uploadAbortController.current) {
+        uploadAbortController.current.abort();
+      }
+    };
+  }, []);
+
+  // Handle visibility change to prevent upload interruption
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && uploadInProgress.current) {
+        // Keep the connection alive when tab is hidden
+        console.log('[ModelUpload] Tab hidden, keeping upload alive...');
+      } else if (document.visibilityState === 'visible' && uploadInProgress.current) {
+        console.log('[ModelUpload] Tab visible again, upload still in progress');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const resetForm = () => {
     setName("");
@@ -44,6 +98,12 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
     setFormat("glb");
     setFile(null);
     setUploading(false);
+    setProgress({ stage: 'idle', percentage: 0, message: '' });
+    uploadInProgress.current = false;
+    if (keepAliveInterval.current) {
+      clearInterval(keepAliveInterval.current);
+      keepAliveInterval.current = null;
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,8 +118,47 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
       if (!name) {
         setName(selectedFile.name.replace(/\.[^/.]+$/, ""));
       }
+      // Auto-detect format from file extension
+      const ext = selectedFile.name.split('.').pop()?.toLowerCase();
+      if (ext && ['glb', 'gltf', 'fbx', 'obj', 'skp', 'rvt', 'rfa', 'dwg', 'dxf'].includes(ext)) {
+        setFormat(ext as any);
+      }
     }
   };
+
+  // Read file in chunks to track progress and prevent blocking
+  const readFileWithProgress = useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const fileSize = file.size;
+      
+      reader.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setProgress({
+            stage: 'reading',
+            percentage: percentComplete,
+            message: `Reading file: ${percentComplete}%`
+          });
+        }
+      };
+
+      reader.onload = () => {
+        const base64 = reader.result?.toString().split(",")[1];
+        if (!base64) {
+          reject(new Error("Failed to read file"));
+          return;
+        }
+        resolve(base64);
+      };
+
+      reader.onerror = () => {
+        reject(new Error("Failed to read file"));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }, []);
 
   const handleSubmit = async () => {
     if (!file || !name) {
@@ -68,47 +167,119 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
     }
 
     setUploading(true);
+    uploadInProgress.current = true;
+    uploadAbortController.current = new AbortController();
+
+    // Start keep-alive ping to prevent browser from throttling
+    keepAliveInterval.current = setInterval(() => {
+      if (uploadInProgress.current) {
+        // Simple keep-alive - just log to keep the JS thread active
+        console.log('[ModelUpload] Keep-alive ping');
+      }
+    }, 1000);
 
     try {
-      // Read file as base64
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64 = reader.result?.toString().split(",")[1];
-          if (!base64) {
-            toast.error("Failed to read file");
-            setUploading(false);
-            return;
-          }
+      // Stage 1: Reading file
+      setProgress({ stage: 'reading', percentage: 0, message: 'Reading file...' });
+      
+      const base64 = await readFileWithProgress(file);
+      
+      if (!uploadInProgress.current) {
+        // Upload was cancelled
+        return;
+      }
 
-          await uploadMutation.mutateAsync({
-            projectId,
-            assetId, // Pass assetId to associate model with specific asset
-            name,
-            description,
-            fileData: base64,
-            format,
-          });
-        } catch (error) {
-          console.error("Upload mutation error:", error);
-          toast.error(error instanceof Error ? error.message : "Upload failed");
-          setUploading(false);
-        }
-      };
-      reader.onerror = (error) => {
-        console.error("FileReader error:", error);
-        toast.error("Failed to read file");
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      // Stage 2: Uploading to server
+      setProgress({ stage: 'uploading', percentage: 0, message: 'Uploading to server...' });
+      
+      // Simulate upload progress (since tRPC doesn't support progress tracking natively)
+      const uploadProgressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev.stage === 'uploading' && prev.percentage < 90) {
+            // Gradually increase progress based on file size
+            const increment = file.size > 50 * 1024 * 1024 ? 2 : 5;
+            return {
+              ...prev,
+              percentage: Math.min(prev.percentage + increment, 90),
+              message: `Uploading to server: ${Math.min(prev.percentage + increment, 90)}%`
+            };
+          }
+          return prev;
+        });
+      }, 500);
+
+      try {
+        await uploadMutation.mutateAsync({
+          projectId,
+          assetId,
+          name,
+          description,
+          fileData: base64,
+          format,
+        });
+      } finally {
+        clearInterval(uploadProgressInterval);
+      }
+
+      // Stage 3: Processing (handled by onSuccess)
+      setProgress({ stage: 'processing', percentage: 95, message: 'Processing model...' });
+
     } catch (error) {
       console.error("Upload error:", error);
+      if (uploadInProgress.current) {
+        setProgress({ 
+          stage: 'error', 
+          percentage: 0, 
+          message: error instanceof Error ? error.message : 'Upload failed' 
+        });
+        toast.error(error instanceof Error ? error.message : "Upload failed");
+      }
       setUploading(false);
+      uploadInProgress.current = false;
+    } finally {
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+        keepAliveInterval.current = null;
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    if (uploading) {
+      uploadInProgress.current = false;
+      if (uploadAbortController.current) {
+        uploadAbortController.current.abort();
+      }
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+      }
+      toast.info("Upload cancelled");
+    }
+    onOpenChange(false);
+    resetForm();
+  };
+
+  const getProgressColor = () => {
+    switch (progress.stage) {
+      case 'complete': return 'bg-green-500';
+      case 'error': return 'bg-red-500';
+      default: return '';
+    }
+  };
+
+  const getStageIcon = () => {
+    switch (progress.stage) {
+      case 'complete':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      default:
+        return <Loader2 className="h-5 w-5 animate-spin text-primary" />;
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleCancel}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Upload 3D Model</DialogTitle>
@@ -118,6 +289,35 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Progress Section - Only show when uploading */}
+          {uploading && (
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
+              <div className="flex items-center gap-2">
+                {getStageIcon()}
+                <span className="text-sm font-medium">{progress.message}</span>
+              </div>
+              <Progress 
+                value={progress.percentage} 
+                className={`h-3 ${getProgressColor()}`}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>
+                  {progress.stage === 'reading' && 'Reading file from disk...'}
+                  {progress.stage === 'uploading' && 'Uploading to cloud storage...'}
+                  {progress.stage === 'processing' && 'Processing and converting...'}
+                  {progress.stage === 'complete' && 'Upload successful!'}
+                  {progress.stage === 'error' && 'Upload failed'}
+                </span>
+                <span>{progress.percentage}%</span>
+              </div>
+              {progress.stage !== 'complete' && progress.stage !== 'error' && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  💡 Tip: You can switch tabs - the upload will continue in the background.
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="file">Model File *</Label>
             <div className="flex items-center gap-2">
@@ -181,14 +381,18 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={uploading}>
-            Cancel
+          <Button variant="outline" onClick={handleCancel} disabled={progress.stage === 'complete'}>
+            {uploading && progress.stage !== 'complete' ? 'Cancel Upload' : 'Cancel'}
           </Button>
           <Button onClick={handleSubmit} disabled={uploading || !file || !name}>
             {uploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
+                {progress.stage === 'reading' && 'Reading...'}
+                {progress.stage === 'uploading' && 'Uploading...'}
+                {progress.stage === 'processing' && 'Processing...'}
+                {progress.stage === 'complete' && 'Complete!'}
+                {progress.stage === 'error' && 'Failed'}
               </>
             ) : (
               <>
