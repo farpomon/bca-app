@@ -3,9 +3,11 @@
  * 
  * Provides complete model management functionality including:
  * - Bucket management
- * - File upload to APS
+ * - File upload to APS (using S3 signed URLs)
  * - Model translation (SVF2 format for Forge Viewer)
  * - Translation status tracking
+ * 
+ * Updated: Uses new S3 signed URL workflow instead of deprecated resumable endpoint
  */
 
 import { getApsToken } from './aps';
@@ -32,6 +34,23 @@ interface UploadObjectResponse {
   objectKey: string;
   sha1: string;
   size: number;
+  location: string;
+}
+
+interface SignedS3UploadResponse {
+  uploadKey: string;
+  uploadExpiration: string;
+  urlExpiration: string;
+  urls: string[];
+}
+
+interface CompleteUploadResponse {
+  bucketKey: string;
+  objectId: string;
+  objectKey: string;
+  size: number;
+  sha1: string;
+  contentType: string;
   location: string;
 }
 
@@ -139,8 +158,82 @@ export async function getBucket(bucketKey: string): Promise<CreateBucketResponse
 }
 
 /**
- * Upload a file to APS bucket
- * For files > 5MB, uses resumable upload
+ * Get signed S3 URLs for uploading an object
+ * This is the new recommended approach (replaces deprecated resumable endpoint)
+ */
+async function getSignedS3UploadUrls(
+  bucketKey: string,
+  objectKey: string,
+  accessToken: string,
+  parts: number = 1,
+  uploadKey?: string,
+  firstPart: number = 1
+): Promise<SignedS3UploadResponse> {
+  const params = new URLSearchParams({
+    parts: parts.toString(),
+    firstPart: firstPart.toString(),
+  });
+  
+  if (uploadKey) {
+    params.append('uploadKey', uploadKey);
+  }
+
+  const response = await fetch(
+    `${APS_BASE_URL}/oss/v2/buckets/${bucketKey}/objects/${encodeURIComponent(objectKey)}/signeds3upload?${params}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to get signed S3 upload URLs: ${response.status} - ${errorText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Complete the S3 upload by notifying APS
+ */
+async function completeS3Upload(
+  bucketKey: string,
+  objectKey: string,
+  accessToken: string,
+  uploadKey: string,
+  size: number,
+  eTags: Array<{ partNumber: number; eTag: string }>
+): Promise<CompleteUploadResponse> {
+  const response = await fetch(
+    `${APS_BASE_URL}/oss/v2/buckets/${bucketKey}/objects/${encodeURIComponent(objectKey)}/signeds3upload`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        uploadKey,
+        size,
+        eTags,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to complete S3 upload: ${response.status} - ${errorText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Upload a file to APS bucket using S3 signed URLs
+ * For files > 5MB, uses multipart upload with signed URLs
  */
 export async function uploadObject(
   bucketKey: string,
@@ -148,92 +241,170 @@ export async function uploadObject(
   fileBuffer: Buffer,
   contentType: string = 'application/octet-stream'
 ): Promise<UploadObjectResponse> {
-  const { accessToken } = await getApsToken(['data:write', 'data:read']);
+  const { accessToken } = await getApsToken(['data:write', 'data:read', 'data:create']);
 
   const fileSize = fileBuffer.length;
-  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-
-  // For small files, use simple upload
-  if (fileSize <= CHUNK_SIZE) {
-    const response = await fetch(
-      `${APS_BASE_URL}/oss/v2/buckets/${bucketKey}/objects/${encodeURIComponent(objectKey)}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': contentType,
-          'Content-Length': fileSize.toString(),
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: fileBuffer,
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to upload object: ${response.status} - ${errorText}`);
-    }
-
-    return response.json();
+  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB minimum for multipart
+  
+  // Calculate number of parts needed
+  const numParts = Math.ceil(fileSize / CHUNK_SIZE);
+  
+  if (numParts === 1) {
+    // Single part upload
+    return uploadObjectSinglePart(bucketKey, objectKey, fileBuffer, contentType, accessToken);
   }
-
-  // For large files, use resumable upload
-  return uploadObjectResumable(bucketKey, objectKey, fileBuffer, contentType, accessToken);
+  
+  // Multipart upload using S3 signed URLs
+  return uploadObjectMultipart(bucketKey, objectKey, fileBuffer, contentType, accessToken, numParts);
 }
 
 /**
- * Resumable upload for large files
+ * Single part upload for small files using S3 signed URL
  */
-async function uploadObjectResumable(
+async function uploadObjectSinglePart(
   bucketKey: string,
   objectKey: string,
   fileBuffer: Buffer,
   contentType: string,
   accessToken: string
 ): Promise<UploadObjectResponse> {
-  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
-  const fileSize = fileBuffer.length;
-  const numChunks = Math.ceil(fileSize / CHUNK_SIZE);
+  // Get signed URL for single part upload
+  const signedUrlResponse = await getSignedS3UploadUrls(bucketKey, objectKey, accessToken, 1);
   
-  // Generate a session ID for resumable upload
-  const sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  if (!signedUrlResponse.urls || signedUrlResponse.urls.length === 0) {
+    throw new Error('No signed URL returned from APS');
+  }
+  
+  const signedUrl = signedUrlResponse.urls[0];
+  
+  // Upload directly to S3
+  const uploadResponse = await fetch(signedUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': contentType,
+      'Content-Length': fileBuffer.length.toString(),
+    },
+    body: fileBuffer,
+  });
+  
+  if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    throw new Error(`Failed to upload to S3: ${uploadResponse.status} - ${errorText}`);
+  }
+  
+  // Get ETag from response
+  const eTag = uploadResponse.headers.get('ETag') || '';
+  
+  // Complete the upload
+  const completeResponse = await completeS3Upload(
+    bucketKey,
+    objectKey,
+    accessToken,
+    signedUrlResponse.uploadKey,
+    fileBuffer.length,
+    [{ partNumber: 1, eTag: eTag.replace(/"/g, '') }]
+  );
+  
+  return {
+    bucketKey: completeResponse.bucketKey,
+    objectId: completeResponse.objectId,
+    objectKey: completeResponse.objectKey,
+    sha1: completeResponse.sha1,
+    size: completeResponse.size,
+    location: completeResponse.location,
+  };
+}
 
-  for (let i = 0; i < numChunks; i++) {
-    const start = i * CHUNK_SIZE;
-    const end = Math.min(start + CHUNK_SIZE, fileSize);
-    const chunk = fileBuffer.slice(start, end);
-    const contentRange = `bytes ${start}-${end - 1}/${fileSize}`;
-
-    const response = await fetch(
-      `${APS_BASE_URL}/oss/v2/buckets/${bucketKey}/objects/${encodeURIComponent(objectKey)}/resumable`,
-      {
+/**
+ * Multipart upload for large files using S3 signed URLs
+ */
+async function uploadObjectMultipart(
+  bucketKey: string,
+  objectKey: string,
+  fileBuffer: Buffer,
+  contentType: string,
+  accessToken: string,
+  numParts: number
+): Promise<UploadObjectResponse> {
+  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+  const MAX_URLS_PER_REQUEST = 25; // APS returns max 25 URLs per request
+  const fileSize = fileBuffer.length;
+  
+  const eTags: Array<{ partNumber: number; eTag: string }> = [];
+  let uploadKey: string | undefined;
+  
+  // Upload in batches of up to 25 parts
+  for (let batchStart = 0; batchStart < numParts; batchStart += MAX_URLS_PER_REQUEST) {
+    const batchSize = Math.min(MAX_URLS_PER_REQUEST, numParts - batchStart);
+    const firstPart = batchStart + 1; // Parts are 1-indexed
+    
+    // Get signed URLs for this batch
+    const signedUrlResponse = await getSignedS3UploadUrls(
+      bucketKey,
+      objectKey,
+      accessToken,
+      batchSize,
+      uploadKey,
+      firstPart
+    );
+    
+    // Store uploadKey for subsequent requests
+    uploadKey = signedUrlResponse.uploadKey;
+    
+    if (!signedUrlResponse.urls || signedUrlResponse.urls.length === 0) {
+      throw new Error(`No signed URLs returned for batch starting at part ${firstPart}`);
+    }
+    
+    // Upload each part in this batch
+    for (let i = 0; i < signedUrlResponse.urls.length; i++) {
+      const partNumber = batchStart + i + 1;
+      const start = (partNumber - 1) * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, fileSize);
+      const chunk = fileBuffer.slice(start, end);
+      const signedUrl = signedUrlResponse.urls[i];
+      
+      const uploadResponse = await fetch(signedUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': contentType,
           'Content-Length': chunk.length.toString(),
-          'Content-Range': contentRange,
-          'Authorization': `Bearer ${accessToken}`,
-          'Session-Id': sessionId,
         },
         body: chunk,
+      });
+      
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Failed to upload part ${partNumber}/${numParts}: ${uploadResponse.status} - ${errorText}`);
       }
-    );
-
-    // Last chunk returns 200, intermediate chunks return 202
-    if (i === numChunks - 1) {
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to complete resumable upload: ${response.status} - ${errorText}`);
-      }
-      return response.json();
-    } else {
-      if (response.status !== 202) {
-        const errorText = await response.text();
-        throw new Error(`Failed to upload chunk ${i + 1}/${numChunks}: ${response.status} - ${errorText}`);
-      }
+      
+      // Get ETag from response
+      const eTag = uploadResponse.headers.get('ETag') || '';
+      eTags.push({ partNumber, eTag: eTag.replace(/"/g, '') });
     }
   }
-
-  throw new Error('Resumable upload failed unexpectedly');
+  
+  // Complete the multipart upload
+  if (!uploadKey) {
+    throw new Error('Upload key not received from APS');
+  }
+  
+  const completeResponse = await completeS3Upload(
+    bucketKey,
+    objectKey,
+    accessToken,
+    uploadKey,
+    fileSize,
+    eTags
+  );
+  
+  return {
+    bucketKey: completeResponse.bucketKey,
+    objectId: completeResponse.objectId,
+    objectKey: completeResponse.objectKey,
+    sha1: completeResponse.sha1,
+    size: completeResponse.size,
+    location: completeResponse.location,
+  };
 }
 
 /**
@@ -389,7 +560,7 @@ export async function getSignedUrl(
   }
 
   const data = await response.json();
-  return data.url;
+  return data.url || data.urls?.[0];
 }
 
 /**

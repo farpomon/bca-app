@@ -1990,3 +1990,9 @@ Testing:
 
 - [x] Bug: Deleted model still shows as 'Active' - need to refresh list after deletion
 - [x] Bug: Revit file not loading in 3D viewer - Added 'Convert for Web Viewing' button and APS upload - still showing conversion prompt
+
+## Fix APS Model Conversion Error (Dec 28, 2024)
+
+- [x] Fix APS upload error: "Legacy endpoint is deprecated" (403) when uploading chunks
+- [x] Update APS upload endpoint from deprecated legacy to current API (switched to S3 signed URL workflow)
+- [ ] Test model conversion flow after fix - Ready for user testing
