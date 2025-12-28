@@ -1975,3 +1975,18 @@ Testing:
 - [ ] Test full model upload workflow (ready for testing)
 - [ ] Document APS integration setup
 - [ ] Create checkpoint after APS integration
+
+
+## 3D Model Delete Functionality (Dec 28, 2024)
+
+- [ ] Add delete functionality for 3D models in Digital Twin section
+- [ ] Create backend endpoint for model deletion
+- [ ] Add delete confirmation dialog
+- [ ] Update UI to show delete option in model list
+
+
+## 3D Model Delete Functionality
+- [x] Add delete functionality for 3D models in Digital Twin section (already implemented - verified working)
+
+- [x] Bug: Deleted model still shows as 'Active' - need to refresh list after deletion
+- [x] Bug: Revit file not loading in 3D viewer - Added 'Convert for Web Viewing' button and APS upload - still showing conversion prompt

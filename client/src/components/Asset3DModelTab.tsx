@@ -200,6 +200,9 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
             <ModelViewer
               modelUrl={activeModel.fileUrl}
               modelFormat={activeModel.format}
+              modelId={activeModel.id}
+              apsUrn={activeModel.apsUrn}
+              apsTranslationStatus={activeModel.apsTranslationStatus}
               annotations={annotations.map((a) => ({
                 id: a.id,
                 title: a.title,
@@ -211,6 +214,11 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
                 type: a.annotationType,
               }))}
               onAnnotationClick={handleAnnotationClick}
+              onApsStatusChange={() => {
+                // Refetch model data when APS conversion starts
+                utils.models.getActive.invalidate({ projectId });
+                utils.models.list.invalidate({ projectId });
+              }}
               height="500px"
             />
           </CardContent>

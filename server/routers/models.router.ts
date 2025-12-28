@@ -179,6 +179,90 @@ export const modelsRouter = router({
       }
     }),
 
+  // Upload existing model to APS for translation (for models that weren't uploaded to APS initially)
+  uploadToAps: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const model = await modelsDb.getFacilityModel(input.id);
+      if (!model) {
+        throw new Error("Model not found");
+      }
+
+      // Check if already uploaded to APS
+      if (model.apsUrn && model.apsTranslationStatus === 'success') {
+        return { 
+          success: true, 
+          message: 'Model already translated',
+          apsUrn: model.apsUrn,
+          status: model.apsTranslationStatus,
+        };
+      }
+
+      try {
+        console.log(`[APS Upload] Starting APS upload for model ${input.id}...`);
+        
+        // Download file from S3
+        const response = await fetch(model.fileUrl);
+        if (!response.ok) {
+          throw new Error('Failed to download model file from storage');
+        }
+        const buffer = Buffer.from(await response.arrayBuffer());
+        console.log(`[APS Upload] Downloaded file, size: ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
+        
+        // Ensure bucket exists
+        await createBucket(APP_BUCKET_KEY);
+        
+        // Generate unique object key
+        const timestamp = Date.now();
+        const apsObjectKey = `${model.projectId}/${timestamp}-${model.name}.${model.format}`;
+        
+        // Upload to APS
+        const uploadResult = await uploadObject(
+          APP_BUCKET_KEY,
+          apsObjectKey,
+          buffer,
+          `application/octet-stream`
+        );
+        console.log(`[APS Upload] APS upload successful, objectId: ${uploadResult.objectId}`);
+        
+        // Convert to URN and start translation
+        const urn = objectIdToUrn(uploadResult.objectId);
+        console.log(`[APS Upload] Starting translation for URN: ${urn}`);
+        
+        const translationResult = await translateModel(urn);
+        console.log(`[APS Upload] Translation started, result: ${translationResult.result}`);
+        
+        // Update database with APS data
+        await modelsDb.updateFacilityModelApsData(input.id, {
+          apsObjectKey,
+          apsBucketKey: APP_BUCKET_KEY,
+          apsUrn: urn,
+          apsTranslationStatus: 'in_progress',
+          apsTranslationProgress: 0,
+          apsTranslationMessage: 'Translation started',
+          apsUploadedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          apsTranslationStartedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        });
+        
+        return { 
+          success: true, 
+          message: 'Model uploaded to APS, translation in progress',
+          apsUrn: urn,
+          status: 'in_progress',
+        };
+      } catch (error) {
+        console.error(`[APS Upload] Error:`, error);
+        
+        // Update database with error
+        await modelsDb.updateFacilityModelApsData(input.id, {
+          apsTranslationStatus: 'failed',
+          apsTranslationMessage: error instanceof Error ? error.message : 'APS upload failed',
+        });
+        
+        throw new Error(`Failed to upload to APS: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }),
+
   // Retry failed translation
   retryTranslation: protectedProcedure
     .input(z.object({ id: z.number() }))

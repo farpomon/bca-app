@@ -1,6 +1,7 @@
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Grid, Environment, PerspectiveCamera, useGLTF, Html, Center, useProgress } from "@react-three/drei";
 import { Suspense, useState, useRef, useEffect, useCallback } from "react";
+import { ForgeViewer } from "@/components/ForgeViewer";
 import { Button } from "@/components/ui/button";
 import { Loader2, Maximize2, Minimize2, Home, RotateCcw, Grid3X3, Eye, EyeOff, RefreshCw, Download, ExternalLink } from "lucide-react";
 import * as THREE from "three";
@@ -8,6 +9,9 @@ import * as THREE from "three";
 interface ModelViewerProps {
   modelUrl: string;
   modelFormat?: string; // Add format prop to determine rendering strategy
+  modelId?: number; // Model ID for APS operations
+  apsUrn?: string | null; // APS URN for Forge Viewer
+  apsTranslationStatus?: string | null; // APS translation status
   annotations?: Array<{
     id: number;
     title: string;
@@ -15,6 +19,7 @@ interface ModelViewerProps {
     type: string;
   }>;
   onAnnotationClick?: (annotationId: number) => void;
+  onApsStatusChange?: () => void; // Callback when APS status changes
   height?: string;
 }
 
@@ -305,8 +310,38 @@ function AnnotationMarker({
   );
 }
 
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+
 // Conversion notice component for non-native formats
-function ConversionNotice({ format, modelUrl }: { format: string; modelUrl: string }) {
+function ConversionNotice({ format, modelUrl, modelId, onConversionStarted }: { 
+  format: string; 
+  modelUrl: string;
+  modelId?: number;
+  onConversionStarted?: () => void;
+}) {
+  const [isConverting, setIsConverting] = useState(false);
+  
+  const uploadToApsMutation = trpc.models.uploadToAps.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Conversion started');
+      setIsConverting(false);
+      onConversionStarted?.();
+    },
+    onError: (error) => {
+      toast.error(`Conversion failed: ${error.message}`);
+      setIsConverting(false);
+    },
+  });
+
+  const handleStartConversion = () => {
+    if (!modelId) {
+      toast.error('Model ID not available');
+      return;
+    }
+    setIsConverting(true);
+    uploadToApsMutation.mutate({ id: modelId });
+  };
   const formatNames: Record<string, string> = {
     rvt: 'Autodesk Revit',
     rfa: 'Revit Family',
@@ -349,8 +384,27 @@ function ConversionNotice({ format, modelUrl }: { format: string; modelUrl: stri
           </ol>
         </div>
 
-        <div className="flex gap-3 justify-center">
-          <Button asChild variant="default">
+        <div className="flex gap-3 justify-center flex-wrap">
+          {modelId && (
+            <Button 
+              variant="default" 
+              onClick={handleStartConversion}
+              disabled={isConverting || uploadToApsMutation.isPending}
+            >
+              {isConverting || uploadToApsMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Converting...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Convert for Web Viewing
+                </>
+              )}
+            </Button>
+          )}
+          <Button asChild variant="outline">
             <a href={modelUrl} download>
               <Download className="mr-2 h-4 w-4" />
               Download {format.toUpperCase()} File
@@ -359,20 +413,24 @@ function ConversionNotice({ format, modelUrl }: { format: string; modelUrl: stri
           <Button asChild variant="outline">
             <a href="https://products.aspose.app/3d/conversion" target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" />
-              Open Converter
+              Manual Converter
             </a>
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Your file is safely stored and can be downloaded anytime. Once converted to GLB, upload it as a new version to enable 3D visualization.
+          {modelId ? (
+            <>Click "Convert for Web Viewing" to automatically convert your model using Autodesk's cloud service. This may take a few minutes for large files.</>
+          ) : (
+            <>Your file is safely stored and can be downloaded anytime. Once converted to GLB, upload it as a new version to enable 3D visualization.</>
+          )}
         </p>
       </div>
     </div>
   );
 }
 
-export function ModelViewer({ modelUrl, modelFormat, annotations = [], onAnnotationClick, height = "600px" }: ModelViewerProps) {
+export function ModelViewer({ modelUrl, modelFormat, modelId, apsUrn, apsTranslationStatus, annotations = [], onAnnotationClick, onApsStatusChange, height = "600px" }: ModelViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
   const [showAnnotations, setShowAnnotations] = useState(true);
@@ -385,9 +443,11 @@ export function ModelViewer({ modelUrl, modelFormat, annotations = [], onAnnotat
   const controlsRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Determine rendering strategy based on format
-  const showConversionNotice = needsConversion(modelFormat);
-  const canRenderNatively = isNativelySupported(modelFormat);
+  // Determine rendering strategy based on format and APS status
+  // If APS translation is successful, we can use Forge Viewer instead of showing conversion notice
+  const hasSuccessfulApsTranslation = apsTranslationStatus === 'success' && apsUrn;
+  const showConversionNotice = needsConversion(modelFormat) && !hasSuccessfulApsTranslation;
+  const canRenderNatively = isNativelySupported(modelFormat) || hasSuccessfulApsTranslation;
 
   const handleFullscreen = useCallback(() => {
     if (!isFullscreen) {
@@ -480,8 +540,24 @@ export function ModelViewer({ modelUrl, modelFormat, annotations = [], onAnnotat
         }`}
         style={{ height: isFullscreen ? '100vh' : height }}
       >
-        <ConversionNotice format={modelFormat} modelUrl={modelUrl} />
+        <ConversionNotice 
+          format={modelFormat} 
+          modelUrl={modelUrl} 
+          modelId={modelId}
+          onConversionStarted={onApsStatusChange}
+        />
       </div>
+    );
+  }
+
+  // If we have a successful APS translation, use the Forge Viewer
+  if (hasSuccessfulApsTranslation && apsUrn) {
+    return (
+      <ForgeViewer
+        urn={apsUrn}
+        className={isFullscreen ? "fixed inset-0 z-50" : ""}
+        onViewerReady={() => setModelLoaded(true)}
+      />
     );
   }
 
