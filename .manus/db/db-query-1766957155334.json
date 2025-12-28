@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, email, name FROM users LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, email, name FROM users LIMIT 10",
+  "rows": [
+    {
+      "id": "1",
+      "email": "luisrubiof@gmail.com",
+      "name": "Luis Faria"
+    },
+    {
+      "id": "12630012",
+      "email": "luisrubiof@gmail.com",
+      "name": "Luis Faria"
+    },
+    {
+      "id": "12780104",
+      "email": "luisrubiof@gmail.com",
+      "name": "Luis Faria"
+    },
+    {
+      "id": "12900003",
+      "email": "luisrubiof@gmail.com",
+      "name": "Luis Faria"
+    },
+    {
+      "id": "13170001",
+      "email": "luisrubiof@gmail.com",
+      "name": "Luis Faria"
+    },
+    {
+      "id": "13530001",
+      "email": "luisrubiof@gmail.com",
+      "name": "Luis Faria"
+    },
+    {
+      "id": "13650011",
+      "email": "NULL",
+      "name": "NULL"
+    },
+    {
+      "id": "13650012",
+      "email": "NULL",
+      "name": "NULL"
+    },
+    {
+      "id": "13650013",
+      "email": "NULL",
+      "name": "NULL"
+    },
+    {
+      "id": "13650014",
+      "email": "NULL",
+      "name": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\n1\tluisrubiof@gmail.com\tLuis Faria\n12630012\tluisrubiof@gmail.com\tLuis Faria\n12780104\tluisrubiof@gmail.com\tLuis Faria\n12900003\tluisrubiof@gmail.com\tLuis Faria\n13170001\tluisrubiof@gmail.com\tLuis Faria\n13530001\tluisrubiof@gmail.com\tLuis Faria\n13650011\tNULL\tNULL\n13650012\tNULL\tNULL\n13650013\tNULL\tNULL\n13650014\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 97
+}

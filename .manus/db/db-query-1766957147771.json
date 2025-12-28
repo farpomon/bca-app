@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as user_count, (SELECT COUNT(*) FROM projects) as project_count FROM users",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as user_count, (SELECT COUNT(*) FROM projects) as project_count FROM users",
+  "rows": [
+    {
+      "user_count": "10271",
+      "project_count": "957"
+    }
+  ],
+  "messages": [],
+  "stdout": "user_count\tproject_count\n10271\t957\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}
