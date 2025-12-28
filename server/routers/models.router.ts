@@ -22,6 +22,7 @@ export const modelsRouter = router({
     .input(
       z.object({
         projectId: z.number(),
+        assetId: z.number().optional(), // Optional - if provided, model is asset-specific
         name: z.string(),
         description: z.string().optional(),
         fileData: z.string(), // Base64 encoded file data
@@ -54,6 +55,7 @@ export const modelsRouter = router({
         // Create initial database record
         const modelData: any = {
           projectId: input.projectId,
+          assetId: input.assetId || null, // null means project-level model
           name: input.name,
           description: input.description,
           fileUrl: url,
@@ -311,18 +313,24 @@ export const modelsRouter = router({
       return model;
     }),
 
-  // List all models for a project
+  // List all models for a project (optionally filtered by asset)
   list: protectedProcedure
-    .input(z.object({ projectId: z.number() }))
+    .input(z.object({ 
+      projectId: z.number(),
+      assetId: z.number().optional(), // If provided, get models for specific asset
+    }))
     .query(async ({ input }) => {
-      return await modelsDb.getProjectModels(input.projectId);
+      return await modelsDb.getProjectModels(input.projectId, input.assetId);
     }),
 
-  // Get active model for a project
+  // Get active model for a project (optionally filtered by asset)
   getActive: protectedProcedure
-    .input(z.object({ projectId: z.number() }))
+    .input(z.object({ 
+      projectId: z.number(),
+      assetId: z.number().optional(), // If provided, get active model for specific asset
+    }))
     .query(async ({ input }) => {
-      return await modelsDb.getActiveProjectModel(input.projectId);
+      return await modelsDb.getActiveProjectModel(input.projectId, input.assetId);
     }),
 
   // Update model metadata

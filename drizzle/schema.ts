@@ -696,6 +696,7 @@ export const esgScores = mysqlTable("esg_scores", {
 export const facilityModels = mysqlTable("facility_models", {
 	id: int().autoincrement().notNull(),
 	projectId: int().notNull(),
+	assetId: int(), // Optional - if null, model applies to entire project; if set, model is asset-specific
 	name: varchar({ length: 255 }).notNull(),
 	description: text(),
 	fileUrl: varchar({ length: 1024 }).notNull(),

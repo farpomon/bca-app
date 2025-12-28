@@ -46,16 +46,16 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
 
   const utils = trpc.useUtils();
 
-  // Fetch active model for this project
+  // Fetch active model for this specific asset
   const { data: activeModel, isLoading: modelLoading } = trpc.models.getActive.useQuery(
-    { projectId },
-    { enabled: !!projectId }
+    { projectId, assetId },
+    { enabled: !!projectId && !!assetId }
   );
 
-  // Fetch all models for history
+  // Fetch all models for this specific asset's history
   const { data: models = [], isLoading: modelsLoading } = trpc.models.list.useQuery(
-    { projectId },
-    { enabled: !!projectId }
+    { projectId, assetId },
+    { enabled: !!projectId && !!assetId }
   );
 
   // Fetch annotations for the active model
@@ -68,8 +68,8 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
   const deleteMutation = trpc.models.delete.useMutation({
     onSuccess: () => {
       toast.success("Model deleted successfully");
-      utils.models.list.invalidate({ projectId });
-      utils.models.getActive.invalidate({ projectId });
+      utils.models.list.invalidate({ projectId, assetId });
+      utils.models.getActive.invalidate({ projectId, assetId });
       setDeleteModelId(null);
     },
     onError: (error) => {
@@ -81,8 +81,8 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
   const setActiveMutation = trpc.models.updateMetadata.useMutation({
     onSuccess: () => {
       toast.success("Model set as active");
-      utils.models.list.invalidate({ projectId });
-      utils.models.getActive.invalidate({ projectId });
+      utils.models.list.invalidate({ projectId, assetId });
+      utils.models.getActive.invalidate({ projectId, assetId });
     },
     onError: (error) => {
       toast.error(`Failed to set active model: ${error.message}`);
@@ -334,6 +334,7 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
       {/* Upload Dialog */}
       <ModelUploadDialog
         projectId={projectId}
+        assetId={assetId}
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
       />

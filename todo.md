@@ -2007,3 +2007,7 @@ Testing:
 ## Conversion Status Bar (Dec 28, 2024)
 
 - [x] Add conversion status bar to show file conversion progress in 3D model viewer
+
+## 3D Model Loading Bug (Dec 28, 2024)
+
+- [x] Bug: Same 3D model is being loaded onto various assets under the same project - FIXED by adding assetId column to facility_models table and updating queries

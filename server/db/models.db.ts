@@ -30,32 +30,46 @@ export async function getFacilityModel(id: number) {
   return result[0];
 }
 
-export async function getProjectModels(projectId: number) {
+export async function getProjectModels(projectId: number, assetId?: number) {
   const db = await getDb();
   if (!db) return [];
+
+  // If assetId is provided, get models for that specific asset
+  // Otherwise, get models for the entire project (where assetId is null)
+  const conditions = assetId !== undefined
+    ? and(eq(facilityModels.projectId, projectId), eq(facilityModels.assetId, assetId))
+    : eq(facilityModels.projectId, projectId);
 
   const result = await db
     .select()
     .from(facilityModels)
-    .where(eq(facilityModels.projectId, projectId))
+    .where(conditions)
     .orderBy(desc(facilityModels.uploadedAt));
 
   return result;
 }
 
-export async function getActiveProjectModel(projectId: number) {
+export async function getActiveProjectModel(projectId: number, assetId?: number) {
   const db = await getDb();
   if (!db) return undefined;
+
+  // If assetId is provided, get active model for that specific asset
+  // Otherwise, get active model for the entire project (where assetId is null)
+  const conditions = assetId !== undefined
+    ? and(
+        eq(facilityModels.projectId, projectId),
+        eq(facilityModels.assetId, assetId),
+        eq(facilityModels.isActive, 1)
+      )
+    : and(
+        eq(facilityModels.projectId, projectId),
+        eq(facilityModels.isActive, 1)
+      );
 
   const result = await db
     .select()
     .from(facilityModels)
-    .where(
-      and(
-        eq(facilityModels.projectId, projectId),
-        eq(facilityModels.isActive, 1)
-      )
-    )
+    .where(conditions)
     .orderBy(desc(facilityModels.version))
     .limit(1);
 

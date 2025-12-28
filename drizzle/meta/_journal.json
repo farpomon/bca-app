@@ -456,6 +456,13 @@
       "when": 1766887921763,
       "tag": "0064_true_proudstar",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "5",
+      "when": 1766931369546,
+      "tag": "0065_naive_giant_man",
+      "breakpoints": true
     }
   ]
 }

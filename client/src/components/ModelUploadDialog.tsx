@@ -11,11 +11,12 @@ import { toast } from "sonner";
 
 interface ModelUploadDialogProps {
   projectId: number;
+  assetId?: number; // Optional - if provided, model is associated with specific asset
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUploadDialogProps) {
+export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: ModelUploadDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj" | "skp" | "rvt" | "rfa" | "dwg" | "dxf">("glb");
@@ -26,7 +27,8 @@ export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUpload
   const uploadMutation = trpc.models.upload.useMutation({
     onSuccess: () => {
       toast.success("3D model uploaded successfully");
-      utils.models.list.invalidate({ projectId });
+      utils.models.list.invalidate({ projectId, assetId });
+      utils.models.getActive.invalidate({ projectId, assetId });
       onOpenChange(false);
       resetForm();
     },
@@ -81,6 +83,7 @@ export function ModelUploadDialog({ projectId, open, onOpenChange }: ModelUpload
 
           await uploadMutation.mutateAsync({
             projectId,
+            assetId, // Pass assetId to associate model with specific asset
             name,
             description,
             fileData: base64,
