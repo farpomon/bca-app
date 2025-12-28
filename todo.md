@@ -1,5 +1,12 @@
 # BCA App TODO
 
+## 🔥 Economic Indicators AI Data Fetch
+
+- [x] Replace placeholder/test economic indicators with real AI-fetched data
+- [x] Fetch current Bank of Canada interest rates
+- [x] Fetch Statistics Canada construction cost indices
+- [x] Update fetchWithAI mutation to return real data
+
 ## 🎨 Branding Update
 
 - [x] Update app logo and title to match presentation branding

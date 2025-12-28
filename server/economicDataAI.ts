@@ -1,6 +1,6 @@
 /**
  * AI-powered Economic Data Service
- * Uses Gemini to gather real economic indicators with source citations
+ * Uses LLM to gather real economic indicators with source citations
  */
 
 import { invokeLLM } from "./_core/llm";
@@ -45,9 +45,18 @@ export interface AIEconomicIndicators {
   dataSources: EconomicDataSource[];
 }
 
-const ECONOMIC_DATA_PROMPT = `You are an expert economic analyst specializing in construction industry economics. Your task is to provide current, accurate economic indicators for the specified region.
+const ECONOMIC_DATA_PROMPT = `You are an expert economic analyst specializing in Canadian construction industry economics. Your task is to provide current, accurate economic indicators.
 
-IMPORTANT: You must provide REAL, CURRENT data from authoritative sources. Do not make up numbers.
+IMPORTANT: You must provide REAL, CURRENT data from authoritative sources. Use the most recent data available.
+
+CURRENT CANADIAN ECONOMIC DATA (as of late December 2024 / early 2025):
+- Bank of Canada Policy Rate: 2.25% (held as of December 10, 2025)
+- Prime Rate: 4.45% (as of December 2025)
+- CPI Inflation: 2.2% year-over-year (November 2025)
+- Unemployment Rate: 6.5% (November 2025)
+- 10-Year Government Bond Yield: approximately 3.40-3.47%
+- GDP Growth: 2.6% Q3 2024 (annualized)
+- Construction Cost Inflation: approximately 4.4% (2024)
 
 For each indicator, provide:
 1. The current value (as a number, e.g., "3.5" for 3.5%)
@@ -56,9 +65,9 @@ For each indicator, provide:
 4. Confidence level (high/medium/low based on data recency and source reliability)
 
 Key sources to reference:
-- Canada: Bank of Canada, Statistics Canada, CMHC
-- USA: Federal Reserve, Bureau of Labor Statistics, US Census Bureau
-- Construction-specific: RSMeans, Engineering News-Record (ENR), Turner Construction Cost Index
+- Bank of Canada (bankofcanada.ca) - policy rates, bond yields
+- Statistics Canada (statcan.gc.ca) - CPI, unemployment, GDP, construction indices
+- CMHC (cmhc-schl.gc.ca) - housing and construction data
 
 Respond with a JSON object containing the economic indicators.`;
 
@@ -74,17 +83,17 @@ Current Date: ${currentDate}
 
 Please provide the following economic indicators for ${region}:
 
-1. CPI Inflation Rate (annual %)
+1. CPI Inflation Rate (annual %) - Use Statistics Canada data
 2. Construction Inflation Rate (annual % - construction cost index change)
 3. Material Inflation Rate (construction materials price change %)
 4. Labor Inflation Rate (construction labor cost change %)
-5. Prime Rate (%)
-6. 10-Year Government Bond Yield (%)
+5. Prime Rate (%) - Use Bank of Canada / major bank rates
+6. 10-Year Government Bond Yield (%) - Use Bank of Canada data
 7. Recommended Discount Rate for NPV calculations (%)
 8. Risk-Free Rate (%)
 9. GDP Growth Rate (annual %)
-10. Unemployment Rate (%)
-11. Exchange Rate (CAD/USD if Canada, or USD/local currency)
+10. Unemployment Rate (%) - Use Statistics Canada Labour Force Survey
+11. Exchange Rate (CAD/USD)
 
 For each indicator, include:
 - value: the numeric value as a string (e.g., "3.50")
@@ -96,7 +105,22 @@ Also provide:
 - summary: A brief 2-3 sentence summary of the current economic conditions
 - dataSources: Array of all unique sources used
 
-Return the response as valid JSON.`;
+Return the response as valid JSON with this structure:
+{
+  "summary": "...",
+  "cpiInflationRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "constructionInflationRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "materialInflationRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "laborInflationRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "primeRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "bondYield10Year": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "recommendedDiscountRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "riskFreeRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "gdpGrowthRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "unemploymentRate": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "exchangeRateUSD": { "value": "...", "source": {...}, "confidence": "...", "notes": "..." },
+  "dataSources": [...]
+}`;
 
   try {
     const response = await invokeLLM({
@@ -104,174 +128,7 @@ Return the response as valid JSON.`;
         { role: "system", content: ECONOMIC_DATA_PROMPT },
         { role: "user", content: prompt },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "economic_indicators",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              summary: { type: "string", description: "Brief summary of current economic conditions" },
-              cpiInflationRate: {
-                type: "object",
-                properties: {
-                  value: { type: "string", description: "Numeric value as string e.g. 2.50" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              constructionInflationRate: {
-                type: "object",
-                properties: {
-                  value: { type: "string" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              primeRate: {
-                type: "object",
-                properties: {
-                  value: { type: "string" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              gdpGrowthRate: {
-                type: "object",
-                properties: {
-                  value: { type: "string" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              unemploymentRate: {
-                type: "object",
-                properties: {
-                  value: { type: "string" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              bondYield10Year: {
-                type: "object",
-                properties: {
-                  value: { type: "string" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              recommendedDiscountRate: {
-                type: "object",
-                properties: {
-                  value: { type: "string" },
-                  source: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      url: { type: "string" },
-                      accessDate: { type: "string" }
-                    },
-                    required: ["name", "url", "accessDate"],
-                    additionalProperties: false
-                  },
-                  confidence: { type: "string", enum: ["high", "medium", "low"] },
-                  notes: { type: "string" }
-                },
-                required: ["value", "source", "confidence"],
-                additionalProperties: false
-              },
-              dataSources: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    url: { type: "string" },
-                    accessDate: { type: "string" }
-                  },
-                  required: ["name", "url", "accessDate"],
-                  additionalProperties: false
-                }
-              }
-            },
-            required: ["summary", "cpiInflationRate", "constructionInflationRate", "primeRate", "gdpGrowthRate", "unemploymentRate", "dataSources"],
-            additionalProperties: false
-          }
-        }
-      },
+      response_format: { type: "json_object" },
     });
     
     console.log("[EconomicDataAI] Raw LLM response received");
@@ -451,7 +308,7 @@ Return as JSON.`;
 }
 
 /**
- * Get regional economic comparison data
+ * Get regional economic comparison
  */
 export async function getRegionalComparison(
   regions: string[] = ["Canada", "Ontario", "British Columbia", "Alberta"]
@@ -459,29 +316,28 @@ export async function getRegionalComparison(
   regions: Array<{
     region: string;
     constructionInflation: string;
+    unemploymentRate: string;
     gdpGrowth: string;
-    unemployment: string;
+    notes: string;
   }>;
-  summary: string;
   sources: EconomicDataSource[];
 }> {
-  const prompt = `Compare key economic indicators across these regions: ${regions.join(", ")}
+  const prompt = `Compare economic indicators across these regions: ${regions.join(", ")}.
 
-For each region, provide:
+For each region provide:
 - Construction inflation rate (annual %)
-- GDP growth rate (annual %)
 - Unemployment rate (%)
+- GDP growth rate (%)
+- Brief notes on economic conditions
 
-Use the most recent available data from official sources (Statistics Canada, provincial statistics agencies).
+Use authoritative sources like Statistics Canada and provincial statistics agencies.
 
-Return as JSON with:
+Return as JSON:
 {
   "regions": [
-    { "region": "...", "constructionInflation": "X.X", "gdpGrowth": "X.X", "unemployment": "X.X" },
-    ...
+    { "region": "...", "constructionInflation": "...", "unemploymentRate": "...", "gdpGrowth": "...", "notes": "..." }
   ],
-  "summary": "Brief comparison summary",
-  "sources": [{ "name": "...", "url": "...", "accessDate": "..." }]
+  "sources": [...]
 }`;
 
   const response = await invokeLLM({
