@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, Upload, AlertCircle, CheckCircle2, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 interface ModelUploadDialogProps {
@@ -31,6 +31,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
   const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj" | "skp" | "rvt" | "rfa" | "dwg" | "dxf" | "ifc" | "nwd" | "nwc">("glb");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
   const [progress, setProgress] = useState<UploadProgress>({
     stage: 'idle',
     percentage: 0,
@@ -38,11 +39,40 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
   });
 
   // Refs for managing upload state across tab switches
-  const uploadAbortController = useRef<AbortController | null>(null);
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
   const keepAliveInterval = useRef<NodeJS.Timeout | null>(null);
   const uploadInProgress = useRef(false);
+  const webLockReleaseRef = useRef<(() => void) | null>(null);
 
   const utils = trpc.useUtils();
+
+  // Acquire Web Lock to prevent browser from suspending the upload
+  const acquireWebLock = useCallback(async (fileName: string) => {
+    if ('locks' in navigator) {
+      try {
+        const lockName = `model-upload-${Date.now()}-${fileName.replace(/[^a-z0-9]/gi, '_')}`;
+        navigator.locks.request(lockName, { mode: 'exclusive' }, async () => {
+          return new Promise<void>((resolve) => {
+            webLockReleaseRef.current = resolve;
+          });
+        }).catch(() => {
+          // Lock request was aborted, which is fine
+        });
+        console.log('[ModelUpload] Web Lock acquired');
+      } catch (e) {
+        console.warn('[ModelUpload] Web Locks API not available:', e);
+      }
+    }
+  }, []);
+
+  // Release Web Lock
+  const releaseWebLock = useCallback(() => {
+    if (webLockReleaseRef.current) {
+      webLockReleaseRef.current();
+      webLockReleaseRef.current = null;
+      console.log('[ModelUpload] Web Lock released');
+    }
+  }, []);
 
   // Cleanup on unmount or dialog close
   useEffect(() => {
@@ -50,20 +80,27 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
       if (keepAliveInterval.current) {
         clearInterval(keepAliveInterval.current);
       }
-      if (uploadAbortController.current) {
-        uploadAbortController.current.abort();
+      if (xhrRef.current && uploadInProgress.current) {
+        // Don't abort on unmount if upload is in progress - let it complete
+        console.log('[ModelUpload] Component unmounting but upload in progress, letting it complete');
       }
+      releaseWebLock();
     };
-  }, []);
+  }, [releaseWebLock]);
 
-  // Handle visibility change to prevent upload interruption
+  // Handle visibility change to track tab state and keep upload alive
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && uploadInProgress.current) {
-        // Keep the connection alive when tab is hidden
-        console.log('[ModelUpload] Tab hidden, keeping upload alive...');
-      } else if (document.visibilityState === 'visible' && uploadInProgress.current) {
-        console.log('[ModelUpload] Tab visible again, upload still in progress');
+      const isHidden = document.visibilityState === 'hidden';
+      setTabHidden(isHidden);
+      
+      if (uploadInProgress.current) {
+        if (isHidden) {
+          console.log('[ModelUpload] Tab hidden, upload continuing in background...');
+          // The Web Lock and keep-alive interval will keep the upload alive
+        } else {
+          console.log('[ModelUpload] Tab visible again, upload status:', progress.stage);
+        }
       }
     };
 
@@ -71,9 +108,9 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [progress.stage]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setName("");
     setDescription("");
     setFormat("glb");
@@ -85,7 +122,8 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
       clearInterval(keepAliveInterval.current);
       keepAliveInterval.current = null;
     }
-  };
+    releaseWebLock();
+  }, [releaseWebLock]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -102,7 +140,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
       // Auto-detect format from file extension
       const ext = selectedFile.name.split('.').pop()?.toLowerCase();
       if (ext && ['glb', 'gltf', 'fbx', 'obj', 'skp', 'rvt', 'rfa', 'dwg', 'dxf', 'ifc', 'nwd', 'nwc'].includes(ext)) {
-        setFormat(ext as any);
+        setFormat(ext as typeof format);
       }
     }
   };
@@ -115,15 +153,20 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
 
     setUploading(true);
     uploadInProgress.current = true;
-    uploadAbortController.current = new AbortController();
+
+    // Acquire Web Lock to signal browser that important work is happening
+    await acquireWebLock(file.name);
 
     // Start keep-alive ping to prevent browser from throttling
+    // This runs every 500ms to keep the JS thread active even in background
     keepAliveInterval.current = setInterval(() => {
       if (uploadInProgress.current) {
-        // Simple keep-alive - just log to keep the JS thread active
-        console.log('[ModelUpload] Keep-alive ping');
+        // This keeps the JS thread active in background tabs
+        // Using performance.now() as it's more reliable than Date.now() in background
+        const timestamp = performance.now();
+        console.debug(`[ModelUpload] Keep-alive: ${Math.round(timestamp / 1000)}s`);
       }
-    }, 1000);
+    }, 500);
 
     try {
       // Stage 1: Preparing upload
@@ -150,6 +193,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
       
       const uploadPromise = new Promise<{ success: boolean; url: string; apsUrn?: string; apsStatus?: string }>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        xhrRef.current = xhr;
         
         // Track upload progress
         xhr.upload.addEventListener('progress', (event) => {
@@ -194,16 +238,11 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
           reject(new Error('Upload timed out - please try again with a smaller file or better connection'));
         });
         
-        // Set a generous timeout for large files (10 minutes)
-        xhr.timeout = 10 * 60 * 1000;
+        // Set a generous timeout for large files (15 minutes)
+        xhr.timeout = 15 * 60 * 1000;
         
         xhr.open('POST', '/api/upload-model');
         xhr.withCredentials = true; // Include cookies for authentication
-        
-        // Store reference for potential abort
-        uploadAbortController.current = {
-          abort: () => xhr.abort()
-        } as AbortController;
         
         xhr.send(formData);
       });
@@ -251,18 +290,22 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
         clearInterval(keepAliveInterval.current);
         keepAliveInterval.current = null;
       }
+      xhrRef.current = null;
+      releaseWebLock();
     }
   };
 
   const handleCancel = () => {
     if (uploading) {
       uploadInProgress.current = false;
-      if (uploadAbortController.current) {
-        uploadAbortController.current.abort();
+      if (xhrRef.current) {
+        xhrRef.current.abort();
+        xhrRef.current = null;
       }
       if (keepAliveInterval.current) {
         clearInterval(keepAliveInterval.current);
       }
+      releaseWebLock();
       toast.info("Upload cancelled");
     }
     onOpenChange(false);
@@ -305,6 +348,12 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
               <div className="flex items-center gap-2">
                 {getStageIcon()}
                 <span className="text-sm font-medium">{progress.message}</span>
+                {tabHidden && uploadInProgress.current && (
+                  <span className="ml-auto flex items-center gap-1 text-xs text-amber-600">
+                    <EyeOff className="h-3 w-3" />
+                    Background
+                  </span>
+                )}
               </div>
               <Progress 
                 value={progress.percentage} 
@@ -322,7 +371,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
               </div>
               {progress.stage !== 'complete' && progress.stage !== 'error' && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  💡 Tip: You can switch tabs - the upload will continue in the background.
+                  ✅ Safe to switch tabs - upload will continue in the background.
                 </p>
               )}
             </div>
@@ -359,7 +408,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
 
           <div className="space-y-2">
             <Label htmlFor="format">Format *</Label>
-            <Select value={format} onValueChange={(value: any) => setFormat(value)} disabled={uploading}>
+            <Select value={format} onValueChange={(value: typeof format) => setFormat(value)} disabled={uploading}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

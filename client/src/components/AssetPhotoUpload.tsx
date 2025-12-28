@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Camera, Upload, X, Loader2, Image as ImageIcon, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -15,12 +15,76 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // Refs for background upload handling
+  const uploadInProgress = useRef(false);
+  const keepAliveInterval = useRef<NodeJS.Timeout | null>(null);
+  const webLockReleaseRef = useRef<(() => void) | null>(null);
 
   const utils = trpc.useUtils();
+
+  // Acquire Web Lock to prevent browser from suspending the upload
+  const acquireWebLock = useCallback(async (name: string) => {
+    if ('locks' in navigator) {
+      try {
+        const lockName = `photo-upload-${Date.now()}-${name.replace(/[^a-z0-9]/gi, '_')}`;
+        navigator.locks.request(lockName, { mode: 'exclusive' }, async () => {
+          return new Promise<void>((resolve) => {
+            webLockReleaseRef.current = resolve;
+          });
+        }).catch(() => {
+          // Lock request was aborted, which is fine
+        });
+      } catch (e) {
+        console.warn('[AssetPhotoUpload] Web Locks API not available:', e);
+      }
+    }
+  }, []);
+
+  // Release Web Lock
+  const releaseWebLock = useCallback(() => {
+    if (webLockReleaseRef.current) {
+      webLockReleaseRef.current();
+      webLockReleaseRef.current = null;
+    }
+  }, []);
+
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isHidden = document.visibilityState === 'hidden';
+      setTabHidden(isHidden);
+      
+      if (uploadInProgress.current) {
+        if (isHidden) {
+          console.log('[AssetPhotoUpload] Tab hidden, upload continuing in background...');
+        } else {
+          console.log('[AssetPhotoUpload] Tab visible again');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+      }
+      releaseWebLock();
+    };
+  }, [releaseWebLock]);
 
   // Handle file selection
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,10 +192,25 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
     }
 
     setIsUploading(true);
+    uploadInProgress.current = true;
+    setUploadProgress({ current: 0, total: selectedFiles.length });
+
+    // Acquire Web Lock
+    await acquireWebLock(`photos-${selectedFiles.length}`);
+    
+    // Start keep-alive ping
+    keepAliveInterval.current = setInterval(() => {
+      if (uploadInProgress.current) {
+        console.debug(`[AssetPhotoUpload] Keep-alive: ${Math.round(performance.now() / 1000)}s`);
+      }
+    }, 500);
 
     try {
       // Upload each photo
-      for (const file of selectedFiles) {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        setUploadProgress({ current: i + 1, total: selectedFiles.length });
+        
         const formData = new FormData();
         formData.append('file', file);
 
@@ -183,6 +262,13 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
       toast.error('Failed to upload photos');
     } finally {
       setIsUploading(false);
+      uploadInProgress.current = false;
+      setUploadProgress({ current: 0, total: 0 });
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+        keepAliveInterval.current = null;
+      }
+      releaseWebLock();
     }
   };
 
@@ -281,23 +367,35 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
             ))}
           </div>
 
-          <Button 
-            onClick={handleUpload} 
-            disabled={isUploading}
-            className="w-full"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading {selectedFiles.length} photo(s)...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload {selectedFiles.length} Photo(s)
-              </>
+          <div className="space-y-2">
+            <Button 
+              onClick={handleUpload} 
+              disabled={isUploading}
+              className="w-full"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading {uploadProgress.current} of {uploadProgress.total} photo(s)...
+                  {tabHidden && (
+                    <span className="ml-2 flex items-center gap-1 text-xs">
+                      <EyeOff className="h-3 w-3" />
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload {selectedFiles.length} Photo(s)
+                </>
+              )}
+            </Button>
+            {isUploading && (
+              <p className="text-xs text-muted-foreground text-center">
+                ✅ Safe to switch tabs - upload will continue in the background.
+              </p>
             )}
-          </Button>
+          </div>
         </div>
       )}
     </div>

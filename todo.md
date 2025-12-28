@@ -2023,3 +2023,4 @@ Testing:
 - [x] Fix 3D model upload getting stuck at 90% for large files (16+ MB) - switched to multipart form upload
 - [x] Add proper timeout handling for large file uploads - 10 minute timeout
 - [x] Improve error feedback when upload fails - better error messages
+- [x] Fix file upload cancellation when switching browser tabs

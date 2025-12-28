@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, File, X, FileText, Loader2 } from "lucide-react";
+import { Upload, File, X, FileText, Loader2, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -17,7 +17,70 @@ export function DocumentUpload({ assessmentId, projectId, onUploadComplete }: Do
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Refs for background upload handling
+  const uploadInProgress = useRef(false);
+  const keepAliveInterval = useRef<NodeJS.Timeout | null>(null);
+  const webLockReleaseRef = useRef<(() => void) | null>(null);
+
+  // Acquire Web Lock to prevent browser from suspending the upload
+  const acquireWebLock = useCallback(async (fileName: string) => {
+    if ('locks' in navigator) {
+      try {
+        const lockName = `doc-upload-${Date.now()}-${fileName.replace(/[^a-z0-9]/gi, '_')}`;
+        navigator.locks.request(lockName, { mode: 'exclusive' }, async () => {
+          return new Promise<void>((resolve) => {
+            webLockReleaseRef.current = resolve;
+          });
+        }).catch(() => {
+          // Lock request was aborted, which is fine
+        });
+      } catch (e) {
+        console.warn('[DocumentUpload] Web Locks API not available:', e);
+      }
+    }
+  }, []);
+
+  // Release Web Lock
+  const releaseWebLock = useCallback(() => {
+    if (webLockReleaseRef.current) {
+      webLockReleaseRef.current();
+      webLockReleaseRef.current = null;
+    }
+  }, []);
+
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isHidden = document.visibilityState === 'hidden';
+      setTabHidden(isHidden);
+      
+      if (uploadInProgress.current) {
+        if (isHidden) {
+          console.log('[DocumentUpload] Tab hidden, upload continuing in background...');
+        } else {
+          console.log('[DocumentUpload] Tab visible again');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+      }
+      releaseWebLock();
+    };
+  }, [releaseWebLock]);
 
   const uploadMutation = trpc.assessmentDocuments.upload.useMutation({
     onSuccess: () => {
@@ -25,10 +88,22 @@ export function DocumentUpload({ assessmentId, projectId, onUploadComplete }: Do
       setSelectedFile(null);
       setDescription("");
       if (fileInputRef.current) fileInputRef.current.value = "";
+      uploadInProgress.current = false;
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+        keepAliveInterval.current = null;
+      }
+      releaseWebLock();
       onUploadComplete?.();
     },
     onError: (error) => {
       toast.error(`Upload failed: ${error.message}`);
+      uploadInProgress.current = false;
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+        keepAliveInterval.current = null;
+      }
+      releaseWebLock();
     },
   });
 
@@ -75,6 +150,18 @@ export function DocumentUpload({ assessmentId, projectId, onUploadComplete }: Do
   const handleUpload = async () => {
     if (!selectedFile) return;
 
+    uploadInProgress.current = true;
+    
+    // Acquire Web Lock
+    await acquireWebLock(selectedFile.name);
+    
+    // Start keep-alive ping
+    keepAliveInterval.current = setInterval(() => {
+      if (uploadInProgress.current) {
+        console.debug(`[DocumentUpload] Keep-alive: ${Math.round(performance.now() / 1000)}s`);
+      }
+    }, 500);
+
     try {
       // Convert file to base64
       const reader = new FileReader();
@@ -91,9 +178,24 @@ export function DocumentUpload({ assessmentId, projectId, onUploadComplete }: Do
           description: description || undefined,
         });
       };
+      reader.onerror = () => {
+        toast.error("Failed to read file");
+        uploadInProgress.current = false;
+        if (keepAliveInterval.current) {
+          clearInterval(keepAliveInterval.current);
+          keepAliveInterval.current = null;
+        }
+        releaseWebLock();
+      };
       reader.readAsDataURL(selectedFile);
     } catch (error) {
       console.error("Upload error:", error);
+      uploadInProgress.current = false;
+      if (keepAliveInterval.current) {
+        clearInterval(keepAliveInterval.current);
+        keepAliveInterval.current = null;
+      }
+      releaseWebLock();
     }
   };
 
@@ -178,23 +280,36 @@ export function DocumentUpload({ assessmentId, projectId, onUploadComplete }: Do
 
       {/* Upload button */}
       {selectedFile && (
-        <Button
-          onClick={handleUpload}
-          disabled={uploadMutation.isPending}
-          className="w-full"
-        >
-          {uploadMutation.isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Document
-            </>
+        <div className="space-y-2">
+          <Button
+            onClick={handleUpload}
+            disabled={uploadMutation.isPending}
+            className="w-full"
+          >
+            {uploadMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Uploading...
+                {tabHidden && (
+                  <span className="ml-2 flex items-center gap-1 text-xs">
+                    <EyeOff className="h-3 w-3" />
+                    (Background)
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Document
+              </>
+            )}
+          </Button>
+          {uploadMutation.isPending && (
+            <p className="text-xs text-muted-foreground text-center">
+              ✅ Safe to switch tabs - upload will continue in the background.
+            </p>
           )}
-        </Button>
+        </div>
       )}
     </div>
   );
