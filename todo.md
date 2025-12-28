@@ -2085,3 +2085,20 @@ Testing:
 - [x] Write vitest tests for scheduled backup execution
 - [ ] Test encryption key rotation (future enhancement)
 - [ ] Verify encrypted backup restoration (ready for user testing)
+
+
+## Economic Indicators Dashboard Improvement with Gemini AI
+
+### Phase 1: Gemini API Integration
+- [x] Create Gemini economic data service for fetching real indicators
+- [x] Add backend procedure to fetch construction inflation rates via AI
+- [x] Add backend procedure to fetch discount rates via AI
+- [x] Add backend procedure to fetch regional economic data via AI
+
+### Phase 2: Dashboard UI Enhancement
+- [x] Add "Fetch with AI" button with AI-powered data gathering
+- [x] Display data source citations and confidence indicators
+- [x] Add regional selector for Canada/US regions
+- [x] Implement save to database from AI suggestions
+- [ ] Add data visualization charts for economic trends
+- [ ] Improve table layout and mobile responsiveness
