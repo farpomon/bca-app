@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { ModelViewer } from "@/components/ModelViewer";
 import { ModelUploadDialog } from "@/components/ModelUploadDialog";
+import { ConversionStatusBar } from "@/components/ConversionStatusBar";
 import { 
   Upload, 
   Loader2, 
@@ -192,6 +193,19 @@ export function Asset3DModelTab({ assetId, projectId }: Asset3DModelTabProps) {
           </CardContent>
         )}
       </Card>
+
+      {/* Conversion Status Bar */}
+      {activeModel && activeModel.apsTranslationStatus && activeModel.apsTranslationStatus !== 'success' && (
+        <ConversionStatusBar
+          modelId={activeModel.id}
+          apsTranslationStatus={activeModel.apsTranslationStatus}
+          apsTranslationProgress={activeModel.apsTranslationProgress}
+          onStatusChange={() => {
+            utils.models.getActive.invalidate({ projectId });
+            utils.models.list.invalidate({ projectId });
+          }}
+        />
+      )}
 
       {/* 3D Viewer */}
       {activeModel ? (

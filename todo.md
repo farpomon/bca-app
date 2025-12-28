@@ -2002,3 +2002,8 @@ Testing:
 - [x] Investigate APS upload code to find where eTag is being sent incorrectly
 - [x] Update code to send eTag as string array instead of object array (APS API expects simple string array)
 - [ ] Test model conversion flow after fix - Ready for user testing
+
+
+## Conversion Status Bar (Dec 28, 2024)
+
+- [x] Add conversion status bar to show file conversion progress in 3D model viewer
