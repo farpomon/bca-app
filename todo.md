@@ -2018,3 +2018,8 @@ Testing:
 
 ## 3D Model Delete Bug (Dec 28, 2024)
 - [x] Fix 3D model delete not refreshing the list after deletion (toast shows success but model still visible)
+
+## 3D Model Upload Stuck at 90% (Dec 28, 2024)
+- [x] Fix 3D model upload getting stuck at 90% for large files (16+ MB) - switched to multipart form upload
+- [x] Add proper timeout handling for large file uploads - 10 minute timeout
+- [x] Improve error feedback when upload fails - better error messages

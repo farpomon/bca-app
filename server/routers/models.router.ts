@@ -32,13 +32,15 @@ export const modelsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const startTime = Date.now();
       try {
-        console.log(`[Model Upload] Starting upload for project ${input.projectId}, format: ${input.format}`);
+        console.log(`[Model Upload] Starting upload for project ${input.projectId}, format: ${input.format}, user: ${ctx.user.id}`);
         
         // Decode base64 file data
+        console.log(`[Model Upload] Decoding base64 data (length: ${input.fileData.length} chars)...`);
         const buffer = Buffer.from(input.fileData, "base64");
         const fileSize = buffer.length;
-        console.log(`[Model Upload] File size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`);
+        console.log(`[Model Upload] File size: ${(fileSize / 1024 / 1024).toFixed(2)} MB, decode took ${Date.now() - startTime}ms`);
 
         // Validate file size (max 500MB)
         if (fileSize > 500 * 1024 * 1024) {
@@ -48,9 +50,10 @@ export const modelsRouter = router({
         // Upload to S3 for backup/storage
         const timestamp = Date.now();
         const fileKey = `models/${input.projectId}/${timestamp}-${input.name}.${input.format}`;
-        console.log(`[Model Upload] Uploading to S3 with key: ${fileKey}`);
+        console.log(`[Model Upload] Starting S3 upload with key: ${fileKey}`);
+        const s3StartTime = Date.now();
         const { url } = await storagePut(fileKey, buffer, `model/${input.format}`);
-        console.log(`[Model Upload] S3 upload successful, URL: ${url}`);
+        console.log(`[Model Upload] S3 upload successful in ${Date.now() - s3StartTime}ms, URL: ${url}`);
 
         // Create initial database record
         const modelData: any = {

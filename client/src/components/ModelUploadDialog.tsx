@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,7 @@ interface UploadProgress {
 export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: ModelUploadDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj" | "skp" | "rvt" | "rfa" | "dwg" | "dxf">("glb");
+  const [format, setFormat] = useState<"glb" | "gltf" | "fbx" | "obj" | "skp" | "rvt" | "rfa" | "dwg" | "dxf" | "ifc" | "nwd" | "nwc">("glb");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress>({
@@ -43,25 +43,6 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
   const uploadInProgress = useRef(false);
 
   const utils = trpc.useUtils();
-  const uploadMutation = trpc.models.upload.useMutation({
-    onSuccess: () => {
-      setProgress({ stage: 'complete', percentage: 100, message: 'Upload complete!' });
-      toast.success("3D model uploaded successfully");
-      utils.models.list.invalidate({ projectId, assetId });
-      utils.models.getActive.invalidate({ projectId, assetId });
-      // Delay closing to show completion state
-      setTimeout(() => {
-        onOpenChange(false);
-        resetForm();
-      }, 1500);
-    },
-    onError: (error) => {
-      setProgress({ stage: 'error', percentage: 0, message: error.message });
-      toast.error(`Upload failed: ${error.message}`);
-      setUploading(false);
-      uploadInProgress.current = false;
-    },
-  });
 
   // Cleanup on unmount or dialog close
   useEffect(() => {
@@ -120,45 +101,11 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
       }
       // Auto-detect format from file extension
       const ext = selectedFile.name.split('.').pop()?.toLowerCase();
-      if (ext && ['glb', 'gltf', 'fbx', 'obj', 'skp', 'rvt', 'rfa', 'dwg', 'dxf'].includes(ext)) {
+      if (ext && ['glb', 'gltf', 'fbx', 'obj', 'skp', 'rvt', 'rfa', 'dwg', 'dxf', 'ifc', 'nwd', 'nwc'].includes(ext)) {
         setFormat(ext as any);
       }
     }
   };
-
-  // Read file in chunks to track progress and prevent blocking
-  const readFileWithProgress = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      const fileSize = file.size;
-      
-      reader.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          setProgress({
-            stage: 'reading',
-            percentage: percentComplete,
-            message: `Reading file: ${percentComplete}%`
-          });
-        }
-      };
-
-      reader.onload = () => {
-        const base64 = reader.result?.toString().split(",")[1];
-        if (!base64) {
-          reject(new Error("Failed to read file"));
-          return;
-        }
-        resolve(base64);
-      };
-
-      reader.onerror = () => {
-        reject(new Error("Failed to read file"));
-      };
-
-      reader.readAsDataURL(file);
-    });
-  }, []);
 
   const handleSubmit = async () => {
     if (!file || !name) {
@@ -179,60 +126,123 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
     }, 1000);
 
     try {
-      // Stage 1: Reading file
-      setProgress({ stage: 'reading', percentage: 0, message: 'Reading file...' });
+      // Stage 1: Preparing upload
+      setProgress({ stage: 'reading', percentage: 10, message: 'Preparing file for upload...' });
       
-      const base64 = await readFileWithProgress(file);
-      
+      // Create FormData for multipart upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('projectId', projectId.toString());
+      if (assetId) {
+        formData.append('assetId', assetId.toString());
+      }
+      formData.append('name', name);
+      formData.append('description', description);
+      formData.append('uploadToAps', 'true');
+
       if (!uploadInProgress.current) {
         // Upload was cancelled
         return;
       }
 
-      // Stage 2: Uploading to server
-      setProgress({ stage: 'uploading', percentage: 0, message: 'Uploading to server...' });
+      // Stage 2: Uploading to server using XMLHttpRequest for progress tracking
+      setProgress({ stage: 'uploading', percentage: 15, message: 'Uploading to server: 15%' });
       
-      // Simulate upload progress (since tRPC doesn't support progress tracking natively)
-      const uploadProgressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev.stage === 'uploading' && prev.percentage < 90) {
-            // Gradually increase progress based on file size
-            const increment = file.size > 50 * 1024 * 1024 ? 2 : 5;
-            return {
-              ...prev,
-              percentage: Math.min(prev.percentage + increment, 90),
-              message: `Uploading to server: ${Math.min(prev.percentage + increment, 90)}%`
-            };
+      const uploadPromise = new Promise<{ success: boolean; url: string; apsUrn?: string; apsStatus?: string }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && uploadInProgress.current) {
+            // Map upload progress from 15% to 85%
+            const uploadPercent = Math.round((event.loaded / event.total) * 70) + 15;
+            setProgress({
+              stage: 'uploading',
+              percentage: uploadPercent,
+              message: `Uploading to server: ${uploadPercent}%`
+            });
           }
-          return prev;
         });
-      }, 500);
+        
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (e) {
+              reject(new Error('Invalid server response'));
+            }
+          } else {
+            try {
+              const errorResponse = JSON.parse(xhr.responseText);
+              reject(new Error(errorResponse.message || errorResponse.error || `Upload failed with status ${xhr.status}`));
+            } catch (e) {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          }
+        });
+        
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error - please check your connection and try again'));
+        });
+        
+        xhr.addEventListener('abort', () => {
+          reject(new Error('Upload cancelled'));
+        });
+        
+        xhr.addEventListener('timeout', () => {
+          reject(new Error('Upload timed out - please try again with a smaller file or better connection'));
+        });
+        
+        // Set a generous timeout for large files (10 minutes)
+        xhr.timeout = 10 * 60 * 1000;
+        
+        xhr.open('POST', '/api/upload-model');
+        xhr.withCredentials = true; // Include cookies for authentication
+        
+        // Store reference for potential abort
+        uploadAbortController.current = {
+          abort: () => xhr.abort()
+        } as AbortController;
+        
+        xhr.send(formData);
+      });
 
-      try {
-        await uploadMutation.mutateAsync({
-          projectId,
-          assetId,
-          name,
-          description,
-          fileData: base64,
-          format,
-        });
-      } finally {
-        clearInterval(uploadProgressInterval);
+      const result = await uploadPromise;
+
+      if (!uploadInProgress.current) {
+        return;
       }
 
-      // Stage 3: Processing (handled by onSuccess)
+      // Stage 3: Processing complete
       setProgress({ stage: 'processing', percentage: 95, message: 'Processing model...' });
+      
+      // Brief delay to show processing state
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setProgress({ stage: 'complete', percentage: 100, message: 'Upload complete!' });
+      toast.success("3D model uploaded successfully");
+      
+      // Invalidate queries to refresh the list
+      utils.models.list.invalidate({ projectId, assetId });
+      utils.models.getActive.invalidate({ projectId, assetId });
+      
+      // Delay closing to show completion state
+      setTimeout(() => {
+        onOpenChange(false);
+        resetForm();
+      }, 1500);
 
     } catch (error) {
       console.error("Upload error:", error);
       if (uploadInProgress.current) {
+        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
         setProgress({ 
           stage: 'error', 
           percentage: 0, 
-          message: error instanceof Error ? error.message : 'Upload failed' 
+          message: errorMessage
         });
-        toast.error(error instanceof Error ? error.message : "Upload failed");
+        toast.error(errorMessage);
       }
       setUploading(false);
       uploadInProgress.current = false;
@@ -302,7 +312,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
-                  {progress.stage === 'reading' && 'Reading file from disk...'}
+                  {progress.stage === 'reading' && 'Preparing file...'}
                   {progress.stage === 'uploading' && 'Uploading to cloud storage...'}
                   {progress.stage === 'processing' && 'Processing and converting...'}
                   {progress.stage === 'complete' && 'Upload successful!'}
@@ -324,7 +334,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
               <Input
                 id="file"
                 type="file"
-                accept=".glb,.gltf,.fbx,.obj,.skp,.rvt,.rfa,.dwg,.dxf"
+                accept=".glb,.gltf,.fbx,.obj,.skp,.rvt,.rfa,.dwg,.dxf,.ifc,.nwd,.nwc"
                 onChange={handleFileChange}
                 disabled={uploading}
               />
@@ -363,6 +373,9 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
                 <SelectItem value="rfa">Revit Family (RFA)</SelectItem>
                 <SelectItem value="dwg">AutoCAD (DWG)</SelectItem>
                 <SelectItem value="dxf">DXF</SelectItem>
+                <SelectItem value="ifc">IFC</SelectItem>
+                <SelectItem value="nwd">Navisworks (NWD)</SelectItem>
+                <SelectItem value="nwc">Navisworks Cache (NWC)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -388,7 +401,7 @@ export function ModelUploadDialog({ projectId, assetId, open, onOpenChange }: Mo
             {uploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {progress.stage === 'reading' && 'Reading...'}
+                {progress.stage === 'reading' && 'Preparing...'}
                 {progress.stage === 'uploading' && 'Uploading...'}
                 {progress.stage === 'processing' && 'Processing...'}
                 {progress.stage === 'complete' && 'Complete!'}

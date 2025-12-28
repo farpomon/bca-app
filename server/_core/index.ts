@@ -71,6 +71,10 @@ async function startServer() {
   // Document upload endpoint for AI import (with rate limiting)
   const { uploadMiddleware, handleUpload } = await import('./upload-handler');
   app.post("/api/upload", uploadRateLimiter, uploadMiddleware, handleUpload);
+  
+  // 3D Model upload endpoint (with rate limiting) - uses multipart form data for large files
+  const { uploadModelHandler, handleModelUpload } = await import('../api/upload-model');
+  app.post("/api/upload-model", uploadRateLimiter, uploadModelHandler, handleModelUpload);
   // tRPC API (with rate limiting)
   app.use("/api/trpc", apiRateLimiter);
   app.use(
