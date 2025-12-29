@@ -135,7 +135,7 @@ export default function AssetsList() {
         <div className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <BackButton to="/" label="Back to Projects" />
+            <BackButton to="dashboard" label="Back to Projects" preserveFilters={true} />
             <h1 className="text-3xl font-bold tracking-tight">Assets</h1>
             <p className="text-muted-foreground">{project.name}</p>
           </div>

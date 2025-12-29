@@ -313,7 +313,7 @@ export default function ProjectDetail() {
           <p className="text-muted-foreground mb-4">
             {projectError?.message || "The project you're looking for doesn't exist or you don't have access to it."}
           </p>
-          <BackButton to="/" label="Back to Projects" />
+          <BackButton to="dashboard" label="Back to Projects" preserveFilters={true} />
         </div>
       </DashboardLayout>
     );
@@ -332,7 +332,7 @@ export default function ProjectDetail() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <BackButton to="/" label="Back to Projects" />
+            <BackButton to="dashboard" label="Back to Projects" preserveFilters={true} />
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
             {project.uniqueId && (
               <p className="text-sm font-mono text-muted-foreground">

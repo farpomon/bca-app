@@ -368,7 +368,7 @@ export default function ProjectAnalytics() {
       <DashboardLayout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">Project not found</h2>
-          <BackButton to="/" label="Back to Projects" />
+          <BackButton to="dashboard" label="Back to Projects" preserveFilters={true} />
         </div>
       </DashboardLayout>
     );
