@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name FROM projects WHERE name LIKE '%Vancouver Municipal%' OR name LIKE '%Metro Vancouver Public Works%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name FROM projects WHERE name LIKE '%Vancouver Municipal%' OR name LIKE '%Metro Vancouver Public Works%' LIMIT 10;",
+  "rows": [
+    {
+      "id": "3120001",
+      "name": "City of Vancouver Municipal Complex"
+    },
+    {
+      "id": "3210001",
+      "name": "Metro Vancouver Public Works Portfolio"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n3120001\tCity of Vancouver Municipal Complex\n3210001\tMetro Vancouver Public Works Portfolio\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

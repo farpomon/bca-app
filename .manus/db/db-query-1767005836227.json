@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, name, clientName, address FROM projects WHERE name LIKE '%Vancouver Municipal%' OR name LIKE '%Metro Vancouver Public Works%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, clientName, address FROM projects WHERE name LIKE '%Vancouver Municipal%' OR name LIKE '%Metro Vancouver Public Works%';",
+  "rows": [
+    {
+      "id": "3120001",
+      "name": "City of Vancouver Municipal Complex",
+      "clientName": "City of Vancouver",
+      "address": "453 West 12th Avenue, Vancouver, BC V5Y 1V4"
+    },
+    {
+      "id": "3210001",
+      "name": "Metro Vancouver Public Works Portfolio",
+      "clientName": "Metro Vancouver Regional District",
+      "address": "4330 Kingsway, Burnaby, BC V5H 4G8"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tclientName\taddress\n3120001\tCity of Vancouver Municipal Complex\tCity of Vancouver\t453 West 12th Avenue, Vancouver, BC V5Y 1V4\n3210001\tMetro Vancouver Public Works Portfolio\tMetro Vancouver Regional District\t4330 Kingsway, Burnaby, BC V5H 4G8\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

@@ -2144,3 +2144,19 @@ Testing:
 - [x] Update navigation to preserve filter on back action
 - [x] Add URL-based filter state management
 - [x] Test filter persistence across navigation flows
+
+
+## Fix Deficiencies Not Displaying for Assets
+
+- [ ] Investigate why deficiencies tab shows "No deficiencies found" even when deficiencies exist
+- [ ] Check deficiencies data flow from backend to frontend
+- [ ] Verify deficiencies are being stored correctly in database
+- [ ] Fix deficiencies display on asset detail page
+
+
+## Fix Deficiencies Not Displaying for Assets (Dec 29, 2025)
+
+- [x] Investigate deficiencies not showing for 1729 Comox Avenue asset
+- [x] Root cause: getAssetDeficiencies only looked for deficiencies linked via assessmentId, but project-level deficiencies have assessmentId=null
+- [x] Fix: Updated getAssetDeficiencies to also include project-level deficiencies (where assessmentId IS NULL and projectId matches)
+- [x] Verified fix: 39 deficiencies now showing for 1729 Comox Avenue asset

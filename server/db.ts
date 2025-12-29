@@ -460,22 +460,55 @@ export async function getAssetDeficiencies(assetId: number) {
   const db = await getDb();
   if (!db) return [];
   
-  // First get all assessment IDs for this asset
+  // First get the asset to find its projectId
+  const assetResult = await db
+    .select({ projectId: assets.projectId })
+    .from(assets)
+    .where(eq(assets.id, assetId))
+    .limit(1);
+  
+  if (assetResult.length === 0) return [];
+  
+  const projectId = assetResult[0].projectId;
+  
+  // Get all assessment IDs for this asset
   const assetAssessments = await db
     .select({ id: assessments.id })
     .from(assessments)
     .where(eq(assessments.assetId, assetId));
   
-  if (assetAssessments.length === 0) return [];
-  
   const assessmentIds = assetAssessments.map(a => a.id);
   
-  // Then get deficiencies linked to those assessments
-  return await db
-    .select()
-    .from(deficiencies)
-    .where(inArray(deficiencies.assessmentId, assessmentIds))
-    .orderBy(desc(deficiencies.createdAt));
+  // Get deficiencies that are either:
+  // 1. Linked to assessments of this asset (via assessmentId)
+  // 2. Project-level deficiencies (assessmentId is null) for the same project
+  if (assessmentIds.length > 0) {
+    return await db
+      .select()
+      .from(deficiencies)
+      .where(
+        or(
+          inArray(deficiencies.assessmentId, assessmentIds),
+          and(
+            eq(deficiencies.projectId, projectId),
+            isNull(deficiencies.assessmentId)
+          )
+        )
+      )
+      .orderBy(desc(deficiencies.createdAt));
+  } else {
+    // No assessments for this asset, just get project-level deficiencies
+    return await db
+      .select()
+      .from(deficiencies)
+      .where(
+        and(
+          eq(deficiencies.projectId, projectId),
+          isNull(deficiencies.assessmentId)
+        )
+      )
+      .orderBy(desc(deficiencies.createdAt));
+  }
 }
 
 export async function getDeficiencyById(deficiencyId: number) {
