@@ -1,20 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { MfaTimeRestriction } from './mfaTimeRestrictions';
+
+// Mock the database module
+vi.mock('../db', () => ({
+  getDb: vi.fn(),
+}));
+
+import { getDb } from '../db';
 import {
-  type MfaTimeRestriction,
+  checkMfaTimeRestriction,
+  getUserTimeRestrictions,
 } from './mfaTimeRestrictions';
 
-// Mock getUserTimeRestrictions to avoid database calls
-const mockGetUserTimeRestrictions = vi.hoisted(() => vi.fn());
-
-vi.mock('./mfaTimeRestrictions', async (importOriginal) => {
-  const actual = await importOriginal() as any;
-  return {
-    ...actual,
-    getUserTimeRestrictions: mockGetUserTimeRestrictions,
-  };
-});
-
-import { checkMfaTimeRestriction } from './mfaTimeRestrictions';
+const mockGetDb = vi.mocked(getDb);
 
 describe('MFA Time Restrictions', () => {
   beforeEach(() => {
@@ -23,14 +21,21 @@ describe('MFA Time Restrictions', () => {
 
   describe('checkMfaTimeRestriction', () => {
     it('should return false when no restrictions exist', async () => {
-      mockGetUserTimeRestrictions.mockResolvedValue([]);
+      // Mock empty restrictions
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([]),
+          }),
+        }),
+      } as any);
 
       const result = await checkMfaTimeRestriction(1);
       expect(result).toBe(false);
     });
 
     it('should return true for "always" restriction type', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'always',
@@ -45,14 +50,20 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       const result = await checkMfaTimeRestriction(1);
       expect(result).toBe(true);
     });
 
     it('should return false for "never" restriction type', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'never',
@@ -67,14 +78,20 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       const result = await checkMfaTimeRestriction(1);
       expect(result).toBe(false);
     });
 
     it('should correctly evaluate business hours (Monday 10 AM)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'business_hours',
@@ -89,7 +106,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Monday, 10:00 AM UTC
       const testTime = new Date('2024-01-08T10:00:00Z'); // Monday
@@ -98,7 +121,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should correctly evaluate business hours (Saturday - outside)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'business_hours',
@@ -113,7 +136,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Saturday, 10:00 AM UTC
       const testTime = new Date('2024-01-13T10:00:00Z'); // Saturday
@@ -122,7 +151,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should correctly evaluate after hours (Monday 6 PM)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'after_hours',
@@ -137,7 +166,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Monday, 6:00 PM UTC (after hours)
       const testTime = new Date('2024-01-08T18:00:00Z'); // Monday
@@ -146,7 +181,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should correctly evaluate after hours (Saturday - weekend)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'after_hours',
@@ -161,7 +196,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Saturday, 10:00 AM UTC (weekend = after hours)
       const testTime = new Date('2024-01-13T10:00:00Z'); // Saturday
@@ -170,7 +211,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should correctly evaluate custom schedule (Tuesday 2 PM)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'custom_schedule',
@@ -185,7 +226,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Tuesday, 2:00 PM UTC
       const testTime = new Date('2024-01-09T14:00:00Z'); // Tuesday
@@ -194,7 +241,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should correctly evaluate custom schedule (Wednesday - wrong day)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'custom_schedule',
@@ -209,7 +256,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Wednesday, 2:00 PM UTC (not in allowed days)
       const testTime = new Date('2024-01-10T14:00:00Z'); // Wednesday
@@ -218,7 +271,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should handle time ranges that cross midnight', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'custom_schedule',
@@ -233,7 +286,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // Monday, 11:00 PM UTC (within range)
       const testTime1 = new Date('2024-01-08T23:00:00Z');
@@ -252,7 +311,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should handle multiple restrictions (any match returns true)', async () => {
-      const restrictions: MfaTimeRestriction[] = [
+      const restrictions = [
         {
           id: 1,
           userId: 1,
@@ -283,7 +342,13 @@ describe('MFA Time Restrictions', () => {
         },
       ];
 
-      mockGetUserTimeRestrictions.mockResolvedValue(restrictions);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve(restrictions),
+          }),
+        }),
+      } as any);
 
       // Saturday, 9:00 PM UTC (matches second restriction)
       const testTime = new Date('2024-01-13T21:00:00Z'); // Saturday
@@ -292,7 +357,7 @@ describe('MFA Time Restrictions', () => {
     });
 
     it('should handle timezone conversions (Pacific Time)', async () => {
-      const restriction: MfaTimeRestriction = {
+      const restriction = {
         id: 1,
         userId: 1,
         restrictionType: 'business_hours',
@@ -307,7 +372,13 @@ describe('MFA Time Restrictions', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockGetUserTimeRestrictions.mockResolvedValue([restriction]);
+      mockGetDb.mockResolvedValue({
+        select: () => ({
+          from: () => ({
+            where: () => Promise.resolve([restriction]),
+          }),
+        }),
+      } as any);
 
       // 5:00 PM UTC = 9:00 AM Pacific (PST, UTC-8)
       // This is during business hours in Pacific timezone

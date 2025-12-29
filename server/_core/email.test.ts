@@ -1,20 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { sendEmail, sendVerificationEmail } from "./email";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch as any;
 
+// Store original env values
+const originalEnv = { ...process.env };
+
 describe("Email Service", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    vi.resetModules();
     // Set required environment variables for tests
     process.env.SENDGRID_API_KEY = "test-api-key";
     process.env.SENDGRID_FROM_EMAIL = "noreply@bcasystem.com";
   });
 
+  afterEach(() => {
+    // Restore original env
+    process.env = { ...originalEnv };
+  });
+
   describe("sendEmail", () => {
     it("should send email successfully via SendGrid", async () => {
+      const { sendEmail } = await import("./email");
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 202,
@@ -41,10 +51,14 @@ describe("Email Service", () => {
     });
 
     it("should return false when SendGrid API fails", async () => {
+      const { sendEmail } = await import("./email");
+      
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
         text: async () => "Bad Request",
+        statusText: "Bad Request",
+        headers: new Map(),
       });
 
       const result = await sendEmail({
@@ -57,7 +71,12 @@ describe("Email Service", () => {
     });
 
     it("should return false when SendGrid is not configured", async () => {
+      // Clear env vars before importing
       delete process.env.SENDGRID_API_KEY;
+      delete process.env.SENDGRID_FROM_EMAIL;
+      
+      vi.resetModules();
+      const { sendEmail } = await import("./email");
 
       const result = await sendEmail({
         to: "user@example.com",
@@ -70,6 +89,8 @@ describe("Email Service", () => {
     });
 
     it("should handle network errors gracefully", async () => {
+      const { sendEmail } = await import("./email");
+      
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await sendEmail({
@@ -84,6 +105,8 @@ describe("Email Service", () => {
 
   describe("sendVerificationEmail", () => {
     it("should send MFA setup verification email", async () => {
+      const { sendVerificationEmail } = await import("./email");
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 202,
@@ -107,6 +130,8 @@ describe("Email Service", () => {
     });
 
     it("should send MFA login verification email", async () => {
+      const { sendVerificationEmail } = await import("./email");
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 202,
@@ -128,6 +153,8 @@ describe("Email Service", () => {
     });
 
     it("should include both text and HTML content", async () => {
+      const { sendVerificationEmail } = await import("./email");
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 202,

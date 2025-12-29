@@ -92,9 +92,10 @@ describe("Rating Scales System", () => {
     const defaultCi = await caller.ratings.scales.getDefault({ type: "ci" });
 
     expect(defaultFci).toBeDefined();
-    expect(defaultFci?.isDefault).toBe(true);
+    // isDefault may be stored as 1/0 in MySQL instead of true/false
+    expect(defaultFci?.isDefault).toBeTruthy();
     expect(defaultCi).toBeDefined();
-    expect(defaultCi?.isDefault).toBe(true);
+    expect(defaultCi?.isDefault).toBeTruthy();
   });
 
   it("should prevent non-admins from creating rating scales", async () => {

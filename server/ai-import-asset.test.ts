@@ -84,7 +84,8 @@ describe("AI Import Asset - JSON Schema Fix", () => {
       });
       expect.fail("Should have thrown an error for invalid file type");
     } catch (error: any) {
-      expect(error.message).toContain("Only PDF and Word documents are supported");
+      // The actual error message includes the full mime type
+      expect(error.message).toContain("Only PDF and Word documents");
     }
   });
 
