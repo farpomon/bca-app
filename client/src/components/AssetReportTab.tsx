@@ -48,9 +48,19 @@ export default function AssetReportTab({ assetId, projectId }: AssetReportTabPro
             <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
               <li>Asset overview and building information</li>
               <li>Assessment summary with condition ratings</li>
-              <li>Detailed assessment findings by component</li>
+              <li>Detailed assessment findings with <strong>repair costs</strong> and <strong>replacement values</strong></li>
               <li>Deficiencies organized by priority and timeline</li>
-              <li>Cost summary and breakdown by priority</li>
+              <li><strong>Financial Analysis Section:</strong>
+                <ul className="ml-4 mt-1 space-y-1">
+                  <li>Net Present Value (NPV)</li>
+                  <li>Internal Rate of Return (IRR)</li>
+                  <li>Payback Period</li>
+                  <li>Return on Investment (ROI)</li>
+                  <li>Facility Condition Index (FCI)</li>
+                </ul>
+              </li>
+              <li>5-Year Capital Budget Projection</li>
+              <li>Cost breakdown by priority level</li>
               <li>Professional formatting following industry standards</li>
             </ul>
           </div>

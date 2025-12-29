@@ -2119,3 +2119,22 @@ Testing:
 - [x] Create system prompt with BCA app feature knowledge
 - [x] Integrate chatbot into App.tsx layout
 - [x] Style chatbot with app branding
+
+## Chatbot Enhancements
+- [ ] Add contextual help - Make chatbot aware of current page for relevant suggestions
+- [ ] Persist chat history - Save conversations to database for cross-session continuity
+- [ ] Add feedback buttons - Thumbs up/down to rate chatbot responses
+
+
+## Project Analytics Page Improvements
+- [x] Make assets in Asset Summary clickable to navigate to asset details
+- [x] Improve economic analysis with industry best practices (NPV, IRR, payback period)
+- [x] Improve operational analysis with proper metrics
+- [x] Ensure proper data fetching for analytics
+- [x] Add better data visualization for economic/operational metrics
+
+
+## Asset Condition Report Enhancements
+- [x] Add replacement and repair costs to Asset Condition Report
+- [x] Add dedicated financial metrics section (NPV, IRR, Payback Period, ROI)
+- [x] Improve report layout and organization

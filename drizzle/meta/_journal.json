@@ -470,6 +470,13 @@
       "when": 1766959825539,
       "tag": "0066_aberrant_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "5",
+      "when": 1766972840551,
+      "tag": "0067_kind_satana",
+      "breakpoints": true
     }
   ]
 }

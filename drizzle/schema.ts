@@ -1917,6 +1917,52 @@ export type InsertPortfolioTarget = typeof portfolioTargets.$inferInsert;
 export type InvestmentAnalysis = typeof investmentAnalysis.$inferSelect;
 export type InsertInvestmentAnalysis = typeof investmentAnalysis.$inferInsert;
 
+/**
+ * Chatbot conversation sessions
+ * Stores chat history for users to continue conversations across sessions
+ */
+export const chatbotSessions = mysqlTable("chatbot_sessions", {
+	id: int().autoincrement().notNull().primaryKey(),
+	userId: int().notNull(),
+	title: varchar({ length: 255 }),
+	currentPage: varchar({ length: 255 }), // Current page context (e.g., '/projects', '/dashboard')
+	pageContext: text(), // JSON with additional page context (projectId, assetId, etc.)
+	messages: text().notNull(), // JSON array of messages
+	isActive: int().default(1).notNull(), // 1 = active, 0 = archived
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_chatbot_user").on(table.userId),
+	index("idx_chatbot_active").on(table.userId, table.isActive),
+]);
+
+/**
+ * Chatbot message feedback
+ * Stores user feedback (thumbs up/down) for chatbot responses
+ */
+export const chatbotFeedback = mysqlTable("chatbot_feedback", {
+	id: int().autoincrement().notNull().primaryKey(),
+	sessionId: int().notNull(),
+	messageIndex: int().notNull(), // Index of the message in the session's messages array
+	userId: int().notNull(),
+	feedback: mysqlEnum(['positive', 'negative']).notNull(),
+	comment: text(), // Optional user comment explaining the feedback
+	userMessage: text(), // The user's question that led to this response
+	assistantMessage: text(), // The assistant's response that was rated
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_feedback_session").on(table.sessionId),
+	index("idx_feedback_user").on(table.userId),
+	index("idx_feedback_type").on(table.feedback),
+]);
+
+export type ChatbotSession = typeof chatbotSessions.$inferSelect;
+export type InsertChatbotSession = typeof chatbotSessions.$inferInsert;
+export type ChatbotFeedback = typeof chatbotFeedback.$inferSelect;
+export type InsertChatbotFeedback = typeof chatbotFeedback.$inferInsert;
+
 // Type exports for all tables
 export type AccessRequest = typeof accessRequests.$inferSelect;
 export type InsertAccessRequest = typeof accessRequests.$inferInsert;
