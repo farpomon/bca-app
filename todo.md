@@ -2109,3 +2109,4 @@ Testing:
 - [x] Implement save to database from AI suggestions
 - [ ] Add data visualization charts for economic trends
 - [ ] Improve table layout and mobile responsiveness
+- [x] Hide Current Indicators tab and replace with Fetch with AI option
