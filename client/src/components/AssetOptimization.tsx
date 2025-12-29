@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Calendar, TrendingUp, AlertCircle } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DollarSign, Calendar, TrendingUp, AlertCircle, ChevronDown, ChevronRight, MapPin } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import AssetLifecycleCost from "@/components/AssetLifecycleCost";
 
@@ -17,6 +18,14 @@ interface AssetOptimizationProps {
 
 export default function AssetOptimization({ assetId, assessments = [], deficiencies = [] }: AssetOptimizationProps) {
   const [totalBudget, setTotalBudget] = useState<number>(0);
+  const [expandedPriorities, setExpandedPriorities] = useState<Record<string, boolean>>({});
+
+  const togglePriority = (priority: string) => {
+    setExpandedPriorities(prev => ({
+      ...prev,
+      [priority]: !prev[priority]
+    }));
+  };
 
   // Helper function to validate and sanitize estimated cost
   const getValidCost = (cost: any): number => {
@@ -150,77 +159,213 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
                   <h3 className="font-semibold">Budget Distribution by Priority</h3>
                   
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-destructive/5">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        <div>
-                          <p className="font-medium">Immediate</p>
-                          <p className="text-xs text-muted-foreground">
-                            {deficienciesByPriority.immediate.length} items
-                          </p>
+                    {/* Immediate Priority - Expandable */}
+                    <Collapsible open={expandedPriorities.immediate} onOpenChange={() => togglePriority('immediate')}>
+                      <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-destructive/5 cursor-pointer hover:bg-destructive/10 transition-colors">
+                          <div className="flex items-center gap-2">
+                            {expandedPriorities.immediate ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <AlertCircle className="h-4 w-4 text-destructive" />
+                            <div>
+                              <p className="font-medium">Immediate</p>
+                              <p className="text-xs text-muted-foreground">
+                                {deficienciesByPriority.immediate.length} items
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">${budgetAllocations.immediate.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {((budgetAllocations.immediate / totalBudget) * 100).toFixed(1)}%
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">${budgetAllocations.immediate.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {((budgetAllocations.immediate / totalBudget) * 100).toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        {deficienciesByPriority.immediate.length > 0 ? (
+                          <div className="ml-6 mt-2 space-y-2 border-l-2 border-destructive/30 pl-4">
+                            {deficienciesByPriority.immediate.map((item) => (
+                              <div key={item.id} className="flex items-start justify-between p-2 bg-muted/30 rounded text-sm">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{item.title || 'Untitled Deficiency'}</p>
+                                  {item.location && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                      <MapPin className="h-3 w-3" />
+                                      {item.location}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className="font-semibold text-destructive ml-2 whitespace-nowrap">
+                                  ${getValidCost(item.estimatedCost).toLocaleString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="ml-6 mt-2 text-sm text-muted-foreground pl-4">No immediate items</p>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-orange-500" />
-                        <div>
-                          <p className="font-medium">Short Term</p>
-                          <p className="text-xs text-muted-foreground">
-                            {deficienciesByPriority.short_term.length} items
-                          </p>
+                    {/* Short Term Priority - Expandable */}
+                    <Collapsible open={expandedPriorities.short_term} onOpenChange={() => togglePriority('short_term')}>
+                      <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center gap-2">
+                            {expandedPriorities.short_term ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <Calendar className="h-4 w-4 text-orange-500" />
+                            <div>
+                              <p className="font-medium">Short Term</p>
+                              <p className="text-xs text-muted-foreground">
+                                {deficienciesByPriority.short_term.length} items
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">${budgetAllocations.short_term.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {((budgetAllocations.short_term / totalBudget) * 100).toFixed(1)}%
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">${budgetAllocations.short_term.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {((budgetAllocations.short_term / totalBudget) * 100).toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        {deficienciesByPriority.short_term.length > 0 ? (
+                          <div className="ml-6 mt-2 space-y-2 border-l-2 border-orange-500/30 pl-4">
+                            {deficienciesByPriority.short_term.map((item) => (
+                              <div key={item.id} className="flex items-start justify-between p-2 bg-muted/30 rounded text-sm">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{item.title || 'Untitled Deficiency'}</p>
+                                  {item.location && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                      <MapPin className="h-3 w-3" />
+                                      {item.location}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className="font-semibold text-orange-600 ml-2 whitespace-nowrap">
+                                  ${getValidCost(item.estimatedCost).toLocaleString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="ml-6 mt-2 text-sm text-muted-foreground pl-4">No short term items</p>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-blue-500" />
-                        <div>
-                          <p className="font-medium">Medium Term</p>
-                          <p className="text-xs text-muted-foreground">
-                            {deficienciesByPriority.medium_term.length} items
-                          </p>
+                    {/* Medium Term Priority - Expandable */}
+                    <Collapsible open={expandedPriorities.medium_term} onOpenChange={() => togglePriority('medium_term')}>
+                      <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center gap-2">
+                            {expandedPriorities.medium_term ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <div>
+                              <p className="font-medium">Medium Term</p>
+                              <p className="text-xs text-muted-foreground">
+                                {deficienciesByPriority.medium_term.length} items
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">${budgetAllocations.medium_term.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {((budgetAllocations.medium_term / totalBudget) * 100).toFixed(1)}%
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">${budgetAllocations.medium_term.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {((budgetAllocations.medium_term / totalBudget) * 100).toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        {deficienciesByPriority.medium_term.length > 0 ? (
+                          <div className="ml-6 mt-2 space-y-2 border-l-2 border-blue-500/30 pl-4">
+                            {deficienciesByPriority.medium_term.map((item) => (
+                              <div key={item.id} className="flex items-start justify-between p-2 bg-muted/30 rounded text-sm">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{item.title || 'Untitled Deficiency'}</p>
+                                  {item.location && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                      <MapPin className="h-3 w-3" />
+                                      {item.location}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className="font-semibold text-blue-600 ml-2 whitespace-nowrap">
+                                  ${getValidCost(item.estimatedCost).toLocaleString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="ml-6 mt-2 text-sm text-muted-foreground pl-4">No medium term items</p>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-green-500" />
-                        <div>
-                          <p className="font-medium">Long Term</p>
-                          <p className="text-xs text-muted-foreground">
-                            {deficienciesByPriority.long_term.length} items
-                          </p>
+                    {/* Long Term Priority - Expandable */}
+                    <Collapsible open={expandedPriorities.long_term} onOpenChange={() => togglePriority('long_term')}>
+                      <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center gap-2">
+                            {expandedPriorities.long_term ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <Calendar className="h-4 w-4 text-green-500" />
+                            <div>
+                              <p className="font-medium">Long Term</p>
+                              <p className="text-xs text-muted-foreground">
+                                {deficienciesByPriority.long_term.length} items
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">${budgetAllocations.long_term.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {((budgetAllocations.long_term / totalBudget) * 100).toFixed(1)}%
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">${budgetAllocations.long_term.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {((budgetAllocations.long_term / totalBudget) * 100).toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        {deficienciesByPriority.long_term.length > 0 ? (
+                          <div className="ml-6 mt-2 space-y-2 border-l-2 border-green-500/30 pl-4">
+                            {deficienciesByPriority.long_term.map((item) => (
+                              <div key={item.id} className="flex items-start justify-between p-2 bg-muted/30 rounded text-sm">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{item.title || 'Untitled Deficiency'}</p>
+                                  {item.location && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                      <MapPin className="h-3 w-3" />
+                                      {item.location}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className="font-semibold text-green-600 ml-2 whitespace-nowrap">
+                                  ${getValidCost(item.estimatedCost).toLocaleString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="ml-6 mt-2 text-sm text-muted-foreground pl-4">No long term items</p>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                   </div>
                 )}

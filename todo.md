@@ -2160,3 +2160,9 @@ Testing:
 - [x] Root cause: getAssetDeficiencies only looked for deficiencies linked via assessmentId, but project-level deficiencies have assessmentId=null
 - [x] Fix: Updated getAssetDeficiencies to also include project-level deficiencies (where assessmentId IS NULL and projectId matches)
 - [x] Verified fix: 39 deficiencies now showing for 1729 Comox Avenue asset
+
+
+## Expandable Budget Distribution by Priority (Dec 29, 2025)
+
+- [x] Make Budget Distribution by Priority list expandable to show individual deficiency items
+- [x] Show deficiency details (title, location, cost) when priority category is expanded
