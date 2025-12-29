@@ -2166,3 +2166,29 @@ Testing:
 
 - [x] Make Budget Distribution by Priority list expandable to show individual deficiency items
 - [x] Show deficiency details (title, location, cost) when priority category is expanded
+
+
+## Demo Projects Creation (Dec 29, 2025)
+
+- [x] Create Project 2: Downtown Commercial Office Complex (20 assets)
+- [x] Create Project 3: Regional Healthcare Campus (30 assets)
+- [x] Create Project 4: University Campus Facilities Portfolio (40 assets)
+- [x] Add diverse asset types across all projects
+- [x] Include various condition ratings (good/fair/poor) for realism
+- [x] Add comprehensive UNIFORMAT II assessments for each asset
+- [x] Add deficiencies with varying priorities (immediate/short_term/medium_term/long_term)
+- [x] Verify all projects display correctly in the app
+
+
+## Bug Fixes (Dec 29)
+- [x] Fix Total Deficiencies count showing 0 in Project Analytics dashboard
+- [x] Fix getAssessmentTrends using wrong column name (assessmentDate -> assessedAt)
+
+
+## Company Admin Management Enhancements (Dec 29)
+- [x] Enhance Add Company dialog to include admin user assignment
+- [x] Add quick admin role assignment button for existing companies
+- [x] Add "Assign Admin" action in company row actions (crown icon)
+- [x] Create user search/select component for admin assignment
+- [x] Add backend mutations: createCompanyWithAdmin, assignUserToCompany, searchUsersForAssignment
+- [x] Fix Company Settings dialog scrolling issue

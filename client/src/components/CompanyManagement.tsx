@@ -29,7 +29,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings, Lock, LockOpen } from "lucide-react";
+import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings, Lock, LockOpen, UserPlus, Crown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { CompanySettingsDialog } from "@/components/CompanySettingsDialog";
 import { BulkCompanyActions } from "@/components/BulkCompanyActions";
@@ -58,6 +71,11 @@ export function CompanyManagement() {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [settingsCompany, setSettingsCompany] = useState<{ id: number; name: string } | null>(null);
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<number[]>([]);
+  const [selectedAdminUser, setSelectedAdminUser] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
+  const [adminSearchOpen, setAdminSearchOpen] = useState(false);
+  const [adminSearchQuery, setAdminSearchQuery] = useState("");
+  const [assignAdminDialogOpen, setAssignAdminDialogOpen] = useState(false);
+  const [assignAdminCompany, setAssignAdminCompany] = useState<{ id: number; name: string } | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -77,8 +95,44 @@ export function CompanyManagement() {
     { enabled: !!selectedCompany?.id && usersDialogOpen }
   );
   const trialStatsQuery = trpc.admin.getTrialStats.useQuery();
+  
+  // Query for available users to assign as admins
+  const availableUsersQuery = trpc.admin.searchUsersForAssignment.useQuery(
+    { query: adminSearchQuery, limit: 20 },
+    { enabled: createDialogOpen || assignAdminDialogOpen }
+  );
 
   // Mutations
+  // Mutation to create company with admin
+  const createCompanyWithAdminMutation = trpc.admin.createCompanyWithAdmin.useMutation({
+    onSuccess: () => {
+      toast.success(selectedAdminUser 
+        ? `Company created and ${selectedAdminUser.name || selectedAdminUser.email} assigned as admin`
+        : "Company created successfully");
+      setCreateDialogOpen(false);
+      resetForm();
+      setSelectedAdminUser(null);
+      companiesQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to create company: ${error.message}`);
+    },
+  });
+
+  // Mutation to assign user to company
+  const assignUserToCompanyMutation = trpc.admin.assignUserToCompany.useMutation({
+    onSuccess: () => {
+      toast.success("User assigned to company successfully");
+      setAssignAdminDialogOpen(false);
+      setAssignAdminCompany(null);
+      setSelectedAdminUser(null);
+      companiesQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to assign user: ${error.message}`);
+    },
+  });
+
   const createCompanyMutation = trpc.admin.createCompany.useMutation({
     onSuccess: () => {
       toast.success("Company created successfully");
@@ -158,14 +212,31 @@ export function CompanyManagement() {
   };
 
   const handleCreate = () => {
-    createCompanyMutation.mutate({
+    // Use the new createCompanyWithAdmin mutation if admin is selected
+    createCompanyWithAdminMutation.mutate({
       name: formData.name,
       city: formData.city || undefined,
       contactEmail: formData.contactEmail || undefined,
       contactPhone: formData.contactPhone || undefined,
       address: formData.address || undefined,
       notes: formData.notes || undefined,
+      adminUserId: selectedAdminUser?.id,
     });
+  };
+
+  const handleAssignAdmin = () => {
+    if (!assignAdminCompany || !selectedAdminUser) return;
+    assignUserToCompanyMutation.mutate({
+      userId: selectedAdminUser.id,
+      companyName: assignAdminCompany.name,
+      role: "admin",
+    });
+  };
+
+  const openAssignAdminDialog = (company: { id: number; name: string }) => {
+    setAssignAdminCompany(company);
+    setSelectedAdminUser(null);
+    setAssignAdminDialogOpen(true);
   };
 
   const handleUpdate = () => {
@@ -462,6 +533,14 @@ export function CompanyManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => openAssignAdminDialog({ id: company.id, name: company.name })}
+                          title="Assign Admin"
+                        >
+                          <Crown className="h-4 w-4 text-amber-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleEdit(company)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -541,17 +620,194 @@ export function CompanyManagement() {
                 placeholder="Internal notes"
               />
             </div>
+            
+            {/* Admin User Assignment Section */}
+            <div className="border-t pt-4 mt-4">
+              <Label className="flex items-center gap-2 mb-2">
+                <Crown className="h-4 w-4 text-amber-500" />
+                Assign Company Admin (Optional)
+              </Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Select an existing user to be the admin for this company
+              </p>
+              <Popover open={adminSearchOpen} onOpenChange={setAdminSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={adminSearchOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedAdminUser ? (
+                      <span className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        {selectedAdminUser.name || selectedAdminUser.email}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Search and select a user...</span>
+                    )}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Search users by name or email..." 
+                      value={adminSearchQuery}
+                      onValueChange={setAdminSearchQuery}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No users found.</CommandEmpty>
+                      <CommandGroup heading="Available Users">
+                        {availableUsersQuery.data?.map((user) => (
+                          <CommandItem
+                            key={user.id}
+                            value={`${user.name || ''} ${user.email || ''}`}
+                            onSelect={() => {
+                              setSelectedAdminUser(user);
+                              setAdminSearchOpen(false);
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">{user.name || "Unnamed User"}</span>
+                              <span className="text-xs text-muted-foreground">{user.email}</span>
+                              {user.company && (
+                                <span className="text-xs text-amber-600">Currently in: {user.company}</span>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedAdminUser && (
+                <div className="mt-2 p-2 bg-muted rounded-md flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm">{selectedAdminUser.name || selectedAdminUser.email} will be assigned as admin</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedAdminUser(null)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setCreateDialogOpen(false);
+              setSelectedAdminUser(null);
+            }}>
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={!formData.name || createCompanyMutation.isPending}
+              disabled={!formData.name || createCompanyWithAdminMutation.isPending}
             >
-              {createCompanyMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {createCompanyWithAdminMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Admin to Existing Company Dialog */}
+      <Dialog open={assignAdminDialogOpen} onOpenChange={setAssignAdminDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-amber-500" />
+              Assign Admin to {assignAdminCompany?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Select a user to assign as an admin for this company
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Popover open={adminSearchOpen} onOpenChange={setAdminSearchOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={adminSearchOpen}
+                  className="w-full justify-between"
+                >
+                  {selectedAdminUser ? (
+                    <span className="flex items-center gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      {selectedAdminUser.name || selectedAdminUser.email}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Search and select a user...</span>
+                  )}
+                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Search users by name or email..." 
+                    value={adminSearchQuery}
+                    onValueChange={setAdminSearchQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No users found.</CommandEmpty>
+                    <CommandGroup heading="Available Users">
+                      {availableUsersQuery.data?.map((user) => (
+                        <CommandItem
+                          key={user.id}
+                          value={`${user.name || ''} ${user.email || ''}`}
+                          onSelect={() => {
+                            setSelectedAdminUser(user);
+                            setAdminSearchOpen(false);
+                          }}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">{user.name || "Unnamed User"}</span>
+                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                            {user.company && (
+                              <span className="text-xs text-amber-600">Currently in: {user.company}</span>
+                            )}
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {selectedAdminUser && (
+              <div className="p-3 bg-muted rounded-md">
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className="h-4 w-4 text-amber-500" />
+                  <span className="font-medium">Selected User</span>
+                </div>
+                <div className="text-sm">
+                  <p><strong>Name:</strong> {selectedAdminUser.name || "N/A"}</p>
+                  <p><strong>Email:</strong> {selectedAdminUser.email || "N/A"}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setAssignAdminDialogOpen(false);
+              setSelectedAdminUser(null);
+            }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignAdmin}
+              disabled={!selectedAdminUser || assignUserToCompanyMutation.isPending}
+            >
+              {assignUserToCompanyMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Assign as Admin
             </Button>
           </DialogFooter>
         </DialogContent>

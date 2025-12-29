@@ -1,0 +1,30 @@
+{
+  "query": "SELECT d.projectId, p.name as projectName, COUNT(*) as deficiencyCount FROM deficiencies d LEFT JOIN projects p ON d.projectId = p.id GROUP BY d.projectId, p.name ORDER BY deficiencyCount DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT d.projectId, p.name as projectName, COUNT(*) as deficiencyCount FROM deficiencies d LEFT JOIN projects p ON d.projectId = p.id GROUP BY d.projectId, p.name ORDER BY deficiencyCount DESC;",
+  "rows": [
+    {
+      "projectId": "3630003",
+      "projectName": "University Campus Facilities Portfolio",
+      "deficiencyCount": "133"
+    },
+    {
+      "projectId": "3630002",
+      "projectName": "Regional Healthcare Campus",
+      "deficiencyCount": "91"
+    },
+    {
+      "projectId": "3630001",
+      "projectName": "Downtown Commercial Office Complex",
+      "deficiencyCount": "60"
+    },
+    {
+      "projectId": "3120001",
+      "projectName": "City of Vancouver Municipal Complex",
+      "deficiencyCount": "39"
+    }
+  ],
+  "messages": [],
+  "stdout": "projectId\tprojectName\tdeficiencyCount\n3630003\tUniversity Campus Facilities Portfolio\t133\n3630002\tRegional Healthcare Campus\t91\n3630001\tDowntown Commercial Office Complex\t60\n3120001\tCity of Vancouver Municipal Complex\t39\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

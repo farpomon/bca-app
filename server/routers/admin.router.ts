@@ -969,4 +969,134 @@ export const adminRouter = router({
 
       return { success: true, successCount, totalRequested: input.userIds.length, errors, operationId };
     }),
+
+  /**
+   * Assign a user to a company and optionally set their role
+   */
+  assignUserToCompany: adminProcedure
+    .input(z.object({
+      userId: z.number(),
+      companyName: z.string(),
+      role: z.enum(["viewer", "editor", "project_manager", "admin"]).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Verify company exists
+      const company = await database.select().from(companies).where(eq(companies.name, input.companyName)).limit(1);
+      if (company.length === 0) {
+        throw new Error("Company not found");
+      }
+
+      const updateData: Record<string, unknown> = {
+        company: input.companyName,
+      };
+
+      if (input.role) {
+        updateData.role = input.role;
+      }
+
+      await database.update(users).set(updateData).where(eq(users.id, input.userId));
+      return { success: true };
+    }),
+
+  /**
+   * Search users for admin assignment (returns users not yet assigned to a company or all users)
+   */
+  searchUsersForAssignment: adminProcedure
+    .input(z.object({
+      query: z.string().optional(),
+      excludeCompany: z.string().optional(),
+      limit: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let allUsers = await database.select().from(users);
+
+      // Filter by search query
+      if (input.query) {
+        const query = input.query.toLowerCase();
+        allUsers = allUsers.filter(u => 
+          u.name?.toLowerCase().includes(query) ||
+          u.email?.toLowerCase().includes(query)
+        );
+      }
+
+      // Optionally exclude users already in a specific company
+      if (input.excludeCompany) {
+        allUsers = allUsers.filter(u => u.company !== input.excludeCompany);
+      }
+
+      return allUsers.slice(0, input.limit).map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        company: u.company,
+        accountStatus: u.accountStatus,
+      }));
+    }),
+
+  /**
+   * Create company with initial admin user
+   */
+  createCompanyWithAdmin: adminProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      city: z.string().optional(),
+      contactEmail: z.string().email().optional(),
+      contactPhone: z.string().optional(),
+      address: z.string().optional(),
+      notes: z.string().optional(),
+      adminUserId: z.number().optional(), // Optional: assign an existing user as admin
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Create the company
+      const { adminUserId, ...companyData } = input;
+      const result = await database.insert(companies).values(companyData);
+      const companyId = Number(result[0].insertId);
+
+      // If admin user is specified, assign them to the company with admin role
+      if (adminUserId) {
+        await database.update(users).set({
+          company: input.name,
+          role: "admin",
+          accountStatus: "active",
+        }).where(eq(users.id, adminUserId));
+      }
+
+      return { success: true, id: companyId };
+    }),
+
+  /**
+   * Get all users that can be assigned as company admins
+   */
+  getAvailableAdmins: adminProcedure
+    .input(z.object({
+      companyName: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      let allUsers = await database.select().from(users);
+
+      // If company name is provided, show users not in that company or already in it
+      // This allows reassigning or viewing current admins
+      return allUsers.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        company: u.company,
+        accountStatus: u.accountStatus,
+        isInCompany: input.companyName ? u.company === input.companyName : false,
+      }));
+    }),
 });

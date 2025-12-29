@@ -144,7 +144,7 @@ export async function getAssessmentTrends(
 
   let query = db
     .select({
-      month: sql<string>`DATE_FORMAT(${assessments.assessmentDate}, '%Y-%m')`,
+      month: sql<string>`DATE_FORMAT(${assessments.assessedAt}, '%Y-%m')`,
       count: count(),
       avgScore: avg(sql`CASE 
         WHEN ${assessments.condition} = 'good' THEN 4
@@ -154,14 +154,14 @@ export async function getAssessmentTrends(
       END`),
     })
     .from(assessments)
-    .where(gte(assessments.assessmentDate, startDate.toISOString()));
+    .where(gte(assessments.assessedAt, startDate.toISOString()));
 
   // Apply filters
   if (filters?.projectId) {
     query = query
       .innerJoin(assets, eq(assessments.assetId, assets.id))
       .where(and(
-        gte(assessments.assessmentDate, startDate.toISOString()),
+        gte(assessments.assessedAt, startDate.toISOString()),
         eq(assets.projectId, filters.projectId)
       ));
   }
@@ -170,14 +170,14 @@ export async function getAssessmentTrends(
       .innerJoin(assets, eq(assessments.assetId, assets.id))
       .innerJoin(projects, eq(assets.projectId, projects.id))
       .where(and(
-        gte(assessments.assessmentDate, startDate.toISOString()),
+        gte(assessments.assessedAt, startDate.toISOString()),
         eq(projects.companyId, filters.companyId)
       ));
   }
 
   const results = await query
-    .groupBy(sql`DATE_FORMAT(${assessments.assessmentDate}, '%Y-%m')`)
-    .orderBy(sql`DATE_FORMAT(${assessments.assessmentDate}, '%Y-%m')`);
+    .groupBy(sql`DATE_FORMAT(${assessments.assessedAt}, '%Y-%m')`)
+    .orderBy(sql`DATE_FORMAT(${assessments.assessedAt}, '%Y-%m')`);
 
   return results.map(r => ({
     month: r.month,
@@ -188,6 +188,8 @@ export async function getAssessmentTrends(
 
 /**
  * Get deficiency priority breakdown
+ * Note: Deficiencies now have a direct projectId field, so we can filter directly
+ * without needing to join through assessments/assets
  */
 export async function getDeficiencyPriorityBreakdown(
   filters?: {
@@ -198,6 +200,36 @@ export async function getDeficiencyPriorityBreakdown(
   const db = await getDb();
   if (!db) return [];
 
+  // Build where conditions
+  const whereConditions = [];
+  
+  // Filter by projectId directly on deficiencies table
+  if (filters?.projectId) {
+    whereConditions.push(eq(deficiencies.projectId, filters.projectId));
+  }
+  
+  // For companyId filter, we need to join with projects
+  if (filters?.companyId) {
+    const query = db
+      .select({
+        priority: deficiencies.priority,
+        count: count(),
+        totalCost: sum(deficiencies.estimatedCost),
+      })
+      .from(deficiencies)
+      .innerJoin(projects, eq(deficiencies.projectId, projects.id))
+      .where(eq(projects.companyId, filters.companyId))
+      .groupBy(deficiencies.priority);
+    
+    const results = await query;
+    return results.map(r => ({
+      priority: r.priority || 'medium_term',
+      count: Number(r.count),
+      totalCost: Number(r.totalCost || 0),
+    }));
+  }
+
+  // Simple query with optional projectId filter
   let query = db
     .select({
       priority: deficiencies.priority,
@@ -205,21 +237,6 @@ export async function getDeficiencyPriorityBreakdown(
       totalCost: sum(deficiencies.estimatedCost),
     })
     .from(deficiencies);
-
-  // Apply filters
-  const whereConditions = [];
-  if (filters?.projectId) {
-    query = query.innerJoin(assessments, eq(deficiencies.assessmentId, assessments.id))
-      .innerJoin(assets, eq(assessments.assetId, assets.id));
-    whereConditions.push(eq(assets.projectId, filters.projectId));
-  }
-  if (filters?.companyId) {
-    query = query
-      .innerJoin(assessments, eq(deficiencies.assessmentId, assessments.id))
-      .innerJoin(assets, eq(assessments.assetId, assets.id))
-      .innerJoin(projects, eq(assets.projectId, projects.id));
-    whereConditions.push(eq(projects.companyId, filters.companyId));
-  }
 
   if (whereConditions.length > 0) {
     query = query.where(and(...whereConditions));
@@ -256,10 +273,10 @@ export async function getCostAnalysis(
 
   let query = db
     .select({
-      totalRepair: sum(assessments.repairCost),
-      totalReplacement: sum(assessments.replacementCost),
-      avgRepair: avg(assessments.repairCost),
-      avgReplacement: avg(assessments.replacementCost),
+      totalRepair: sum(assessments.estimatedRepairCost),
+      totalReplacement: sum(assessments.replacementValue),
+      avgRepair: avg(assessments.estimatedRepairCost),
+      avgReplacement: avg(assessments.replacementValue),
       count: count(),
     })
     .from(assessments);
