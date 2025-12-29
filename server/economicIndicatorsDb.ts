@@ -1,4 +1,4 @@
-import { eq, desc, and, gte, lte, or, isNull } from "drizzle-orm";
+import { eq, desc, and, gte, lte, SQL } from "drizzle-orm";
 import { economicIndicators } from "../drizzle/schema";
 import { getDb } from "./db";
 
@@ -16,9 +16,7 @@ export async function getAllEconomicIndicators(filters?: {
   const db = await getDb();
   if (!db) return [];
 
-  let query = db.select().from(economicIndicators);
-
-  const conditions = [];
+  const conditions: SQL[] = [];
   if (filters?.region) {
     conditions.push(eq(economicIndicators.region, filters.region));
   }
@@ -30,11 +28,17 @@ export async function getAllEconomicIndicators(filters?: {
   }
 
   if (conditions.length > 0) {
-    query = query.where(and(...conditions));
+    return await db
+      .select()
+      .from(economicIndicators)
+      .where(and(...conditions))
+      .orderBy(desc(economicIndicators.indicatorDate));
   }
 
-  const results = await query.orderBy(desc(economicIndicators.indicatorDate));
-  return results;
+  return await db
+    .select()
+    .from(economicIndicators)
+    .orderBy(desc(economicIndicators.indicatorDate));
 }
 
 /**
@@ -78,7 +82,9 @@ export async function createEconomicIndicator(data: InsertEconomicIndicator) {
   if (!db) throw new Error("Database not available");
 
   const result = await db.insert(economicIndicators).values(data);
-  return result.insertId;
+  // MySQL returns insertId as a bigint, access it from the result array
+  const insertId = (result as unknown as [{ insertId: number }])[0]?.insertId;
+  return insertId;
 }
 
 /**

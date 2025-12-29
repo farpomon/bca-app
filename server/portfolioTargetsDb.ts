@@ -1,4 +1,4 @@
-import { eq, desc, and, gte, lte, or, isNull } from "drizzle-orm";
+import { eq, desc, and, gte, lte, SQL } from "drizzle-orm";
 import { portfolioTargets } from "../drizzle/schema";
 import { getDb } from "./db";
 
@@ -17,9 +17,7 @@ export async function getAllPortfolioTargets(filters?: {
   const db = await getDb();
   if (!db) return [];
 
-  let query = db.select().from(portfolioTargets);
-
-  const conditions = [];
+  const conditions: SQL[] = [];
   if (filters?.companyId !== undefined) {
     conditions.push(eq(portfolioTargets.companyId, filters.companyId));
   }
@@ -34,11 +32,17 @@ export async function getAllPortfolioTargets(filters?: {
   }
 
   if (conditions.length > 0) {
-    query = query.where(and(...conditions));
+    return await db
+      .select()
+      .from(portfolioTargets)
+      .where(and(...conditions))
+      .orderBy(desc(portfolioTargets.targetYear));
   }
 
-  const results = await query.orderBy(desc(portfolioTargets.targetYear));
-  return results;
+  return await db
+    .select()
+    .from(portfolioTargets)
+    .orderBy(desc(portfolioTargets.targetYear));
 }
 
 /**
@@ -48,7 +52,7 @@ export async function getActivePortfolioTargets(companyId?: number) {
   const db = await getDb();
   if (!db) return [];
 
-  const conditions = [eq(portfolioTargets.status, 'on_track' as any)];
+  const conditions: SQL[] = [eq(portfolioTargets.status, 'on_track' as any)];
   if (companyId !== undefined) {
     conditions.push(eq(portfolioTargets.companyId, companyId));
   }
@@ -86,7 +90,9 @@ export async function createPortfolioTarget(data: InsertPortfolioTarget) {
   if (!db) throw new Error("Database not available");
 
   const result = await db.insert(portfolioTargets).values(data);
-  return result.insertId;
+  // MySQL returns insertId as a bigint, access it from the result array
+  const insertId = (result as unknown as [{ insertId: number }])[0]?.insertId;
+  return insertId;
 }
 
 /**
@@ -126,7 +132,7 @@ export async function getPortfolioTargetsForYearRange(
   const db = await getDb();
   if (!db) return [];
 
-  const conditions = [
+  const conditions: SQL[] = [
     gte(portfolioTargets.targetYear, startYear),
     lte(portfolioTargets.targetYear, endYear)
   ];
@@ -174,7 +180,7 @@ export async function getFCITargets(companyId?: number) {
   const db = await getDb();
   if (!db) return [];
 
-  const conditions = [eq(portfolioTargets.targetType, 'fci' as any)];
+  const conditions: SQL[] = [eq(portfolioTargets.targetType, 'fci' as any)];
   if (companyId !== undefined) {
     conditions.push(eq(portfolioTargets.companyId, companyId));
   }
