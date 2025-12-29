@@ -48,6 +48,7 @@ import ASTMCompliant from "./pages/features/ASTMCompliant";
 import OfflineMode from "./pages/features/OfflineMode";
 import AnalyticsInsights from "./pages/features/AnalyticsInsights";
 import { NotificationPermissionDialog } from "./components/NotificationPermissionDialog";
+import { FloatingChatbot } from "./components/FloatingChatbot";
 
 function Router() {
   return (
@@ -109,6 +110,7 @@ function App() {
           <Toaster />
           <NotificationPermissionDialog />
           <Router />
+          <FloatingChatbot />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

@@ -2110,3 +2110,12 @@ Testing:
 - [ ] Add data visualization charts for economic trends
 - [ ] Improve table layout and mobile responsiveness
 - [x] Hide Current Indicators tab and replace with Fetch with AI option
+
+
+## Floating AI Chatbot for User Assistance
+
+- [x] Create FloatingChatbot component with toggle button
+- [x] Add chatbot tRPC procedure with LLM integration
+- [x] Create system prompt with BCA app feature knowledge
+- [x] Integrate chatbot into App.tsx layout
+- [x] Style chatbot with app branding

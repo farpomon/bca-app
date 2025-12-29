@@ -45,6 +45,7 @@ import { backupRouter } from "./routers/backup.router";
 import { economicIndicatorsRouter } from "./economicIndicatorsRouter";
 import { portfolioTargetsRouter } from "./portfolioTargetsRouter";
 import { analyticsRouter } from "./analyticsRouter";
+import { chatbotRouter } from "./routers/chatbot.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -92,6 +93,7 @@ export const appRouter = router({
   portfolioTargets: portfolioTargetsRouter,
   analytics: analyticsRouter,
   backup: backupRouter,
+  chatbot: chatbotRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
