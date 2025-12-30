@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { BuildingCodeSelect } from "@/components/BuildingCodeSelect";
-import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown, FileText, BarChart3 } from "lucide-react";
+import { Building2, Plus, Calendar, MapPin, Loader2, Pencil, Trash2, MoreVertical, Mic, Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown, FileText } from "lucide-react";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { FieldTooltip } from "@/components/FieldTooltip";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
@@ -122,7 +122,7 @@ export default function Projects() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [aiImportDialogOpen, setAIImportDialogOpen] = useState(false);
-  const [deleteEmptyDialogOpen, setDeleteEmptyDialogOpen] = useState(false);
+  
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
@@ -395,20 +395,7 @@ export default function Projects() {
     },
   });
 
-  const deleteEmptyProjects = trpc.projects.deleteEmptyProjects.useMutation({
-    onSuccess: (data) => {
-      if (data.count === 0) {
-        toast.info("No empty projects found to delete");
-      } else {
-        toast.success(`${data.count} empty project(s) deleted successfully`);
-      }
-      setDeleteEmptyDialogOpen(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to delete empty projects");
-    },
-  });
+  
 
   const bulkUpdateStatus = trpc.projects.bulkUpdateStatus.useMutation({
     onSuccess: (data) => {
@@ -601,26 +588,6 @@ export default function Projects() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setLocation('/portfolio-analytics')}
-              className="shadow-sm text-xs md:text-sm"
-              size="sm"
-            >
-              <BarChart3 className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Portfolio Analytics</span>
-              <span className="sm:hidden">Analytics</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteEmptyDialogOpen(true)}
-              className="shadow-sm text-xs md:text-sm border-destructive/50 text-destructive hover:bg-destructive/10"
-              size="sm"
-            >
-              <Trash2 className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Delete Empty Projects</span>
-              <span className="sm:hidden">Delete Empty</span>
-            </Button>
             <Button
               variant="outline"
               onClick={() => setImportDialogOpen(true)}
@@ -1667,30 +1634,6 @@ export default function Projects() {
         }}
       />
 
-      {/* Delete Empty Projects Dialog */}
-      <AlertDialog open={deleteEmptyDialogOpen} onOpenChange={setDeleteEmptyDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete All Empty Projects?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete all projects that have no assets. This action cannot be undone.
-              <br /><br />
-              Are you sure you want to continue?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteEmptyProjects.mutate()}
-              disabled={deleteEmptyProjects.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteEmptyProjects.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete Empty Projects
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       </motion.div>
     </DashboardLayout>
   );

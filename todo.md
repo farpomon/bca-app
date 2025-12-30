@@ -2225,3 +2225,9 @@ Testing:
 - [x] Research and document ISO 27001 certification details
 - [x] Research and document SOC 2 Type II requirements
 - [x] Add data sovereignty infrastructure details
+
+
+## UI Cleanup
+
+- [x] Remove "Analytics" button from Projects page
+- [x] Remove "Delete Empty" button from Projects page
