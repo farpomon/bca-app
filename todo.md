@@ -2215,3 +2215,13 @@ Testing:
 - [ ] Fix remaining MFA enhancements tests
 - [ ] Fix remaining AI import tests
 - [ ] Fix remaining predictions tests
+
+- [x] Fix filter persistence issue - filters not retained when navigating back to previous screen
+- [x] Implement bulk delete for projects with no assets
+- [x] Add backend endpoint to identify and delete empty projects
+- [x] Add UI button to trigger bulk delete of empty projects
+- [x] Add detailed basis and documentation for compliance certifications in app
+- [x] Research and document FOIP compliance requirements
+- [x] Research and document ISO 27001 certification details
+- [x] Research and document SOC 2 Type II requirements
+- [x] Add data sovereignty infrastructure details

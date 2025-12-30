@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 
 /**
@@ -11,6 +11,7 @@ export function useFilterPersistence<T extends Record<string, string>>(
 ) {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
+  const isInitialMount = useRef(true);
 
   // Parse current URL params
   const currentParams = useMemo(() => {
@@ -87,8 +88,14 @@ export function useFilterPersistence<T extends Record<string, string>>(
     ).length;
   }, [filters, defaultFilters]);
 
-  // Sync with URL on mount and when URL changes externally
+  // Sync with URL on mount and when URL changes externally (e.g., back/forward navigation)
   useEffect(() => {
+    // Skip on initial mount since we already initialized from URL
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const newFilters = { ...defaultFilters };
     Object.keys(defaultFilters).forEach((key) => {
       const urlValue = currentParams[key];
@@ -96,8 +103,20 @@ export function useFilterPersistence<T extends Record<string, string>>(
         (newFilters as Record<string, string>)[key] = urlValue;
       }
     });
-    setFiltersState(newFilters);
-  }, [searchString]); // Only re-run when search string changes
+    
+    // Only update state if filters have actually changed
+    const hasChanged = Object.keys(newFilters).some(
+      (key) => {
+        const newValue = newFilters[key as keyof T];
+        const currentValue = filters[key as keyof T];
+        return newValue !== currentValue;
+      }
+    );
+    
+    if (hasChanged) {
+      setFiltersState(newFilters);
+    }
+  }, [searchString]); // Only depend on searchString to detect URL changes
 
   return {
     filters,

@@ -230,6 +230,34 @@ export const appRouter = router({
         return { success: true, count: input.ids.length };
       }),
 
+    deleteEmptyProjects: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const isAdmin = ctx.user.role === "admin";
+        
+        // Get all user's projects
+        const allProjects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin);
+        
+        // Find projects with no assets
+        const emptyProjectIds: number[] = [];
+        for (const project of allProjects) {
+          const projectAssets = await assetsDb.getProjectAssets(project.id);
+          if (projectAssets.length === 0) {
+            emptyProjectIds.push(project.id);
+          }
+        }
+        
+        // Delete empty projects
+        for (const id of emptyProjectIds) {
+          await db.deleteProject(id, ctx.user.id, ctx.user.company, isAdmin);
+        }
+        
+        return { 
+          success: true, 
+          count: emptyProjectIds.length,
+          deletedIds: emptyProjectIds 
+        };
+      }),
+
     restore: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
