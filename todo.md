@@ -2231,3 +2231,8 @@ Testing:
 
 - [x] Remove "Analytics" button from Projects page
 - [x] Remove "Delete Empty" button from Projects page
+
+## Chat Enhancement (Dec 30)
+- [x] Make AI chat more generalist - answer questions about the app AND project/asset
+- [x] Update system prompt to include app documentation and context
+- [x] Add project/asset context awareness to chat responses

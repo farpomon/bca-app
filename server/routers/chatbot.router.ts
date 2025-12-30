@@ -1,11 +1,17 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
+import * as db from "../db";
+import * as assetsDb from "../db-assets";
 
 /**
  * System prompt that provides the chatbot with knowledge about the BCA app features
+ * and enables it to answer questions about both the app AND specific projects/assets
  */
-const BCA_SYSTEM_PROMPT = `You are a helpful assistant for the B³NMA Building Condition Assessment (BCA) application. Your role is to help users understand how to use the various features of the app.
+const BCA_SYSTEM_PROMPT = `You are a helpful AI assistant for the B³NMA Building Condition Assessment (BCA) application. You have two main roles:
+
+1. **App Expert**: Help users understand how to use the BCA application features
+2. **Assessment Advisor**: Provide insights and guidance about building condition assessments, projects, and assets
 
 ## About B³NMA BCA App
 B³NMA is a comprehensive Building Condition Assessment platform designed for property managers, facility assessors, and building professionals. It helps manage building assessments, track deficiencies, generate reports, and optimize capital planning.
@@ -19,7 +25,14 @@ B³NMA is a comprehensive Building Condition Assessment platform designed for pr
 
 ### 2. Building Assessments
 - **Starting an Assessment**: Navigate to a project, select an asset, and click "Start Assessment" to begin evaluating building components.
-- **UNIFORMAT II Classification**: Components are organized using the UNIFORMAT II standard (A-Substructure, B-Shell, C-Interiors, D-Services, E-Equipment, F-Special Construction, G-Building Sitework).
+- **UNIFORMAT II Classification**: Components are organized using the UNIFORMAT II standard:
+  - A - Substructure (foundations, basement construction)
+  - B - Shell (superstructure, exterior enclosure, roofing)
+  - C - Interiors (interior construction, stairs, interior finishes)
+  - D - Services (conveying, plumbing, HVAC, fire protection, electrical)
+  - E - Equipment & Furnishings
+  - F - Special Construction & Demolition
+  - G - Building Sitework
 - **Condition Ratings**: Rate each component as Good, Fair, Poor, or Not Assessed.
 - **Adding Photos**: Upload photos during assessment to document conditions. Multiple photos can be uploaded at once with drag-and-drop support.
 - **Voice Recording**: Use the voice recording feature to capture notes hands-free during field assessments.
@@ -27,6 +40,11 @@ B³NMA is a comprehensive Building Condition Assessment platform designed for pr
 ### 3. Deficiency Tracking
 - **Recording Deficiencies**: Document issues found during assessment with descriptions, priority levels (Immediate, Short-term, Medium-term, Long-term), and estimated repair costs.
 - **Photo Documentation**: Attach photos to deficiencies for visual documentation.
+- **Priority Levels**:
+  - Immediate: Safety hazards requiring urgent attention
+  - Short-term: Issues to address within 1 year
+  - Medium-term: Issues to address within 2-5 years
+  - Long-term: Issues to address within 5+ years
 
 ### 4. AI-Powered Features
 - **AI Import Asset**: Upload BCA documents (PDF, Word) and let AI automatically extract asset information, assessments, and deficiencies.
@@ -37,6 +55,7 @@ B³NMA is a comprehensive Building Condition Assessment platform designed for pr
 - **Automated Reports**: Generate comprehensive BCA reports in PDF format with all assessment data, photos, and recommendations.
 - **Portfolio Analytics**: View analytics across all your projects including condition trends, cost projections, and risk analysis.
 - **Capital Budget Planning**: Use the optimization tools to plan capital expenditures based on assessment priorities.
+- **Facility Condition Index (FCI)**: Calculated as (Deferred Maintenance / Current Replacement Value) × 100
 
 ### 6. Offline Mode
 - **Working Offline**: The app supports offline mode for field assessments. Data is saved locally and synced when connection is restored.
@@ -75,7 +94,102 @@ B³NMA is a comprehensive Building Condition Assessment platform designed for pr
 4. **To import data**: Use AI Import Asset or AI Document Import features
 5. **To work offline**: The app automatically switches to offline mode when connection is lost
 
-Please provide helpful, concise answers to user questions. If you're unsure about something, suggest they contact support or check the documentation.`;
+## Building Assessment Best Practices
+- Always document conditions with photos
+- Use consistent rating criteria across assessments
+- Note the location and extent of deficiencies
+- Include cost estimates for repairs when possible
+- Prioritize safety-related issues
+- Consider remaining useful life of components
+- Document accessibility compliance issues
+
+## Response Guidelines
+- Be helpful, concise, and professional
+- When answering about the app, provide step-by-step guidance
+- When answering about assessments/projects, provide actionable insights
+- If context about a specific project or asset is provided, use that information to give tailored advice
+- If you're unsure about something, suggest they contact support or check the documentation`;
+
+/**
+ * Context-aware system prompt builder that includes project/asset data when available
+ */
+function buildContextAwarePrompt(context?: {
+  projectId?: number;
+  assetId?: number;
+  projectData?: any;
+  assetData?: any;
+  stats?: any;
+  deficiencies?: any[];
+  assessments?: any[];
+}): string {
+  let prompt = BCA_SYSTEM_PROMPT;
+
+  if (context?.projectData) {
+    const project = context.projectData;
+    prompt += `
+
+## Current Project Context
+You are currently helping with the following project:
+
+**Project: ${project.name}**
+- Unique ID: ${project.uniqueId || 'N/A'}
+- Address: ${project.address || 'N/A'}
+- Client: ${project.clientName || 'N/A'}
+- Property Type: ${project.propertyType || 'N/A'}
+- Construction Type: ${project.constructionType || 'N/A'}
+- Year Built: ${project.yearBuilt || 'N/A'}
+- Number of Units: ${project.numberOfUnits || 'N/A'}
+- Number of Stories: ${project.numberOfStories || 'N/A'}
+- Status: ${project.status || 'N/A'}`;
+
+    if (context.stats) {
+      prompt += `
+
+**Project Statistics:**
+- Total Assessments: ${context.stats.assessments || 0}
+- Completed Assessments: ${context.stats.completedAssessments || 0}
+- Total Deficiencies: ${context.stats.deficiencies || 0}
+- Total Estimated Cost: $${(context.stats.totalEstimatedCost || 0).toLocaleString()}`;
+    }
+
+    if (context.deficiencies && context.deficiencies.length > 0) {
+      const critical = context.deficiencies.filter((d: any) => d.severity === 'critical').length;
+      const immediate = context.deficiencies.filter((d: any) => d.priority === 'immediate').length;
+      prompt += `
+
+**Deficiency Summary:**
+- Critical Severity: ${critical}
+- Immediate Priority: ${immediate}
+- Short-term Priority: ${context.deficiencies.filter((d: any) => d.priority === 'short_term').length}
+- Medium-term Priority: ${context.deficiencies.filter((d: any) => d.priority === 'medium_term').length}
+- Long-term Priority: ${context.deficiencies.filter((d: any) => d.priority === 'long_term').length}`;
+    }
+  }
+
+  if (context?.assetData) {
+    const asset = context.assetData;
+    prompt += `
+
+## Current Asset Context
+You are currently helping with the following asset:
+
+**Asset: ${asset.name}**
+- Unique ID: ${asset.uniqueId || 'N/A'}
+- Type: ${asset.assetType || 'N/A'}
+- Address: ${asset.address || asset.streetAddress || 'N/A'}
+- Year Built: ${asset.yearBuilt || 'N/A'}
+- Gross Floor Area: ${asset.grossFloorArea ? `${asset.grossFloorArea.toLocaleString()} sq ft` : 'N/A'}
+- Number of Stories: ${asset.numberOfStories || 'N/A'}
+- Status: ${asset.status || 'N/A'}
+- Current Replacement Value: ${asset.currentReplacementValue ? `$${asset.currentReplacementValue.toLocaleString()}` : 'N/A'}`;
+  }
+
+  prompt += `
+
+When the user asks questions, consider this context to provide relevant, specific answers. You can reference the project/asset details, statistics, and deficiencies in your responses.`;
+
+  return prompt;
+}
 
 /**
  * Message type for chat history
@@ -88,18 +202,67 @@ const messageSchema = z.object({
 export const chatbotRouter = router({
   /**
    * Send a message to the chatbot and get a response
+   * Now supports optional project/asset context for more relevant answers
    */
   chat: protectedProcedure
     .input(z.object({
       message: z.string().min(1).max(2000),
       history: z.array(messageSchema).max(20).optional(),
+      // Optional context for project/asset-specific questions
+      projectId: z.number().optional(),
+      assetId: z.number().optional(),
     }))
-    .mutation(async ({ input }) => {
-      const { message, history = [] } = input;
+    .mutation(async ({ ctx, input }) => {
+      const { message, history = [], projectId, assetId } = input;
+      const isAdmin = ctx.user.role === 'admin';
+
+      // Build context if project or asset ID is provided
+      let context: any = {};
+
+      if (projectId) {
+        try {
+          const projectData = await db.getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+          if (projectData) {
+            context.projectId = projectId;
+            context.projectData = projectData;
+            
+            // Get project stats
+            const stats = await db.getProjectStats(projectId);
+            context.stats = stats;
+            
+            // Get deficiencies
+            const deficiencies = await db.getProjectDeficiencies(projectId);
+            context.deficiencies = deficiencies;
+            
+            // Get assessments
+            const assessments = await db.getProjectAssessments(projectId);
+            context.assessments = assessments;
+          }
+        } catch (error) {
+          console.error("[Chatbot] Error fetching project context:", error);
+        }
+      }
+
+      if (assetId && projectId) {
+        try {
+          const assetData = await assetsDb.getAssetById(assetId, projectId);
+          if (assetData) {
+            context.assetId = assetId;
+            context.assetData = assetData;
+          }
+        } catch (error) {
+          console.error("[Chatbot] Error fetching asset context:", error);
+        }
+      }
+
+      // Build the system prompt with context
+      const systemPrompt = buildContextAwarePrompt(
+        Object.keys(context).length > 0 ? context : undefined
+      );
 
       // Build messages array with system prompt, history, and new message
       const messages = [
-        { role: "system" as const, content: BCA_SYSTEM_PROMPT },
+        { role: "system" as const, content: systemPrompt },
         ...history.map(msg => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,

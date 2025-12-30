@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
 import {
   MessageCircle,
   X,
@@ -15,6 +16,8 @@ import {
   Trash2,
   Minimize2,
   HelpCircle,
+  Building2,
+  FolderOpen,
 } from "lucide-react";
 import { Streamdown } from "streamdown";
 
@@ -23,13 +26,55 @@ type Message = {
   content: string;
 };
 
-const SUGGESTED_PROMPTS = [
+const DEFAULT_PROMPTS = [
   "How do I create a new project?",
   "How do I add photos to an assessment?",
   "What is UNIFORMAT II?",
   "How do I generate a report?",
   "How does offline mode work?",
 ];
+
+const PROJECT_PROMPTS = [
+  "What's the overall condition of this project?",
+  "What are the most critical deficiencies?",
+  "How do I add a new asset to this project?",
+  "Generate a summary of this project",
+  "What should I prioritize for repairs?",
+];
+
+const ASSET_PROMPTS = [
+  "What's the condition of this asset?",
+  "What deficiencies need immediate attention?",
+  "How do I start an assessment for this asset?",
+  "What's the estimated repair cost?",
+  "Summarize the assessment findings",
+];
+
+/**
+ * Extract project and asset IDs from the current URL path
+ */
+function usePageContext() {
+  const [location] = useLocation();
+  
+  return useMemo(() => {
+    // Match patterns like /projects/123 or /projects/123/assets/456
+    const projectMatch = location.match(/\/projects\/(\d+)/);
+    const assetMatch = location.match(/\/assets\/(\d+)/);
+    
+    const projectId = projectMatch ? parseInt(projectMatch[1], 10) : undefined;
+    const assetId = assetMatch ? parseInt(assetMatch[1], 10) : undefined;
+    
+    // Determine page type
+    let pageType: "default" | "project" | "asset" = "default";
+    if (assetId) {
+      pageType = "asset";
+    } else if (projectId) {
+      pageType = "project";
+    }
+    
+    return { projectId, assetId, pageType, path: location };
+  }, [location]);
+}
 
 export function FloatingChatbot() {
   const { isAuthenticated } = useAuth();
@@ -39,6 +84,23 @@ export function FloatingChatbot() {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Get current page context
+  const { projectId, assetId, pageType } = usePageContext();
+  
+  // Select appropriate suggested prompts based on context
+  const suggestedPrompts = useMemo(() => {
+    if (pageType === "asset") return ASSET_PROMPTS;
+    if (pageType === "project") return PROJECT_PROMPTS;
+    return DEFAULT_PROMPTS;
+  }, [pageType]);
+  
+  // Get context label for display
+  const contextLabel = useMemo(() => {
+    if (pageType === "asset") return "Asset Context";
+    if (pageType === "project") return "Project Context";
+    return null;
+  }, [pageType]);
 
   const chatMutation = trpc.chatbot.chat.useMutation({
     onSuccess: (data) => {
@@ -87,10 +149,12 @@ export function FloatingChatbot() {
     setMessages(newMessages);
     setInput("");
 
-    // Send to API
+    // Send to API with context
     chatMutation.mutate({
       message: trimmedContent,
       history: messages.slice(-10), // Keep last 10 messages for context
+      projectId,
+      assetId,
     });
 
     // Focus textarea
@@ -164,7 +228,7 @@ export function FloatingChatbot() {
           >
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
-              <span className="font-medium">Help Assistant</span>
+              <span className="font-medium">AI Assistant</span>
             </div>
             <div className="flex items-center gap-1">
               {!isMinimized && (
@@ -191,6 +255,22 @@ export function FloatingChatbot() {
           {/* Content (hidden when minimized) */}
           {!isMinimized && (
             <>
+              {/* Context indicator */}
+              {contextLabel && (
+                <div className="flex items-center gap-2 px-4 py-2 border-b bg-primary/5 text-xs text-muted-foreground">
+                  {pageType === "asset" ? (
+                    <Building2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <FolderOpen className="w-3.5 h-3.5" />
+                  )}
+                  <span>{contextLabel} Active</span>
+                  <span className="text-primary">•</span>
+                  <span className="text-foreground/70">
+                    I can answer questions about this {pageType}
+                  </span>
+                </div>
+              )}
+              
               {/* Clear button */}
               {messages.length > 0 && (
                 <div className="flex items-center justify-between px-4 py-2 border-b bg-background/50">
@@ -217,12 +297,16 @@ export function FloatingChatbot() {
                       <div className="flex flex-col items-center gap-2">
                         <Sparkles className="w-10 h-10 opacity-20" />
                         <p className="text-sm text-center">
-                          Hi! I can help you learn how to use the BCA app.
+                          {pageType === "asset" 
+                            ? "Hi! I can help you with this asset and the BCA app."
+                            : pageType === "project"
+                            ? "Hi! I can help you with this project and the BCA app."
+                            : "Hi! I can help you learn how to use the BCA app."}
                         </p>
                       </div>
 
                       <div className="flex flex-col gap-2 w-full max-w-xs">
-                        {SUGGESTED_PROMPTS.map((prompt, index) => (
+                        {suggestedPrompts.map((prompt, index) => (
                           <button
                             key={index}
                             onClick={() => handleSend(prompt)}
@@ -306,7 +390,13 @@ export function FloatingChatbot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask a question..."
+                  placeholder={
+                    pageType === "asset"
+                      ? "Ask about this asset or the app..."
+                      : pageType === "project"
+                      ? "Ask about this project or the app..."
+                      : "Ask a question..."
+                  }
                   className="flex-1 max-h-24 resize-none min-h-9 text-sm"
                   rows={1}
                 />

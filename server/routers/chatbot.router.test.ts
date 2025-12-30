@@ -26,6 +26,53 @@ vi.mock("../_core/llm", () => ({
   }),
 }));
 
+// Mock the database modules for context-aware tests
+vi.mock("../db", () => ({
+  getProjectById: vi.fn().mockResolvedValue({
+    id: 1,
+    name: "Test Project",
+    uniqueId: "PROJ-20241230-0001",
+    address: "123 Test Street",
+    clientName: "Test Client",
+    propertyType: "Commercial",
+    constructionType: "Concrete",
+    yearBuilt: 2000,
+    numberOfUnits: 10,
+    numberOfStories: 3,
+    status: "in_progress",
+  }),
+  getProjectStats: vi.fn().mockResolvedValue({
+    assessments: 5,
+    completedAssessments: 3,
+    deficiencies: 12,
+    totalEstimatedCost: 50000,
+  }),
+  getProjectDeficiencies: vi.fn().mockResolvedValue([
+    { id: 1, severity: "critical", priority: "immediate" },
+    { id: 2, severity: "high", priority: "short_term" },
+    { id: 3, severity: "medium", priority: "medium_term" },
+  ]),
+  getProjectAssessments: vi.fn().mockResolvedValue([
+    { id: 1, status: "completed" },
+    { id: 2, status: "active" },
+  ]),
+}));
+
+vi.mock("../db-assets", () => ({
+  getAssetById: vi.fn().mockResolvedValue({
+    id: 1,
+    name: "Test Asset",
+    uniqueId: "ASSET-20241230-0001",
+    assetType: "Building",
+    address: "123 Test Street",
+    yearBuilt: 2000,
+    grossFloorArea: 10000,
+    numberOfStories: 3,
+    status: "active",
+    currentReplacementValue: 1000000,
+  }),
+}));
+
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
 function createAuthContext(): TrpcContext {
@@ -39,6 +86,7 @@ function createAuthContext(): TrpcContext {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
+    company: "test-company",
   };
 
   return {
@@ -82,6 +130,52 @@ describe("chatbot.chat", () => {
         { role: "user", content: "How do I create a new project?" },
         { role: "assistant", content: "To create a new project, click New Project." },
       ],
+    });
+
+    expect(result).toBeDefined();
+    expect(result.response).toBeDefined();
+  });
+
+  it("accepts projectId for project-specific context", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.chatbot.chat({
+      message: "What's the status of this project?",
+      projectId: 1,
+    });
+
+    expect(result).toBeDefined();
+    expect(result.response).toBeDefined();
+    expect(typeof result.response).toBe("string");
+  });
+
+  it("accepts assetId with projectId for asset-specific context", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.chatbot.chat({
+      message: "What are the deficiencies for this asset?",
+      projectId: 1,
+      assetId: 1,
+    });
+
+    expect(result).toBeDefined();
+    expect(result.response).toBeDefined();
+    expect(typeof result.response).toBe("string");
+  });
+
+  it("works with both history and project context", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.chatbot.chat({
+      message: "What should I prioritize?",
+      history: [
+        { role: "user", content: "Tell me about this project" },
+        { role: "assistant", content: "This project has several assessments." },
+      ],
+      projectId: 1,
     });
 
     expect(result).toBeDefined();
