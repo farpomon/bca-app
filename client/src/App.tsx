@@ -49,6 +49,7 @@ import OfflineMode from "./pages/features/OfflineMode";
 import AnalyticsInsights from "./pages/features/AnalyticsInsights";
 import { NotificationPermissionDialog } from "./components/NotificationPermissionDialog";
 import { FloatingChatbot } from "./components/FloatingChatbot";
+import { UnitProvider } from "./contexts/UnitContext";
 
 function Router() {
   return (
@@ -106,12 +107,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <Toaster />
-          <NotificationPermissionDialog />
-          <Router />
-          <FloatingChatbot />
-        </TooltipProvider>
+        <UnitProvider>
+          <TooltipProvider>
+            <Toaster />
+            <NotificationPermissionDialog />
+            <Router />
+            <FloatingChatbot />
+          </TooltipProvider>
+        </UnitProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

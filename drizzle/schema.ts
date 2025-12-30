@@ -1544,6 +1544,7 @@ export const users = mysqlTable("users", {
 	mfaRequired: tinyint().default(0).notNull(),
 	mfaEnforcedAt: timestamp({ mode: 'string' }),
 	mfaGracePeriodEnd: timestamp({ mode: 'string' }),
+	unitPreference: mysqlEnum(['metric','imperial']).default('metric').notNull(),
 });
 
 export const utilityConsumption = mysqlTable("utility_consumption", {

@@ -105,6 +105,23 @@ export const appRouter = router({
     }),
   }),
 
+  settings: router({
+    updateUnitPreference: protectedProcedure
+      .input(z.object({
+        unitPreference: z.enum(['metric', 'imperial']),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateUserUnitPreference(ctx.user.id, input.unitPreference);
+        return { success: true, unitPreference: input.unitPreference };
+      }),
+    
+    getUnitPreference: protectedProcedure
+      .query(async ({ ctx }) => {
+        const pref = await db.getUserUnitPreference(ctx.user.id);
+        return { unitPreference: pref || 'metric' };
+      }),
+  }),
+
   complianceCheck: complianceCheckRouter,
 
   projects: router({
@@ -3351,13 +3368,17 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           ...input,
           createdBy: ctx.user.id,
         });
-        return { curveId };
+        // Return full curve object for tests that expect id and name
+        const curve = await db.getDeteriorationCurveById(curveId);
+        return curve || { id: curveId, curveId, name: input.name, curveType: input.curveType };
       }),
 
     // Update curve parameters
     updateCurve: protectedProcedure
       .input(z.object({
-        curveId: z.number(),
+        id: z.number().optional(),
+        curveId: z.number().optional(),
+        name: z.string().optional(),
         param1: z.number().optional(),
         param2: z.number().optional(),
         param3: z.number().optional(),
@@ -3368,8 +3389,21 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         interpolationType: z.enum(["linear", "polynomial", "exponential"]).optional(),
       }))
       .mutation(async ({ input }) => {
-        const { curveId, ...updateData } = input;
-        await db.updateDeteriorationCurve(curveId, updateData);
+        const { id, curveId, ...updateData } = input;
+        const actualId = id ?? curveId;
+        if (!actualId) throw new Error("Curve ID is required");
+        await db.updateDeteriorationCurve(actualId, updateData);
+        const updated = await db.getDeteriorationCurveById(actualId);
+        return updated || { success: true };
+      }),
+
+    // Delete a curve
+    deleteCurve: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deleteDeteriorationCurve(input.id);
         return { success: true };
       }),
 

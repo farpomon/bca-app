@@ -84,11 +84,12 @@ export async function calculatePortfolioKPIs(
     : 0;
   const portfolioCI = 100 - portfolioFCI;
 
-  // Get component and assessment counts
+  // Get component and assessment counts - building_components is a reference table without projectId
+  // Count assessments as proxy for component coverage
   const componentData = await db.execute(sql.raw(`
-    SELECT COUNT(*) as componentCount
-    FROM building_components bc
-    INNER JOIN projects p ON bc.projectId = p.id
+    SELECT COUNT(DISTINCT a.componentCode) as componentCount
+    FROM assessments a
+    INNER JOIN projects p ON a.projectId = p.id
     WHERE ${whereClause}
   `));
 

@@ -30,6 +30,7 @@ import { Button } from "./ui/button";
 import { MFAGracePeriodBanner } from './MFAGracePeriodBanner';
 import { OfflineStatusBanner } from './OfflineStatusBanner';
 import { SidebarOfflineStatus } from './SidebarOfflineStatus';
+import { UnitToggleCompact } from './UnitToggle';
 
 const menuItems = [
   { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
@@ -311,6 +312,7 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
+            <UnitToggleCompact />
           </div>
         )}
         <main className="flex-1 p-4">

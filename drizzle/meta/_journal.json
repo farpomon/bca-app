@@ -477,6 +477,13 @@
       "when": 1766972840551,
       "tag": "0067_kind_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "5",
+      "when": 1767105020617,
+      "tag": "0068_exotic_vapor",
+      "breakpoints": true
     }
   ]
 }

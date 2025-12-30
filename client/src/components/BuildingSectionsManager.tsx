@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { trpc } from "@/lib/trpc";
 import { Plus, Edit, Trash2, Building2, Calendar, Ruler, Layers, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { FormattedMeasurement } from "@/components/FormattedMeasurement";
 
 interface BuildingSectionsManagerProps {
   projectId: number;
@@ -235,7 +236,7 @@ export default function BuildingSectionsManager({ projectId }: BuildingSectionsM
                       <Ruler className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="text-xs text-muted-foreground">Floor Area</div>
-                        <div className="font-medium">{section.grossFloorArea.toLocaleString()} sq ft</div>
+                        <div className="font-medium"><FormattedMeasurement value={Number(section.grossFloorArea)} type="area" /></div>
                       </div>
                     </div>
                   )}

@@ -13,6 +13,7 @@ import { AIImportAssetDialog } from "@/components/AIImportAssetDialog";
 import type { Asset } from "../../../drizzle/schema";
 import { BackButton } from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
+import { FormattedMeasurement } from "@/components/FormattedMeasurement";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   AlertDialog,
@@ -211,7 +212,7 @@ export default function AssetsList() {
                     {asset.grossFloorArea && (
                       <div>
                         <span className="text-muted-foreground">Floor Area:</span>
-                        <p className="font-medium">{asset.grossFloorArea.toLocaleString()} sq ft</p>
+                        <p className="font-medium"><FormattedMeasurement value={Number(asset.grossFloorArea)} type="area" /></p>
                       </div>
                     )}
                     {asset.numberOfStories && (

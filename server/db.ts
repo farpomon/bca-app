@@ -2033,6 +2033,19 @@ export async function updateDeteriorationCurve(
   await database.update(deteriorationCurves).set(data).where(eq(deteriorationCurves.id, id));
 }
 
+export async function getDeteriorationCurveById(id: number) {
+  const database = await getDb();
+  if (!database) return null;
+
+  const result = await database
+    .select()
+    .from(deteriorationCurves)
+    .where(eq(deteriorationCurves.id, id))
+    .limit(1);
+
+  return result[0] || null;
+}
+
 export async function deleteDeteriorationCurve(id: number) {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
@@ -2367,4 +2380,32 @@ export async function getAssessmentById(assessmentId: number) {
     .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+
+// ============================================================================
+// User Unit Preference Functions
+// ============================================================================
+
+export async function updateUserUnitPreference(userId: number, unitPreference: 'metric' | 'imperial') {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(users)
+    .set({ unitPreference })
+    .where(eq(users.id, userId));
+}
+
+export async function getUserUnitPreference(userId: number): Promise<'metric' | 'imperial' | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select({ unitPreference: users.unitPreference })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  
+  return result[0]?.unitPreference || null;
 }

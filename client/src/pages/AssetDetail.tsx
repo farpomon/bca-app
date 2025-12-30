@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import ExportButton from "@/components/ExportButton";
 import { Asset3DModelTab } from "@/components/Asset3DModelTab";
 import { AssetFinancialTab } from "@/components/AssetFinancialTab";
+import { FormattedMeasurement } from "@/components/FormattedMeasurement";
 
 export default function AssetDetail() {
   const { id, assetId } = useParams();
@@ -381,7 +382,7 @@ export default function AssetDetail() {
                   {asset.grossFloorArea && (
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-1">Floor Area</h3>
-                      <p className="text-sm font-medium">{asset.grossFloorArea.toLocaleString()} sq ft</p>
+                      <p className="text-sm font-medium"><FormattedMeasurement value={Number(asset.grossFloorArea)} type="area" /></p>
                     </div>
                   )}
                   {asset.numberOfStories && (

@@ -1,5 +1,17 @@
 # BCA App TODO
 
+## 🔥 Unit System Toggle (Metric/Imperial)
+
+- [x] Add unitPreference field to users table (metric/imperial)
+- [x] Create unit conversion utility functions
+- [x] Create UnitContext for React app
+- [x] Add unit toggle component in user settings
+- [x] Update area displays (sq ft / sq m)
+- [x] Update length displays (ft / m)
+- [x] Update temperature displays (°F / °C)
+- [x] Update cost per unit displays
+- [x] Add tRPC endpoint to save user unit preference
+
 ## 🔥 Economic Indicators AI Data Fetch
 
 - [x] Replace placeholder/test economic indicators with real AI-fetched data
@@ -2236,3 +2248,15 @@ Testing:
 - [x] Make AI chat more generalist - answer questions about the app AND project/asset
 - [x] Update system prompt to include app documentation and context
 - [x] Add project/asset context awareness to chat responses
+
+
+## Conversation Persistence Feature (Dec 30)
+- [ ] Create conversations table in database schema
+- [ ] Create messages table in database schema
+- [ ] Add database query helpers for conversations and messages
+- [ ] Create tRPC procedures for conversation CRUD (create, list, get, delete)
+- [ ] Create tRPC procedures for message CRUD (add, list by conversation)
+- [ ] Update AI chat frontend to save conversations
+- [ ] Add conversation history sidebar/list UI
+- [ ] Add ability to load previous conversations
+- [ ] Test conversation persistence end-to-end
