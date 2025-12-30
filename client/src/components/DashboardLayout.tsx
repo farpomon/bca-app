@@ -185,7 +185,7 @@ function DashboardLayoutContent({
           className="border-r-0"
           disableTransition={isResizing}
         >
-          <SidebarHeader className="h-16 justify-center">
+          <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/50">
             <div className="flex items-center gap-3 pl-2 group-data-[collapsible=icon]:px-0 transition-all w-full">
               {isCollapsed ? (
                 <div className="relative h-8 w-8 shrink-0 group">
@@ -209,7 +209,7 @@ function DashboardLayoutContent({
                       className="h-8 w-8 rounded-md object-cover ring-1 ring-border shrink-0"
                       alt="Logo"
                     />
-                    <span className="font-semibold tracking-tight truncate">
+                    <span className="font-bold tracking-tight truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                       {APP_TITLE}
                     </span>
                   </div>
@@ -315,7 +315,7 @@ function DashboardLayoutContent({
             <UnitToggleCompact />
           </div>
         )}
-        <main className="flex-1 p-4">
+        <main className="flex-1 p-4 md:p-6">
           <OfflineStatusBanner />
           <MFAGracePeriodBanner />
           {children}
