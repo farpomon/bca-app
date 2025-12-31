@@ -2660,3 +2660,11 @@ Testing:
 - [x] Display photo location (GPS coordinates) next to photos in gallery
 - [x] Capture geolocation when taking/uploading photos
 - [x] Display latitude/longitude in photo gallery and preview dialog
+
+## Photo Map View Feature
+
+- [x] Create AssetPhotoMap component to display geotagged photos on interactive map
+- [x] Add backend procedure to fetch geotagged photos for an asset (using existing byAsset query)
+- [x] Integrate map view into Photos tab on AssetDetail page
+- [x] Add photo markers with click-to-view functionality
+- [x] Show photo thumbnails in info windows on marker click

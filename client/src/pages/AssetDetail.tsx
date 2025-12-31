@@ -23,12 +23,14 @@ import {
   Clock,
   FileBarChart,
   CalendarDays,
-  MapPin
+  MapPin,
+  Map
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AssetPhotoUpload from "@/components/AssetPhotoUpload";
 import AssetPhotoGallery from "@/components/AssetPhotoGallery";
+import AssetPhotoMap from "@/components/AssetPhotoMap";
 import AssetDocumentUpload from "@/components/AssetDocumentUpload";
 import AssetDocumentList from "@/components/AssetDocumentList";
 import AssetOptimization from "@/components/AssetOptimization";
@@ -502,6 +504,21 @@ export default function AssetDetail() {
               </CardHeader>
               <CardContent>
                 <AssetPhotoGallery assetId={assetIdNum} projectId={projectId} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Map className="h-5 w-5" />
+                  Photo Map View
+                </CardTitle>
+                <CardDescription>
+                  View all geotagged photos on an interactive map to see where assessments were conducted
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetPhotoMap assetId={assetIdNum} projectId={projectId} />
               </CardContent>
             </Card>
           </TabsContent>
