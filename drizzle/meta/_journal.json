@@ -498,6 +498,13 @@
       "when": 1767151024167,
       "tag": "0070_classy_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "5",
+      "when": 1767205834401,
+      "tag": "0071_ambitious_unus",
+      "breakpoints": true
     }
   ]
 }

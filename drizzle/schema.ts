@@ -63,6 +63,29 @@ export const companies = mysqlTable("companies", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
+/**
+ * Company Users Junction Table
+ * Links users to companies with company-specific roles
+ * Allows users to belong to multiple companies with different roles in each
+ */
+export const companyUsers = mysqlTable("company_users", {
+	id: int().autoincrement().notNull().primaryKey(),
+	companyId: int().notNull(),
+	userId: int().notNull(),
+	companyRole: mysqlEnum(['company_admin', 'project_manager', 'editor', 'viewer']).notNull(),
+	invitedBy: int(),
+	invitedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	acceptedAt: timestamp({ mode: 'string' }),
+	status: mysqlEnum(['active', 'inactive', 'pending']).default('active').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_company_user").on(table.companyId, table.userId),
+	index("idx_user_companies").on(table.userId),
+	index("idx_company_role").on(table.companyId, table.companyRole),
+]);
+
 export const companyAccessCodes = mysqlTable("company_access_codes", {
 	id: int().autoincrement().notNull(),
 	companyId: int().notNull(),
@@ -1984,6 +2007,8 @@ export type ProjectPermission = typeof projectPermissions.$inferSelect;
 export type InsertProjectPermission = typeof projectPermissions.$inferInsert;
 export type Company = typeof companies.$inferSelect;
 export type InsertCompany = typeof companies.$inferInsert;
+export type CompanyUser = typeof companyUsers.$inferSelect;
+export type InsertCompanyUser = typeof companyUsers.$inferInsert;
 export type CompanyAccessCode = typeof companyAccessCodes.$inferSelect;
 export type InsertCompanyAccessCode = typeof companyAccessCodes.$inferInsert;
 export type Assessment = typeof assessments.$inferSelect;

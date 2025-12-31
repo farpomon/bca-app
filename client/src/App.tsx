@@ -41,6 +41,7 @@ import SignUp from "./pages/SignUp";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
+import CompanyUsersPage from "./pages/CompanyUsersPage";
 import UniformatClassification from "./pages/features/UniformatClassification";
 import VoiceRecording from "./pages/features/VoiceRecording";
 import AutomatedReports from "./pages/features/AutomatedReports";
@@ -67,6 +68,7 @@ function Router() {
       <Route path={"/contact"} component={Contact} />
       <Route path={"/pending-approval"} component={PendingApproval} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/company-users"} component={CompanyUsersPage} />
       <Route path={"/deleted-projects"} component={DeletedProjects} />
       <Route path={"/projects"} component={Projects} />
       <Route path={"/projects/:id/dashboard"} component={ProjectDashboard} />

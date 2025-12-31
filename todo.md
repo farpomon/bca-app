@@ -2393,3 +2393,16 @@ Testing:
 - [ ] Test admin company filtering
 - [ ] Test super admin bypass
 
+
+
+## Company-Specific Roles Feature
+
+- [x] Design multi-company database schema (companies, company_users, roles)
+- [x] Update database schema with companies and company_users tables
+- [x] Implement backend procedures for company management
+- [x] Implement backend procedures for user role management within companies
+- [x] Build company management UI (create, list, edit companies)
+- [x] Build user management UI with company-specific roles
+- [x] Add role-based access control middleware
+- [x] Test multi-company role permissions
+- [x] Write vitest tests for role-based access control

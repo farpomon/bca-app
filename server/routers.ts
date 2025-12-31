@@ -47,6 +47,7 @@ import { portfolioTargetsRouter } from "./portfolioTargetsRouter";
 import { analyticsRouter } from "./analyticsRouter";
 import { chatbotRouter } from "./routers/chatbot.router";
 import { projectPermissionsRouter } from "./routers/projectPermissions.router";
+import { companyRolesRouter } from "./companyRolesRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -92,6 +93,7 @@ export const appRouter = router({
   portfolioAnalyticsEnhanced: portfolioAnalyticsEnhancedRouter,
   economicIndicators: economicIndicatorsRouter,
   portfolioTargets: portfolioTargetsRouter,
+  companyRoles: companyRolesRouter,
   analytics: analyticsRouter,
   backup: backupRouter,
   chatbot: chatbotRouter,
