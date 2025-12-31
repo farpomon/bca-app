@@ -2306,3 +2306,51 @@ Testing:
 - [ ] Update charts with gradient fills (uses existing gradient palette)
 - [x] Update badges and tags with gradient backgrounds
 
+- [x] Remove Total Projects and Active Assessments stats cards from Projects dashboard
+
+- [x] Remove all projects except 5 specified ones (Metro Vancouver, Downtown Commercial, Regional Healthcare, University Calgary, City of Vancouver)
+
+## Company and User Management Feature
+
+### Database Schema
+- [ ] Add companies table with fields: id, name, address, contactEmail, contactPhone, createdAt, updatedAt
+- [ ] Add userCompanyAccess table for user-company relationships with access levels
+- [ ] Add projectAccessGrants table for admin access to client projects (requires client approval)
+- [ ] Update projects table to include companyId foreign key
+- [ ] Run database migrations
+
+### Backend Procedures
+- [ ] Create companies.create procedure (admin only)
+- [ ] Create companies.list procedure (admin only)
+- [ ] Create companies.update procedure (admin only)
+- [ ] Create companies.delete procedure (admin only)
+- [ ] Create companyUsers.create procedure (create user under company)
+- [ ] Create companyUsers.list procedure (list users by company)
+- [ ] Create companyUsers.update procedure (update user company assignment)
+- [ ] Create projectAccessGrants.request procedure (admin requests access)
+- [ ] Create projectAccessGrants.approve procedure (client approves access)
+- [ ] Create projectAccessGrants.revoke procedure (client revokes access)
+
+### UI Components
+- [ ] Add "Create Company" button to User Management page
+- [ ] Create CompanyDialog component for creating/editing companies
+- [ ] Add company dropdown filter to user list
+- [ ] Create UserDialog component for creating users under companies
+- [ ] Add company column to users table
+- [ ] Create Companies tab in Admin Dashboard
+- [ ] Add access request/grant UI for project visibility
+
+### Access Control Logic
+- [ ] Update project queries to filter by company access
+- [ ] Implement access grant checking for admin viewing client projects
+- [ ] Add visual indicator for projects admin cannot access
+- [ ] Show "Request Access" button for restricted projects
+
+
+
+## Company and User Management Enhancements
+
+- [x] Create company functionality in Admin Dashboard
+- [x] Create user under company functionality
+- [x] Privacy lock toggle for companies
+- [x] Access control for project visibility based on privacy lock

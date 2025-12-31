@@ -1091,36 +1091,7 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* FCI Dashboard Summary */}
-        {projects && projects.length > 0 && (
-          <div className="grid gap-6 md:grid-cols-3">
-            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-muted-foreground mb-3">Total Projects</p>
-                <div className="text-4xl font-semibold tracking-tight mb-1">{projects.length}</div>
-                <p className="text-sm text-muted-foreground">Across all statuses</p>
-              </CardContent>
-            </Card>
-            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-muted-foreground mb-3">Active Assessments</p>
-                <div className="text-4xl font-semibold tracking-tight mb-1">
-                  {projects.filter(p => p.status === 'in_progress').length}
-                </div>
-                <p className="text-sm text-muted-foreground">Currently in progress</p>
-              </CardContent>
-            </Card>
-            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-muted-foreground mb-3">Completed</p>
-                <div className="text-4xl font-semibold tracking-tight mb-1">
-                  {projects.filter(p => p.status === 'completed').length}
-                </div>
-                <p className="text-sm text-muted-foreground">Finished assessments</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">

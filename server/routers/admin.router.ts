@@ -1099,4 +1099,113 @@ export const adminRouter = router({
         isInCompany: input.companyName ? u.company === input.companyName : false,
       }));
     }),
+
+  /**
+   * Create a new user directly under a company
+   * This creates a placeholder user that will be activated when they first log in
+   */
+  createUserForCompany: adminProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      companyName: z.string().min(1),
+      role: z.enum(["viewer", "editor", "project_manager", "admin"]).default("viewer"),
+      accountStatus: z.enum(["pending", "active", "trial"]).default("pending"),
+      trialDays: z.number().min(1).max(365).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Verify company exists
+      const company = await database.select().from(companies).where(eq(companies.name, input.companyName)).limit(1);
+      if (company.length === 0) {
+        throw new Error("Company not found");
+      }
+
+      // Check if user with this email already exists
+      const existingUser = await database.select().from(users).where(eq(users.email, input.email)).limit(1);
+      if (existingUser.length > 0) {
+        throw new Error("A user with this email already exists");
+      }
+
+      // Check company max users limit
+      const companyUsers = await database.select().from(users).where(eq(users.company, input.companyName));
+      const maxUsers = company[0].maxUsers ?? 100;
+      if (companyUsers.length >= maxUsers) {
+        throw new Error(`Company has reached its maximum user limit of ${maxUsers}`);
+      }
+
+      // Calculate trial end date if trial status and days provided
+      let trialEndsAt: string | null = null;
+      if (input.accountStatus === "trial" && input.trialDays) {
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + input.trialDays);
+        trialEndsAt = trialEnd.toISOString();
+      } else if (input.accountStatus === "trial") {
+        // Use company default trial duration
+        const defaultDays = company[0].defaultTrialDuration ?? 14;
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + defaultDays);
+        trialEndsAt = trialEnd.toISOString();
+      }
+
+      // Generate a temporary openId (will be replaced when user actually logs in)
+      const tempOpenId = `pending_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      // Create the user
+      const result = await database.insert(users).values({
+        openId: tempOpenId,
+        name: input.name,
+        email: input.email,
+        company: input.companyName,
+        role: input.role,
+        accountStatus: input.accountStatus,
+        trialEndsAt: trialEndsAt,
+        city: company[0].city || null,
+      });
+
+      return { 
+        success: true, 
+        id: Number(result[0].insertId),
+        message: `User ${input.name} created and assigned to ${input.companyName}` 
+      };
+    }),
+
+  /**
+   * Remove user from company (unassign)
+   */
+  removeUserFromCompany: adminProcedure
+    .input(z.object({
+      userId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database.update(users).set({
+        company: null,
+      }).where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Toggle privacy lock for a company
+   */
+  togglePrivacyLock: adminProcedure
+    .input(z.object({
+      companyId: z.number(),
+      enabled: z.boolean(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database.update(companies).set({
+        privacyLockEnabled: input.enabled ? 1 : 0,
+      }).where(eq(companies.id, input.companyId));
+
+      return { success: true };
+    }),
 });

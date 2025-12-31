@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings, Lock, LockOpen, UserPlus, Crown } from "lucide-react";
+import { Building2, Users, Plus, Pencil, Trash2, Loader2, Search, AlertTriangle, Calendar, Settings, Lock, LockOpen, UserPlus, Crown, UserCog } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -76,6 +76,15 @@ export function CompanyManagement() {
   const [adminSearchQuery, setAdminSearchQuery] = useState("");
   const [assignAdminDialogOpen, setAssignAdminDialogOpen] = useState(false);
   const [assignAdminCompany, setAssignAdminCompany] = useState<{ id: number; name: string } | null>(null);
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
+  const [createUserCompany, setCreateUserCompany] = useState<{ id: number; name: string } | null>(null);
+  const [newUserData, setNewUserData] = useState({
+    name: "",
+    email: "",
+    role: "viewer" as "viewer" | "editor" | "project_manager" | "admin",
+    accountStatus: "pending" as "pending" | "active" | "trial",
+    trialDays: 14,
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -103,6 +112,38 @@ export function CompanyManagement() {
   );
 
   // Mutations
+  // Mutation to create user for company
+  const createUserForCompanyMutation = trpc.admin.createUserForCompany.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      setCreateUserDialogOpen(false);
+      setCreateUserCompany(null);
+      setNewUserData({
+        name: "",
+        email: "",
+        role: "viewer",
+        accountStatus: "pending",
+        trialDays: 14,
+      });
+      companiesQuery.refetch();
+      companyDetailQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to create user: ${error.message}`);
+    },
+  });
+
+  // Mutation to toggle privacy lock
+  const togglePrivacyLockMutation = trpc.admin.togglePrivacyLock.useMutation({
+    onSuccess: (_, variables) => {
+      toast.success(variables.enabled ? "Privacy lock enabled" : "Privacy lock disabled");
+      companiesQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to toggle privacy lock: ${error.message}`);
+    },
+  });
+
   // Mutation to create company with admin
   const createCompanyWithAdminMutation = trpc.admin.createCompanyWithAdmin.useMutation({
     onSuccess: () => {
@@ -237,6 +278,37 @@ export function CompanyManagement() {
     setAssignAdminCompany(company);
     setSelectedAdminUser(null);
     setAssignAdminDialogOpen(true);
+  };
+
+  const openCreateUserDialog = (company: { id: number; name: string }) => {
+    setCreateUserCompany(company);
+    setNewUserData({
+      name: "",
+      email: "",
+      role: "viewer",
+      accountStatus: "pending",
+      trialDays: 14,
+    });
+    setCreateUserDialogOpen(true);
+  };
+
+  const handleCreateUser = () => {
+    if (!createUserCompany) return;
+    createUserForCompanyMutation.mutate({
+      name: newUserData.name,
+      email: newUserData.email,
+      companyName: createUserCompany.name,
+      role: newUserData.role,
+      accountStatus: newUserData.accountStatus,
+      trialDays: newUserData.accountStatus === "trial" ? newUserData.trialDays : undefined,
+    });
+  };
+
+  const handleTogglePrivacyLock = (companyId: number, currentState: number) => {
+    togglePrivacyLockMutation.mutate({
+      companyId,
+      enabled: currentState !== 1,
+    });
   };
 
   const handleUpdate = () => {
@@ -519,6 +591,26 @@ export function CompanyManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openCreateUserDialog({ id: company.id, name: company.name })}
+                          title="Create User"
+                        >
+                          <UserPlus className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleTogglePrivacyLock(company.id, company.privacyLockEnabled)}
+                          title={company.privacyLockEnabled === 1 ? "Disable Privacy Lock" : "Enable Privacy Lock"}
+                        >
+                          {company.privacyLockEnabled === 1 ? (
+                            <Lock className="h-4 w-4 text-red-500" />
+                          ) : (
+                            <LockOpen className="h-4 w-4 text-gray-400" />
+                          )}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -1030,6 +1122,107 @@ export function CompanyManagement() {
             <Button onClick={confirmExtendTrial} disabled={extendTrialMutation.isPending}>
               {extendTrialMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Extend Trial
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createUserDialogOpen} onOpenChange={setCreateUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-green-600" />
+              Create User for {createUserCompany?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Create a new user account under this company. The user will receive an invitation to set up their account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Full Name *</Label>
+              <Input
+                value={newUserData.name}
+                onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+                placeholder="Enter user's full name"
+              />
+            </div>
+            <div>
+              <Label>Email Address *</Label>
+              <Input
+                type="email"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                placeholder="Enter user's email"
+              />
+            </div>
+            <div>
+              <Label>Role</Label>
+              <Select
+                value={newUserData.role}
+                onValueChange={(value: "viewer" | "editor" | "project_manager" | "admin") =>
+                  setNewUserData({ ...newUserData, role: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="viewer">Viewer</SelectItem>
+                  <SelectItem value="editor">Editor</SelectItem>
+                  <SelectItem value="project_manager">Project Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Account Status</Label>
+              <Select
+                value={newUserData.accountStatus}
+                onValueChange={(value: "pending" | "active" | "trial") =>
+                  setNewUserData({ ...newUserData, accountStatus: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending (awaiting first login)</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="trial">Trial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {newUserData.accountStatus === "trial" && (
+              <div>
+                <Label>Trial Duration (days)</Label>
+                <Input
+                  type="number"
+                  value={newUserData.trialDays}
+                  onChange={(e) => setNewUserData({ ...newUserData, trialDays: parseInt(e.target.value) || 14 })}
+                  min={1}
+                  max={365}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Trial will end on: {new Date(Date.now() + newUserData.trialDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setCreateUserDialogOpen(false);
+              setCreateUserCompany(null);
+            }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={!newUserData.name || !newUserData.email || createUserForCompanyMutation.isPending}
+            >
+              {createUserForCompanyMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create User
             </Button>
           </DialogFooter>
         </DialogContent>
