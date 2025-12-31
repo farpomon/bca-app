@@ -10,6 +10,7 @@ import { getDb } from "../db";
 import { users, projects, companies, companyAccessCodes } from "../../drizzle/schema";
 import { sql } from "drizzle-orm";
 import { eq } from "drizzle-orm";
+import { sendWelcomeEmail, resendWelcomeEmail } from "../services/welcomeEmail";
 
 export const adminRouter = router({
   /**
@@ -1165,10 +1166,29 @@ export const adminRouter = router({
         city: company[0].city || null,
       });
 
+      const userId = Number(result[0].insertId);
+
+      // Send welcome email to the new user
+      let emailSent = false;
+      try {
+        emailSent = await sendWelcomeEmail({
+          userId,
+          name: input.name,
+          email: input.email,
+          companyName: input.companyName,
+          role: input.role,
+          accountStatus: input.accountStatus,
+        });
+        console.log(`[Admin] Welcome email ${emailSent ? 'sent' : 'failed'} for user ${userId}`);
+      } catch (error) {
+        console.error('[Admin] Error sending welcome email:', error);
+      }
+
       return { 
         success: true, 
-        id: Number(result[0].insertId),
-        message: `User ${input.name} created and assigned to ${input.companyName}` 
+        id: userId,
+        emailSent,
+        message: `User ${input.name} created and assigned to ${input.companyName}${emailSent ? ' - Welcome email sent' : ''}` 
       };
     }),
 
@@ -1207,5 +1227,20 @@ export const adminRouter = router({
       }).where(eq(companies.id, input.companyId));
 
       return { success: true };
+    }),
+
+  /**
+   * Resend welcome email to a user
+   */
+  resendWelcomeEmail: adminProcedure
+    .input(z.object({
+      userId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const result = await resendWelcomeEmail(input.userId);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result;
     }),
 });

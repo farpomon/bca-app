@@ -2354,3 +2354,24 @@ Testing:
 - [x] Create user under company functionality
 - [x] Privacy lock toggle for companies
 - [x] Access control for project visibility based on privacy lock
+
+
+## Email Invitation System for New Users
+
+- [x] Create email template for welcome/invitation emails
+- [x] Add sendWelcomeEmail function using SendGrid
+- [x] Update user creation flow to trigger welcome email
+- [x] Include login instructions and app URL in email
+- [x] Add email sent status tracking to users table (welcomeEmailSent, welcomeEmailSentAt)
+- [x] Add resend welcome email endpoint and UI button
+- [ ] Test email delivery with new user creation (ready for user testing)
+
+## Company-Level Project Permissions
+
+- [x] Enhance projectPermissions table with companyId and grantedBy fields
+- [x] Add tRPC endpoints for managing project permissions (grant, revoke, bulkGrant, bulkRevoke)
+- [x] Create ProjectPermissionsManager UI component for company admins
+- [x] Add Project Permissions tab to Admin page
+- [ ] Update project queries to filter by user permissions (future enhancement)
+- [ ] Add permission check middleware for project access (future enhancement)
+- [ ] Test permission-based project filtering (ready for user testing)

@@ -40,6 +40,7 @@ import { UndoHistory } from "@/components/UndoHistory";
 import { MFATimeRestrictionDialog } from "@/components/MFATimeRestrictionDialog";
 import { BackupManagement } from "@/components/BackupManagement";
 import { BackButton } from "@/components/BackButton";
+import { ProjectPermissionsManager } from "@/components/ProjectPermissionsManager";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -125,6 +126,19 @@ export default function Admin() {
       toast.error(`Failed to update MFA requirement: ${error.message}`);
     },
   });
+
+  const resendWelcomeEmailMutation = trpc.admin.resendWelcomeEmail.useMutation({
+    onSuccess: () => {
+      toast.success("Welcome email sent successfully");
+    },
+    onError: (error) => {
+      toast.error(`Failed to send welcome email: ${error.message}`);
+    },
+  });
+
+  const handleResendWelcomeEmail = (userId: number) => {
+    resendWelcomeEmailMutation.mutate({ userId });
+  };
 
   // Loading state
   if (loading || !user) {
@@ -266,6 +280,10 @@ export default function Admin() {
           <TabsTrigger value="backup" className="gap-2">
             <Database className="w-4 h-4" />
             Backup & Restore
+          </TabsTrigger>
+          <TabsTrigger value="project-permissions" className="gap-2">
+            <Shield className="w-4 h-4" />
+            Project Permissions
           </TabsTrigger>
         </TabsList>
 
@@ -587,6 +605,18 @@ export default function Admin() {
                                 </Button>
                               </div>
                             </div>
+                            {u.email && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleResendWelcomeEmail(u.id)}
+                                disabled={resendWelcomeEmailMutation.isPending}
+                                title="Resend welcome email"
+                              >
+                                <Mail className="h-4 w-4 mr-1" />
+                                Send Email
+                              </Button>
+                            )}
                             {u.id !== user.id && (
                               <Button
                                 variant="ghost"
@@ -823,6 +853,11 @@ export default function Admin() {
         {/* Backup & Restore Tab */}
         <TabsContent value="backup" className="space-y-4">
           <BackupManagement />
+        </TabsContent>
+
+        {/* Project Permissions Tab */}
+        <TabsContent value="project-permissions" className="space-y-4">
+          <ProjectPermissionsManager />
         </TabsContent>
       </Tabs>
 

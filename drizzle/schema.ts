@@ -34,9 +34,16 @@ export const projectPermissions = mysqlTable("project_permissions", {
 	id: int().autoincrement().notNull(),
 	projectId: int().notNull(),
 	userId: int().notNull(),
+	companyId: int(),
 	permission: mysqlEnum(['view','edit']).default('view').notNull(),
+	grantedBy: int(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-});
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_project_user").on(table.projectId, table.userId),
+	index("idx_company_project").on(table.companyId, table.projectId),
+]);
 
 export const companies = mysqlTable("companies", {
 	id: int().autoincrement().notNull(),
@@ -1545,6 +1552,8 @@ export const users = mysqlTable("users", {
 	mfaEnforcedAt: timestamp({ mode: 'string' }),
 	mfaGracePeriodEnd: timestamp({ mode: 'string' }),
 	unitPreference: mysqlEnum(['metric','imperial']).default('metric').notNull(),
+	welcomeEmailSent: tinyint().default(0).notNull(),
+	welcomeEmailSentAt: timestamp({ mode: 'string' }),
 });
 
 export const utilityConsumption = mysqlTable("utility_consumption", {
