@@ -18,8 +18,8 @@ import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
 import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
 
 // Component to display existing photos for an assessment
-function ExistingPhotosDisplay({ assessmentId }: { assessmentId: number }) {
-  const { data: photos, isLoading, refetch } = trpc.photos.byAssessment.useQuery({ assessmentId });
+function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: number; projectId: number }) {
+  const { data: photos, isLoading, refetch } = trpc.photos.byAssessment.useQuery({ assessmentId, projectId });
   const [offlinePhotos, setOfflinePhotos] = useState<Array<{ id: string; url: string; caption: string | null }>>([]);
   
   const deletePhoto = trpc.photos.delete.useMutation({
@@ -941,7 +941,7 @@ export function AssessmentDialog({
           {existingAssessment?.id && (
             <div className="space-y-2">
               <Label>Existing Photos</Label>
-              <ExistingPhotosDisplay assessmentId={existingAssessment.id} />
+              <ExistingPhotosDisplay assessmentId={existingAssessment.id} projectId={projectId} />
             </div>
           )}
 

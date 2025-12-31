@@ -2426,3 +2426,19 @@ Testing:
 - [x] Display current company context throughout the app
 - [x] Enable easy switching between companies
 
+
+### Bug Fix: Access Request Deletion Not Refreshing
+- [x] Fix access requests still showing after deletion (cache/refresh issue)
+- [x] Ensure list properly invalidates/refetches after delete mutation
+- [x] Add bulk delete functionality for access requests
+- [ ] Test bulk delete and single delete operations
+
+## Feature: Extend Company Filtering to Assets/Assessments
+- [x] Apply company filtering pattern to Assets page queries (assessments.listByAsset)
+- [x] Apply company filtering pattern to Assessments page queries
+- [x] Add company filtering to deficiencies.listByAsset, get, update, delete
+- [x] Add company filtering to photos.byDeficiency, byAssessment, byAsset
+- [x] Update frontend components to pass projectId for company filtering
+- [x] Ensure complete data isolation between companies
+- [ ] Test filtering works correctly for all user roless
+

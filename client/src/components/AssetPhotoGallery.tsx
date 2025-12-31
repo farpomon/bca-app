@@ -8,19 +8,20 @@ import { toast } from "sonner";
 
 interface AssetPhotoGalleryProps {
   assetId: number;
+  projectId: number;
 }
 
-export default function AssetPhotoGallery({ assetId }: AssetPhotoGalleryProps) {
+export default function AssetPhotoGallery({ assetId, projectId }: AssetPhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  const { data: photos, isLoading } = trpc.photos.byAsset.useQuery({ assetId });
+  const { data: photos, isLoading } = trpc.photos.byAsset.useQuery({ assetId, projectId });
   const utils = trpc.useUtils();
   
   const deletePhotoMutation = trpc.photos.delete.useMutation({
     onSuccess: () => {
       toast.success('Photo deleted successfully');
-      utils.photos.byAsset.invalidate({ assetId });
+      utils.photos.byAsset.invalidate({ assetId, projectId });
       setIsDeleteDialogOpen(false);
       setSelectedPhoto(null);
     },

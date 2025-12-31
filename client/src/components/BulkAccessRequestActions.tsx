@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +28,10 @@ export function BulkAccessRequestActions({
 }: BulkAccessRequestActionsProps) {
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const approveMutation = trpc.accessRequests.approve.useMutation({
     onSuccess: () => {
-      toast.success("Access request approved successfully");
       onSuccess();
     },
     onError: (error) => {
@@ -41,11 +41,22 @@ export function BulkAccessRequestActions({
 
   const rejectMutation = trpc.accessRequests.reject.useMutation({
     onSuccess: () => {
-      toast.success("Access request rejected successfully");
       onSuccess();
     },
     onError: (error) => {
       toast.error(`Failed to reject request: ${error.message}`);
+    },
+  });
+
+  const bulkDeleteMutation = trpc.accessRequests.bulkDelete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Successfully deleted ${data.deletedCount} request(s)`);
+      onClearSelection();
+      onSuccess();
+      setShowDeleteDialog(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete requests: ${error.message}`);
     },
   });
 
@@ -108,11 +119,15 @@ export function BulkAccessRequestActions({
     setShowRejectDialog(false);
   };
 
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate({ requestIds: selectedRequestIds });
+  };
+
   if (selectedRequestIds.length === 0) {
     return null;
   }
 
-  const isProcessing = approveMutation.isPending || rejectMutation.isPending;
+  const isProcessing = approveMutation.isPending || rejectMutation.isPending || bulkDeleteMutation.isPending;
 
   return (
     <>
@@ -148,6 +163,20 @@ export function BulkAccessRequestActions({
               <XCircle className="h-4 w-4" />
             )}
             Reject Selected
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={isProcessing}
+            className="gap-2 text-destructive hover:text-destructive"
+          >
+            {isProcessing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            Delete Selected
           </Button>
           <Button
             size="sm"
@@ -197,8 +226,8 @@ export function BulkAccessRequestActions({
           <AlertDialogHeader>
             <AlertDialogTitle>Reject {selectedRequestIds.length} Access Requests?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently reject all selected access requests. Users will be notified
-              with a standard rejection message. This action cannot be undone.
+              This will reject all selected access requests. Users will be notified
+              with a standard rejection message.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -210,6 +239,30 @@ export function BulkAccessRequestActions({
             >
               {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
               Reject All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedRequestIds.length} Access Requests?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will <strong>permanently delete</strong> all selected access requests from the database.
+              This action cannot be undone. The requests will be completely removed and will no longer appear in the list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isProcessing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 gap-2"
+            >
+              {bulkDeleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

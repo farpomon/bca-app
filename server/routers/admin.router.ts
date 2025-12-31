@@ -1270,29 +1270,5 @@ export const adminRouter = router({
       return { success: true };
     }),
 
-  /**
-   * Assign a user to a company (sets both company name and companyId)
-   */
-  assignUserToCompany: adminProcedure
-    .input(z.object({
-      userId: z.number(),
-      companyId: z.number(),
-    }))
-    .mutation(async ({ input }) => {
-      const database = await getDb();
-      if (!database) throw new Error("Database not available");
 
-      // Get company name
-      const [company] = await database.select().from(companies).where(eq(companies.id, input.companyId)).limit(1);
-      if (!company) {
-        throw new Error("Company not found");
-      }
-
-      await database.update(users).set({
-        company: company.name,
-        companyId: input.companyId,
-      }).where(eq(users.id, input.userId));
-
-      return { success: true };
-    }),
 });

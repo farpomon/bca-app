@@ -1531,8 +1531,17 @@ Provide helpful insights, recommendations, and analysis based on this asset data
       }),
 
     listByAsset: protectedProcedure
-      .input(z.object({ assetId: z.number() }))
-      .query(async ({ input }) => {
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        // Verify asset belongs to the project
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        
         return await db.getAssetAssessments(input.assetId);
       }),
 
@@ -1711,15 +1720,33 @@ Provide helpful insights, recommendations, and analysis based on this asset data
       }),
 
     listByAsset: protectedProcedure
-      .input(z.object({ assetId: z.number() }))
-      .query(async ({ input }) => {
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        // Verify asset belongs to the project
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        
         return await db.getAssetDeficiencies(input.assetId);
       }),
 
     get: protectedProcedure
-      .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        return await db.getDeficiencyById(input.id);
+      .input(z.object({ id: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        const deficiency = await db.getDeficiencyById(input.id);
+        if (!deficiency || deficiency.projectId !== input.projectId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Deficiency not found" });
+        }
+        return deficiency;
       }),
 
     create: protectedProcedure
@@ -1750,6 +1777,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
     update: protectedProcedure
       .input(z.object({
         id: z.number(),
+        projectId: z.number(),
         title: z.string().min(1).optional(),
         description: z.string().optional(),
         location: z.string().optional(),
@@ -1759,15 +1787,37 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         estimatedCost: z.number().optional(),
         status: z.enum(["open", "in_progress", "resolved", "deferred"]).optional(),
       }))
-      .mutation(async ({ input }) => {
-        const { id, ...data } = input;
+      .mutation(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        // Verify deficiency belongs to the project
+        const deficiency = await db.getDeficiencyById(input.id);
+        if (!deficiency || deficiency.projectId !== input.projectId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Deficiency not found" });
+        }
+        
+        const { id, projectId, ...data } = input;
         await db.updateDeficiency(id, data);
         return { success: true };
       }),
 
     delete: protectedProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .input(z.object({ id: z.number(), projectId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        // Verify deficiency belongs to the project
+        const deficiency = await db.getDeficiencyById(input.id);
+        if (!deficiency || deficiency.projectId !== input.projectId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Deficiency not found" });
+        }
+        
         await db.deleteDeficiency(input.id);
         return { success: true };
       }),
@@ -1784,20 +1834,45 @@ Provide helpful insights, recommendations, and analysis based on this asset data
       }),
 
     byDeficiency: protectedProcedure
-      .input(z.object({ deficiencyId: z.number() }))
-      .query(async ({ input }) => {
+      .input(z.object({ deficiencyId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        // Verify deficiency belongs to the project
+        const deficiency = await db.getDeficiencyById(input.deficiencyId);
+        if (!deficiency || deficiency.projectId !== input.projectId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Deficiency not found" });
+        }
+        
         return await db.getDeficiencyPhotos(input.deficiencyId);
       }),
 
     byAssessment: protectedProcedure
-      .input(z.object({ assessmentId: z.number() }))
-      .query(async ({ input }) => {
+      .input(z.object({ assessmentId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
         return await db.getAssessmentPhotos(input.assessmentId);
       }),
 
     byAsset: protectedProcedure
-      .input(z.object({ assetId: z.number() }))
-      .query(async ({ input }) => {
+      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify user has access to the project
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        // Verify asset belongs to the project
+        const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
+        if (!asset) throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+        
         return await db.getAssetPhotos(input.assetId);
       }),
 

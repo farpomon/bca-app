@@ -256,7 +256,7 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
         onPhotoUploaded();
       }
       
-      utils.photos.byAsset.invalidate({ assetId });
+      utils.photos.byAsset.invalidate({ assetId, projectId });
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload photos');

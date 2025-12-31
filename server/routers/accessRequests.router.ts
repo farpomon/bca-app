@@ -376,4 +376,44 @@ export const accessRequestsRouter = router({
 
     return { count: pending.length };
   }),
+
+  /**
+   * Delete a single access request (admin only)
+   */
+  delete: protectedProcedure
+    .input(z.object({ requestId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      await db.delete(accessRequests).where(eq(accessRequests.id, input.requestId));
+
+      return { success: true, message: "Access request deleted successfully" };
+    }),
+
+  /**
+   * Bulk delete access requests (admin only)
+   */
+  bulkDelete: protectedProcedure
+    .input(z.object({ requestIds: z.array(z.number()) }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      let deletedCount = 0;
+      for (const requestId of input.requestIds) {
+        await db.delete(accessRequests).where(eq(accessRequests.id, requestId));
+        deletedCount++;
+      }
+
+      return { success: true, deletedCount, message: `${deletedCount} access request(s) deleted successfully` };
+    }),
 });
