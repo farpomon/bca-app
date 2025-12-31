@@ -43,10 +43,12 @@ import { portfolioAnalyticsRouter } from "./routers/portfolioAnalytics.router";
 import { portfolioAnalyticsEnhancedRouter } from "./routers/portfolioAnalyticsEnhanced.router";
 import { backupRouter } from "./routers/backup.router";
 import { economicIndicatorsRouter } from "./economicIndicatorsRouter";
+import { rsmeansRouter } from "./rsmeansRouter";
 import { portfolioTargetsRouter } from "./portfolioTargetsRouter";
 import { analyticsRouter } from "./analyticsRouter";
 import { chatbotRouter } from "./routers/chatbot.router";
 import { projectPermissionsRouter } from "./routers/projectPermissions.router";
+import { ratingRouter } from "./routers/rating.router";
 import { companyRolesRouter } from "./companyRolesRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
@@ -92,12 +94,14 @@ export const appRouter = router({
   portfolioAnalytics: portfolioAnalyticsRouter,
   portfolioAnalyticsEnhanced: portfolioAnalyticsEnhancedRouter,
   economicIndicators: economicIndicatorsRouter,
+  rsmeans: rsmeansRouter,
   portfolioTargets: portfolioTargetsRouter,
   companyRoles: companyRolesRouter,
   analytics: analyticsRouter,
   backup: backupRouter,
   chatbot: chatbotRouter,
   projectPermissions: projectPermissionsRouter,
+  rating: ratingRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

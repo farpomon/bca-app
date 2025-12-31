@@ -32,6 +32,8 @@ import EconomicIndicators from "./pages/EconomicIndicators";
 import PortfolioTargets from "./pages/PortfolioTargets";
 import Analytics from "./pages/Analytics";
 import ProjectAnalytics from "./pages/ProjectAnalytics";
+import ESGDashboard from "./pages/ESGDashboard";
+import RSMeansCostBrowser from "./pages/RSMeansCostBrowser";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
@@ -98,6 +100,8 @@ function Router() {
       <Route path={"/admin/economic-indicators"} component={EconomicIndicators} />
       <Route path={"/admin/portfolio-targets"} component={PortfolioTargets} />
       <Route path={"/analytics"} component={Analytics} />
+      <Route path={"/esg-dashboard"} component={ESGDashboard} />
+      <Route path={"/rsmeans"} component={RSMeansCostBrowser} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />
       <Route path={"/settings/security"} component={SecuritySettings} />
       <Route path={"/404"} component={NotFound} />

@@ -738,17 +738,198 @@ export const encryptionKeyMetadata = mysqlTable("encryption_key_metadata", {
 export const esgScores = mysqlTable("esg_scores", {
 	id: int().autoincrement().notNull(),
 	projectId: int().notNull(),
+	assetId: int(), // Optional - if null, score applies to entire project
 	scoreDate: timestamp({ mode: 'string' }).notNull(),
 	energyScore: decimal({ precision: 5, scale: 2 }),
 	waterScore: decimal({ precision: 5, scale: 2 }),
 	wasteScore: decimal({ precision: 5, scale: 2 }),
 	emissionsScore: decimal({ precision: 5, scale: 2 }),
 	compositeScore: decimal({ precision: 5, scale: 2 }),
+	// New ESG category scores
+	environmentalScore: decimal({ precision: 5, scale: 2 }),
+	socialScore: decimal({ precision: 5, scale: 2 }),
+	governanceScore: decimal({ precision: 5, scale: 2 }),
+	overallEsgScore: decimal({ precision: 5, scale: 2 }),
 	benchmarkPercentile: int(),
 	certifications: json(),
 	notes: text(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-});
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_esg_project").on(table.projectId),
+	index("idx_esg_asset").on(table.assetId),
+	index("idx_esg_date").on(table.scoreDate),
+]);
+
+/**
+ * ESG Metrics - Detailed environmental performance indicators
+ */
+export const esgMetrics = mysqlTable("esg_metrics", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	assetId: int(), // Optional - if null, metric applies to entire project
+	recordDate: timestamp({ mode: 'string' }).notNull(),
+	// Carbon footprint metrics
+	carbonFootprint: decimal({ precision: 15, scale: 4 }), // tonnes CO2e
+	carbonIntensity: decimal({ precision: 15, scale: 4 }), // kg CO2e per sqft
+	// Energy metrics
+	energyUseIntensity: decimal({ precision: 15, scale: 4 }), // kWh per sqft
+	energyStarRating: int(), // 1-100
+	renewableEnergyPercent: decimal({ precision: 5, scale: 2 }), // 0-100%
+	// Water metrics
+	waterUseIntensity: decimal({ precision: 15, scale: 4 }), // gallons per sqft
+	waterRecyclingPercent: decimal({ precision: 5, scale: 2 }), // 0-100%
+	// Waste metrics
+	wasteGenerationRate: decimal({ precision: 15, scale: 4 }), // kg per sqft
+	wasteDiversionRate: decimal({ precision: 5, scale: 2 }), // 0-100%
+	recyclingRate: decimal({ precision: 5, scale: 2 }), // 0-100%
+	// Indoor environmental quality
+	indoorAirQualityScore: decimal({ precision: 5, scale: 2 }),
+	thermalComfortScore: decimal({ precision: 5, scale: 2 }),
+	// Social metrics
+	occupantSatisfactionScore: decimal({ precision: 5, scale: 2 }),
+	accessibilityScore: decimal({ precision: 5, scale: 2 }),
+	healthSafetyScore: decimal({ precision: 5, scale: 2 }),
+	// Governance metrics
+	complianceScore: decimal({ precision: 5, scale: 2 }),
+	transparencyScore: decimal({ precision: 5, scale: 2 }),
+	riskManagementScore: decimal({ precision: 5, scale: 2 }),
+	notes: text(),
+	dataSource: varchar({ length: 255 }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_esg_metrics_project").on(table.projectId),
+	index("idx_esg_metrics_asset").on(table.assetId),
+	index("idx_esg_metrics_date").on(table.recordDate),
+]);
+
+/**
+ * ESG Benchmarks - Industry standards for comparison
+ */
+export const esgBenchmarks = mysqlTable("esg_benchmarks", {
+	id: int().autoincrement().notNull(),
+	buildingType: varchar({ length: 100 }).notNull(), // office, retail, residential, industrial, etc.
+	region: varchar({ length: 100 }).notNull(), // Canada, Ontario, BC, etc.
+	year: int().notNull(),
+	// Energy benchmarks
+	avgEnergyUseIntensity: decimal({ precision: 15, scale: 4 }),
+	medianEnergyUseIntensity: decimal({ precision: 15, scale: 4 }),
+	topQuartileEui: decimal({ precision: 15, scale: 4 }),
+	// Carbon benchmarks
+	avgCarbonIntensity: decimal({ precision: 15, scale: 4 }),
+	medianCarbonIntensity: decimal({ precision: 15, scale: 4 }),
+	// Water benchmarks
+	avgWaterUseIntensity: decimal({ precision: 15, scale: 4 }),
+	medianWaterUseIntensity: decimal({ precision: 15, scale: 4 }),
+	// Waste benchmarks
+	avgWasteDiversionRate: decimal({ precision: 5, scale: 2 }),
+	medianWasteDiversionRate: decimal({ precision: 5, scale: 2 }),
+	// ESG score benchmarks
+	avgEsgScore: decimal({ precision: 5, scale: 2 }),
+	medianEsgScore: decimal({ precision: 5, scale: 2 }),
+	topQuartileEsgScore: decimal({ precision: 5, scale: 2 }),
+	dataSource: varchar({ length: 255 }),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_benchmark_type_region").on(table.buildingType, table.region),
+	index("idx_benchmark_year").on(table.year),
+]);
+
+/**
+ * ESG Reports - Generated ESG reports and analytics
+ */
+export const esgReports = mysqlTable("esg_reports", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	assetId: int(), // Optional
+	reportType: mysqlEnum(['summary', 'detailed', 'compliance', 'annual', 'quarterly', 'custom']).notNull(),
+	reportDate: timestamp({ mode: 'string' }).notNull(),
+	reportPeriodStart: timestamp({ mode: 'string' }).notNull(),
+	reportPeriodEnd: timestamp({ mode: 'string' }).notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	reportData: json(), // Full report data as JSON
+	fileUrl: varchar({ length: 1024 }), // URL to generated PDF/document
+	fileKey: varchar({ length: 512 }),
+	status: mysqlEnum(['draft', 'published', 'archived']).default('draft').notNull(),
+	createdBy: int().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_esg_report_project").on(table.projectId),
+	index("idx_esg_report_type").on(table.reportType),
+	index("idx_esg_report_date").on(table.reportDate),
+]);
+
+/**
+ * ESG Certifications - Building certifications (LEED, BOMA BEST, etc.)
+ */
+export const esgCertifications = mysqlTable("esg_certifications", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	assetId: int(), // Optional
+	certificationType: mysqlEnum(['leed', 'boma_best', 'energy_star', 'well', 'fitwel', 'green_globes', 'passive_house', 'net_zero', 'other']).notNull(),
+	certificationLevel: varchar({ length: 100 }), // e.g., Gold, Platinum, Level 3
+	certificationDate: timestamp({ mode: 'string' }),
+	expirationDate: timestamp({ mode: 'string' }),
+	certificateNumber: varchar({ length: 100 }),
+	verifyingBody: varchar({ length: 255 }),
+	score: decimal({ precision: 5, scale: 2 }),
+	documentUrl: varchar({ length: 1024 }),
+	status: mysqlEnum(['active', 'expired', 'pending', 'revoked']).default('active').notNull(),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_cert_project").on(table.projectId),
+	index("idx_cert_type").on(table.certificationType),
+	index("idx_cert_status").on(table.status),
+]);
+
+/**
+ * ESG Improvement Actions - Tracked sustainability improvements
+ */
+export const esgImprovementActions = mysqlTable("esg_improvement_actions", {
+	id: int().autoincrement().notNull(),
+	projectId: int().notNull(),
+	assetId: int(), // Optional
+	deficiencyId: int(), // Link to building deficiency if applicable
+	assessmentId: int(), // Link to assessment if applicable
+	actionType: mysqlEnum(['energy_efficiency', 'water_conservation', 'waste_reduction', 'emissions_reduction', 'renewable_energy', 'indoor_quality', 'accessibility', 'compliance']).notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	description: text(),
+	estimatedCost: decimal({ precision: 15, scale: 2 }),
+	actualCost: decimal({ precision: 15, scale: 2 }),
+	estimatedSavings: decimal({ precision: 15, scale: 2 }), // Annual savings
+	actualSavings: decimal({ precision: 15, scale: 2 }),
+	estimatedEsgImpact: decimal({ precision: 5, scale: 2 }), // Score improvement
+	actualEsgImpact: decimal({ precision: 5, scale: 2 }),
+	paybackPeriodYears: decimal({ precision: 5, scale: 2 }),
+	priority: mysqlEnum(['high', 'medium', 'low']).default('medium').notNull(),
+	status: mysqlEnum(['planned', 'in_progress', 'completed', 'cancelled']).default('planned').notNull(),
+	plannedStartDate: timestamp({ mode: 'string' }),
+	plannedEndDate: timestamp({ mode: 'string' }),
+	actualStartDate: timestamp({ mode: 'string' }),
+	actualEndDate: timestamp({ mode: 'string' }),
+	assignedTo: int(),
+	notes: text(),
+	createdBy: int().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_esg_action_project").on(table.projectId),
+	index("idx_esg_action_type").on(table.actionType),
+	index("idx_esg_action_status").on(table.status),
+	index("idx_esg_action_deficiency").on(table.deficiencyId),
+])
 
 export const facilityModels = mysqlTable("facility_models", {
 	id: int().autoincrement().notNull(),
@@ -1998,6 +2179,137 @@ export type InsertChatbotSession = typeof chatbotSessions.$inferInsert;
 export type ChatbotFeedback = typeof chatbotFeedback.$inferSelect;
 export type InsertChatbotFeedback = typeof chatbotFeedback.$inferInsert;
 
+/**
+ * Rating Scale Configurations
+ * Allows companies to define custom rating thresholds for letter grades and zones
+ * Supports multiple scale types: FCI, Condition, ESG, Overall
+ */
+export const ratingScaleConfigs = mysqlTable("rating_scale_configs", {
+	id: int().autoincrement().notNull().primaryKey(),
+	companyId: int(),
+	scaleType: mysqlEnum(['fci', 'condition', 'esg', 'overall', 'custom']).notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	description: text(),
+	// Letter grade thresholds stored as JSON: {"A+": {min: 97, max: 100}, "A": {min: 93, max: 96}, ...}
+	letterGradeThresholds: text().notNull(),
+	// Zone thresholds stored as JSON: {"green": {min: 80, max: 100}, "yellow": {min: 60, max: 79}, ...}
+	zoneThresholds: text().notNull(),
+	isDefault: int().default(0).notNull(),
+	isActive: int().default(1).notNull(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_rating_scale_company").on(table.companyId),
+	index("idx_rating_scale_type").on(table.scaleType),
+	index("idx_rating_scale_default").on(table.isDefault),
+]);
+
+/**
+ * Asset Ratings
+ * Stores calculated ratings for each asset including letter grades and zone ratings
+ */
+export const assetRatings = mysqlTable("asset_ratings", {
+	id: int().autoincrement().notNull().primaryKey(),
+	assetId: int().notNull(),
+	projectId: int().notNull(),
+	// Overall ratings
+	overallScore: decimal({ precision: 5, scale: 2 }),
+	overallGrade: varchar({ length: 5 }), // A+, A, A-, B+, etc.
+	overallZone: mysqlEnum(['green', 'yellow', 'orange', 'red']),
+	// FCI (Facility Condition Index) ratings
+	fciScore: decimal({ precision: 5, scale: 2 }),
+	fciGrade: varchar({ length: 5 }),
+	fciZone: mysqlEnum(['green', 'yellow', 'orange', 'red']),
+	// Condition ratings
+	conditionScore: decimal({ precision: 5, scale: 2 }),
+	conditionGrade: varchar({ length: 5 }),
+	conditionZone: mysqlEnum(['green', 'yellow', 'orange', 'red']),
+	// ESG ratings
+	esgScore: decimal({ precision: 5, scale: 2 }),
+	esgGrade: varchar({ length: 5 }),
+	esgZone: mysqlEnum(['green', 'yellow', 'orange', 'red']),
+	// Component breakdown stored as JSON
+	componentBreakdown: text(),
+	// Metadata
+	lastCalculatedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	calculatedBy: int(),
+	scaleConfigId: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_asset_rating_asset").on(table.assetId),
+	index("idx_asset_rating_project").on(table.projectId),
+	index("idx_asset_rating_zone").on(table.overallZone),
+]);
+
+/**
+ * Project Ratings
+ * Aggregated ratings for entire projects/portfolios
+ */
+export const projectRatings = mysqlTable("project_ratings", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	// Portfolio-level ratings
+	portfolioScore: decimal({ precision: 5, scale: 2 }),
+	portfolioGrade: varchar({ length: 5 }),
+	portfolioZone: mysqlEnum(['green', 'yellow', 'orange', 'red']),
+	// Average metrics
+	avgFciScore: decimal({ precision: 5, scale: 2 }),
+	avgConditionScore: decimal({ precision: 5, scale: 2 }),
+	avgEsgScore: decimal({ precision: 5, scale: 2 }),
+	// Zone distribution stored as JSON: {"green": 5, "yellow": 3, "orange": 2, "red": 1}
+	zoneDistribution: text(),
+	// Grade distribution stored as JSON: {"A": 3, "B": 4, "C": 2, "D": 1, "F": 0}
+	gradeDistribution: text(),
+	// Asset count
+	totalAssets: int().default(0),
+	assessedAssets: int().default(0),
+	// Metadata
+	lastCalculatedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_project_rating_project").on(table.projectId),
+	index("idx_project_rating_zone").on(table.portfolioZone),
+]);
+
+/**
+ * Rating History
+ * Tracks rating changes over time for trend analysis
+ */
+export const ratingHistory = mysqlTable("rating_history", {
+	id: int().autoincrement().notNull().primaryKey(),
+	entityType: mysqlEnum(['asset', 'project']).notNull(),
+	entityId: int().notNull(),
+	ratingType: mysqlEnum(['overall', 'fci', 'condition', 'esg']).notNull(),
+	score: decimal({ precision: 5, scale: 2 }).notNull(),
+	letterGrade: varchar({ length: 5 }),
+	zone: mysqlEnum(['green', 'yellow', 'orange', 'red']),
+	previousScore: decimal({ precision: 5, scale: 2 }),
+	previousGrade: varchar({ length: 5 }),
+	changeReason: text(),
+	recordedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	recordedBy: int(),
+},
+(table) => [
+	index("idx_rating_history_entity").on(table.entityType, table.entityId),
+	index("idx_rating_history_type").on(table.ratingType),
+	index("idx_rating_history_date").on(table.recordedAt),
+]);
+
+export type RatingScaleConfig = typeof ratingScaleConfigs.$inferSelect;
+export type InsertRatingScaleConfig = typeof ratingScaleConfigs.$inferInsert;
+export type AssetRating = typeof assetRatings.$inferSelect;
+export type InsertAssetRating = typeof assetRatings.$inferInsert;
+export type ProjectRating = typeof projectRatings.$inferSelect;
+export type InsertProjectRating = typeof projectRatings.$inferInsert;
+export type RatingHistory = typeof ratingHistory.$inferSelect;
+export type InsertRatingHistory = typeof ratingHistory.$inferInsert;
+
 // Type exports for all tables
 export type AccessRequest = typeof accessRequests.$inferSelect;
 export type InsertAccessRequest = typeof accessRequests.$inferInsert;
@@ -2085,6 +2397,16 @@ export type EncryptionKeyMetadata = typeof encryptionKeyMetadata.$inferSelect;
 export type InsertEncryptionKeyMetadata = typeof encryptionKeyMetadata.$inferInsert;
 export type EsgScore = typeof esgScores.$inferSelect;
 export type InsertEsgScore = typeof esgScores.$inferInsert;
+export type EsgMetric = typeof esgMetrics.$inferSelect;
+export type InsertEsgMetric = typeof esgMetrics.$inferInsert;
+export type EsgBenchmark = typeof esgBenchmarks.$inferSelect;
+export type InsertEsgBenchmark = typeof esgBenchmarks.$inferInsert;
+export type EsgReport = typeof esgReports.$inferSelect;
+export type InsertEsgReport = typeof esgReports.$inferInsert;
+export type EsgCertification = typeof esgCertifications.$inferSelect;
+export type InsertEsgCertification = typeof esgCertifications.$inferInsert;
+export type EsgImprovementAction = typeof esgImprovementActions.$inferSelect;
+export type InsertEsgImprovementAction = typeof esgImprovementActions.$inferInsert;
 export type FacilityModel = typeof facilityModels.$inferSelect;
 export type InsertFacilityModel = typeof facilityModels.$inferInsert;
 export type FloorPlan = typeof floorPlans.$inferSelect;

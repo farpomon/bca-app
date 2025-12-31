@@ -2442,3 +2442,221 @@ Testing:
 - [x] Ensure complete data isolation between companies
 - [ ] Test filtering works correctly for all user roless
 
+
+## 🌱 ESG Metrics Dashboard
+
+### Phase 1: Database Schema for ESG
+- [ ] Create esgMetrics table (buildingId, carbonFootprint, energyEfficiency, waterUsage, wasteManagement, etc.)
+- [ ] Create esgScores table (buildingId, environmentalScore, socialScore, governanceScore, overallScore)
+- [ ] Create esgBenchmarks table (buildingType, region, benchmarkValues)
+- [ ] Create esgReports table (reportId, buildingId, reportDate, reportType, data)
+- [ ] Run database migrations
+
+### Phase 2: Backend tRPC Procedures
+- [ ] Create esg.getMetrics procedure to fetch ESG metrics for a building
+- [ ] Create esg.updateMetrics procedure to update ESG data
+- [ ] Create esg.calculateScore procedure to compute sustainability scores
+- [ ] Create esg.getBenchmarks procedure to fetch industry benchmarks
+- [ ] Create esg.generateReport procedure to create ESG reports
+- [ ] Create esg.getAnalytics procedure for ESG analytics data
+
+### Phase 3: ESG Dashboard UI
+- [ ] Create ESGDashboard page component
+- [ ] Create ESGMetricsCard component for individual metrics
+- [ ] Create ESGScoreGauge component for sustainability scores
+- [ ] Create ESGTrendChart component for historical data
+- [ ] Create ESGBenchmarkComparison component
+- [ ] Add ESG navigation item to sidebar
+
+### Phase 4: Environmental Performance Indicators
+- [ ] Implement carbon footprint tracking (CO2 emissions)
+- [ ] Implement energy efficiency metrics (kWh/sqft, Energy Star rating)
+- [ ] Implement water usage tracking (gallons/sqft)
+- [ ] Implement waste management metrics (recycling rate, diversion rate)
+- [ ] Implement renewable energy percentage tracking
+- [ ] Create environmental KPI cards with trend indicators
+
+### Phase 5: Sustainability Scoring System
+- [ ] Define scoring algorithm for environmental factors (0-100)
+- [ ] Define scoring algorithm for social factors (0-100)
+- [ ] Define scoring algorithm for governance factors (0-100)
+- [ ] Calculate weighted overall ESG score
+- [ ] Create score breakdown visualization
+- [ ] Add score comparison to industry benchmarks
+
+### Phase 6: ESG Reporting & Analytics
+- [ ] Create ESG summary report generator
+- [ ] Create detailed environmental impact report
+- [ ] Create compliance status report
+- [ ] Add export functionality (PDF, CSV)
+- [ ] Create ESG trend analytics over time
+- [ ] Add year-over-year comparison charts
+
+### Phase 7: Integration with Building Assessments
+- [ ] Link ESG metrics to building condition assessments
+- [ ] Auto-populate ESG data from assessment findings
+- [ ] Add ESG section to building detail page
+- [ ] Show ESG impact of recommended repairs
+- [ ] Calculate ESG improvement potential from deficiency remediation
+
+
+
+## 🔥 CURRENT: ESG Dashboard with Zone Rating & Letter Grades
+
+### Phase 1: Database Schema
+- [ ] Create esg_metrics table (assetId, carbonFootprint, energyConsumption, waterUsage, wasteGeneration, renewableEnergy, etc.)
+- [ ] Create esg_scores table (assetId, environmentalScore, socialScore, governanceScore, overallScore, letterGrade, zoneRating)
+- [ ] Create esg_rating_scales table (companyId, scaleName, scaleType, thresholds, letterGrades, zoneColors)
+- [ ] Create esg_benchmarks table (buildingType, region, metricType, benchmarkValue, percentile)
+- [ ] Create esg_history table (assetId, metricType, value, recordedAt) for trend tracking
+- [ ] Run database migrations with pnpm db:push
+
+### Phase 2: Rating System Design
+- [ ] Implement letter grade system (A+, A, A-, B+, B, B-, C+, C, C-, D, F)
+- [ ] Implement zone rating system (Green/Yellow/Orange/Red zones)
+- [ ] Create custom scale configuration (allow companies to define their own thresholds)
+- [ ] Define default scoring algorithms for E, S, G components
+- [ ] Create weighted overall ESG score calculation
+
+### Phase 3: Backend tRPC Procedures
+- [ ] Create esg.getMetrics - fetch ESG metrics for an asset
+- [ ] Create esg.updateMetrics - update ESG data
+- [ ] Create esg.calculateScore - compute scores with letter grades and zones
+- [ ] Create esg.getBenchmarks - fetch industry benchmarks
+- [ ] Create esg.getHistory - fetch historical ESG data for trends
+- [ ] Create esg.getRatingScales - get company's rating scale configuration
+- [ ] Create esg.updateRatingScale - customize rating thresholds
+- [ ] Create esg.getAnalytics - aggregate ESG analytics across portfolio
+
+### Phase 4: ESG Dashboard UI Components
+- [ ] Create ESGDashboard page with summary view
+- [ ] Create ESGScoreCard component with letter grade display
+- [ ] Create ESGZoneIndicator component with color-coded zones
+- [ ] Create ESGGaugeChart component for visual score representation
+- [ ] Create ESGTrendChart component for historical data
+- [ ] Create ESGMetricsGrid for detailed metrics display
+- [ ] Create ESGBenchmarkComparison component
+- [ ] Add ESG tab/section to asset detail page
+
+### Phase 5: Custom Scales Configuration
+- [ ] Create RatingScaleEditor component for admins
+- [ ] Allow threshold customization for each letter grade
+- [ ] Allow zone boundary customization
+- [ ] Preview scale changes before saving
+- [ ] Support multiple scale profiles per company
+
+### Phase 6: Environmental Metrics
+- [ ] Carbon footprint tracking (CO2e tonnes/year)
+- [ ] Energy consumption (kWh/sqft/year)
+- [ ] Water usage (gallons/sqft/year)
+- [ ] Waste generation and recycling rate
+- [ ] Renewable energy percentage
+- [ ] Green building certifications (LEED, BREEAM, etc.)
+
+### Phase 7: Social & Governance Metrics
+- [ ] Occupant health & safety score
+- [ ] Accessibility compliance
+- [ ] Community impact indicators
+- [ ] Governance policies score
+- [ ] Compliance status tracking
+- [ ] Stakeholder engagement metrics
+
+### Phase 8: Reporting & Export
+- [ ] ESG summary report generation
+- [ ] PDF export with charts and grades
+- [ ] CSV data export
+- [ ] Portfolio-wide ESG comparison
+- [ ] Year-over-year improvement tracking
+
+
+
+## 🔥 Unified Rating System (Zone Rating, Letter Grades, Custom Scales)
+
+### Database Schema
+- [ ] Create rating_scale_configs table (companyId, scaleType, name, thresholds, isDefault)
+- [ ] Create asset_ratings table (assetId, overallGrade, zoneRating, fciGrade, conditionGrade, esgGrade)
+- [ ] Create project_ratings table (projectId, portfolioGrade, avgFci, avgCondition, zoneDistribution)
+- [ ] Create rating_history table (entityType, entityId, ratingType, grade, zone, score, recordedAt)
+
+### Rating Scale Configuration
+- [ ] Define default letter grade thresholds (A+: 97-100, A: 93-96, A-: 90-92, B+: 87-89, etc.)
+- [ ] Define default zone thresholds (Green: 80-100, Yellow: 60-79, Orange: 40-59, Red: 0-39)
+- [ ] Create custom scale editor for company admins
+- [ ] Support multiple scale profiles (FCI scale, Condition scale, ESG scale)
+
+### Backend Rating Engine
+- [ ] Create rating.calculateLetterGrade procedure
+- [ ] Create rating.calculateZone procedure
+- [ ] Create rating.getAssetRating procedure
+- [ ] Create rating.getProjectRating procedure
+- [ ] Create rating.updateScaleConfig procedure
+- [ ] Create rating.getScaleConfig procedure
+- [ ] Auto-calculate ratings when assessments are updated
+
+### Assessment Integration
+- [ ] Add letter grade display to assessment cards
+- [ ] Add zone indicator badges to assessment list
+- [ ] Show rating breakdown in assessment detail view
+- [ ] Add rating trend charts for assets
+
+### UI Components
+- [ ] Create LetterGradeBadge component (A+ through F with colors)
+- [ ] Create ZoneIndicator component (Green/Yellow/Orange/Red)
+- [ ] Create RatingGauge component (circular progress with grade)
+- [ ] Create RatingScaleEditor component for admin configuration
+- [ ] Create RatingTrendChart component for historical view
+- [ ] Create PortfolioRatingDashboard component
+
+
+## 🔥 RSMeans API Integration
+
+### Phase 1: Backend Service & Database
+- [x] Create RSMeans API service with authentication (API key header)
+- [x] Implement mock data framework for development/testing
+- [ ] Implement database schema for caching RSMeans data (future enhancement)
+- [ ] Add rsmeans_catalogs table for caching catalog data (future enhancement)
+- [ ] Add rsmeans_locations table for caching location data (future enhancement)
+- [ ] Add rsmeans_cost_lines table for caching cost line data (future enhancement)
+
+### Phase 2: Core API Integration
+- [x] Implement getCatalogs endpoint (GET /v1/costdata/unit/catalogs)
+- [x] Implement getLocations endpoint (GET /v1/costdata/locations)
+- [x] Implement getCostLines endpoint (GET /v1/costdata/unit/catalogs/{catId}/costlines)
+- [x] Implement searchCostLines endpoint (GET /v1/costdata/unit/catalogs/{catId}/costlines/_search)
+- [x] Implement getDivisions endpoint (GET /v1/costdata/unit/catalogs/{catId}/divisions)
+- [x] Implement getCostFactors endpoint (GET /v1/costdata/unit/costfactors)
+- [x] Implement calculateLocalizedCost function with location factors
+
+### Phase 3: tRPC Procedures
+- [x] Create rsmeans tRPC router
+- [x] Add rsmeans.getCatalogs procedure
+- [x] Add rsmeans.getLocations procedure
+- [x] Add rsmeans.searchCostLines procedure
+- [x] Add rsmeans.getCostLineDetails procedure
+- [x] Add rsmeans.getDivisions procedure
+- [x] Add rsmeans.getCostFactors procedure
+- [x] Add rsmeans.calculateCost procedure (with location factors)
+- [x] Add rsmeans.getStatus procedure
+- [x] Add rsmeans.getComponentCostEstimate procedure
+
+### Phase 4: Frontend UI
+- [x] Create RSMeans cost browser page (/rsmeans)
+- [x] Build catalog selector component
+- [x] Build location selector component with Canadian/US cities
+- [x] Build cost line search interface
+- [x] Build CSI MasterFormat division tree navigator (50 divisions)
+- [x] Build cost calculator with location factors
+- [x] Add RSMeans Cost Data to sidebar navigation
+- [x] Create RSMeansCostSelector component for assessment integration
+- [ ] Integrate RSMeans costs into assessment cost estimates (future enhancement)
+
+### Phase 5: Testing & Documentation
+- [x] Write vitest tests for RSMeans service (31 tests passing)
+- [x] Test API integration with mock data
+- [ ] Test API integration with real RSMeans API key (pending key)
+- [ ] Document RSMeans integration usage
+
+## Photo Location Display Feature
+- [x] Display photo location (GPS coordinates) next to photos in gallery
+- [x] Capture geolocation when taking/uploading photos
+- [x] Display latitude/longitude in photo gallery and preview dialog

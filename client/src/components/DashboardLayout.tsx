@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3, Building2, Plus, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3, Building2, Plus, Settings, Leaf, DollarSign } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -40,6 +40,8 @@ import { useCompany } from '@/contexts/CompanyContext';
 const menuItems = [
   { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
   { icon: LayoutDashboard, label: "Projects", path: "/" },
+  { icon: DollarSign, label: "RSMeans Cost Data", path: "/rsmeans" },
+  { icon: Leaf, label: "ESG Dashboard", path: "/esg-dashboard" },
   { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 

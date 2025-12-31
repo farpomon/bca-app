@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Upload, X, Loader2, Image as ImageIcon, EyeOff } from "lucide-react";
+import { Camera, Upload, X, Loader2, Image as ImageIcon, EyeOff, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -11,13 +11,23 @@ interface AssetPhotoUploadProps {
   onPhotoUploaded?: () => void;
 }
 
+interface PhotoWithLocation {
+  file: File;
+  latitude?: number;
+  longitude?: number;
+  altitude?: number;
+  locationAccuracy?: number;
+}
+
 export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }: AssetPhotoUploadProps) {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<PhotoWithLocation[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<GeolocationPosition | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -86,28 +96,89 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
     };
   }, [releaseWebLock]);
 
+  // Get current geolocation
+  const getCurrentLocation = useCallback((): Promise<GeolocationPosition | null> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        setLocationError('Geolocation is not supported by your browser');
+        resolve(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation(position);
+          setLocationError(null);
+          resolve(position);
+        },
+        (error) => {
+          let errorMessage = 'Unable to get location';
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location permission denied';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location unavailable';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out';
+              break;
+          }
+          setLocationError(errorMessage);
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000 // Cache location for 1 minute
+        }
+      );
+    });
+  }, []);
+
   // Handle file selection
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    // Create previews
+    // Get current location for the photos
+    const location = await getCurrentLocation();
+
+    // Create previews and photo objects with location
     const newPreviews = files.map(file => URL.createObjectURL(file));
+    const photosWithLocation: PhotoWithLocation[] = files.map(file => ({
+      file,
+      latitude: location?.coords.latitude,
+      longitude: location?.coords.longitude,
+      altitude: location?.coords.altitude ?? undefined,
+      locationAccuracy: location?.coords.accuracy,
+    }));
     
-    setSelectedFiles(prev => [...prev, ...files]);
+    setSelectedFiles(prev => [...prev, ...photosWithLocation]);
     setPreviews(prev => [...prev, ...newPreviews]);
   };
 
   // Handle drag and drop
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const files = Array.from(event.dataTransfer.files).filter(file => 
       file.type.startsWith('image/')
     );
     
     if (files.length > 0) {
+      // Get current location for the photos
+      const location = await getCurrentLocation();
+      
       const newPreviews = files.map(file => URL.createObjectURL(file));
-      setSelectedFiles(prev => [...prev, ...files]);
+      const photosWithLocation: PhotoWithLocation[] = files.map(file => ({
+        file,
+        latitude: location?.coords.latitude,
+        longitude: location?.coords.longitude,
+        altitude: location?.coords.altitude ?? undefined,
+        locationAccuracy: location?.coords.accuracy,
+      }));
+      
+      setSelectedFiles(prev => [...prev, ...photosWithLocation]);
       setPreviews(prev => [...prev, ...newPreviews]);
     }
   };
@@ -159,8 +230,11 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
   };
 
   // Capture photo from camera
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current) return;
+
+    // Get current location when capturing
+    const location = await getCurrentLocation();
 
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
@@ -175,10 +249,23 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
           const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
           const preview = URL.createObjectURL(file);
           
-          setSelectedFiles(prev => [...prev, file]);
+          const photoWithLocation: PhotoWithLocation = {
+            file,
+            latitude: location?.coords.latitude,
+            longitude: location?.coords.longitude,
+            altitude: location?.coords.altitude ?? undefined,
+            locationAccuracy: location?.coords.accuracy,
+          };
+          
+          setSelectedFiles(prev => [...prev, photoWithLocation]);
           setPreviews(prev => [...prev, preview]);
           stopCamera();
-          toast.success('Photo captured');
+          
+          if (location) {
+            toast.success('Photo captured with location');
+          } else {
+            toast.success('Photo captured (no location)');
+          }
         }
       }, 'image/jpeg', 0.9);
     }
@@ -208,7 +295,8 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
     try {
       // Upload each photo
       for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
+        const photoWithLocation = selectedFiles[i];
+        const file = photoWithLocation.file;
         setUploadProgress({ current: i + 1, total: selectedFiles.length });
         
         const formData = new FormData();
@@ -233,7 +321,7 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
         });
         const base64Data = fileData.split(',')[1];
 
-        // Save photo to database linked to asset
+        // Save photo to database linked to asset with location data
         await utils.client.photos.upload.mutate({
           projectId,
           assetId,
@@ -241,6 +329,10 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
           fileName: file.name,
           mimeType: file.type,
           caption: `Asset photo - ${new Date().toLocaleDateString()}`,
+          latitude: photoWithLocation.latitude,
+          longitude: photoWithLocation.longitude,
+          altitude: photoWithLocation.altitude,
+          locationAccuracy: photoWithLocation.locationAccuracy,
         });
       }
 
@@ -327,6 +419,20 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
         </div>
       )}
 
+      {/* Location Status */}
+      {!isCameraActive && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <MapPin className="h-3 w-3" />
+          {locationError ? (
+            <span className="text-amber-600">{locationError}</span>
+          ) : currentLocation ? (
+            <span className="text-green-600">Location available</span>
+          ) : (
+            <span>Location will be captured with photos</span>
+          )}
+        </div>
+      )}
+
       {/* Drag and Drop Zone */}
       {!isCameraActive && selectedFiles.length === 0 && (
         <div
@@ -337,6 +443,9 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
           <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-sm text-muted-foreground">
             Drag and drop photos here, or use the buttons above
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            GPS location will be captured automatically if available
           </p>
         </div>
       )}
@@ -360,8 +469,11 @@ export default function AssetPhotoUpload({ assetId, projectId, onPhotoUploaded }
                 >
                   <X className="h-4 w-4" />
                 </Button>
-                <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  Photo {index + 1}
+                <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                  <span>Photo {index + 1}</span>
+                  {selectedFiles[index]?.latitude && (
+                    <MapPin className="h-3 w-3 text-green-400" />
+                  )}
                 </div>
               </div>
             ))}

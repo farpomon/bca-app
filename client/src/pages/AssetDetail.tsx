@@ -69,12 +69,12 @@ export default function AssetDetail() {
     { enabled: !!user && !isNaN(assetIdNum) && !isNaN(projectId) }
   );
   const { data: assessments } = trpc.assessments.listByAsset.useQuery(
-    { assetId: assetIdNum },
-    { enabled: !!user && !isNaN(assetIdNum) }
+    { assetId: assetIdNum, projectId },
+    { enabled: !!user && !isNaN(assetIdNum) && !isNaN(projectId) }
   );
   const { data: deficiencies } = trpc.deficiencies.listByAsset.useQuery(
-    { assetId: assetIdNum },
-    { enabled: !!user && !isNaN(assetIdNum) }
+    { assetId: assetIdNum, projectId },
+    { enabled: !!user && !isNaN(assetIdNum) && !isNaN(projectId) }
   );
   const { data: buildingCodesList } = trpc.buildingCodes.list.useQuery(
     undefined,
@@ -501,7 +501,7 @@ export default function AssetDetail() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <AssetPhotoGallery assetId={assetIdNum} />
+                <AssetPhotoGallery assetId={assetIdNum} projectId={projectId} />
               </CardContent>
             </Card>
           </TabsContent>
