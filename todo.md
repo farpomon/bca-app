@@ -2375,3 +2375,21 @@ Testing:
 - [ ] Update project queries to filter by user permissions (future enhancement)
 - [ ] Add permission check middleware for project access (future enhancement)
 - [ ] Test permission-based project filtering (ready for user testing)
+
+## 🔥 Super Admin Access Control
+
+- [x] Add companyId field to users table (foreign key to companies)
+- [x] Add isSuperAdmin boolean field to users table
+- [x] Update getUserProjects to filter by admin's companyId (unless super admin)
+- [x] Update getProjectById to check admin's companyId (unless super admin)
+- [x] Update searchProjectByUniqueId to check admin's companyId (unless super admin)
+- [x] Update getDeletedProjects to filter by admin's companyId (unless super admin)
+- [x] Update all project access functions to respect company-based admin filtering
+- [x] Add migration for new user fields (via SQL ALTER TABLE)
+- [x] Add toggleSuperAdmin admin procedure
+- [x] Add assignUserToCompany admin procedure
+- [x] Add Super Admin column to Admin Users table
+- [x] Add toggle button for super admin status (only visible to super admins)
+- [ ] Test admin company filtering
+- [ ] Test super admin bypass
+

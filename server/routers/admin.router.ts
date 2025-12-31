@@ -1067,6 +1067,7 @@ export const adminRouter = router({
       if (adminUserId) {
         await database.update(users).set({
           company: input.name,
+          companyId: companyId,
           role: "admin",
           accountStatus: "active",
         }).where(eq(users.id, adminUserId));
@@ -1242,5 +1243,56 @@ export const adminRouter = router({
         throw new Error(result.message);
       }
       return result;
+    }),
+
+  /**
+   * Toggle super admin status for a user
+   * Only super admins can toggle this
+   */
+  toggleSuperAdmin: adminProcedure
+    .input(z.object({
+      userId: z.number(),
+      isSuperAdmin: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Only super admins can grant/revoke super admin status
+      if (ctx.user.isSuperAdmin !== 1) {
+        throw new Error("Only super admins can modify super admin status");
+      }
+      
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      await database.update(users).set({
+        isSuperAdmin: input.isSuperAdmin ? 1 : 0,
+      }).where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Assign a user to a company (sets both company name and companyId)
+   */
+  assignUserToCompany: adminProcedure
+    .input(z.object({
+      userId: z.number(),
+      companyId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database not available");
+
+      // Get company name
+      const [company] = await database.select().from(companies).where(eq(companies.id, input.companyId)).limit(1);
+      if (!company) {
+        throw new Error("Company not found");
+      }
+
+      await database.update(users).set({
+        company: company.name,
+        companyId: input.companyId,
+      }).where(eq(users.id, input.userId));
+
+      return { success: true };
     }),
 });

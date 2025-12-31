@@ -136,8 +136,29 @@ export default function Admin() {
     },
   });
 
+  const toggleSuperAdminMutation = trpc.admin.toggleSuperAdmin.useMutation({
+    onSuccess: (_, variables) => {
+      toast.success(variables.isSuperAdmin ? "User granted super admin privileges" : "Super admin privileges revoked");
+      usersQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update super admin status: ${error.message}`);
+    },
+  });
+
   const handleResendWelcomeEmail = (userId: number) => {
     resendWelcomeEmailMutation.mutate({ userId });
+  };
+
+  const handleToggleSuperAdmin = (userId: number, currentStatus: number | null) => {
+    const newStatus = currentStatus !== 1;
+    if (newStatus) {
+      if (confirm("Are you sure you want to grant super admin privileges? This user will have access to ALL projects across ALL companies.")) {
+        toggleSuperAdminMutation.mutate({ userId, isSuperAdmin: true });
+      }
+    } else {
+      toggleSuperAdminMutation.mutate({ userId, isSuperAdmin: false });
+    }
   };
 
   // Loading state
@@ -498,6 +519,7 @@ export default function Admin() {
                       <TableHead>Company</TableHead>
                       <TableHead>City</TableHead>
                       <TableHead>Role</TableHead>
+                      <TableHead>Super Admin</TableHead>
                       <TableHead>Account Status</TableHead>
                       <TableHead>Last Sign In</TableHead>
                       <TableHead>Actions</TableHead>
@@ -523,6 +545,15 @@ export default function Admin() {
                           <Badge variant={u.role === "admin" ? "default" : "secondary"}>
                             {u.role.replace("_", " ")}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {u.isSuperAdmin === 1 ? (
+                            <Badge variant="default" className="bg-purple-600">
+                              Super Admin
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -615,6 +646,18 @@ export default function Admin() {
                               >
                                 <Mail className="h-4 w-4 mr-1" />
                                 Send Email
+                              </Button>
+                            )}
+                            {u.id !== user.id && u.role === "admin" && user.isSuperAdmin === 1 && (
+                              <Button
+                                variant={u.isSuperAdmin === 1 ? "destructive" : "outline"}
+                                size="sm"
+                                onClick={() => handleToggleSuperAdmin(u.id, u.isSuperAdmin)}
+                                disabled={toggleSuperAdminMutation.isPending}
+                                title={u.isSuperAdmin === 1 ? "Revoke super admin" : "Grant super admin"}
+                              >
+                                <Shield className="h-4 w-4 mr-1" />
+                                {u.isSuperAdmin === 1 ? "Revoke Super" : "Grant Super"}
                               </Button>
                             )}
                             {u.id !== user.id && (

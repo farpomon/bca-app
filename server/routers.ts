@@ -129,8 +129,9 @@ export const appRouter = router({
   projects: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const isAdmin = ctx.user.role === "admin";
-      console.log("[Projects List] User:", ctx.user.id, "Role:", ctx.user.role, "Company:", ctx.user.company, "IsAdmin:", isAdmin);
-      const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin);
+      const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+      console.log("[Projects List] User:", ctx.user.id, "Role:", ctx.user.role, "Company:", ctx.user.company, "CompanyId:", ctx.user.companyId, "IsAdmin:", isAdmin, "IsSuperAdmin:", isSuperAdmin);
+      const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
       console.log("[Projects List] Returned projects count:", projects?.length || 0);
       return projects;
     }),
@@ -139,7 +140,8 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.id, ctx.user.id, ctx.user.company, isAdmin);
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const project = await db.getProjectById(input.id, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         if (!project) {
           throw new TRPCError({
             code: 'NOT_FOUND',
@@ -153,7 +155,8 @@ export const appRouter = router({
       .input(z.object({ uniqueId: z.string() }))
       .query(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
-        const project = await db.searchProjectByUniqueId(input.uniqueId, ctx.user.id, ctx.user.company, isAdmin);
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const project = await db.searchProjectByUniqueId(input.uniqueId, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         if (!project) {
           throw new TRPCError({
             code: 'NOT_FOUND',
@@ -208,10 +211,11 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
         
         // If status is being changed, log it to history
         if (data.status) {
-          const currentProject = await db.getProjectById(id, ctx.user.id, ctx.user.company, isAdmin);
+          const currentProject = await db.getProjectById(id, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
           if (currentProject && currentProject.status !== data.status) {
             await logStatusChange({
               projectId: id,
@@ -226,7 +230,7 @@ export const appRouter = router({
           ...data,
           assessmentDate: data.assessmentDate?.toISOString(),
         };
-        await db.updateProject(id, ctx.user.id, updateData, ctx.user.company, isAdmin);
+        await db.updateProject(id, ctx.user.id, updateData, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         return { success: true };
       }),
 
@@ -234,7 +238,8 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
-        await db.deleteProject(input.id, ctx.user.id, ctx.user.company, isAdmin);
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        await db.deleteProject(input.id, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         return { success: true };
       }),
 
@@ -243,8 +248,9 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         // Delete all projects that belong to the user
         const isAdmin = ctx.user.role === "admin";
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
         for (const id of input.ids) {
-          await db.deleteProject(id, ctx.user.id, ctx.user.company, isAdmin);
+          await db.deleteProject(id, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         }
         return { success: true, count: input.ids.length };
       }),
@@ -252,9 +258,10 @@ export const appRouter = router({
     deleteEmptyProjects: protectedProcedure
       .mutation(async ({ ctx }) => {
         const isAdmin = ctx.user.role === "admin";
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
         
         // Get all user's projects
-        const allProjects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin);
+        const allProjects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         
         // Find projects with no assets
         const emptyProjectIds: number[] = [];
@@ -267,7 +274,7 @@ export const appRouter = router({
         
         // Delete empty projects
         for (const id of emptyProjectIds) {
-          await db.deleteProject(id, ctx.user.id, ctx.user.company, isAdmin);
+          await db.deleteProject(id, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         }
         
         return { 
@@ -286,13 +293,17 @@ export const appRouter = router({
 
     listDeleted: protectedProcedure
       .query(async ({ ctx }) => {
-        return await db.getDeletedProjects(ctx.user.id);
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        return await db.getDeletedProjects(ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
       }),
 
     archive: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await db.updateProject(input.id, ctx.user.id, { status: "archived" });
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        await db.updateProject(input.id, ctx.user.id, { status: "archived" }, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         return { success: true };
       }),
 
@@ -300,7 +311,8 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
-        await db.updateProject(input.id, ctx.user.id, { status: "draft" }, ctx.user.company, isAdmin);
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        await db.updateProject(input.id, ctx.user.id, { status: "draft" }, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         return { success: true };
       }),
 
@@ -308,7 +320,8 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
-        const project = await db.getProjectById(input.id, ctx.user.id, ctx.user.company, isAdmin);
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const project = await db.getProjectById(input.id, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
         if (!project) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
         }

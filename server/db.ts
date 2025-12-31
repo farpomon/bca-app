@@ -38,7 +38,8 @@ import {
   ciFciSnapshots,
   assessmentDocuments,
   InsertAssessmentDocument,
-  projectDocuments
+  projectDocuments,
+  companies
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -140,7 +141,14 @@ export async function getUserById(userId: number) {
 }
 
 // Projects
-export async function getUserProjects(userId: number, includeDeleted: boolean = false, userCompany?: string | null, isAdmin: boolean = false) {
+export async function getUserProjects(
+  userId: number, 
+  includeDeleted: boolean = false, 
+  userCompany?: string | null, 
+  isAdmin: boolean = false,
+  companyId?: number | null,
+  isSuperAdmin: boolean = false
+) {
   const db = await getDb();
   if (!db) return [];
   
@@ -148,10 +156,32 @@ export async function getUserProjects(userId: number, includeDeleted: boolean = 
   let whereConditions;
   
   if (isAdmin) {
-    // Admins can see all projects
-    whereConditions = includeDeleted
-      ? undefined
-      : ne(projects.status, "deleted");
+    if (isSuperAdmin) {
+      // Super admins can see all projects
+      whereConditions = includeDeleted
+        ? undefined
+        : ne(projects.status, "deleted");
+    } else if (companyId) {
+      // Regular admins can only see projects from their assigned company
+      const companyResult = await db.select({ name: companies.name }).from(companies).where(eq(companies.id, companyId)).limit(1);
+      const companyName = companyResult[0]?.name;
+      if (!companyName) {
+        console.warn(`[Projects] Admin ${userId} has companyId ${companyId} but company not found`);
+        return [];
+      }
+      whereConditions = includeDeleted
+        ? eq(projects.company, companyName)
+        : and(eq(projects.company, companyName), ne(projects.status, "deleted"));
+    } else if (userCompany) {
+      // Fallback to userCompany string if companyId not set
+      whereConditions = includeDeleted
+        ? eq(projects.company, userCompany)
+        : and(eq(projects.company, userCompany), ne(projects.status, "deleted"));
+    } else {
+      // Admin without company assignment - show no projects
+      console.warn(`[Projects] Admin ${userId} has no company assignment`);
+      return [];
+    }
   } else {
     // Non-admins can only see their company's projects
     if (!userCompany) {
@@ -171,7 +201,13 @@ export async function getUserProjects(userId: number, includeDeleted: boolean = 
     : await query.orderBy(desc(projects.updatedAt));
 }
 
-export async function getDeletedProjects(userId: number, userCompany?: string | null, isAdmin: boolean = false) {
+export async function getDeletedProjects(
+  userId: number, 
+  userCompany?: string | null, 
+  isAdmin: boolean = false,
+  companyId?: number | null,
+  isSuperAdmin: boolean = false
+) {
   const db = await getDb();
   if (!db) return [];
   
@@ -180,22 +216,50 @@ export async function getDeletedProjects(userId: number, userCompany?: string | 
   const ninetyDaysAgoStr = ninetyDaysAgo.toISOString();
   
   // Build where conditions with company isolation
-  const whereConditions = isAdmin
-    ? and(
-        eq(projects.status, "deleted"),
-        gte(projects.deletedAt, ninetyDaysAgoStr)
-      )
-    : userCompany
-    ? and(
-        eq(projects.company, userCompany),
-        eq(projects.status, "deleted"),
-        gte(projects.deletedAt, ninetyDaysAgoStr)
-      )
-    : and(
-        eq(projects.userId, userId),
+  let whereConditions;
+  
+  if (isAdmin) {
+    if (isSuperAdmin) {
+      // Super admins can see all deleted projects
+      whereConditions = and(
         eq(projects.status, "deleted"),
         gte(projects.deletedAt, ninetyDaysAgoStr)
       );
+    } else if (companyId) {
+      // Regular admins can only see deleted projects from their assigned company
+      const companyResult = await db.select({ name: companies.name }).from(companies).where(eq(companies.id, companyId)).limit(1);
+      const companyName = companyResult[0]?.name;
+      if (!companyName) {
+        return [];
+      }
+      whereConditions = and(
+        eq(projects.company, companyName),
+        eq(projects.status, "deleted"),
+        gte(projects.deletedAt, ninetyDaysAgoStr)
+      );
+    } else if (userCompany) {
+      // Fallback to userCompany string
+      whereConditions = and(
+        eq(projects.company, userCompany),
+        eq(projects.status, "deleted"),
+        gte(projects.deletedAt, ninetyDaysAgoStr)
+      );
+    } else {
+      return [];
+    }
+  } else if (userCompany) {
+    whereConditions = and(
+      eq(projects.company, userCompany),
+      eq(projects.status, "deleted"),
+      gte(projects.deletedAt, ninetyDaysAgoStr)
+    );
+  } else {
+    whereConditions = and(
+      eq(projects.userId, userId),
+      eq(projects.status, "deleted"),
+      gte(projects.deletedAt, ninetyDaysAgoStr)
+    );
+  }
   
   return await db
     .select()
@@ -204,7 +268,14 @@ export async function getDeletedProjects(userId: number, userCompany?: string | 
     .orderBy(desc(projects.deletedAt));
 }
 
-export async function getProjectById(projectId: number, userId: number, userCompany?: string | null, isAdmin?: boolean) {
+export async function getProjectById(
+  projectId: number, 
+  userId: number, 
+  userCompany?: string | null, 
+  isAdmin?: boolean,
+  companyId?: number | null,
+  isSuperAdmin?: boolean
+) {
   const db = await getDb();
   if (!db) return undefined;
   
@@ -219,8 +290,25 @@ export async function getProjectById(projectId: number, userId: number, userComp
   
   const project = result[0];
   
-  // Admin can see all projects
-  if (isAdmin) return project;
+  // Super admin can see all projects
+  if (isSuperAdmin) return project;
+  
+  // Regular admin - check company assignment
+  if (isAdmin) {
+    if (companyId) {
+      // Get company name from companyId
+      const companyResult = await db.select({ name: companies.name }).from(companies).where(eq(companies.id, companyId)).limit(1);
+      const companyName = companyResult[0]?.name;
+      if (companyName && project.company !== companyName) {
+        console.warn(`[Security] Admin ${userId} from company "${companyName}" attempted to access project ${projectId} from company "${project.company}"`);
+        return undefined;
+      }
+    } else if (userCompany && project.company !== userCompany) {
+      console.warn(`[Security] Admin ${userId} from company "${userCompany}" attempted to access project ${projectId} from company "${project.company}"`);
+      return undefined;
+    }
+    return project;
+  }
   
   // Non-admin users can only see projects from their company
   if (userCompany && project.company !== userCompany) {
@@ -231,7 +319,14 @@ export async function getProjectById(projectId: number, userId: number, userComp
   return project;
 }
 
-export async function searchProjectByUniqueId(uniqueId: string, userId: number, userCompany?: string | null, isAdmin?: boolean) {
+export async function searchProjectByUniqueId(
+  uniqueId: string, 
+  userId: number, 
+  userCompany?: string | null, 
+  isAdmin?: boolean,
+  companyId?: number | null,
+  isSuperAdmin?: boolean
+) {
   const db = await getDb();
   if (!db) return undefined;
   
@@ -246,8 +341,24 @@ export async function searchProjectByUniqueId(uniqueId: string, userId: number, 
   
   const project = result[0];
   
-  // Admin can see all projects
-  if (isAdmin) return project;
+  // Super admin can see all projects
+  if (isSuperAdmin) return project;
+  
+  // Regular admin - check company assignment
+  if (isAdmin) {
+    if (companyId) {
+      const companyResult = await db.select({ name: companies.name }).from(companies).where(eq(companies.id, companyId)).limit(1);
+      const companyName = companyResult[0]?.name;
+      if (companyName && project.company !== companyName) {
+        console.warn(`[Security] Admin ${userId} from company "${companyName}" attempted to access project with uniqueId ${uniqueId} from company "${project.company}"`);
+        return undefined;
+      }
+    } else if (userCompany && project.company !== userCompany) {
+      console.warn(`[Security] Admin ${userId} from company "${userCompany}" attempted to access project with uniqueId ${uniqueId} from company "${project.company}"`);
+      return undefined;
+    }
+    return project;
+  }
   
   // Non-admin users can only see projects from their company
   if (userCompany && project.company !== userCompany) {
@@ -260,11 +371,19 @@ export async function searchProjectByUniqueId(uniqueId: string, userId: number, 
 
 /**
  * Helper function to verify that a project belongs to the user's company.
- * Admins bypass this check.
+ * Admins bypass this check unless they have a companyId assigned.
+ * Super admins always bypass.
  * Throws an error if access is denied.
  */
-export async function verifyProjectAccess(projectId: number, userId: number, userCompany?: string | null, isAdmin?: boolean): Promise<void> {
-  const project = await getProjectById(projectId, userId, userCompany, isAdmin);
+export async function verifyProjectAccess(
+  projectId: number, 
+  userId: number, 
+  userCompany?: string | null, 
+  isAdmin?: boolean,
+  companyId?: number | null,
+  isSuperAdmin?: boolean
+): Promise<void> {
+  const project = await getProjectById(projectId, userId, userCompany, isAdmin, companyId, isSuperAdmin);
   if (!project) {
     throw new Error("Project not found or access denied");
   }
@@ -289,13 +408,22 @@ export async function createProject(data: InsertProject, userCompany?: string | 
   return result[0].insertId;
 }
 
-export async function updateProject(projectId: number, userId: number, data: Partial<InsertProject>, userCompany?: string | null, isAdmin?: boolean) {
+export async function updateProject(
+  projectId: number, 
+  userId: number, 
+  data: Partial<InsertProject>, 
+  userCompany?: string | null, 
+  isAdmin?: boolean,
+  companyId?: number | null,
+  isSuperAdmin?: boolean
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Verify company ownership before update (unless admin)
-  if (!isAdmin && userCompany) {
-    const project = await getProjectById(projectId, userId, userCompany, false);
+  // Verify company ownership before update
+  // Super admins bypass all checks, regular admins check company
+  if (!isSuperAdmin) {
+    const project = await getProjectById(projectId, userId, userCompany, isAdmin, companyId, false);
     if (!project) {
       throw new Error("Project not found or access denied");
     }
@@ -307,13 +435,21 @@ export async function updateProject(projectId: number, userId: number, data: Par
     .where(eq(projects.id, projectId));
 }
 
-export async function deleteProject(projectId: number, userId: number, userCompany?: string | null, isAdmin?: boolean) {
+export async function deleteProject(
+  projectId: number, 
+  userId: number, 
+  userCompany?: string | null, 
+  isAdmin?: boolean,
+  companyId?: number | null,
+  isSuperAdmin?: boolean
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Verify company ownership before delete (unless admin)
-  if (!isAdmin && userCompany) {
-    const project = await getProjectById(projectId, userId, userCompany, false);
+  // Verify company ownership before delete
+  // Super admins bypass all checks, regular admins check company
+  if (!isSuperAdmin) {
+    const project = await getProjectById(projectId, userId, userCompany, isAdmin, companyId, false);
     if (!project) {
       throw new Error("Project not found or access denied");
     }
@@ -327,7 +463,7 @@ export async function deleteProject(projectId: number, userId: number, userCompa
       deletedAt: new Date().toISOString(),
       deletedBy: userId,
     })
-    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+    .where(eq(projects.id, projectId));
 }
 
 export async function restoreProject(projectId: number, userId: number) {

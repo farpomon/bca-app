@@ -1554,6 +1554,8 @@ export const users = mysqlTable("users", {
 	unitPreference: mysqlEnum(['metric','imperial']).default('metric').notNull(),
 	welcomeEmailSent: tinyint().default(0).notNull(),
 	welcomeEmailSentAt: timestamp({ mode: 'string' }),
+	companyId: int(),
+	isSuperAdmin: tinyint().default(0).notNull(),
 });
 
 export const utilityConsumption = mysqlTable("utility_consumption", {
