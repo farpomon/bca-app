@@ -28,22 +28,21 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CompanySelector } from "@/components/CompanySelector";
-import { UserPlus, Trash2, Edit, Loader2, Shield } from "lucide-react";
+import { UserPlus, Trash2, Edit, Loader2, Shield, ArrowLeft, Building2 } from "lucide-react";
 import { toast } from "sonner";
+import { useCompany } from "@/contexts/CompanyContext";
+import { InviteUserDialog } from "@/components/InviteUserDialog";
+import DashboardLayout from "@/components/DashboardLayout";
+import { useLocation } from "wouter";
 
 export default function CompanyUsersPage() {
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | undefined>();
-  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
+  const [, setLocation] = useLocation();
+  const { selectedCompanyId, selectedCompany } = useCompany();
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [newUserId, setNewUserId] = useState("");
-  const [newUserRole, setNewUserRole] = useState<"company_admin" | "project_manager" | "editor" | "viewer">("viewer");
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   const utils = trpc.useUtils();
-
-  // Get companies user belongs to
-  const { data: myCompanies } = trpc.companyRoles.myCompanies.useQuery();
 
   // Get users in selected company
   const { data: companyUsers, isLoading } = trpc.companyRoles.getCompanyUsers.useQuery(
@@ -56,19 +55,6 @@ export default function CompanyUsersPage() {
     { companyId: selectedCompanyId! },
     { enabled: !!selectedCompanyId }
   );
-
-  const addUserMutation = trpc.companyRoles.addUserToCompany.useMutation({
-    onSuccess: () => {
-      toast.success("User added successfully");
-      utils.companyRoles.getCompanyUsers.invalidate();
-      setAddUserDialogOpen(false);
-      setNewUserId("");
-      setNewUserRole("viewer");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
 
   const updateRoleMutation = trpc.companyRoles.updateUserRole.useMutation({
     onSuccess: () => {
@@ -91,19 +77,6 @@ export default function CompanyUsersPage() {
       toast.error(error.message);
     },
   });
-
-  const handleAddUser = () => {
-    if (!selectedCompanyId || !newUserId) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    addUserMutation.mutate({
-      companyId: selectedCompanyId,
-      userId: parseInt(newUserId),
-      role: newUserRole,
-    });
-  };
 
   const handleUpdateRole = () => {
     if (!selectedCompanyId || !selectedUser) return;
@@ -128,48 +101,54 @@ export default function CompanyUsersPage() {
 
   const isAdmin = myRole?.companyRole === "company_admin";
 
-  // Auto-select first company if user has companies
-  if (!selectedCompanyId && myCompanies && myCompanies.length > 0) {
-    setSelectedCompanyId(myCompanies[0].id);
+  if (!selectedCompanyId || !selectedCompany) {
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto py-8">
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center space-y-4">
+                <Building2 className="h-12 w-12 mx-auto text-muted-foreground" />
+                <h2 className="text-xl font-semibold">No Company Selected</h2>
+                <p className="text-muted-foreground">
+                  Please select a company from the sidebar to manage its users.
+                </p>
+                <Button variant="outline" onClick={() => setLocation("/projects")}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Projects
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Company Users</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage users and roles within your company
-          </p>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1.5">
-              <CardTitle>Select Company</CardTitle>
-              <CardDescription>
-                Choose a company to manage its users
-              </CardDescription>
-            </div>
-            {isAdmin && (
-              <Button onClick={() => setAddUserDialogOpen(true)} size="sm">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add User
+    <DashboardLayout>
+      <div className="container mx-auto py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+              <Button variant="ghost" size="sm" onClick={() => setLocation("/projects")}>
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
               </Button>
-            )}
+            </div>
+            <h1 className="text-3xl font-bold">{selectedCompany.name}</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage users and roles within your company
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <CompanySelector
-            value={selectedCompanyId}
-            onChange={setSelectedCompanyId}
-          />
-        </CardContent>
-      </Card>
+          {isAdmin && (
+            <Button onClick={() => setInviteDialogOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Invite User
+            </Button>
+          )}
+        </div>
 
-      {selectedCompanyId && (
         <Card>
           <CardHeader>
             <CardTitle>Company Members</CardTitle>
@@ -189,7 +168,17 @@ export default function CompanyUsersPage() {
               </div>
             ) : !companyUsers || companyUsers.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No users found in this company
+                <p>No users found in this company</p>
+                {isAdmin && (
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setInviteDialogOpen(true)}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite the first user
+                  </Button>
+                )}
               </div>
             ) : (
               <Table>
@@ -214,7 +203,7 @@ export default function CompanyUsersPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.status === "active" ? "default" : "secondary"}>
+                        <Badge variant={getStatusBadgeVariant(user.status)}>
                           {user.status}
                         </Badge>
                       </TableCell>
@@ -251,95 +240,56 @@ export default function CompanyUsersPage() {
             )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Add User Dialog */}
-      <Dialog open={addUserDialogOpen} onOpenChange={setAddUserDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add User to Company</DialogTitle>
-            <DialogDescription>
-              Add a user to the company and assign them a role
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="userId">User ID</Label>
-              <Input
-                id="userId"
-                type="number"
-                placeholder="Enter user ID"
-                value={newUserId}
-                onChange={(e) => setNewUserId(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select value={newUserRole} onValueChange={(val: any) => setNewUserRole(val)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="viewer">Viewer</SelectItem>
-                  <SelectItem value="editor">Editor</SelectItem>
-                  <SelectItem value="project_manager">Project Manager</SelectItem>
-                  <SelectItem value="company_admin">Company Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddUserDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddUser} disabled={addUserMutation.isPending}>
-              {addUserMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Add User
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {/* Invite User Dialog */}
+        <InviteUserDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          companyId={selectedCompanyId}
+          companyName={selectedCompany.name}
+        />
 
-      {/* Edit User Role Dialog */}
-      <Dialog open={editUserDialogOpen} onOpenChange={setEditUserDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User Role</DialogTitle>
-            <DialogDescription>
-              Change the role for {selectedUser?.name || "this user"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="editRole">Role</Label>
-              <Select
-                value={selectedUser?.role}
-                onValueChange={(val) => setSelectedUser({ ...selectedUser, role: val })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="viewer">Viewer</SelectItem>
-                  <SelectItem value="editor">Editor</SelectItem>
-                  <SelectItem value="project_manager">Project Manager</SelectItem>
-                  <SelectItem value="company_admin">Company Admin</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Edit User Role Dialog */}
+        <Dialog open={editUserDialogOpen} onOpenChange={setEditUserDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit User Role</DialogTitle>
+              <DialogDescription>
+                Change the role for {selectedUser?.name || "this user"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="editRole">Role</Label>
+                <Select
+                  value={selectedUser?.role}
+                  onValueChange={(val) => setSelectedUser({ ...selectedUser, role: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="editor">Editor</SelectItem>
+                    <SelectItem value="project_manager">Project Manager</SelectItem>
+                    <SelectItem value="company_admin">Company Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUserDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateRole} disabled={updateRoleMutation.isPending}>
-              {updateRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Update Role
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditUserDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateRole} disabled={updateRoleMutation.isPending}>
+                {updateRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Update Role
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </DashboardLayout>
   );
 }
 
@@ -356,5 +306,12 @@ function getRoleLabel(role: string): string {
 function getRoleBadgeVariant(role: string): "default" | "secondary" | "outline" {
   if (role === "company_admin") return "default";
   if (role === "project_manager") return "secondary";
+  return "outline";
+}
+
+function getStatusBadgeVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
+  if (status === "active") return "default";
+  if (status === "pending") return "secondary";
+  if (status === "inactive") return "destructive";
   return "outline";
 }

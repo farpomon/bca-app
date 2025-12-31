@@ -129,14 +129,20 @@ export const appRouter = router({
   complianceCheck: complianceCheckRouter,
 
   projects: router({
-    list: protectedProcedure.query(async ({ ctx }) => {
-      const isAdmin = ctx.user.role === "admin";
-      const isSuperAdmin = ctx.user.isSuperAdmin === 1;
-      console.log("[Projects List] User:", ctx.user.id, "Role:", ctx.user.role, "Company:", ctx.user.company, "CompanyId:", ctx.user.companyId, "IsAdmin:", isAdmin, "IsSuperAdmin:", isSuperAdmin);
-      const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
-      console.log("[Projects List] Returned projects count:", projects?.length || 0);
-      return projects;
-    }),
+    list: protectedProcedure
+      .input(z.object({
+        companyId: z.number().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === "admin";
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        // Use provided companyId filter or fall back to user's default company
+        const effectiveCompanyId = input?.companyId ?? ctx.user.companyId;
+        console.log("[Projects List] User:", ctx.user.id, "Role:", ctx.user.role, "Company:", ctx.user.company, "CompanyId:", effectiveCompanyId, "IsAdmin:", isAdmin, "IsSuperAdmin:", isSuperAdmin);
+        const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin, effectiveCompanyId, isSuperAdmin);
+        console.log("[Projects List] Returned projects count:", projects?.length || 0);
+        return projects;
+      }),
 
     get: protectedProcedure
       .input(z.object({ id: z.number() }))

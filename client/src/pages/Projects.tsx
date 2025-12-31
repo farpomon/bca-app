@@ -17,6 +17,7 @@ import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useFilterPersistence } from "@/hooks/useFilterPersistence";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useCompany } from "@/contexts/CompanyContext";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu";
@@ -41,6 +42,7 @@ function ProjectDocumentBadge({ projectId }: { projectId: number }) {
 
 export default function Projects() {
   const { user, loading: authLoading } = useAuth();
+  const { selectedCompanyId } = useCompany();
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -124,9 +126,12 @@ export default function Projects() {
   const [aiImportDialogOpen, setAIImportDialogOpen] = useState(false);
   
 
-  const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
-    enabled: !!user,
-  });
+  const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(
+    selectedCompanyId ? { companyId: selectedCompanyId } : undefined,
+    {
+      enabled: !!user,
+    }
+  );
   
   console.log("[Projects Page] Projects data:", projects?.length || 0, "projects");
   console.log("[Projects Page] IsLoading:", isLoading);

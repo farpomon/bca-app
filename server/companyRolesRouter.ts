@@ -217,4 +217,179 @@ export const companyRolesRouter = router({
 
     return await companyRolesDb.getAllCompanies();
   }),
+
+  /**
+   * Create a new company (super admin only)
+   * Creator is automatically assigned as company_admin
+   */
+  createCompany: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1, "Company name is required"),
+        city: z.string().optional(),
+        contactEmail: z.string().email().optional(),
+        contactPhone: z.string().optional(),
+        address: z.string().optional(),
+        notes: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is super admin
+      if (!ctx.user.isSuperAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only super admins can create companies",
+        });
+      }
+
+      const companyId = await companyRolesDb.createCompany(input, ctx.user.id);
+      return { id: companyId, success: true };
+    }),
+
+  /**
+   * Update company details (requires company_admin role)
+   */
+  updateCompany: protectedProcedure
+    .input(
+      z.object({
+        companyId: z.number(),
+        name: z.string().min(1).optional(),
+        city: z.string().optional(),
+        contactEmail: z.string().email().optional(),
+        contactPhone: z.string().optional(),
+        address: z.string().optional(),
+        notes: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { companyId, ...data } = input;
+
+      // Check if user is company admin or super admin
+      const isCompanyAdmin = await companyRolesDb.hasCompanyRole(
+        ctx.user.id,
+        companyId,
+        "company_admin"
+      );
+
+      if (!isCompanyAdmin && !ctx.user.isSuperAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only company admins can update company details",
+        });
+      }
+
+      await companyRolesDb.updateCompany(companyId, data);
+      return { success: true };
+    }),
+
+  /**
+   * Invite a user to a company by email (requires company_admin role)
+   */
+  inviteUserByEmail: protectedProcedure
+    .input(
+      z.object({
+        companyId: z.number(),
+        email: z.string().email("Invalid email address"),
+        role: z.enum(["company_admin", "project_manager", "editor", "viewer"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is company admin
+      const isAdmin = await companyRolesDb.hasCompanyRole(
+        ctx.user.id,
+        input.companyId,
+        "company_admin"
+      );
+
+      if (!isAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only company admins can invite users",
+        });
+      }
+
+      const result = await companyRolesDb.createPendingInvitation({
+        companyId: input.companyId,
+        email: input.email,
+        role: input.role,
+        invitedBy: ctx.user.id,
+      });
+
+      if (result.isNewUser) {
+        // User doesn't exist in the system yet
+        // In a real implementation, you would send an email invitation here
+        return {
+          success: true,
+          isNewUser: true,
+          message: `Invitation will be sent to ${input.email}. They will be added when they sign up.`,
+        };
+      }
+
+      return {
+        success: true,
+        isNewUser: false,
+        message: "User has been invited to the company",
+      };
+    }),
+
+  /**
+   * Get pending invitations for the current user
+   */
+  myPendingInvitations: protectedProcedure.query(async ({ ctx }) => {
+    const invitations = await companyRolesDb.getPendingInvitations(ctx.user.id);
+    return invitations.map(({ companyUser, company }) => ({
+      id: companyUser.id,
+      companyId: company.id,
+      companyName: company.name,
+      role: companyUser.companyRole,
+      invitedAt: companyUser.invitedAt,
+    }));
+  }),
+
+  /**
+   * Accept a pending invitation
+   */
+  acceptInvitation: protectedProcedure
+    .input(z.object({ companyId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await companyRolesDb.acceptInvitation(ctx.user.id, input.companyId);
+      return { success: true };
+    }),
+
+  /**
+   * Decline a pending invitation
+   */
+  declineInvitation: protectedProcedure
+    .input(z.object({ companyId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await companyRolesDb.removeUserFromCompany(ctx.user.id, input.companyId);
+      return { success: true };
+    }),
+
+  /**
+   * Get company details (requires membership)
+   */
+  getCompany: protectedProcedure
+    .input(z.object({ companyId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      // Check if user belongs to the company or is super admin
+      const userRole = await companyRolesDb.getUserRoleInCompany(ctx.user.id, input.companyId);
+      
+      if (!userRole && !ctx.user.isSuperAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this company",
+        });
+      }
+
+      const company = await companyRolesDb.getCompanyById(input.companyId);
+      if (!company) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Company not found",
+        });
+      }
+
+      return company;
+    }),
 });
