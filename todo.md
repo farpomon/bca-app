@@ -2668,3 +2668,8 @@ Testing:
 - [x] Integrate map view into Photos tab on AssetDetail page
 - [x] Add photo markers with click-to-view functionality
 - [x] Show photo thumbnails in info windows on marker click
+
+## Map Enhancement Features
+- [x] Photo clustering - Group nearby markers when zoomed out to prevent marker overlap
+- [x] Heatmap view - Show assessment density as a heatmap overlay
+- [x] Photo filtering on map - Filter markers by date range, component code, or assessment type
