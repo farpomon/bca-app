@@ -153,8 +153,40 @@ export const assetDocumentsRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
       }
 
-      // Only allow deletion by uploader or admin
-      if (document.uploadedBy !== ctx.user.id && ctx.user.role !== "admin") {
+      // Check if user is the uploader
+      const isUploader = document.uploadedBy === ctx.user.id;
+      const isAdmin = ctx.user.role === "admin";
+      const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+      
+      // Get the asset to check project access
+      const { projects } = await import("../../drizzle/schema");
+      const [asset] = await database
+        .select()
+        .from(assets)
+        .where(eq(assets.id, document.assetId))
+        .limit(1);
+        
+      if (!asset) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+      }
+      
+      const [project] = await database
+        .select()
+        .from(projects)
+        .where(eq(projects.id, asset.projectId))
+        .limit(1);
+        
+      // Allow delete if:
+      // 1. User is the uploader
+      // 2. User is super admin
+      // 3. User is admin
+      // 4. User is project owner
+      // 5. User is in the same company
+      const isProjectOwner = project && project.userId === ctx.user.id;
+      const isSameCompany = project && ctx.user.company && project.company === ctx.user.company;
+      const isSameCompanyId = project && ctx.user.companyId && project.companyId === ctx.user.companyId;
+      
+      if (!isUploader && !isSuperAdmin && !isAdmin && !isProjectOwner && !isSameCompany && !isSameCompanyId) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to delete this document" });
       }
 

@@ -109,7 +109,7 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
             <Button
               variant="destructive"
               size="icon"
-              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+              className="absolute top-1 right-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-7 w-7"
               onClick={() => {
                 if (confirm("Delete this photo?")) {
                   deletePhoto.mutate({ id: photo.id as number });

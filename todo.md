@@ -2691,3 +2691,9 @@ Testing:
 
 ## UI Changes
 - [x] Hide AI Import button from Projects section (should only be available in Assets section)
+
+## Asset Delete Functionality Bug Fixes
+
+- [x] Fix document delete functionality in asset management (delete button not working)
+- [x] Add delete option for photos in asset management (no delete button shown)
+

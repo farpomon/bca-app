@@ -738,6 +738,19 @@ export async function createPhoto(data: InsertPhoto) {
   return Number(result.insertId);
 }
 
+export async function getPhotoById(photoId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(photos)
+    .where(eq(photos.id, photoId))
+    .limit(1);
+    
+  return result[0] || null;
+}
+
 export async function deletePhoto(photoId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -2413,7 +2426,7 @@ export async function getProjectDocuments(projectId: number) {
     .orderBy(desc(assessmentDocuments.createdAt));
 }
 
-export async function deleteAssessmentDocument(documentId: number, userId: number) {
+export async function deleteAssessmentDocument(documentId: number, userId: number, userCompany?: string | null, isAdmin?: boolean, userCompanyId?: number | null, isSuperAdmin?: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
@@ -2426,14 +2439,27 @@ export async function deleteAssessmentDocument(documentId: number, userId: numbe
     
   if (!doc[0]) throw new Error("Document not found");
   
-  // Check project ownership
+  // Check project ownership or company access
   const project = await db
     .select()
     .from(projects)
     .where(eq(projects.id, doc[0].projectId))
     .limit(1);
     
-  if (!project[0] || project[0].userId !== userId) {
+  if (!project[0]) {
+    throw new Error("Project not found");
+  }
+  
+  // Allow delete if:
+  // 1. User is the direct owner
+  // 2. User is super admin
+  // 3. User is admin in the same company
+  // 4. User is in the same company
+  const isOwner = project[0].userId === userId;
+  const isSameCompany = userCompany && project[0].company === userCompany;
+  const isSameCompanyId = userCompanyId && project[0].companyId === userCompanyId;
+  
+  if (!isOwner && !isSuperAdmin && !(isAdmin && (isSameCompany || isSameCompanyId)) && !isSameCompany && !isSameCompanyId) {
     throw new Error("Unauthorized");
   }
   

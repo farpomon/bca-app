@@ -1941,7 +1941,26 @@ Provide helpful insights, recommendations, and analysis based on this asset data
 
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        // Get photo to verify access
+        const photo = await db.getPhotoById(input.id);
+        if (!photo) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Photo not found" });
+        }
+        
+        // Check authorization
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const isUploader = photo.uploadedBy === ctx.user.id;
+        
+        // Get project to check company access
+        const project = await db.getProjectById(photo.projectId, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+        
+        // Allow delete if user has access to the project or is the uploader
+        if (!project && !isUploader && !isSuperAdmin) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to delete this photo" });
+        }
+        
         await db.deletePhoto(input.id);
         return { success: true };
       }),

@@ -79,7 +79,16 @@ export const assessmentDocumentsRouter = router({
     .input(z.object({ documentId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       try {
-        return await db.deleteAssessmentDocument(input.documentId, ctx.user.id);
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        return await db.deleteAssessmentDocument(
+          input.documentId, 
+          ctx.user.id, 
+          ctx.user.company, 
+          isAdmin, 
+          ctx.user.companyId, 
+          isSuperAdmin
+        );
       } catch (error: any) {
         throw new TRPCError({
           code: error.message === "Unauthorized" ? "FORBIDDEN" : "INTERNAL_SERVER_ERROR",
