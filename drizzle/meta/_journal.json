@@ -519,6 +519,13 @@
       "when": 1767217664104,
       "tag": "0073_volatile_marvel_zombies",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "5",
+      "when": 1767296161876,
+      "tag": "0074_pale_satana",
+      "breakpoints": true
     }
   ]
 }

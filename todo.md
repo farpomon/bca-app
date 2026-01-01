@@ -2697,3 +2697,33 @@ Testing:
 - [x] Fix document delete functionality in asset management (delete button not working)
 - [x] Add delete option for photos in asset management (no delete button shown)
 
+
+## Deletion Improvements
+
+### Confirmation Dialogs
+- [ ] Add confirmation dialog before deleting photos
+- [ ] Add confirmation dialog before deleting documents
+- [ ] Add confirmation dialog before deleting assets
+- [ ] Add confirmation dialog before deleting projects
+- [ ] Create reusable DeleteConfirmationDialog component
+
+### Bulk Delete Functionality
+- [ ] Add checkbox selection for multiple photos
+- [ ] Add checkbox selection for multiple documents
+- [ ] Add "Select All" option for photos and documents
+- [ ] Add bulk delete button for selected items
+- [x] Implement bulk delete backend procedures
+
+### Soft Delete with Undo
+- [x] Add deletedAt column to photos table for soft delete
+- [x] Add deletedAt column to documents table for soft delete
+- [x] Update delete procedures to set deletedAt instead of hard delete
+- [ ] Create "Recently Deleted" section in UI
+- [ ] Add restore functionality for soft-deleted items
+- [ ] Add permanent delete option for items in Recently Deleted
+- [ ] Implement auto-purge after 30 days (scheduled task)
+
+## Bug Fix: iPhone Photo Capture in Assessment
+- [x] Investigate iPhone photo capture not showing after save in assessment dialog
+- [x] Check photo upload process and linking to assessments (added direct upload when online)
+- [ ] Test and verify fix on mobile devices

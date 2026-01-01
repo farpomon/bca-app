@@ -98,7 +98,7 @@ export const assetDocumentsRouter = router({
     }),
 
   /**
-   * List all documents for an asset
+   * List all documents for an asset (excludes soft-deleted)
    */
   list: protectedProcedure
     .input(
@@ -110,10 +110,17 @@ export const assetDocumentsRouter = router({
       const database = await getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
+      const { isNull } = await import("drizzle-orm");
+      
       const documents = await database
         .select()
         .from(assetDocuments)
-        .where(eq(assetDocuments.assetId, input.assetId));
+        .where(
+          and(
+            eq(assetDocuments.assetId, input.assetId),
+            isNull(assetDocuments.deletedAt)
+          )
+        );
 
       return documents.map((doc) => ({
         id: doc.id,
@@ -130,7 +137,7 @@ export const assetDocumentsRouter = router({
     }),
 
   /**
-   * Delete a document
+   * Delete a document (soft delete)
    */
   delete: protectedProcedure
     .input(
@@ -190,7 +197,209 @@ export const assetDocumentsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to delete this document" });
       }
 
-      // Delete from database (S3 cleanup can be done separately if needed)
+      // Soft delete - set deletedAt timestamp
+      await database
+        .update(assetDocuments)
+        .set({ deletedAt: new Date().toISOString(), deletedBy: ctx.user.id })
+        .where(eq(assetDocuments.id, input.documentId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Bulk delete documents (soft delete)
+   */
+  bulkDelete: protectedProcedure
+    .input(
+      z.object({
+        documentIds: z.array(z.number()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const isAdmin = ctx.user.role === "admin";
+      const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+      const { projects } = await import("../../drizzle/schema");
+
+      // Verify access for each document
+      for (const docId of input.documentIds) {
+        const [document] = await database
+          .select()
+          .from(assetDocuments)
+          .where(eq(assetDocuments.id, docId))
+          .limit(1);
+
+        if (!document) continue;
+
+        const isUploader = document.uploadedBy === ctx.user.id;
+        
+        const [asset] = await database
+          .select()
+          .from(assets)
+          .where(eq(assets.id, document.assetId))
+          .limit(1);
+          
+        if (!asset) continue;
+        
+        const [project] = await database
+          .select()
+          .from(projects)
+          .where(eq(projects.id, asset.projectId))
+          .limit(1);
+          
+        const isProjectOwner = project && project.userId === ctx.user.id;
+        const isSameCompany = project && ctx.user.company && project.company === ctx.user.company;
+        const isSameCompanyId = project && ctx.user.companyId && project.companyId === ctx.user.companyId;
+        
+        if (!isUploader && !isSuperAdmin && !isAdmin && !isProjectOwner && !isSameCompany && !isSameCompanyId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: `Not authorized to delete document ${docId}` });
+        }
+      }
+
+      // Soft delete all documents
+      const deletedAt = new Date().toISOString();
+      for (const docId of input.documentIds) {
+        await database
+          .update(assetDocuments)
+          .set({ deletedAt, deletedBy: ctx.user.id })
+          .where(eq(assetDocuments.id, docId));
+      }
+
+      return { success: true, deletedCount: input.documentIds.length };
+    }),
+
+  /**
+   * Get recently deleted documents for an asset
+   */
+  recentlyDeleted: protectedProcedure
+    .input(
+      z.object({
+        assetId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const { isNotNull, desc } = await import("drizzle-orm");
+      
+      const documents = await database
+        .select()
+        .from(assetDocuments)
+        .where(
+          and(
+            eq(assetDocuments.assetId, input.assetId),
+            isNotNull(assetDocuments.deletedAt)
+          )
+        )
+        .orderBy(desc(assetDocuments.deletedAt));
+
+      return documents.map((doc) => ({
+        id: doc.id,
+        fileName: doc.fileName,
+        url: doc.url,
+        mimeType: doc.mimeType,
+        fileSize: doc.fileSize,
+        category: doc.category,
+        description: doc.description,
+        createdAt: doc.createdAt,
+        deletedAt: doc.deletedAt,
+        uploadedBy: doc.uploadedBy,
+        deficiencyId: doc.deficiencyId,
+      }));
+    }),
+
+  /**
+   * Restore a soft-deleted document
+   */
+  restore: protectedProcedure
+    .input(
+      z.object({
+        documentId: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const { isNotNull } = await import("drizzle-orm");
+      
+      // Get deleted document
+      const [document] = await database
+        .select()
+        .from(assetDocuments)
+        .where(
+          and(
+            eq(assetDocuments.id, input.documentId),
+            isNotNull(assetDocuments.deletedAt)
+          )
+        )
+        .limit(1);
+
+      if (!document) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Document not found in recently deleted" });
+      }
+
+      // Verify access
+      const isUploader = document.uploadedBy === ctx.user.id;
+      const isAdmin = ctx.user.role === "admin";
+      const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+      
+      if (!isUploader && !isSuperAdmin && !isAdmin) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to restore this document" });
+      }
+
+      // Restore document
+      await database
+        .update(assetDocuments)
+        .set({ deletedAt: null, deletedBy: null })
+        .where(eq(assetDocuments.id, input.documentId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Permanently delete a document
+   */
+  permanentDelete: protectedProcedure
+    .input(
+      z.object({
+        documentId: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const { isNotNull } = await import("drizzle-orm");
+      
+      // Get deleted document
+      const [document] = await database
+        .select()
+        .from(assetDocuments)
+        .where(
+          and(
+            eq(assetDocuments.id, input.documentId),
+            isNotNull(assetDocuments.deletedAt)
+          )
+        )
+        .limit(1);
+
+      if (!document) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+      }
+
+      // Verify access
+      const isAdmin = ctx.user.role === "admin";
+      const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+      
+      if (!isSuperAdmin && !isAdmin) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to permanently delete this document" });
+      }
+
+      // Permanently delete
       await database.delete(assetDocuments).where(eq(assetDocuments.id, input.documentId));
 
       return { success: true };

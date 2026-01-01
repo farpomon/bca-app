@@ -3,8 +3,11 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, X, Download, Trash2, Image as ImageIcon, MapPin, ExternalLink } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, X, Download, Trash2, Image as ImageIcon, MapPin, ExternalLink, RotateCcw, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { RecentlyDeletedDialog } from "./RecentlyDeletedDialog";
 
 interface AssetPhotoGalleryProps {
   assetId: number;
@@ -35,19 +38,38 @@ function getGoogleMapsUrl(lat: string | number | null, lng: string | number | nu
 export default function AssetPhotoGallery({ assetId, projectId }: AssetPhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isRecentlyDeletedOpen, setIsRecentlyDeletedOpen] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<number[]>([]);
   
   const { data: photos, isLoading } = trpc.photos.byAsset.useQuery({ assetId, projectId });
   const utils = trpc.useUtils();
   
   const deletePhotoMutation = trpc.photos.delete.useMutation({
     onSuccess: () => {
-      toast.success('Photo deleted successfully');
+      toast.success('Photo moved to Recently Deleted');
       utils.photos.byAsset.invalidate({ assetId, projectId });
+      utils.photos.recentlyDeleted.invalidate({ projectId });
       setIsDeleteDialogOpen(false);
       setSelectedPhoto(null);
     },
     onError: (error) => {
       toast.error(`Failed to delete photo: ${error.message}`);
+    }
+  });
+
+  const bulkDeleteMutation = trpc.photos.bulkDelete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.deletedCount} photos moved to Recently Deleted`);
+      utils.photos.byAsset.invalidate({ assetId, projectId });
+      utils.photos.recentlyDeleted.invalidate({ projectId });
+      setIsBulkDeleteDialogOpen(false);
+      setSelectedPhotos([]);
+      setSelectionMode(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete photos: ${error.message}`);
     }
   });
 
@@ -57,11 +79,39 @@ export default function AssetPhotoGallery({ assetId, projectId }: AssetPhotoGall
     }
   };
 
+  const handleBulkDelete = () => {
+    if (selectedPhotos.length > 0) {
+      bulkDeleteMutation.mutate({ ids: selectedPhotos });
+    }
+  };
+
   const handleDownload = (url: string, filename: string) => {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     link.click();
+  };
+
+  const togglePhotoSelection = (photoId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedPhotos(prev => 
+      prev.includes(photoId) 
+        ? prev.filter(id => id !== photoId)
+        : [...prev, photoId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (photos && selectedPhotos.length === photos.length) {
+      setSelectedPhotos([]);
+    } else if (photos) {
+      setSelectedPhotos(photos.map(p => p.id));
+    }
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedPhotos([]);
   };
 
   if (isLoading) {
@@ -76,30 +126,135 @@ export default function AssetPhotoGallery({ assetId, projectId }: AssetPhotoGall
     return (
       <div className="text-center py-12">
         <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mb-4">
           No photos uploaded yet. Use the upload section above to add photos.
         </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsRecentlyDeletedOpen(true)}
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          View Recently Deleted
+        </Button>
+        <RecentlyDeletedDialog
+          open={isRecentlyDeletedOpen}
+          onOpenChange={setIsRecentlyDeletedOpen}
+          projectId={projectId}
+          assetId={assetId}
+        />
       </div>
     );
   }
 
   return (
     <>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          {selectionMode ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleSelectAll}
+              >
+                {selectedPhotos.length === photos.length ? (
+                  <>
+                    <Square className="mr-2 h-4 w-4" />
+                    Deselect All
+                  </>
+                ) : (
+                  <>
+                    <CheckSquare className="mr-2 h-4 w-4" />
+                    Select All
+                  </>
+                )}
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {selectedPhotos.length} selected
+              </span>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectionMode(true)}
+            >
+              <CheckSquare className="mr-2 h-4 w-4" />
+              Select
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {selectionMode && selectedPhotos.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsBulkDeleteDialogOpen(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete ({selectedPhotos.length})
+            </Button>
+          )}
+          {selectionMode && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={exitSelectionMode}
+            >
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsRecentlyDeletedOpen(true)}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Recently Deleted
+          </Button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {photos.map((photo) => {
           const hasLocation = photo.latitude && photo.longitude;
+          const isSelected = selectedPhotos.includes(photo.id);
           return (
             <Card 
               key={photo.id} 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => setSelectedPhoto(photo)}
+              className={`cursor-pointer hover:shadow-lg transition-all ${
+                isSelected ? 'ring-2 ring-primary' : ''
+              }`}
+              onClick={(e) => {
+                if (selectionMode) {
+                  togglePhotoSelection(photo.id, e);
+                } else {
+                  setSelectedPhoto(photo);
+                }
+              }}
             >
               <CardContent className="p-0">
                 <div className="relative aspect-square">
+                  {selectionMode && (
+                    <div 
+                      className="absolute top-2 left-2 z-10"
+                      onClick={(e) => togglePhotoSelection(photo.id, e)}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        className="h-5 w-5 bg-white/90"
+                      />
+                    </div>
+                  )}
                   <img
                     src={photo.url}
                     alt={photo.caption || 'Asset photo'}
-                    className="w-full h-full object-cover rounded-t-lg"
+                    className={`w-full h-full object-cover rounded-t-lg ${
+                      isSelected ? 'opacity-75' : ''
+                    }`}
                   />
                   {/* Location indicator badge */}
                   {hasLocation && (
@@ -124,7 +279,7 @@ export default function AssetPhotoGallery({ assetId, projectId }: AssetPhotoGall
       </div>
 
       {/* Photo Preview Dialog */}
-      <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
+      <Dialog open={!!selectedPhoto && !selectionMode} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{selectedPhoto?.caption || 'Photo'}</DialogTitle>
@@ -201,36 +356,32 @@ export default function AssetPhotoGallery({ assetId, projectId }: AssetPhotoGall
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Photo</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete this photo? This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDelete}
-              disabled={deletePhotoMutation.isPending}
-            >
-              {deletePhotoMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Single Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        itemType="photo"
+        isLoading={deletePhotoMutation.isPending}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={setIsBulkDeleteDialogOpen}
+        onConfirm={handleBulkDelete}
+        itemCount={selectedPhotos.length}
+        itemType="photo"
+        isLoading={bulkDeleteMutation.isPending}
+      />
+
+      {/* Recently Deleted Dialog */}
+      <RecentlyDeletedDialog
+        open={isRecentlyDeletedOpen}
+        onOpenChange={setIsRecentlyDeletedOpen}
+        projectId={projectId}
+        assetId={assetId}
+      />
     </>
   );
 }

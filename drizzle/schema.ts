@@ -209,6 +209,8 @@ export const assetDocuments = mysqlTable("asset_documents", {
 	category: varchar({ length: 50 }),
 	description: text(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	deletedAt: timestamp({ mode: 'string' }),
+	deletedBy: int(),
 });
 
 export const assets = mysqlTable("assets", {
@@ -1233,6 +1235,8 @@ export const photos = mysqlTable("photos", {
 	floorPlanId: int().references(() => floorPlans.id, { onDelete: "set null" } ),
 	floorPlanX: decimal({ precision: 10, scale: 4 }),
 	floorPlanY: decimal({ precision: 10, scale: 4 }),
+	deletedAt: timestamp({ mode: 'string' }),
+	deletedBy: int(),
 });
 
 export const pofFactors = mysqlTable("pof_factors", {

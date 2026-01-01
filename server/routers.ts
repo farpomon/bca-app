@@ -1961,6 +1961,86 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to delete this photo" });
         }
         
+        // Soft delete - set deletedAt timestamp instead of hard delete
+        await db.softDeletePhoto(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    // Bulk soft delete photos
+    bulkDelete: protectedProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        
+        // Verify access for each photo
+        for (const photoId of input.ids) {
+          const photo = await db.getPhotoById(photoId);
+          if (!photo) continue;
+          
+          const project = await db.getProjectById(photo.projectId, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+          const isUploader = photo.uploadedBy === ctx.user.id;
+          
+          if (!project && !isUploader && !isSuperAdmin) {
+            throw new TRPCError({ code: "FORBIDDEN", message: `Not authorized to delete photo ${photoId}` });
+          }
+        }
+        
+        // Soft delete all photos
+        await db.bulkSoftDeletePhotos(input.ids, ctx.user.id);
+        return { success: true, deletedCount: input.ids.length };
+      }),
+
+    // Get recently deleted photos
+    recentlyDeleted: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        return await db.getRecentlyDeletedPhotos(input.projectId);
+      }),
+
+    // Restore a soft-deleted photo
+    restore: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const photo = await db.getDeletedPhotoById(input.id);
+        if (!photo) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Photo not found in recently deleted" });
+        }
+        
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const project = await db.getProjectById(photo.projectId, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+        
+        if (!project && !isSuperAdmin) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to restore this photo" });
+        }
+        
+        await db.restorePhoto(input.id);
+        return { success: true };
+      }),
+
+    // Permanently delete a photo (from recently deleted)
+    permanentDelete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const photo = await db.getDeletedPhotoById(input.id);
+        if (!photo) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Photo not found" });
+        }
+        
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const project = await db.getProjectById(photo.projectId, ctx.user.id, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+        
+        if (!project && !isSuperAdmin) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to permanently delete this photo" });
+        }
+        
         await db.deletePhoto(input.id);
         return { success: true };
       }),

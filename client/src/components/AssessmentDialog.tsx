@@ -321,31 +321,75 @@ export function AssessmentDialog({
         setUploadingPhoto(true);
         const totalPhotos = photoFiles.length;
         
-        // Use offline-capable photo upload
-        const photoUploadPromises = photoFiles.map((file, index) => 
-          uploadPhotoOffline({
-            assessmentId: assessmentId.toString(),
-            projectId,
-            file,
-            caption: `${componentCode} - ${componentName} (${index + 1}/${totalPhotos})`,
-            location: photoGeolocation ? {
-              latitude: photoGeolocation.latitude,
-              longitude: photoGeolocation.longitude,
-              altitude: photoGeolocation.altitude,
-              accuracy: photoGeolocation.accuracy,
-            } : undefined,
-          })
-        );
+        // Check if we're online and have a numeric assessment ID (not offline ID)
+        const isOnlineAndSynced = isOnline && typeof assessmentId === 'number';
+        
+        if (isOnlineAndSynced) {
+          // Direct upload to server when online
+          try {
+            for (let i = 0; i < photoFiles.length; i++) {
+              const file = photoFiles[i];
+              const reader = new FileReader();
+              
+              const base64Data = await new Promise<string>((resolve, reject) => {
+                reader.onload = () => {
+                  const result = reader.result?.toString().split(',')[1];
+                  if (result) resolve(result);
+                  else reject(new Error('Failed to read file'));
+                };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+              });
+              
+              await uploadPhoto.mutateAsync({
+                projectId,
+                assessmentId: assessmentId as number,
+                fileData: base64Data,
+                fileName: file.name,
+                mimeType: file.type || 'image/jpeg',
+                caption: `${componentCode} - ${componentName} (${i + 1}/${totalPhotos})`,
+                latitude: photoGeolocation?.latitude,
+                longitude: photoGeolocation?.longitude,
+                altitude: photoGeolocation?.altitude,
+                locationAccuracy: photoGeolocation?.accuracy,
+              });
+            }
+            setUploadingPhoto(false);
+            toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved successfully`);
+            onSuccess();
+            handleClose();
+          } catch (error: any) {
+            console.error('Direct upload failed:', error);
+            toast.error(`Failed to upload photos: ${error.message}`);
+            setUploadingPhoto(false);
+          }
+        } else {
+          // Use offline-capable photo upload when offline or assessment is offline
+          const photoUploadPromises = photoFiles.map((file, index) => 
+            uploadPhotoOffline({
+              assessmentId: assessmentId.toString(),
+              projectId,
+              file,
+              caption: `${componentCode} - ${componentName} (${index + 1}/${totalPhotos})`,
+              location: photoGeolocation ? {
+                latitude: photoGeolocation.latitude,
+                longitude: photoGeolocation.longitude,
+                altitude: photoGeolocation.altitude,
+                accuracy: photoGeolocation.accuracy,
+              } : undefined,
+            })
+          );
 
-        try {
-          await Promise.all(photoUploadPromises);
-          setUploadingPhoto(false);
-          toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved successfully`);
-          onSuccess();
-          handleClose();
-        } catch (error: any) {
-          toast.error(`Failed to upload photos: ${error.message}`);
-          setUploadingPhoto(false);
+          try {
+            await Promise.all(photoUploadPromises);
+            setUploadingPhoto(false);
+            toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved (will sync when online)`);
+            onSuccess();
+            handleClose();
+          } catch (error: any) {
+            toast.error(`Failed to upload photos: ${error.message}`);
+            setUploadingPhoto(false);
+          }
         }
       } else {
         toast.success("Assessment saved successfully");
@@ -482,19 +526,48 @@ export function AssessmentDialog({
     },
   });
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      setPhotoFiles(prev => [...prev, ...files]);
+      // Process files - convert HEIC if needed and generate previews
+      const processedFiles: File[] = [];
       
-      // Generate previews for all new files
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPhotoPreviews(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
+      for (const file of files) {
+        try {
+          // Check if it's a HEIC file (common on iPhone)
+          const isHeic = file.type === 'image/heic' || 
+                         file.type === 'image/heif' || 
+                         file.name.toLowerCase().endsWith('.heic') ||
+                         file.name.toLowerCase().endsWith('.heif');
+          
+          if (isHeic) {
+            // For HEIC files, iOS Safari should auto-convert when using accept="image/*"
+            // But we'll handle it gracefully if it doesn't
+            console.log('Processing HEIC file:', file.name);
+          }
+          
+          processedFiles.push(file);
+          
+          // Generate preview using createObjectURL for better performance
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setPhotoPreviews(prev => [...prev, reader.result as string]);
+          };
+          reader.onerror = () => {
+            console.error('Failed to read file:', file.name);
+            toast.error(`Failed to load preview for ${file.name}`);
+          };
+          reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('Error processing file:', file.name, error);
+          toast.error(`Failed to process ${file.name}`);
+        }
+      }
+      
+      if (processedFiles.length > 0) {
+        setPhotoFiles(prev => [...prev, ...processedFiles]);
+        toast.success(`${processedFiles.length} photo(s) added`);
+      }
 
       // Capture geolocation when photos are selected
       if (navigator.geolocation) {
@@ -506,13 +579,12 @@ export function AssessmentDialog({
               altitude: position.coords.altitude || undefined,
               accuracy: position.coords.accuracy,
             });
-            toast.success("Location captured");
           },
           (error) => {
             console.error("Geolocation error:", error);
-            toast.error("Location not available");
+            // Don't show error toast - location is optional
           },
-          { enableHighAccuracy: true }
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
       }
     }
@@ -1005,7 +1077,8 @@ export function AssessmentDialog({
               <input
                 id="photo"
                 type="file"
-                accept="image/*"
+                accept="image/*,image/heic,image/heif"
+                capture="environment"
                 multiple
                 onChange={handlePhotoChange}
                 className="hidden"

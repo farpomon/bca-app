@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, sql, like, or, isNull, ne, gte, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, sql, like, or, isNull, isNotNull, ne, gte, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users,
@@ -693,7 +693,12 @@ export async function getProjectPhotos(projectId: number) {
   return await db
     .select()
     .from(photos)
-    .where(eq(photos.projectId, projectId))
+    .where(
+      and(
+        eq(photos.projectId, projectId),
+        isNull(photos.deletedAt)
+      )
+    )
     .orderBy(desc(photos.createdAt));
 }
 
@@ -704,7 +709,12 @@ export async function getDeficiencyPhotos(deficiencyId: number) {
   return await db
     .select()
     .from(photos)
-    .where(eq(photos.deficiencyId, deficiencyId))
+    .where(
+      and(
+        eq(photos.deficiencyId, deficiencyId),
+        isNull(photos.deletedAt)
+      )
+    )
     .orderBy(desc(photos.createdAt));
 }
 
@@ -715,7 +725,12 @@ export async function getAssessmentPhotos(assessmentId: number) {
   return await db
     .select()
     .from(photos)
-    .where(eq(photos.assessmentId, assessmentId))
+    .where(
+      and(
+        eq(photos.assessmentId, assessmentId),
+        isNull(photos.deletedAt)
+      )
+    )
     .orderBy(desc(photos.createdAt));
 }
 
@@ -726,7 +741,12 @@ export async function getAssetPhotos(assetId: number) {
   return await db
     .select()
     .from(photos)
-    .where(eq(photos.assetId, assetId))
+    .where(
+      and(
+        eq(photos.assetId, assetId),
+        isNull(photos.deletedAt)
+      )
+    )
     .orderBy(desc(photos.createdAt));
 }
 
@@ -756,6 +776,81 @@ export async function deletePhoto(photoId: number) {
   if (!db) throw new Error("Database not available");
   
   await db.delete(photos).where(eq(photos.id, photoId));
+}
+
+// Soft delete a photo (set deletedAt timestamp)
+export async function softDeletePhoto(photoId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(photos)
+    .set({ 
+      deletedAt: new Date().toISOString(),
+      deletedBy: userId 
+    })
+    .where(eq(photos.id, photoId));
+}
+
+// Bulk soft delete photos
+export async function bulkSoftDeletePhotos(photoIds: number[], userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const deletedAt = new Date().toISOString();
+  for (const photoId of photoIds) {
+    await db.update(photos)
+      .set({ deletedAt, deletedBy: userId })
+      .where(eq(photos.id, photoId));
+  }
+}
+
+// Get recently deleted photos (within last 30 days)
+export async function getRecentlyDeletedPhotos(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  return await db
+    .select()
+    .from(photos)
+    .where(
+      and(
+        eq(photos.projectId, projectId),
+        isNotNull(photos.deletedAt)
+      )
+    )
+    .orderBy(desc(photos.deletedAt));
+}
+
+// Get a deleted photo by ID
+export async function getDeletedPhotoById(photoId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(photos)
+    .where(
+      and(
+        eq(photos.id, photoId),
+        isNotNull(photos.deletedAt)
+      )
+    )
+    .limit(1);
+    
+  return result[0] || null;
+}
+
+// Restore a soft-deleted photo
+export async function restorePhoto(photoId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(photos)
+    .set({ deletedAt: null, deletedBy: null })
+    .where(eq(photos.id, photoId));
 }
 
 // Cost Estimates
