@@ -1,5 +1,16 @@
 # BCA App TODO
 
+## Mock Data Generation
+- [x] Create mock project 1: Small Portfolio (10 assets) - ID: 3720172
+- [x] Create mock project 2: Large Portfolio (30 assets) - ID: 3720173
+- [x] Generate assessments for all assets (454 total)
+- [x] Generate deficiencies with various severities (207 total)
+- [x] Generate building sections for assets
+- [x] Generate timeline events
+- [x] Generate risk assessments
+- [x] Generate maintenance schedules (221 total)
+- [x] Generate capital planning data (5-year budget cycle)
+
 ## 🔥 Unit System Toggle (Metric/Imperial)
 
 - [x] Add unitPreference field to users table (metric/imperial)
@@ -2673,3 +2684,10 @@ Testing:
 - [x] Photo clustering - Group nearby markers when zoomed out to prevent marker overlap
 - [x] Heatmap view - Show assessment density as a heatmap overlay
 - [x] Photo filtering on map - Filter markers by date range, component code, or assessment type
+
+
+## Bug Reports
+- [ ] Mock-up projects not visible for user luisrubiof@gmail.com - Investigate database and user association
+
+## UI Changes
+- [x] Hide AI Import button from Projects section (should only be available in Assets section)
