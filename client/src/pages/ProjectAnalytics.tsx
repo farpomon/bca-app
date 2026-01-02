@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,6 +179,18 @@ export default function ProjectAnalytics() {
   const { data: costAnalysis, isLoading: costLoading } = trpc.analytics.getCostAnalysis.useQuery({
     projectId,
   });
+
+  // State for selected condition filter (for interactive donut chart)
+  const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
+
+  // Fetch components filtered by condition
+  const { data: filteredComponents, isLoading: filteredComponentsLoading } = trpc.analytics.getComponentsByCondition.useQuery(
+    {
+      projectId,
+      condition: selectedCondition as 'good' | 'fair' | 'poor' | 'not_assessed' | undefined,
+    },
+    { enabled: !isNaN(projectId) && selectedCondition !== null }
+  );
 
   const isLoading = projectLoading || assetsLoading || overviewLoading || trendsLoading || componentLoading || costLoading;
 
@@ -886,7 +899,7 @@ export default function ProjectAnalytics() {
               <Card>
                 <CardHeader>
                   <CardTitle>Condition Breakdown</CardTitle>
-                  <CardDescription>Component conditions across all assets</CardDescription>
+                  <CardDescription>Click on a section to filter components by condition</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px] flex items-center justify-center">
@@ -901,12 +914,42 @@ export default function ProjectAnalytics() {
                               position: 'bottom',
                             },
                           },
+                          onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                              const index = elements[0].index;
+                              const conditionLabel = overview?.conditionDistribution?.[index]?.condition;
+                              if (conditionLabel) {
+                                // Toggle selection - if same condition clicked, clear filter
+                                setSelectedCondition(prev => prev === conditionLabel ? null : conditionLabel);
+                              }
+                            }
+                          },
+                          onHover: (event, elements) => {
+                            const canvas = event.native?.target as HTMLCanvasElement;
+                            if (canvas) {
+                              canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                            }
+                          },
                         }}
                       />
                     ) : (
                       <p className="text-muted-foreground">No condition data available</p>
                     )}
                   </div>
+                  {selectedCondition && (
+                    <div className="mt-4 flex items-center justify-between">
+                      <Badge 
+                        variant="secondary" 
+                        className="text-sm"
+                        style={{ backgroundColor: CONDITION_COLORS[selectedCondition] + '20', color: CONDITION_COLORS[selectedCondition] }}
+                      >
+                        Showing: {selectedCondition.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedCondition(null)}>
+                        Clear Filter
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -916,33 +959,114 @@ export default function ProjectAnalytics() {
                   <CardDescription>Most frequently assessed building components</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
-                    {componentChartData ? (
-                      <Bar
-                        data={componentChartData}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          indexAxis: 'y',
-                          plugins: {
-                            legend: {
-                              display: false,
-                            },
-                          },
-                          scales: {
-                            x: {
-                              beginAtZero: true,
-                            },
-                          },
-                        }}
-                      />
+                  <div className="h-[300px] overflow-y-auto">
+                    {componentAnalysis && componentAnalysis.length > 0 ? (
+                      <div className="space-y-2">
+                        {componentAnalysis.slice(0, 10).map((comp, index) => (
+                          <div 
+                            key={`${comp.componentCode}-${index}`} 
+                            className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50"
+                          >
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <div 
+                                className="w-2 h-8 rounded-full flex-shrink-0" 
+                                style={{ backgroundColor: COLORS.primary }}
+                              />
+                              <div className="min-w-0">
+                                <p className="font-medium text-sm truncate">{comp.componentName || 'Unknown'}</p>
+                                <p className="text-xs text-muted-foreground">{comp.componentCode}</p>
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0 ml-2">
+                              <p className="font-semibold text-sm">{comp.assessmentCount}</p>
+                              <p className="text-xs text-muted-foreground">assessments</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <p className="text-muted-foreground">No component data available</p>
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-muted-foreground">No component data available</p>
+                      </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Filtered Components List */}
+            {selectedCondition && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CONDITION_COLORS[selectedCondition] }}
+                    />
+                    {selectedCondition.replace('_', ' ').toUpperCase()} Components
+                  </CardTitle>
+                  <CardDescription>
+                    {filteredComponentsLoading 
+                      ? 'Loading components...' 
+                      : `${filteredComponents?.length || 0} components with ${selectedCondition.replace('_', ' ')} condition`
+                    }
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {filteredComponentsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : filteredComponents && filteredComponents.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b text-left">
+                            <th className="p-3 font-medium">Component</th>
+                            <th className="p-3 font-medium">Asset</th>
+                            <th className="p-3 font-medium text-right">Repair Cost</th>
+                            <th className="p-3 font-medium text-right">Replacement Cost</th>
+                            <th className="p-3 font-medium text-right">Assessed</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredComponents.map((comp) => (
+                            <tr key={comp.id} className="border-b hover:bg-muted/50">
+                              <td className="p-3">
+                                <div>
+                                  <p className="font-medium">{comp.componentName}</p>
+                                  <p className="text-xs text-muted-foreground">{comp.componentCode}</p>
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <Link href={`/assets/${comp.assetId}`}>
+                                  <span className="text-primary hover:underline cursor-pointer">
+                                    {comp.assetName}
+                                  </span>
+                                </Link>
+                              </td>
+                              <td className="p-3 text-right">
+                                {comp.repairCost > 0 ? formatCurrency(comp.repairCost) : '-'}
+                              </td>
+                              <td className="p-3 text-right">
+                                {comp.replacementCost > 0 ? formatCurrency(comp.replacementCost) : '-'}
+                              </td>
+                              <td className="p-3 text-right text-muted-foreground text-sm">
+                                {comp.assessedAt ? new Date(comp.assessedAt).toLocaleDateString() : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No components found with {selectedCondition.replace('_', ' ')} condition
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="deficiencies" className="space-y-4">

@@ -8,6 +8,7 @@ import {
   getComponentAnalysis,
   getProjectAnalytics,
   getCompanyAnalytics,
+  getComponentsByCondition,
 } from "./analyticsDb";
 
 const analyticsFiltersSchema = z.object({
@@ -103,6 +104,20 @@ export const analyticsRouter = router({
   getCompanyAnalytics: protectedProcedure.query(async () => {
     return await getCompanyAnalytics();
   }),
+
+  /**
+   * Get components filtered by condition for interactive chart
+   */
+  getComponentsByCondition: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        condition: z.enum(['good', 'fair', 'poor', 'not_assessed']).optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await getComponentsByCondition(input);
+    }),
 
   /**
    * Get dashboard overview (combines multiple metrics)

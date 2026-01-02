@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, sql, desc, count, sum, avg } from "drizzle-orm";
+import { eq, and, gte, lte, sql, desc, count, sum, avg, isNull } from "drizzle-orm";
 import { getDb } from "./db";
 import { 
   assessments, 
@@ -46,6 +46,18 @@ export interface ComponentAnalysis {
   avgConditionScore: number;
   totalRepairCost: number;
   totalReplacementCost: number;
+}
+
+export interface ComponentByCondition {
+  id: number;
+  componentCode: string;
+  componentName: string;
+  condition: string;
+  assetName: string;
+  assetId: number;
+  repairCost: number;
+  replacementCost: number;
+  assessedAt: string;
 }
 
 export interface ProjectAnalytics {
@@ -333,13 +345,13 @@ export async function getComponentAnalysis(
         WHEN ${assessments.condition} = 'poor' THEN 2
         ELSE 1
       END`),
-      totalRepair: sum(assessments.repairCost),
-      totalReplacement: sum(assessments.replacementCost),
+      totalRepair: sum(assessments.estimatedRepairCost),
+      totalReplacement: sum(assessments.replacementValue),
     })
     .from(assessments);
 
-  // Apply filters
-  const whereConditions = [];
+  // Apply filters - always exclude deleted assessments
+  const whereConditions = [isNull(assessments.deletedAt)];
   if (filters?.projectId) {
     query = query.innerJoin(assets, eq(assessments.assetId, assets.id));
     whereConditions.push(eq(assets.projectId, filters.projectId));
@@ -351,9 +363,8 @@ export async function getComponentAnalysis(
     whereConditions.push(eq(projects.companyId, filters.companyId));
   }
 
-  if (whereConditions.length > 0) {
-    query = query.where(and(...whereConditions));
-  }
+  // Always apply where conditions (at minimum, exclude deleted)
+  query = query.where(and(...whereConditions));
 
   const results = await query
     .groupBy(assessments.componentCode, assessments.componentName)
@@ -452,5 +463,58 @@ export async function getCompanyAnalytics(): Promise<CompanyAnalytics[]> {
     assessmentCount: Number(r.assessmentCount || 0),
     deficiencyCount: Number(r.deficiencyCount || 0),
     totalRepairCost: Number(r.totalRepair || 0),
+  }));
+}
+
+
+/**
+ * Get components filtered by condition for interactive chart
+ */
+export async function getComponentsByCondition(
+  filters: {
+    projectId: number;
+    condition?: string;
+  }
+): Promise<ComponentByCondition[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const whereConditions = [
+    eq(assets.projectId, filters.projectId),
+    isNull(assessments.deletedAt),
+  ];
+
+  if (filters.condition) {
+    whereConditions.push(eq(assessments.condition, filters.condition as any));
+  }
+
+  const results = await db
+    .select({
+      id: assessments.id,
+      componentCode: assessments.componentCode,
+      componentName: assessments.componentName,
+      condition: assessments.condition,
+      assetName: assets.name,
+      assetId: assets.id,
+      repairCost: assessments.estimatedRepairCost,
+      replacementCost: assessments.replacementValue,
+      assessedAt: assessments.assessedAt,
+    })
+    .from(assessments)
+    .innerJoin(assets, eq(assessments.assetId, assets.id))
+    .where(and(...whereConditions))
+    .orderBy(desc(assessments.assessedAt))
+    .limit(100);
+
+  return results.map(r => ({
+    id: r.id,
+    componentCode: r.componentCode || '',
+    componentName: r.componentName || 'Unknown Component',
+    condition: r.condition || 'not_assessed',
+    assetName: r.assetName || 'Unknown Asset',
+    assetId: r.assetId,
+    repairCost: Number(r.repairCost || 0),
+    replacementCost: Number(r.replacementCost || 0),
+    assessedAt: r.assessedAt || '',
   }));
 }

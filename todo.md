@@ -2863,3 +2863,16 @@ Testing:
 - [x] Fix bug: Deleted asset components still show on dashboard after deletion (cache invalidation issue)
 - [x] Fix bug: Deleted asset components still show on dashboard after deletion (cache invalidation issue)
 - [x] Add scroll indicators/arrows to tab bar edges for better UX
+
+## Analytics Conditions Tab Improvements
+- [ ] Make donut chart clickable to filter components by condition (Poor, Fair, Good, Not Assessed)
+- [ ] Fix Top Assessed Components to show actual data instead of "No component data available"
+- [ ] Display filtered components list when clicking on donut chart sections
+
+
+
+## Analytics Conditions Tab Improvements
+- [x] Interactive donut chart to filter components by condition (Poor, Fair, Good, Not Assessed)
+- [x] Fix Top Assessed Components to show actual data
+- [x] Add filtered components table showing components matching selected condition
+- [x] Add Clear Filter button to reset the filter
