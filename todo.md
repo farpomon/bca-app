@@ -2859,3 +2859,4 @@ Testing:
 ## UI Enhancements
 
 - [x] Add expandable category rows in Cost Breakdown by Building System table to show component assessments
+- [x] Fix asset page tabs navigation - cannot scroll to access tabs past "3D" (Reports, Optimization, Location are cut off)

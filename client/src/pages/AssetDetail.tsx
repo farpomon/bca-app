@@ -245,7 +245,7 @@ export default function AssetDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList className="w-full max-w-full overflow-x-auto scrollbar-hide">
+          <TabsList className="w-full max-w-full overflow-x-auto flex-nowrap" style={{ scrollbarWidth: 'thin' }}>
             <TabsTrigger value="dashboard" className="flex-none px-3">
               <Building2 className="mr-2 h-4 w-4" />
               Dashboard
