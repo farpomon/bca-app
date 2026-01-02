@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3, Building2, Plus, Settings, Leaf, DollarSign } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3, Building2, Plus, Settings, Leaf, DollarSign, Factory } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -42,6 +42,8 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Projects", path: "/" },
   { icon: DollarSign, label: "RSMeans Cost Data", path: "/rsmeans" },
   { icon: Leaf, label: "ESG Dashboard", path: "/esg-dashboard" },
+  { icon: Leaf, label: "Sustainability", path: "/sustainability" },
+  { icon: Factory, label: "Carbon Footprint", path: "/carbon-footprint" },
   { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 

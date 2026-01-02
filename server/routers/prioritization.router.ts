@@ -328,4 +328,30 @@ export const prioritizationRouter = router({
     .query(async ({ input }) => {
       return await prioritizationDb.getBudgetSummaryByYear(input.cycleId);
     }),
+
+  // ============================================================================
+  // ENVIRONMENTAL IMPACT SCORING
+  // ============================================================================
+
+  getProjectEnvironmentalImpact: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .query(async ({ input }) => {
+      return await prioritizationDb.getProjectEnvironmentalImpact(input.projectId);
+    }),
+
+  getProjectsWithEnvironmentalImpact: protectedProcedure.query(async () => {
+    return await prioritizationDb.getProjectsWithEnvironmentalImpact();
+  }),
+
+  autoScoreEnvironmental: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await prioritizationDb.autoScoreProjectEnvironmental(input.projectId, ctx.user.id);
+      return { success: true };
+    }),
+
+  ensureEnvironmentalCriteria: protectedProcedure.mutation(async () => {
+    const criteriaId = await prioritizationDb.ensureEnvironmentalCriteria();
+    return { criteriaId };
+  }),
 });

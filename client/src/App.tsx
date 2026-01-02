@@ -33,6 +33,8 @@ import PortfolioTargets from "./pages/PortfolioTargets";
 import Analytics from "./pages/Analytics";
 import ProjectAnalytics from "./pages/ProjectAnalytics";
 import ESGDashboard from "./pages/ESGDashboard";
+import SustainabilityDashboard from "./pages/SustainabilityDashboard";
+import CarbonFootprintReport from "./pages/CarbonFootprintReport";
 import RSMeansCostBrowser from "./pages/RSMeansCostBrowser";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
@@ -101,6 +103,8 @@ function Router() {
       <Route path={"/admin/portfolio-targets"} component={PortfolioTargets} />
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/esg-dashboard"} component={ESGDashboard} />
+      <Route path={"/sustainability"} component={SustainabilityDashboard} />
+      <Route path={"/carbon-footprint"} component={CarbonFootprintReport} />
       <Route path={"/rsmeans"} component={RSMeansCostBrowser} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />
       <Route path={"/settings/security"} component={SecuritySettings} />

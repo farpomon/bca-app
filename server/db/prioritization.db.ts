@@ -367,3 +367,205 @@ export async function getBudgetSummaryByYear(cycleId: number): Promise<
     projectCount: row.projectCount,
   }));
 }
+
+
+// ============================================================================
+// ENVIRONMENTAL IMPACT SCORING
+// ============================================================================
+
+export async function getProjectEnvironmentalImpact(projectId: number): Promise<{
+  energySavings: number;
+  waterSavings: number;
+  ghgReduction: number;
+  environmentalScore: number;
+} | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  // Get green upgrades for the project
+  const result = await db.execute(sql`
+    SELECT 
+      COALESCE(SUM(CAST(energySavingsKWh AS DECIMAL(15,2))), 0) as totalEnergySavings,
+      COALESCE(SUM(CAST(waterSavingsGallons AS DECIMAL(15,2))), 0) as totalWaterSavings,
+      COALESCE(SUM(CAST(co2ReductionMt AS DECIMAL(15,4))), 0) as totalGHGReduction
+    FROM green_upgrades
+    WHERE projectId = ${projectId} AND status IN ('planned', 'in_progress', 'completed')
+  `);
+
+  const rows = Array.isArray(result[0]) ? result[0] : [];
+  if (rows.length === 0) return null;
+
+  const data = rows[0];
+  const energySavings = parseFloat(data.totalEnergySavings || '0');
+  const waterSavings = parseFloat(data.totalWaterSavings || '0');
+  const ghgReduction = parseFloat(data.totalGHGReduction || '0');
+
+  // Calculate environmental score (0-100)
+  // Based on GHG reduction: 100+ tonnes = 100 score, 0 tonnes = 0 score
+  let environmentalScore = 0;
+  if (ghgReduction >= 100) {
+    environmentalScore = 100;
+  } else if (ghgReduction >= 50) {
+    environmentalScore = 70 + ((ghgReduction - 50) / 50) * 30;
+  } else if (ghgReduction >= 10) {
+    environmentalScore = 40 + ((ghgReduction - 10) / 40) * 30;
+  } else if (ghgReduction > 0) {
+    environmentalScore = (ghgReduction / 10) * 40;
+  }
+
+  return {
+    energySavings,
+    waterSavings,
+    ghgReduction,
+    environmentalScore: Math.round(environmentalScore),
+  };
+}
+
+export async function getEnvironmentalCriteria(): Promise<PrioritizationCriteria | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.execute(sql`
+    SELECT * FROM prioritization_criteria
+    WHERE category = 'environmental' AND isActive = 1
+    LIMIT 1
+  `);
+
+  const rows = Array.isArray(result[0]) ? result[0] : [];
+  return rows.length > 0 ? rows[0] : null;
+}
+
+export async function ensureEnvironmentalCriteria(): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Check if environmental criteria exists
+  const existing = await getEnvironmentalCriteria();
+  if (existing) return existing.id;
+
+  // Create environmental impact criteria
+  const result = await db.execute(sql`
+    INSERT INTO prioritization_criteria (
+      name, description, category, weight, scoringGuideline, isActive, displayOrder
+    ) VALUES (
+      'Environmental Impact',
+      'Projects that improve energy efficiency, reduce water consumption, or lower greenhouse gas emissions. Based on LEED sustainability standards.',
+      'environmental',
+      15.00,
+      '0-2: No environmental benefit\n3-4: Minor improvements (< 5% reduction)\n5-6: Moderate improvements (5-15% reduction)\n7-8: Significant improvements (15-30% reduction)\n9-10: Major improvements (> 30% reduction or renewable energy)',
+      1,
+      6
+    )
+  `);
+
+  return result[0].insertId;
+}
+
+export async function calculateEnvironmentalScore(
+  projectId: number,
+  userId: number
+): Promise<{ score: number; justification: string }> {
+  const impact = await getProjectEnvironmentalImpact(projectId);
+  
+  if (!impact || impact.ghgReduction === 0) {
+    return {
+      score: 0,
+      justification: 'No environmental impact data available for this project.',
+    };
+  }
+
+  // Convert environmental score (0-100) to prioritization score (0-10)
+  const score = Math.round(impact.environmentalScore / 10);
+  
+  const justification = `Environmental Impact Assessment:
+- Energy Savings: ${impact.energySavings.toLocaleString()} kWh/year
+- Water Savings: ${impact.waterSavings.toLocaleString()} gallons/year  
+- GHG Reduction: ${impact.ghgReduction.toFixed(2)} tonnes CO₂e/year
+- Environmental Score: ${impact.environmentalScore}/100`;
+
+  return { score, justification };
+}
+
+export async function autoScoreProjectEnvironmental(
+  projectId: number,
+  userId: number
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Ensure environmental criteria exists
+  const criteriaId = await ensureEnvironmentalCriteria();
+  
+  // Calculate score
+  const { score, justification } = await calculateEnvironmentalScore(projectId, userId);
+  
+  // Save the score
+  await saveProjectScore({
+    projectId,
+    criteriaId,
+    score: String(score),
+    justification,
+    scoredBy: userId,
+  });
+}
+
+export async function getProjectsWithEnvironmentalImpact(): Promise<Array<{
+  projectId: number;
+  projectName: string;
+  energySavings: number;
+  waterSavings: number;
+  ghgReduction: number;
+  environmentalScore: number;
+  totalCost: number;
+  paybackPeriod: number | null;
+}>> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db.execute(sql`
+    SELECT 
+      p.id as projectId,
+      p.name as projectName,
+      COALESCE(SUM(CAST(gu.energySavingsKWh AS DECIMAL(15,2))), 0) as energySavings,
+      COALESCE(SUM(CAST(gu.waterSavingsGallons AS DECIMAL(15,2))), 0) as waterSavings,
+      COALESCE(SUM(CAST(gu.co2ReductionMt AS DECIMAL(15,4))), 0) as ghgReduction,
+      COALESCE(SUM(CAST(gu.cost AS DECIMAL(15,2))), 0) as totalCost,
+      COALESCE(SUM(CAST(gu.estimatedAnnualSavings AS DECIMAL(15,2))), 0) as totalSavings
+    FROM projects p
+    LEFT JOIN green_upgrades gu ON p.id = gu.projectId AND gu.status IN ('planned', 'in_progress', 'completed')
+    GROUP BY p.id, p.name
+    HAVING ghgReduction > 0 OR energySavings > 0 OR waterSavings > 0
+    ORDER BY ghgReduction DESC
+  `);
+
+  const rows = Array.isArray(result[0]) ? result[0] : [];
+  
+  return rows.map((row: any) => {
+    const ghgReduction = parseFloat(row.ghgReduction || '0');
+    const totalCost = parseFloat(row.totalCost || '0');
+    const totalSavings = parseFloat(row.totalSavings || '0');
+    
+    // Calculate environmental score
+    let environmentalScore = 0;
+    if (ghgReduction >= 100) {
+      environmentalScore = 100;
+    } else if (ghgReduction >= 50) {
+      environmentalScore = 70 + ((ghgReduction - 50) / 50) * 30;
+    } else if (ghgReduction >= 10) {
+      environmentalScore = 40 + ((ghgReduction - 10) / 40) * 30;
+    } else if (ghgReduction > 0) {
+      environmentalScore = (ghgReduction / 10) * 40;
+    }
+
+    return {
+      projectId: row.projectId,
+      projectName: row.projectName,
+      energySavings: parseFloat(row.energySavings || '0'),
+      waterSavings: parseFloat(row.waterSavings || '0'),
+      ghgReduction,
+      environmentalScore: Math.round(environmentalScore),
+      totalCost,
+      paybackPeriod: totalSavings > 0 ? totalCost / totalSavings : null,
+    };
+  });
+}

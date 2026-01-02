@@ -2758,3 +2758,96 @@ Testing:
 ## AI Chatbot UI Enhancements
 - [x] Add expand window feature to AI chatbot assistant (toggle between compact and fullscreen view)
 
+
+
+## 🔥 ESG Metrics Enhancement (LEED Standards)
+
+### Phase 1: Database Schema Updates
+- [ ] Add utility_consumption table (energy, water, gas per facility)
+- [ ] Add ghg_emissions table (CO2e tracking per facility/project)
+- [ ] Add esg_project_impacts table (expected savings per project)
+- [ ] Add environmental_scores table (LEED-based scoring)
+- [ ] Update prioritization_criteria to include environmental_impact factor
+
+### Phase 2: Backend Services
+- [ ] Create ESG calculation service based on LEED standards
+- [ ] Implement utility consumption tracking endpoints
+- [ ] Create GHG emissions calculator (CO2e from energy/gas)
+- [ ] Build environmental impact scoring for projects
+- [ ] Add expected energy savings calculation for projects
+
+### Phase 3: ESG Dashboard Enhancement
+- [ ] Remove/hide rating and rating scales from ESG dashboard
+- [ ] Add utility consumption input forms (energy kWh, water m³, gas GJ)
+- [ ] Create carbon footprint dashboard widget
+- [ ] Add GHG reduction tracking visualization
+- [ ] Build energy savings projection charts
+- [ ] Add sustainability metrics summary cards
+
+### Phase 4: Project Environmental Impact
+- [ ] Add environmental impact fields to project forms
+- [ ] Create expected energy savings input for projects
+- [ ] Add GHG reduction estimates for projects (lighting, boiler, etc.)
+- [ ] Integrate environmental impact into prioritization scoring
+- [ ] Add "Environmental Impact" toggle in prioritization settings
+
+### Phase 5: Carbon Footprint Reporting
+- [ ] Create facility-level carbon footprint reports
+- [ ] Build portfolio-wide emissions dashboard
+- [ ] Add emissions reduction target tracking
+- [ ] Create sustainability progress reports
+- [ ] Add export functionality for ESG data
+
+### Phase 6: Testing
+- [ ] Write vitest tests for ESG calculations
+- [ ] Test utility consumption tracking
+- [ ] Test GHG emissions calculations
+- [ ] Test environmental impact scoring
+- [ ] Verify LEED standards compliance
+
+
+## 🔥 ESG Metrics Enhancement - LEED Standards (COMPLETED)
+
+### Backend Services
+- [x] Create LEED-based ESG calculation service (leedEsgCalculator.service.ts)
+- [x] Implement energy efficiency calculations based on LEED standards
+- [x] Implement water efficiency calculations based on LEED standards
+- [x] Implement indoor environmental quality calculations
+- [x] Implement materials & resources calculations
+- [x] Create comprehensive LEED score aggregation
+
+### ESG Router Enhancements
+- [x] Create esgLeed.router.ts with LEED-based endpoints
+- [x] Add utility consumption recording endpoints
+- [x] Add green upgrade tracking endpoints
+- [x] Add portfolio carbon footprint calculation
+- [x] Add dashboard summary endpoint
+
+### Sustainability Dashboard
+- [x] Create SustainabilityDashboard.tsx with user input forms
+- [x] Add utility consumption input forms (electricity, gas, water)
+- [x] Add green upgrade tracking forms
+- [x] Add sustainability goals management
+- [x] Add LEED score visualization widgets
+- [x] Hide rating and rating scales (per requirements)
+
+### Carbon Footprint Reporting
+- [x] Create CarbonFootprintReport.tsx page
+- [x] Add portfolio-wide emissions tracking
+- [x] Add emissions by facility breakdown
+- [x] Add provincial grid emission factors (Alberta, Ontario, Quebec, BC)
+- [x] Add net zero progress tracking
+- [x] Add green upgrades impact summary
+
+### Environmental Impact Scoring
+- [x] Add environmental impact functions to prioritization.db.ts
+- [x] Create getProjectEnvironmentalImpact function
+- [x] Create ensureEnvironmentalCriteria function
+- [x] Create autoScoreProjectEnvironmental function
+- [x] Add environmental impact endpoints to prioritization router
+- [x] Integrate environmental scoring into capital planning
+
+### Navigation Updates
+- [x] Add Sustainability Dashboard to navigation menu
+- [x] Add Carbon Footprint Report to navigation menu
+- [x] Add routes to App.tsx
