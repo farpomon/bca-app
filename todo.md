@@ -2754,3 +2754,7 @@ Testing:
 - [x] Log deletion with user info, reason, and timestamp
 - [x] Add delete button to component assessment cards (admin only)
 - [x] Add confirmation dialog before deletion
+
+## AI Chatbot UI Enhancements
+- [x] Add expand window feature to AI chatbot assistant (toggle between compact and fullscreen view)
+
