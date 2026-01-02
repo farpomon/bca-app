@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -22,7 +22,9 @@ import {
   Clock,
   Wallet,
   Calculator,
-  LineChart
+  LineChart,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import {
   BarChart,
@@ -197,20 +199,26 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
     return forecast;
   }, [assessments]);
 
-  // Cost breakdown by category
+  // Cost breakdown by category with component details
   const categoryBreakdown = useMemo(() => {
     if (!assessments || assessments.length === 0) return [];
     
-    const categoryData: Record<string, { repairCost: number; replacementValue: number; count: number }> = {};
+    const categoryData: Record<string, { 
+      repairCost: number; 
+      replacementValue: number; 
+      count: number;
+      components: Assessment[];
+    }> = {};
     
     assessments.forEach(a => {
       const categoryCode = a.componentCode?.charAt(0) || "Z";
       if (!categoryData[categoryCode]) {
-        categoryData[categoryCode] = { repairCost: 0, replacementValue: 0, count: 0 };
+        categoryData[categoryCode] = { repairCost: 0, replacementValue: 0, count: 0, components: [] };
       }
       categoryData[categoryCode].repairCost += a.estimatedRepairCost || 0;
       categoryData[categoryCode].replacementValue += a.replacementValue || 0;
       categoryData[categoryCode].count += 1;
+      categoryData[categoryCode].components.push(a);
     });
     
     return Object.entries(categoryData)
@@ -221,10 +229,48 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
         replacementValue: data.replacementValue,
         count: data.count,
         fci: data.replacementValue > 0 ? (data.repairCost / data.replacementValue) * 100 : 0,
+        components: data.components.sort((a, b) => (b.estimatedRepairCost || 0) - (a.estimatedRepairCost || 0)),
       }))
       .filter(c => c.repairCost > 0)
       .sort((a, b) => b.repairCost - a.repairCost);
   }, [assessments]);
+
+  // State for expanded categories
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (code: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(code)) {
+        next.delete(code);
+      } else {
+        next.add(code);
+      }
+      return next;
+    });
+  };
+
+  // Get condition color
+  const getConditionColor = (condition: string | null) => {
+    switch (condition) {
+      case 'good': return '#10b981';
+      case 'fair': return '#f59e0b';
+      case 'poor': return '#f97316';
+      case 'critical': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const getConditionLabel = (condition: string | null) => {
+    switch (condition) {
+      case 'good': return 'Good';
+      case 'fair': return 'Fair';
+      case 'poor': return 'Poor';
+      case 'critical': return 'Critical';
+      case 'not_assessed': return 'Not Assessed';
+      default: return 'N/A';
+    }
+  };
 
   // Priority distribution for pie chart
   const priorityDistribution = useMemo(() => {
@@ -758,33 +804,84 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
                         </tr>
                       </thead>
                       <tbody>
-                        {categoryBreakdown.map((category, index) => (
-                          <tr key={category.code} className="border-b hover:bg-muted/20">
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-2">
-                                <div 
-                                  className="w-3 h-3 rounded-full" 
-                                  style={{ backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}
-                                />
-                                <span className="font-medium">{category.code} - {category.name}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4 text-right">{category.count}</td>
-                            <td className="py-3 px-4 text-right font-semibold">{formatCurrency(category.repairCost)}</td>
-                            <td className="py-3 px-4 text-right text-muted-foreground">{formatCurrency(category.replacementValue)}</td>
-                            <td className="py-3 px-4 text-right">
-                              <Badge 
-                                variant="outline"
-                                style={{ 
-                                  borderColor: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
-                                  color: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
-                                }}
+                        {categoryBreakdown.map((category, index) => {
+                          const isExpanded = expandedCategories.has(category.code);
+                          return (
+                            <>
+                              <tr 
+                                key={category.code} 
+                                className="border-b hover:bg-muted/20 cursor-pointer transition-colors"
+                                onClick={() => toggleCategory(category.code)}
                               >
-                                {category.fci.toFixed(1)}%
-                              </Badge>
-                            </td>
-                          </tr>
-                        ))}
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    {isExpanded ? (
+                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                    <div 
+                                      className="w-3 h-3 rounded-full" 
+                                      style={{ backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}
+                                    />
+                                    <span className="font-medium">{category.code} - {category.name}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-right">{category.count}</td>
+                                <td className="py-3 px-4 text-right font-semibold">{formatCurrency(category.repairCost)}</td>
+                                <td className="py-3 px-4 text-right text-muted-foreground">{formatCurrency(category.replacementValue)}</td>
+                                <td className="py-3 px-4 text-right">
+                                  <Badge 
+                                    variant="outline"
+                                    style={{ 
+                                      borderColor: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
+                                      color: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
+                                    }}
+                                  >
+                                    {category.fci.toFixed(1)}%
+                                  </Badge>
+                                </td>
+                              </tr>
+                              {/* Expanded component assessments */}
+                              {isExpanded && category.components.map((component) => (
+                                <tr 
+                                  key={`${category.code}-${component.id}`} 
+                                  className="bg-muted/10 border-b border-muted/30"
+                                >
+                                  <td className="py-2 px-4 pl-12">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-mono text-muted-foreground">
+                                        {component.componentCode || 'N/A'}
+                                      </span>
+                                      <span className="text-sm">{component.componentName || 'Unknown Component'}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-2 px-4 text-right">
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs"
+                                      style={{ 
+                                        borderColor: getConditionColor(component.condition),
+                                        color: getConditionColor(component.condition),
+                                      }}
+                                    >
+                                      {getConditionLabel(component.condition)}
+                                    </Badge>
+                                  </td>
+                                  <td className="py-2 px-4 text-right text-sm">
+                                    {component.estimatedRepairCost ? formatCurrency(component.estimatedRepairCost) : '-'}
+                                  </td>
+                                  <td className="py-2 px-4 text-right text-sm text-muted-foreground">
+                                    {component.replacementValue ? formatCurrency(component.replacementValue) : '-'}
+                                  </td>
+                                  <td className="py-2 px-4 text-right text-xs text-muted-foreground">
+                                    {component.remainingUsefulLife !== null ? `${component.remainingUsefulLife} yrs RUL` : '-'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </>
+                          );
+                        })}
                         <tr className="font-bold bg-muted/50">
                           <td className="py-3 px-4">Total</td>
                           <td className="py-3 px-4 text-right">{metrics.assessmentCount}</td>

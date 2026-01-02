@@ -2851,3 +2851,11 @@ Testing:
 - [x] Add Sustainability Dashboard to navigation menu
 - [x] Add Carbon Footprint Report to navigation menu
 - [x] Add routes to App.tsx
+
+## UI Enhancements
+
+- [ ] Add expandable category rows in Cost Breakdown by Building System table to show component assessments
+
+## UI Enhancements
+
+- [x] Add expandable category rows in Cost Breakdown by Building System table to show component assessments
