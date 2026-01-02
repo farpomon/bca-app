@@ -526,6 +526,13 @@
       "when": 1767296161876,
       "tag": "0074_pale_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "5",
+      "when": 1767316790377,
+      "tag": "0075_medical_leper_queen",
+      "breakpoints": true
     }
   ]
 }

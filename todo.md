@@ -2727,3 +2727,30 @@ Testing:
 - [x] Investigate iPhone photo capture not showing after save in assessment dialog
 - [x] Check photo upload process and linking to assessments (added direct upload when online)
 - [ ] Test and verify fix on mobile devices
+
+
+## Admin Assessment Deletion Feature
+- [x] Add soft delete (deletedAt) field to assessments table
+- [x] Create assessment_deletion_log table for audit tracking
+- [x] Add backend endpoint for admin to delete assessments
+- [x] Log deletion with user info, reason, and timestamp
+- [x] Add delete button to component assessment cards (admin only)
+- [x] Add confirmation dialog before deletion
+- [ ] Show deleted assessments in admin audit log
+
+
+## Admin Assessment Deletion Feature
+- [x] Add soft delete (deletedAt) field to assessments table
+- [x] Create assessment_deletion_log table for audit tracking
+- [x] Add backend endpoint for admin to delete assessments
+- [x] Log deletion with user info, reason, and timestamp
+- [x] Add delete button to component assessment cards (admin only)
+- [x] Add confirmation dialog before deletion
+
+## Admin Assessment Deletion Feature
+- [x] Add soft delete (deletedAt) field to assessments table
+- [x] Create assessment_deletion_log table for audit tracking
+- [x] Add backend endpoint for admin to delete assessments
+- [x] Log deletion with user info, reason, and timestamp
+- [x] Add delete button to component assessment cards (admin only)
+- [x] Add confirmation dialog before deletion

@@ -193,6 +193,27 @@ export const assessments = mysqlTable("assessments", {
 	complianceRecommendations: text(),
 	complianceCheckedAt: timestamp({ mode: 'string' }),
 	complianceCheckedBy: int(),
+	deletedAt: timestamp({ mode: 'string' }),
+	deletedBy: int(),
+});
+
+// Assessment deletion audit log
+export const assessmentDeletionLog = mysqlTable("assessment_deletion_log", {
+	id: int().autoincrement().primaryKey(),
+	assessmentId: int().notNull(),
+	projectId: int().notNull(),
+	assetId: int(),
+	componentCode: varchar({ length: 20 }),
+	componentName: varchar({ length: 255 }),
+	condition: varchar({ length: 50 }),
+	estimatedRepairCost: int(),
+	replacementValue: int(),
+	deletedBy: int().notNull(),
+	deletedByName: varchar({ length: 255 }),
+	deletedByEmail: varchar({ length: 320 }),
+	deletionReason: text(),
+	assessmentData: text(), // JSON snapshot of the full assessment
+	deletedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 });
 
 export const assetDocuments = mysqlTable("asset_documents", {

@@ -24,7 +24,8 @@ import {
   FileBarChart,
   CalendarDays,
   MapPin,
-  Map
+  Map,
+  Trash2
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -41,6 +42,18 @@ import { BackButton } from "@/components/BackButton";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { AIChatBox, Message } from "@/components/AIChatBox";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import ExportButton from "@/components/ExportButton";
 import { Asset3DModelTab } from "@/components/Asset3DModelTab";
 import { AssetFinancialTab } from "@/components/AssetFinancialTab";
@@ -62,6 +75,9 @@ export default function AssetDetail() {
   const [checkingCompliance, setCheckingCompliance] = React.useState<Record<number, boolean>>({});
   // Disclaimer acknowledgment removed - now using passive statement
   const [complianceResults, setComplianceResults] = React.useState<Record<number, { compliant: boolean; details: string; nonComplianceReasons?: Array<{ reason: string; codeReference: string; severity: string; recommendation: string }>; complianceNotes?: string | null }>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [assessmentToDelete, setAssessmentToDelete] = React.useState<any>(null);
+  const [deleteReason, setDeleteReason] = React.useState("");
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -83,6 +99,20 @@ export default function AssetDetail() {
     { enabled: !!user }
   );
   const checkComplianceMutation = trpc.compliance.checkComponent.useMutation();
+  
+  // Admin delete assessment mutation
+  const deleteAssessmentMutation = trpc.assessments.adminDelete.useMutation({
+    onSuccess: () => {
+      toast.success("Assessment deleted successfully");
+      utils.assessments.listByAsset.invalidate({ assetId: assetIdNum, projectId });
+      setDeleteDialogOpen(false);
+      setAssessmentToDelete(null);
+      setDeleteReason("");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete assessment");
+    },
+  });
 
   // Load conversation history
   const { data: conversationHistory } = trpc.assets.getConversation.useQuery(
@@ -434,7 +464,7 @@ export default function AssetDetail() {
                           }}
                         >
                           <div className="flex items-center justify-between">
-                            <div>
+                            <div className="flex-1">
                               <p className="font-medium">{assessment.componentCode}</p>
                               <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
                               {(assessment.estimatedRepairCost || assessment.replacementValue) && (
@@ -453,9 +483,25 @@ export default function AssetDetail() {
                                 </div>
                               )}
                             </div>
-                            <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
-                              {assessment.condition}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
+                                {assessment.condition}
+                              </Badge>
+                              {user?.role === 'admin' && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setAssessmentToDelete(assessment);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -909,6 +955,64 @@ export default function AssetDetail() {
           </Tabs>
         </div>
       </DashboardLayout>
+
+      {/* Delete Assessment Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Assessment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this assessment? This action will be logged for audit purposes.
+              {assessmentToDelete && (
+                <div className="mt-2 p-3 bg-muted rounded-md text-sm">
+                  <p><strong>Component:</strong> {assessmentToDelete.componentCode} - {assessmentToDelete.componentName}</p>
+                  <p><strong>Condition:</strong> {assessmentToDelete.condition}</p>
+                  {assessmentToDelete.estimatedRepairCost && (
+                    <p><strong>Repair Cost:</strong> ${assessmentToDelete.estimatedRepairCost.toLocaleString()}</p>
+                  )}
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="delete-reason">Reason for deletion (optional)</Label>
+            <Textarea
+              id="delete-reason"
+              placeholder="Enter reason for deleting this assessment..."
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeleteReason("");
+              setAssessmentToDelete(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (assessmentToDelete) {
+                  deleteAssessmentMutation.mutate({
+                    assessmentId: assessmentToDelete.id,
+                    projectId,
+                    reason: deleteReason || undefined,
+                  });
+                }
+              }}
+              disabled={deleteAssessmentMutation.isPending}
+            >
+              {deleteAssessmentMutation.isPending ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...</>
+              ) : (
+                "Delete Assessment"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

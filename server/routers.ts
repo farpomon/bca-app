@@ -1711,6 +1711,110 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         
         return { id: assessmentId };
       }),
+
+    // Admin-only: Delete assessment with audit logging
+    adminDelete: protectedProcedure
+      .input(z.object({
+        assessmentId: z.number(),
+        projectId: z.number(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Only admins can delete assessments
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ 
+            code: "FORBIDDEN", 
+            message: "Only administrators can delete assessments" 
+          });
+        }
+
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, true);
+        if (!project) throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+
+        // Get the assessment to be deleted
+        const assessment = await db.getAssessmentById(input.assessmentId);
+        if (!assessment) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Assessment not found" });
+        }
+
+        // Verify assessment belongs to the project
+        if (assessment.projectId !== input.projectId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Assessment does not belong to this project" });
+        }
+
+        // Log the deletion to audit table
+        await db.logAssessmentDeletion({
+          assessmentId: assessment.id,
+          projectId: assessment.projectId,
+          assetId: assessment.assetId,
+          componentCode: assessment.componentCode,
+          componentName: assessment.componentName,
+          condition: assessment.condition,
+          estimatedRepairCost: assessment.estimatedRepairCost,
+          replacementValue: assessment.replacementValue,
+          deletedBy: ctx.user.id,
+          deletedByName: ctx.user.name || 'Unknown',
+          deletedByEmail: ctx.user.email || 'Unknown',
+          deletionReason: input.reason || 'No reason provided',
+          assessmentData: JSON.stringify(assessment),
+        });
+
+        // Soft delete the assessment
+        await db.softDeleteAssessment(input.assessmentId, ctx.user.id);
+
+        // Log to general audit log
+        await db.createAuditLog({
+          entityType: "assessment",
+          entityId: assessment.id,
+          action: "delete",
+          userId: ctx.user.id,
+          changes: JSON.stringify({
+            reason: input.reason,
+            componentCode: assessment.componentCode,
+            componentName: assessment.componentName,
+          })
+        });
+
+        // Recalculate CI/FCI after deletion
+        const { calculateBuildingCI } = await import("./ciCalculationService");
+        const { calculateFCI } = await import("./fciCalculationService");
+        
+        try {
+          const ciResult = await calculateBuildingCI(input.projectId);
+          const fciResult = await calculateFCI(input.projectId);
+          
+          await db.updateProject(input.projectId, ctx.user.id, {
+            ci: ciResult.ci.toString(),
+            fci: fciResult.fci.toString(),
+            deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+            currentReplacementValue: fciResult.currentReplacementValue.toString(),
+            lastCalculatedAt: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error("CI/FCI recalculation after deletion failed:", error);
+        }
+
+        return { success: true, message: "Assessment deleted successfully" };
+      }),
+
+    // Get deletion log for admins
+    getDeletionLog: protectedProcedure
+      .input(z.object({
+        projectId: z.number().optional(),
+        limit: z.number().default(50),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Only admins can view deletion logs
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ 
+            code: "FORBIDDEN", 
+            message: "Only administrators can view deletion logs" 
+          });
+        }
+
+        return await db.getAssessmentDeletionLog(input.projectId, input.limit);
+      }),
   }),
 
   deficiencies: router({

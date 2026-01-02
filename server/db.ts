@@ -7,6 +7,7 @@ import {
   buildingCodes,
   buildingComponents,
   assessments,
+  assessmentDeletionLog,
   deficiencies,
   photos,
   costEstimates,
@@ -2665,4 +2666,79 @@ export async function getUserUnitPreference(userId: number): Promise<'metric' | 
     .limit(1);
   
   return result[0]?.unitPreference || null;
+}
+
+
+// ============================================================================
+// Assessment Deletion Functions
+// ============================================================================
+
+export interface AssessmentDeletionLogEntry {
+  assessmentId: number;
+  projectId: number;
+  assetId?: number | null;
+  componentCode?: string | null;
+  componentName?: string | null;
+  condition?: string | null;
+  estimatedRepairCost?: number | null;
+  replacementValue?: number | null;
+  deletedBy: number;
+  deletedByName: string;
+  deletedByEmail: string;
+  deletionReason: string;
+  assessmentData: string;
+}
+
+export async function logAssessmentDeletion(entry: AssessmentDeletionLogEntry) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(assessmentDeletionLog).values({
+    assessmentId: entry.assessmentId,
+    projectId: entry.projectId,
+    assetId: entry.assetId,
+    componentCode: entry.componentCode,
+    componentName: entry.componentName,
+    condition: entry.condition,
+    estimatedRepairCost: entry.estimatedRepairCost,
+    replacementValue: entry.replacementValue,
+    deletedBy: entry.deletedBy,
+    deletedByName: entry.deletedByName,
+    deletedByEmail: entry.deletedByEmail,
+    deletionReason: entry.deletionReason,
+    assessmentData: entry.assessmentData,
+  });
+}
+
+export async function softDeleteAssessment(assessmentId: number, deletedBy: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(assessments)
+    .set({ 
+      deletedAt: new Date().toISOString(),
+      deletedBy: deletedBy,
+    })
+    .where(eq(assessments.id, assessmentId));
+}
+
+export async function getAssessmentDeletionLog(projectId?: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  if (projectId) {
+    return await db
+      .select()
+      .from(assessmentDeletionLog)
+      .where(eq(assessmentDeletionLog.projectId, projectId))
+      .orderBy(desc(assessmentDeletionLog.deletedAt))
+      .limit(limit);
+  }
+
+  return await db
+    .select()
+    .from(assessmentDeletionLog)
+    .orderBy(desc(assessmentDeletionLog.deletedAt))
+    .limit(limit);
 }
