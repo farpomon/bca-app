@@ -25,6 +25,8 @@ import {
 import {
   getAllItems,
   clearStore,
+  deleteItem,
+  updateItem,
   STORES,
   type OfflineAssessment,
   type OfflinePhoto,
@@ -238,13 +240,13 @@ export function useStorageManager() {
 
       // Delete synced items
       for (const item of syncedAssessments) {
-        await import("@/lib/offlineStorage").then(m => m.deleteItem(STORES.ASSESSMENTS, item.id));
+        await deleteItem(STORES.ASSESSMENTS, item.id);
       }
       for (const item of syncedPhotos) {
-        await import("@/lib/offlineStorage").then(m => m.deleteItem(STORES.PHOTOS, item.id));
+        await deleteItem(STORES.PHOTOS, item.id);
       }
       for (const item of syncedDeficiencies) {
-        await import("@/lib/offlineStorage").then(m => m.deleteItem(STORES.DEFICIENCIES, item.id));
+        await deleteItem(STORES.DEFICIENCIES, item.id);
       }
 
       await refreshStats();
@@ -333,16 +335,12 @@ export function useStorageManager() {
 
       // Import assessments
       for (const assessment of data.assessments) {
-        await import("@/lib/offlineStorage").then(m => 
-          m.updateItem(STORES.ASSESSMENTS, assessment)
-        );
+        await updateItem(STORES.ASSESSMENTS, assessment);
       }
 
       // Import deficiencies
       for (const deficiency of data.deficiencies) {
-        await import("@/lib/offlineStorage").then(m => 
-          m.updateItem(STORES.DEFICIENCIES, deficiency)
-        );
+        await updateItem(STORES.DEFICIENCIES, deficiency);
       }
 
       // Import photos (without blobs for now)
@@ -357,9 +355,7 @@ export function useStorageManager() {
           const blob = new Blob([bytes], { type: photo.mimeType });
           
           const { blobBase64, ...rest } = photo;
-          await import("@/lib/offlineStorage").then(m => 
-            m.updateItem(STORES.PHOTOS, { ...rest, blob, originalBlob: blob } as OfflinePhoto)
-          );
+          await updateItem(STORES.PHOTOS, { ...rest, blob, originalBlob: blob } as OfflinePhoto);
         }
       }
 

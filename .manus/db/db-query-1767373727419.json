@@ -1,0 +1,18 @@
+{
+  "query": "SELECT 'users' as table_name, COUNT(*) as count FROM users UNION ALL SELECT 'projects' as table_name, COUNT(*) as count FROM projects;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT 'users' as table_name, COUNT(*) as count FROM users UNION ALL SELECT 'projects' as table_name, COUNT(*) as count FROM projects;",
+  "rows": [
+    {
+      "table_name": "users",
+      "count": "2"
+    },
+    {
+      "table_name": "projects",
+      "count": "681"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\tcount\nusers\t2\nprojects\t681\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

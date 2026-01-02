@@ -2526,3 +2526,155 @@ export type ValidationRule = typeof validationRules.$inferSelect;
 export type InsertValidationRule = typeof validationRules.$inferInsert;
 export type WasteTracking = typeof wasteTracking.$inferSelect;
 export type InsertWasteTracking = typeof wasteTracking.$inferInsert;
+
+
+/**
+ * Building Type Templates
+ * Pre-defined templates for different building types (e.g., Office, School, Hospital)
+ * that include standard systems and components with default service life values
+ */
+export const buildingTypeTemplates = mysqlTable("building_type_templates", {
+	id: int().autoincrement().notNull().primaryKey(),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	buildingClass: mysqlEnum(['class_a', 'class_b', 'class_c']).default('class_b').notNull(),
+	propertyType: varchar({ length: 100 }).notNull(), // Office, School, Hospital, Residential, Industrial, etc.
+	constructionType: varchar({ length: 100 }), // Steel Frame, Concrete, Wood Frame, etc.
+	typicalYearBuiltRange: varchar({ length: 50 }), // e.g., "1980-2000"
+	typicalGrossFloorArea: int(), // in sq ft
+	typicalNumberOfStories: int(),
+	isActive: int().default(1).notNull(),
+	isDefault: int().default(0).notNull(),
+	companyId: int(), // null = global template, otherwise company-specific
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_template_property_type").on(table.propertyType),
+	index("idx_template_building_class").on(table.buildingClass),
+	index("idx_template_company").on(table.companyId),
+	index("idx_template_active").on(table.isActive),
+]);
+
+/**
+ * Template Systems
+ * Systems/components that are included in each building type template
+ * Links templates to UNIFORMAT II component codes with default values
+ */
+export const templateSystems = mysqlTable("template_systems", {
+	id: int().autoincrement().notNull().primaryKey(),
+	templateId: int().notNull(),
+	componentCode: varchar({ length: 20 }).notNull(), // UNIFORMAT II code (e.g., B2010)
+	componentName: varchar({ length: 255 }).notNull(),
+	defaultServiceLife: int().notNull(), // Design service life in years
+	defaultReplacementCost: decimal({ precision: 15, scale: 2 }), // Per unit cost
+	defaultCostUnit: varchar({ length: 50 }), // e.g., "per sq ft", "each", "linear ft"
+	defaultQuantityFormula: varchar({ length: 255 }), // e.g., "grossFloorArea * 1.1"
+	typicalCondition: mysqlEnum(['good', 'fair', 'poor']).default('good'),
+	priority: int().default(1), // Display order
+	isRequired: int().default(0).notNull(), // Whether this system is always included
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_template_system_template").on(table.templateId),
+	index("idx_template_system_component").on(table.componentCode),
+]);
+
+/**
+ * Design Service Life Values
+ * Standard service life values by asset type and building class
+ * Used as reference data for assessments and projections
+ */
+export const designServiceLifeValues = mysqlTable("design_service_life_values", {
+	id: int().autoincrement().notNull().primaryKey(),
+	componentCode: varchar({ length: 20 }).notNull(), // UNIFORMAT II code
+	componentName: varchar({ length: 255 }).notNull(),
+	buildingClass: mysqlEnum(['class_a', 'class_b', 'class_c', 'all']).default('all').notNull(),
+	propertyType: varchar({ length: 100 }), // null = applies to all property types
+	designServiceLife: int().notNull(), // Standard service life in years
+	minServiceLife: int(), // Minimum expected life
+	maxServiceLife: int(), // Maximum expected life
+	bestCaseServiceLife: int(), // Optimistic scenario
+	worstCaseServiceLife: int(), // Pessimistic scenario
+	dataSource: varchar({ length: 255 }), // e.g., "BOMA", "ASHRAE", "Industry Standard"
+	notes: text(),
+	isActive: int().default(1).notNull(),
+	companyId: int(), // null = global values, otherwise company-specific overrides
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_dsl_component").on(table.componentCode),
+	index("idx_dsl_building_class").on(table.buildingClass),
+	index("idx_dsl_property_type").on(table.propertyType),
+	index("idx_dsl_company").on(table.companyId),
+]);
+
+/**
+ * Bulk Service Life Updates
+ * Tracks bulk updates to service life values across portfolios
+ * Provides audit trail for portfolio-wide changes
+ */
+export const bulkServiceLifeUpdates = mysqlTable("bulk_service_life_updates", {
+	id: int().autoincrement().notNull().primaryKey(),
+	companyId: int(),
+	updateType: mysqlEnum(['component', 'building_class', 'property_type', 'all']).notNull(),
+	componentCode: varchar({ length: 20 }), // null if updating all components
+	buildingClass: mysqlEnum(['class_a', 'class_b', 'class_c', 'all']),
+	propertyType: varchar({ length: 100 }),
+	previousServiceLife: int(),
+	newServiceLife: int().notNull(),
+	percentageChange: decimal({ precision: 5, scale: 2 }), // e.g., +10% or -5%
+	affectedProjectsCount: int().default(0),
+	affectedAssessmentsCount: int().default(0),
+	reason: text(),
+	status: mysqlEnum(['pending', 'in_progress', 'completed', 'failed', 'rolled_back']).default('pending').notNull(),
+	appliedAt: timestamp({ mode: 'string' }),
+	appliedBy: int(),
+	rolledBackAt: timestamp({ mode: 'string' }),
+	rolledBackBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_bulk_update_company").on(table.companyId),
+	index("idx_bulk_update_status").on(table.status),
+	index("idx_bulk_update_component").on(table.componentCode),
+]);
+
+/**
+ * Bulk Update Affected Items
+ * Detailed record of which assessments were affected by a bulk update
+ * Enables rollback functionality
+ */
+export const bulkUpdateAffectedItems = mysqlTable("bulk_update_affected_items", {
+	id: int().autoincrement().notNull().primaryKey(),
+	bulkUpdateId: int().notNull(),
+	assessmentId: int().notNull(),
+	projectId: int().notNull(),
+	componentCode: varchar({ length: 20 }).notNull(),
+	previousServiceLife: int(),
+	newServiceLife: int().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_affected_bulk_update").on(table.bulkUpdateId),
+	index("idx_affected_assessment").on(table.assessmentId),
+	index("idx_affected_project").on(table.projectId),
+]);
+
+// Type exports for new tables
+export type BuildingTypeTemplate = typeof buildingTypeTemplates.$inferSelect;
+export type InsertBuildingTypeTemplate = typeof buildingTypeTemplates.$inferInsert;
+export type TemplateSystem = typeof templateSystems.$inferSelect;
+export type InsertTemplateSystem = typeof templateSystems.$inferInsert;
+export type DesignServiceLifeValue = typeof designServiceLifeValues.$inferSelect;
+export type InsertDesignServiceLifeValue = typeof designServiceLifeValues.$inferInsert;
+export type BulkServiceLifeUpdate = typeof bulkServiceLifeUpdates.$inferSelect;
+export type InsertBulkServiceLifeUpdate = typeof bulkServiceLifeUpdates.$inferInsert;
+export type BulkUpdateAffectedItem = typeof bulkUpdateAffectedItems.$inferSelect;
+export type InsertBulkUpdateAffectedItem = typeof bulkUpdateAffectedItems.$inferInsert;

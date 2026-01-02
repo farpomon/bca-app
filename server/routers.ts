@@ -51,6 +51,7 @@ import { chatbotRouter } from "./routers/chatbot.router";
 import { projectPermissionsRouter } from "./routers/projectPermissions.router";
 import { ratingRouter } from "./routers/rating.router";
 import { companyRolesRouter } from "./companyRolesRouter";
+import { buildingTemplatesRouter } from "./routers/buildingTemplates.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -104,6 +105,7 @@ export const appRouter = router({
   projectPermissions: projectPermissionsRouter,
   rating: ratingRouter,
   esgLeed: esgLeedRouter,
+  buildingTemplates: buildingTemplatesRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

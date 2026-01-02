@@ -40,6 +40,8 @@ import { useCompany } from '@/contexts/CompanyContext';
 const menuItems = [
   { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
   { icon: LayoutDashboard, label: "Projects", path: "/" },
+  { icon: Building2, label: "Building Templates", path: "/admin/building-templates", adminOnly: true },
+  { icon: Settings, label: "Bulk Service Life", path: "/admin/bulk-service-life-updates", adminOnly: true },
   { icon: DollarSign, label: "RSMeans Cost Data", path: "/rsmeans" },
   { icon: Leaf, label: "ESG Dashboard", path: "/esg-dashboard" },
   { icon: Leaf, label: "Sustainability", path: "/sustainability" },

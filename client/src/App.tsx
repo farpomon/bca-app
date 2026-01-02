@@ -36,6 +36,8 @@ import ESGDashboard from "./pages/ESGDashboard";
 import SustainabilityDashboard from "./pages/SustainabilityDashboard";
 import CarbonFootprintReport from "./pages/CarbonFootprintReport";
 import RSMeansCostBrowser from "./pages/RSMeansCostBrowser";
+import BuildingTemplates from "./pages/BuildingTemplates";
+import BulkServiceLifeUpdates from "./pages/BulkServiceLifeUpdates";
 import DeletedProjects from "./pages/DeletedProjects";
 import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
@@ -106,6 +108,8 @@ function Router() {
       <Route path={"/sustainability"} component={SustainabilityDashboard} />
       <Route path={"/carbon-footprint"} component={CarbonFootprintReport} />
       <Route path={"/rsmeans"} component={RSMeansCostBrowser} />
+      <Route path={"/admin/building-templates"} component={BuildingTemplates} />
+      <Route path={"/admin/bulk-service-life-updates"} component={BulkServiceLifeUpdates} />
       <Route path={"/settings/privacy"} component={PrivacySettings} />
       <Route path={"/settings/security"} component={SecuritySettings} />
       <Route path={"/404"} component={NotFound} />

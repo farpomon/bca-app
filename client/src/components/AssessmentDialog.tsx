@@ -16,6 +16,7 @@ import { DocumentList } from "@/components/DocumentList";
 import { Badge } from "@/components/ui/badge";
 import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
 import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
+import { initOfflineDB, STORES } from "@/lib/offlineStorage";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: number; projectId: number }) {
@@ -36,7 +37,7 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
   useEffect(() => {
     const loadOfflinePhotos = async () => {
       try {
-        const { initOfflineDB, STORES } = await import('@/lib/offlineStorage');
+        // Using static import from top of file
         const db = await initOfflineDB();
         const tx = db.transaction(STORES.PHOTOS, 'readonly');
         const store = tx.objectStore(STORES.PHOTOS);

@@ -10,6 +10,8 @@ import { useOfflineSync } from "./useOfflineSync";
 import {
   saveOfflinePhoto,
   getPhotosByAssessment,
+  getItem,
+  STORES,
   type OfflinePhoto,
 } from "@/lib/offlineStorage";
 import {
@@ -230,7 +232,7 @@ export function useOfflinePhotoPreview(photoId: string | null) {
     setIsLoading(true);
 
     try {
-      const { getItem, STORES } = await import("@/lib/offlineStorage");
+      // Using static imports from top of file
       const photo = await getItem<OfflinePhoto>(STORES.PHOTOS, photoId);
       
       if (photo) {

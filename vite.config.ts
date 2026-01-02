@@ -24,6 +24,21 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Memory optimization settings
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks to reduce memory pressure
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tooltip'],
+          'vendor-charts': ['recharts'],
+          'vendor-editor': ['@tiptap/react', '@tiptap/starter-kit'],
+        },
+      },
+    },
   },
   server: {
     host: true,

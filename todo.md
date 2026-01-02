@@ -2328,7 +2328,7 @@ Testing:
 - [ ] Add userCompanyAccess table for user-company relationships with access levels
 - [ ] Add projectAccessGrants table for admin access to client projects (requires client approval)
 - [ ] Update projects table to include companyId foreign key
-- [ ] Run database migrations
+- [x] Run database migrations
 
 ### Backend Procedures
 - [ ] Create companies.create procedure (admin only)
@@ -2461,7 +2461,7 @@ Testing:
 - [ ] Create esgScores table (buildingId, environmentalScore, socialScore, governanceScore, overallScore)
 - [ ] Create esgBenchmarks table (buildingType, region, benchmarkValues)
 - [ ] Create esgReports table (reportId, buildingId, reportDate, reportType, data)
-- [ ] Run database migrations
+- [x] Run database migrations
 
 ### Phase 2: Backend tRPC Procedures
 - [ ] Create esg.getMetrics procedure to fetch ESG metrics for a building
@@ -2520,7 +2520,7 @@ Testing:
 - [ ] Create esg_rating_scales table (companyId, scaleName, scaleType, thresholds, letterGrades, zoneColors)
 - [ ] Create esg_benchmarks table (buildingType, region, metricType, benchmarkValue, percentile)
 - [ ] Create esg_history table (assetId, metricType, value, recordedAt) for trend tracking
-- [ ] Run database migrations with pnpm db:push
+- [x] Run database migrations with pnpm db:push
 
 ### Phase 2: Rating System Design
 - [ ] Implement letter grade system (A+, A, A-, B+, B, B-, C+, C, C-, D, F)
@@ -2876,3 +2876,31 @@ Testing:
 - [x] Fix Top Assessed Components to show actual data
 - [x] Add filtered components table showing components matching selected condition
 - [x] Add Clear Filter button to reset the filter
+
+
+## Building Type Templates & Service Life Features
+
+### Database Schema
+- [x] Create building_type_templates table for building type templates
+- [x] Create design_service_life_values table for service life by asset type and building class
+- [x] Create template_systems table for systems included in each template
+- [x] Run database migrations
+
+### Backend Implementation
+- [x] Create database helper functions for templates and service life management
+- [x] Create backend procedures for building type templates CRUD
+- [x] Create backend procedures for design service life values CRUD
+- [x] Create backend procedures for bulk portfolio-wide service life updates
+- [x] Create procedure to apply template to new building
+
+### Frontend Implementation
+- [x] Build UI for managing building type templates (admin)
+- [x] Build UI for managing design service life values (admin)
+- [x] Build UI for bulk portfolio-wide service life updates
+- [x] Create new building setup wizard with pre-populated data from templates
+- [x] Add navigation links to new features
+
+### Testing
+- [x] Write tests for building type templates
+- [x] Write tests for design service life values
+- [x] Write tests for bulk portfolio updates
