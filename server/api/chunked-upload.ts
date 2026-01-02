@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'crypto';
+import { storagePut } from '../storage';
 
 /**
  * Chunked File Upload Handler
@@ -308,12 +309,31 @@ export async function completeUpload(req: Request, res: Response): Promise<void>
       completedAt: Date.now(),
     };
     
+    // Upload to S3
+    const timestamp = Date.now();
+    const safeFilename = session.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileKey = `chunked-uploads/${timestamp}-${safeFilename}`;
+    
+    // Determine content type
+    const ext = session.filename.split('.').pop()?.toLowerCase();
+    let contentType = 'application/octet-stream';
+    if (ext === 'pdf') contentType = 'application/pdf';
+    else if (ext === 'doc') contentType = 'application/msword';
+    else if (ext === 'docx') contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    
+    const { url } = await storagePut(fileKey, fileBuffer, contentType);
+    
+    // Clean up temp directory
+    await fs.rm(session.tempDir, { recursive: true, force: true }).catch(() => {});
+    
     // Remove session from active sessions
     uploadSessions.delete(sessionId);
     
     res.json({
       success: true,
       file: {
+        url,
+        fileKey,
         filename: session.filename,
         size: fileBuffer.length,
         sessionId: session.id,

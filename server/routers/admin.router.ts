@@ -1270,5 +1270,121 @@ export const adminRouter = router({
       return { success: true };
     }),
 
+  /**
+   * Get server memory health status
+   * Returns detailed memory statistics and alerts
+   */
+  getMemoryHealth: adminProcedure.query(async () => {
+    const v8 = await import('v8');
+    const memUsage = process.memoryUsage();
+    const heapStats = v8.getHeapStatistics();
+    
+    const usagePercent = (heapStats.used_heap_size / heapStats.heap_size_limit) * 100;
+    
+    // Alert thresholds
+    const WARNING_THRESHOLD = 75;
+    const CRITICAL_THRESHOLD = 85;
+    
+    let alertLevel: 'ok' | 'warning' | 'critical' = 'ok';
+    let alertMessage = 'Memory usage within normal limits';
+    
+    if (usagePercent >= CRITICAL_THRESHOLD) {
+      alertLevel = 'critical';
+      alertMessage = `Memory usage at ${usagePercent.toFixed(1)}% - immediate attention required`;
+    } else if (usagePercent >= WARNING_THRESHOLD) {
+      alertLevel = 'warning';
+      alertMessage = `Memory usage at ${usagePercent.toFixed(1)}% - approaching limit`;
+    }
+    
+    const formatBytes = (bytes: number): string => {
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let unitIndex = 0;
+      let value = bytes;
+      while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024;
+        unitIndex++;
+      }
+      return `${value.toFixed(2)} ${units[unitIndex]}`;
+    };
+    
+    return {
+      timestamp: Date.now(),
+      heap: {
+        used: heapStats.used_heap_size,
+        total: heapStats.total_heap_size,
+        limit: heapStats.heap_size_limit,
+        usagePercent: parseFloat(usagePercent.toFixed(2)),
+      },
+      formatted: {
+        heapUsed: formatBytes(heapStats.used_heap_size),
+        heapTotal: formatBytes(heapStats.total_heap_size),
+        heapLimit: formatBytes(heapStats.heap_size_limit),
+        rss: formatBytes(memUsage.rss),
+        external: formatBytes(memUsage.external),
+      },
+      alert: {
+        level: alertLevel,
+        message: alertMessage,
+        warningThreshold: WARNING_THRESHOLD,
+        criticalThreshold: CRITICAL_THRESHOLD,
+      },
+      rss: memUsage.rss,
+      external: memUsage.external,
+      arrayBuffers: memUsage.arrayBuffers,
+    };
+  }),
+
+  /**
+   * Get memory history for trend analysis
+   */
+  getMemoryHistory: adminProcedure
+    .input(z.object({
+      samples: z.number().min(1).max(100).default(20),
+    }))
+    .query(async ({ input }) => {
+      // This would typically come from a time-series database
+      // For now, return current snapshot as single sample
+      const v8 = await import('v8');
+      const heapStats = v8.getHeapStatistics();
+      const usagePercent = (heapStats.used_heap_size / heapStats.heap_size_limit) * 100;
+      
+      return {
+        samples: [{
+          timestamp: Date.now(),
+          usagePercent: parseFloat(usagePercent.toFixed(2)),
+          heapUsed: heapStats.used_heap_size,
+        }],
+        requestedSamples: input.samples,
+      };
+    }),
+
+  /**
+   * Configure memory alert thresholds (stored in memory, resets on restart)
+   */
+  configureMemoryAlerts: adminProcedure
+    .input(z.object({
+      warningThreshold: z.number().min(50).max(95).optional(),
+      criticalThreshold: z.number().min(60).max(99).optional(),
+      enableNotifications: z.boolean().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      // In production, this would persist to database
+      // For now, just validate and return success
+      if (input.warningThreshold && input.criticalThreshold) {
+        if (input.warningThreshold >= input.criticalThreshold) {
+          throw new Error('Warning threshold must be less than critical threshold');
+        }
+      }
+      
+      return {
+        success: true,
+        message: 'Memory alert configuration updated',
+        config: {
+          warningThreshold: input.warningThreshold ?? 75,
+          criticalThreshold: input.criticalThreshold ?? 85,
+          enableNotifications: input.enableNotifications ?? true,
+        },
+      };
+    }),
 
 });

@@ -2447,6 +2447,197 @@ Provide helpful insights, recommendations, and analysis based on this asset data
 
         return { url, fileKey };
       }),
+
+    /**
+     * Initialize bulk PDF export with SSE progress tracking
+     * Returns an exportId that can be used to track progress via SSE
+     */
+    initBulkExport: protectedProcedure
+      .input(z.object({
+        projectIds: z.array(z.number()).min(1).max(50),
+        includePhotos: z.boolean().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createExportSession } = await import('./api/export-progress');
+        
+        // Verify access to all projects
+        const isAdmin = ctx.user.role === 'admin';
+        const accessibleIds: number[] = [];
+        
+        for (const projectId of input.projectIds) {
+          const project = await db.getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+          if (project) {
+            accessibleIds.push(projectId);
+          }
+        }
+        
+        if (accessibleIds.length === 0) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'No accessible projects found',
+          });
+        }
+        
+        // Create export session
+        const exportId = createExportSession(accessibleIds.length);
+        
+        return {
+          exportId,
+          projectCount: accessibleIds.length,
+          projectIds: accessibleIds,
+          sseUrl: `/api/export/progress/${exportId}/stream`,
+        };
+      }),
+
+    /**
+     * Execute bulk PDF export with progress updates
+     * Should be called after initBulkExport
+     */
+    executeBulkExport: protectedProcedure
+      .input(z.object({
+        exportId: z.string(),
+        projectIds: z.array(z.number()).min(1).max(50),
+        includePhotos: z.boolean().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { 
+          updateExportProgress, 
+          completeExport, 
+          failExport,
+          isExportCancelled 
+        } = await import('./api/export-progress');
+        const archiver = await import('archiver');
+        const { Readable } = await import('stream');
+        
+        const isAdmin = ctx.user.role === 'admin';
+        const generatedReports: Array<{ projectId: number; projectName: string; buffer: Buffer }> = [];
+        
+        try {
+          updateExportProgress(input.exportId, {
+            status: 'processing',
+            message: 'Starting bulk PDF generation...',
+          });
+          
+          for (let i = 0; i < input.projectIds.length; i++) {
+            // Check for cancellation
+            if (isExportCancelled(input.exportId)) {
+              return { cancelled: true, exportId: input.exportId };
+            }
+            
+            const projectId = input.projectIds[i];
+            
+            try {
+              const project = await db.getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+              if (!project) continue;
+              
+              updateExportProgress(input.exportId, {
+                currentItem: i + 1,
+                currentItemName: project.name,
+                message: `Generating PDF for: ${project.name}`,
+              });
+              
+              const assessments = await db.getProjectAssessments(projectId);
+              
+              // Fetch photos if requested
+              const assessmentsWithPhotos = input.includePhotos 
+                ? await Promise.all(
+                    assessments.map(async (assessment) => {
+                      const photos = await db.getAssessmentPhotos(assessment.id);
+                      return { ...assessment, photos };
+                    })
+                  )
+                : assessments.map(a => ({ ...a, photos: [] }));
+              
+              const fciData = await db.getProjectFCI(projectId);
+              const financialData = await dashboardData.getFinancialPlanningData(projectId);
+              const conditionData = await dashboardData.getConditionMatrixData(projectId);
+              
+              const financialPlanning = financialData.periods.map((period, idx) => ({
+                period: period.label,
+                structure: financialData.groups.find((g: any) => g.code === 'A')?.periods[idx] || 0,
+                enclosure: financialData.groups.find((g: any) => g.code === 'B')?.periods[idx] || 0,
+                interior: financialData.groups.find((g: any) => g.code === 'C')?.periods[idx] || 0,
+                mep: financialData.groups.find((g: any) => g.code === 'D')?.periods[idx] || 0,
+                site: financialData.groups.find((g: any) => g.code === 'G')?.periods[idx] || 0,
+              }));
+              
+              const conditionMatrix = conditionData.systems.map((s: any) => ({
+                system: s.name,
+                condition: s.condition.charAt(0).toUpperCase() + s.condition.slice(1),
+              }));
+              
+              const pdfBuffer = await generateBCAReport({
+                project,
+                assessments: assessmentsWithPhotos,
+                fciData: fciData || { fci: 0, rating: 'N/A', totalRepairCost: 0, totalReplacementValue: 0 },
+                financialPlanning,
+                conditionMatrix,
+              });
+              
+              generatedReports.push({
+                projectId,
+                projectName: project.name,
+                buffer: pdfBuffer,
+              });
+              
+            } catch (error) {
+              console.error(`[BulkExport] Failed to generate PDF for project ${projectId}:`, error);
+              // Continue with other projects
+            }
+          }
+          
+          if (generatedReports.length === 0) {
+            failExport(input.exportId, 'No reports could be generated');
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'No reports could be generated',
+            });
+          }
+          
+          updateExportProgress(input.exportId, {
+            message: 'Creating ZIP archive...',
+          });
+          
+          // Create ZIP archive
+          const archive = archiver.default('zip', { zlib: { level: 5 } });
+          const chunks: Buffer[] = [];
+          
+          archive.on('data', (chunk: Buffer) => chunks.push(chunk));
+          
+          for (const report of generatedReports) {
+            const safeName = report.projectName.replace(/[^a-zA-Z0-9-_]/g, '_');
+            archive.append(report.buffer, { name: `${safeName}-BCA-Report.pdf` });
+          }
+          
+          await archive.finalize();
+          
+          const zipBuffer = Buffer.concat(chunks);
+          
+          // Upload to S3
+          const timestamp = Date.now();
+          const fileKey = `bulk-exports/bulk-reports-${timestamp}.zip`;
+          const { url } = await storagePut(fileKey, zipBuffer, 'application/zip');
+          
+          completeExport(input.exportId, {
+            url,
+            filename: `BCA-Reports-${generatedReports.length}-projects.zip`,
+            size: zipBuffer.length,
+          });
+          
+          return {
+            success: true,
+            exportId: input.exportId,
+            url,
+            fileKey,
+            reportCount: generatedReports.length,
+            totalSize: zipBuffer.length,
+          };
+          
+        } catch (error) {
+          failExport(input.exportId, (error as Error).message);
+          throw error;
+        }
+      }),
   }),
 
   hierarchy: router({

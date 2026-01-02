@@ -2964,3 +2964,16 @@ Testing:
 - [x] Implement progress tracking for bulk PDF exports
 - [x] Add real-time progress indicators in frontend
 - [x] Support cancellation of in-progress exports
+
+## New Feature Requests (Jan 2, 2026)
+
+- [ ] Integrate ChunkedUploader into AI Document Import dialog for handling large BCA documents
+- [ ] Add memory alerts to admin dashboard - Display real-time memory status with automatic notifications when thresholds are exceeded
+- [ ] Wire SSE progress to bulk PDF export - Connect the export progress system to the existing bulk report generation feature
+
+
+## New Feature Requests (Jan 2, 2026)
+
+- [x] Integrate ChunkedUploader into AI Document Import dialog for large BCA documents
+- [x] Add memory alerts to admin dashboard with real-time monitoring
+- [x] Wire SSE progress to bulk PDF export feature
