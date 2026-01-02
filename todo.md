@@ -2860,3 +2860,6 @@ Testing:
 
 - [x] Add expandable category rows in Cost Breakdown by Building System table to show component assessments
 - [x] Fix asset page tabs navigation - cannot scroll to access tabs past "3D" (Reports, Optimization, Location are cut off)
+- [x] Fix bug: Deleted asset components still show on dashboard after deletion (cache invalidation issue)
+- [x] Fix bug: Deleted asset components still show on dashboard after deletion (cache invalidation issue)
+- [x] Add scroll indicators/arrows to tab bar edges for better UX

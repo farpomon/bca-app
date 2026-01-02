@@ -543,7 +543,10 @@ export async function getAssetAssessments(assetId: number) {
   return await db
     .select()
     .from(assessments)
-    .where(eq(assessments.assetId, assetId))
+    .where(and(
+      eq(assessments.assetId, assetId),
+      isNull(assessments.deletedAt)
+    ))
     .orderBy(desc(assessments.assessedAt));
 }
 

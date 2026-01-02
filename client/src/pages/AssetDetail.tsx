@@ -25,7 +25,9 @@ import {
   CalendarDays,
   MapPin,
   Map,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,6 +60,85 @@ import ExportButton from "@/components/ExportButton";
 import { Asset3DModelTab } from "@/components/Asset3DModelTab";
 import { AssetFinancialTab } from "@/components/AssetFinancialTab";
 import { FormattedMeasurement } from "@/components/FormattedMeasurement";
+
+// Scrollable tabs wrapper with left/right arrow indicators
+function ScrollableTabsWrapper({ children }: { children: React.ReactNode }) {
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  const checkScrollability = React.useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    // Find the TabsList element inside
+    const tabsList = container.querySelector('[role="tablist"]') as HTMLElement;
+    if (!tabsList) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = tabsList;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+  }, []);
+
+  React.useEffect(() => {
+    checkScrollability();
+    const container = scrollContainerRef.current;
+    const tabsList = container?.querySelector('[role="tablist"]') as HTMLElement;
+    
+    if (tabsList) {
+      tabsList.addEventListener('scroll', checkScrollability);
+      window.addEventListener('resize', checkScrollability);
+      
+      return () => {
+        tabsList.removeEventListener('scroll', checkScrollability);
+        window.removeEventListener('resize', checkScrollability);
+      };
+    }
+  }, [checkScrollability]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    const container = scrollContainerRef.current;
+    const tabsList = container?.querySelector('[role="tablist"]') as HTMLElement;
+    if (!tabsList) return;
+    
+    const scrollAmount = 200;
+    tabsList.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  return (
+    <div className="relative" ref={scrollContainerRef}>
+      {/* Left scroll indicator */}
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 flex items-center justify-center bg-background/90 backdrop-blur-sm border rounded-full shadow-md hover:bg-accent transition-colors"
+          aria-label="Scroll tabs left"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+      )}
+      
+      {/* Tabs content */}
+      <div className={canScrollLeft ? 'pl-10' : canScrollRight ? 'pr-10' : ''}>
+        {children}
+      </div>
+      
+      {/* Right scroll indicator */}
+      {canScrollRight && (
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 flex items-center justify-center bg-background/90 backdrop-blur-sm border rounded-full shadow-md hover:bg-accent transition-colors"
+          aria-label="Scroll tabs right"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function AssetDetail() {
   const { id, assetId } = useParams();
@@ -245,67 +326,69 @@ export default function AssetDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList className="w-full max-w-full overflow-x-auto flex-nowrap" style={{ scrollbarWidth: 'thin' }}>
-            <TabsTrigger value="dashboard" className="flex-none px-3">
-              <Building2 className="mr-2 h-4 w-4" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="ai-insights" className="flex-none px-3">
-              AI Insights
-            </TabsTrigger>
-            <TabsTrigger value="assessments" className="flex-none px-3">
-              <ClipboardCheck className="mr-2 h-4 w-4" />
-              Assessments
-            </TabsTrigger>
-            <TabsTrigger value="photos" className="flex-none px-3">
-              <Camera className="mr-2 h-4 w-4" />
-              Photos
-            </TabsTrigger>
-            <TabsTrigger value="maintenance" className="flex-none px-3">
-              <Wrench className="mr-2 h-4 w-4" />
-              Maintenance
-            </TabsTrigger>
-            <TabsTrigger value="deficiencies" className="flex-none px-3">
-              <AlertTriangle className="mr-2 h-4 w-4" />
-              Deficiencies
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="flex-none px-3">
-              <FileText className="mr-2 h-4 w-4" />
-              Documents
-            </TabsTrigger>
-            <TabsTrigger value="financial" className="flex-none px-3">
-              <DollarSign className="mr-2 h-4 w-4" />
-              Financial
-            </TabsTrigger>
-            <TabsTrigger value="compliance" className="flex-none px-3">
-              <Shield className="mr-2 h-4 w-4" />
-              Compliance
-            </TabsTrigger>
-            <TabsTrigger value="3d-model" className="flex-none px-3">
-              <Box className="mr-2 h-4 w-4" />
-              3D Model
-            </TabsTrigger>
-            {/* <TabsTrigger value="timeline" className="flex-none px-3">
-              <Clock className="mr-2 h-4 w-4" />
-              Timeline
-            </TabsTrigger> */}
-            <TabsTrigger value="reports" className="flex-none px-3">
-              <FileBarChart className="mr-2 h-4 w-4" />
-              Reports
-            </TabsTrigger>
-            <TabsTrigger value="optimization" className="flex-none px-3">
-              <Target className="mr-2 h-4 w-4" />
-              Optimization
-            </TabsTrigger>
-            <TabsTrigger value="location" className="flex-none px-3">
-              <MapPin className="mr-2 h-4 w-4" />
-              Location
-            </TabsTrigger>
-            {/* <TabsTrigger value="timeline" className="flex-none px-3">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Timeline
-            </TabsTrigger> */}
-          </TabsList>
+          <ScrollableTabsWrapper>
+            <TabsList className="w-full max-w-full overflow-x-auto flex-nowrap scroll-smooth" style={{ scrollbarWidth: 'thin' }}>
+              <TabsTrigger value="dashboard" className="flex-none px-3">
+                <Building2 className="mr-2 h-4 w-4" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="ai-insights" className="flex-none px-3">
+                AI Insights
+              </TabsTrigger>
+              <TabsTrigger value="assessments" className="flex-none px-3">
+                <ClipboardCheck className="mr-2 h-4 w-4" />
+                Assessments
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="flex-none px-3">
+                <Camera className="mr-2 h-4 w-4" />
+                Photos
+              </TabsTrigger>
+              <TabsTrigger value="maintenance" className="flex-none px-3">
+                <Wrench className="mr-2 h-4 w-4" />
+                Maintenance
+              </TabsTrigger>
+              <TabsTrigger value="deficiencies" className="flex-none px-3">
+                <AlertTriangle className="mr-2 h-4 w-4" />
+                Deficiencies
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="flex-none px-3">
+                <FileText className="mr-2 h-4 w-4" />
+                Documents
+              </TabsTrigger>
+              <TabsTrigger value="financial" className="flex-none px-3">
+                <DollarSign className="mr-2 h-4 w-4" />
+                Financial
+              </TabsTrigger>
+              <TabsTrigger value="compliance" className="flex-none px-3">
+                <Shield className="mr-2 h-4 w-4" />
+                Compliance
+              </TabsTrigger>
+              <TabsTrigger value="3d-model" className="flex-none px-3">
+                <Box className="mr-2 h-4 w-4" />
+                3D Model
+              </TabsTrigger>
+              {/* <TabsTrigger value="timeline" className="flex-none px-3">
+                <Clock className="mr-2 h-4 w-4" />
+                Timeline
+              </TabsTrigger> */}
+              <TabsTrigger value="reports" className="flex-none px-3">
+                <FileBarChart className="mr-2 h-4 w-4" />
+                Reports
+              </TabsTrigger>
+              <TabsTrigger value="optimization" className="flex-none px-3">
+                <Target className="mr-2 h-4 w-4" />
+                Optimization
+              </TabsTrigger>
+              <TabsTrigger value="location" className="flex-none px-3">
+                <MapPin className="mr-2 h-4 w-4" />
+                Location
+              </TabsTrigger>
+              {/* <TabsTrigger value="timeline" className="flex-none px-3">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Timeline
+              </TabsTrigger> */}
+            </TabsList>
+          </ScrollableTabsWrapper>
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-4">
