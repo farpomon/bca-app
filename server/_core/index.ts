@@ -62,6 +62,38 @@ async function startServer() {
   app.use("/api/oauth", authRateLimiter);
   registerOAuthRoutes(app);
   
+  // Health monitoring endpoints
+  const { handleMemoryHealth, handleForceGC } = await import('../api/health-memory');
+  app.get("/api/health/memory", handleMemoryHealth);
+  app.post("/api/health/gc", handleForceGC);
+  
+  // Chunked upload endpoints for large files (resumable)
+  const { 
+    initUploadSession, 
+    uploadChunk, 
+    getUploadStatus, 
+    completeUpload, 
+    cancelUpload,
+    chunkUploadMiddleware 
+  } = await import('../api/chunked-upload');
+  app.post("/api/upload/chunked/init", express.json(), initUploadSession);
+  app.post("/api/upload/chunked/:sessionId/chunk", chunkUploadMiddleware, uploadChunk);
+  app.get("/api/upload/chunked/:sessionId/status", getUploadStatus);
+  app.post("/api/upload/chunked/:sessionId/complete", completeUpload);
+  app.delete("/api/upload/chunked/:sessionId", cancelUpload);
+  
+  // Export progress SSE endpoints
+  const {
+    handleExportProgressSSE,
+    handleGetExportStatus,
+    handleCancelExport,
+    handleCreateExportSession,
+  } = await import('../api/export-progress');
+  app.get("/api/export/progress/:exportId/stream", handleExportProgressSSE);
+  app.get("/api/export/progress/:exportId", handleGetExportStatus);
+  app.post("/api/export/progress/:exportId/cancel", handleCancelExport);
+  app.post("/api/export/progress/create", express.json(), handleCreateExportSession);
+  
   // Audio upload endpoint (with rate limiting)
   app.post("/api/upload-audio", uploadRateLimiter, handleAudioUpload, uploadAudio);
   

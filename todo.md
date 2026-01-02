@@ -2943,3 +2943,24 @@ Testing:
 ### Node.js Heap Configuration
 - [x] Increase Node.js heap size to 4GB for production workloads
 - [x] Update dev script with --max-old-space-size=4096 flag
+
+## 🔥 Performance & Reliability Improvements
+
+### Memory Monitoring
+- [x] Create /api/health/memory endpoint to track heap usage
+- [x] Return heap used, heap total, heap limit, and usage percentage
+- [x] Add alert threshold configuration (default 85%)
+- [x] Include memory trend data for monitoring
+
+### Chunked File Uploads (Resumable)
+- [x] Create chunked upload endpoint for large documents (>1MB)
+- [x] Implement upload session management with unique upload IDs
+- [x] Support resumable uploads with chunk tracking
+- [x] Add frontend ChunkedUploader component with progress
+- [ ] Integrate with existing document upload flows
+
+### Server-Sent Events for Bulk Export Progress
+- [x] Create SSE endpoint for export progress streaming
+- [x] Implement progress tracking for bulk PDF exports
+- [x] Add real-time progress indicators in frontend
+- [x] Support cancellation of in-progress exports
