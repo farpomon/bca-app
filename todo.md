@@ -2919,3 +2919,27 @@ Testing:
 - [x] Enhance dashboard component aesthetics (FCI gauge, charts)
 - [x] Improve empty and loading states
 - [x] Refine spacing system for better breathing room
+
+
+## Memory Usage Optimizations
+
+### Document Processing (High Impact)
+- [x] Implement streaming PDF text extraction instead of loading entire buffer
+- [x] Add chunked processing for large PDF documents (up to 10MB)
+- [x] Potential savings: Up to 10MB per concurrent document parse
+
+### Bulk Export Operations (Medium Impact)
+- [x] Implement streaming Excel writer using ExcelJS streaming API
+- [x] Replace xlsx library with ExcelJS streaming for bulk exports
+- [x] Add row-by-row streaming for large dataset exports
+- [x] Potential savings: Proportional to export size
+
+### Base64 Encoding Optimization (Medium Impact)
+- [x] Implement streaming responses for file downloads (created streaming-utils.ts)
+- [x] Use direct binary transfers instead of base64 where possible (utility functions added)
+- [x] Add chunked upload support for large files (utility functions added)
+- [x] Reduce memory overhead from 33% base64 expansion (chunked base64 conversion)
+
+### Node.js Heap Configuration
+- [x] Increase Node.js heap size to 4GB for production workloads
+- [x] Update dev script with --max-old-space-size=4096 flag

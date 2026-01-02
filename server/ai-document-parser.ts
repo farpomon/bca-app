@@ -343,16 +343,12 @@ export async function parseDocument(
       );
     }
     
-    // Extract text based on document type
+    // Extract text based on document type using streaming for memory efficiency
     let text: string;
     try {
-      if (mimeType === 'application/pdf') {
-        text = await extractTextFromPDF(buffer);
-      } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        text = await extractTextFromWord(buffer);
-      } else {
-        throw new ValidationError(`Unsupported document type: ${mimeType}`);
-      }
+      // Use streaming extraction for better memory management
+      const { extractTextStreaming } = await import('./ai-document-parser-streaming');
+      text = await extractTextStreaming(buffer, mimeType);
     } catch (error) {
       if (error instanceof DocumentParsingError || error instanceof ValidationError) {
         throw error;

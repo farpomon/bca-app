@@ -398,8 +398,9 @@ export const appRouter = router({
         const assessments = await db.getProjectAssessments(input.id);
         const deficiencies = await db.getProjectDeficiencies(input.id);
         
-        const { dataToExcel } = await import('./export-utils');
-        const buffer = dataToExcel({
+        // Use streaming Excel export for better memory efficiency
+        const { dataToExcelStreaming } = await import('./export-utils-streaming');
+        const buffer = await dataToExcelStreaming({
           projectName: project.name,
           assessments,
           deficiencies,
@@ -447,8 +448,9 @@ export const appRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'No accessible projects found' });
         }
 
-        const { bulkProjectsToExcel } = await import('./export-utils');
-        const buffer = bulkProjectsToExcel(validProjects);
+        // Use streaming Excel export for better memory efficiency
+        const { bulkProjectsToExcelStreaming } = await import('./export-utils-streaming');
+        const buffer = await bulkProjectsToExcelStreaming(validProjects);
         
         // Convert buffer to base64 for transmission
         const base64 = buffer.toString('base64');
