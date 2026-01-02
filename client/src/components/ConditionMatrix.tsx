@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Grid3X3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ConditionMatrixProps {
@@ -18,36 +18,41 @@ interface ConditionMatrixProps {
 const conditionConfig = {
   good: {
     label: "Good",
-    bgColor: "bg-green-50",
-    textColor: "text-green-700",
-    borderColor: "border-green-200",
+    bgColor: "bg-teal-50",
+    textColor: "text-teal-700",
+    borderColor: "border-teal-200",
+    dotColor: "bg-teal-500",
   },
   fair: {
     label: "Fair",
-    bgColor: "bg-yellow-50",
-    textColor: "text-yellow-700",
-    borderColor: "border-yellow-200",
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-700",
+    borderColor: "border-blue-200",
+    dotColor: "bg-blue-500",
   },
   poor: {
     label: "Poor",
-    bgColor: "bg-orange-50",
-    textColor: "text-orange-700",
-    borderColor: "border-orange-200",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-700",
+    borderColor: "border-amber-200",
+    dotColor: "bg-amber-500",
   },
   not_assessed: {
     label: "Not Assessed",
     bgColor: "bg-gray-50",
     textColor: "text-gray-600",
     borderColor: "border-gray-200",
+    dotColor: "bg-gray-400",
   },
 };
 
 export function ConditionMatrix({ data, isLoading }: ConditionMatrixProps) {
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <Card className="stats-card-teal p-6">
+        <div className="loading-container h-64">
+          <Loader2 className="loading-spinner" />
+          <p className="loading-text">Loading condition data...</p>
         </div>
       </Card>
     );
@@ -55,34 +60,47 @@ export function ConditionMatrix({ data, isLoading }: ConditionMatrixProps) {
 
   if (!data || data.systems.length === 0) {
     return (
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Condition Matrix</h3>
-        <div className="flex items-center justify-center h-64 bg-muted/20 rounded-lg border-2 border-dashed">
-          <p className="text-muted-foreground">No assessment data available. Complete component assessments to see condition summary.</p>
+      <Card className="stats-card-teal p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-3">
+          <div className="stats-icon-teal">
+            <Grid3X3 className="w-5 h-5" />
+          </div>
+          Condition Matrix
+        </h3>
+        <div className="empty-state-container h-64 bg-muted/10 rounded-xl border-2 border-dashed">
+          <div className="empty-state-icon">
+            <Grid3X3 className="h-10 w-10 text-primary" />
+          </div>
+          <p className="text-muted-foreground text-center max-w-md">No assessment data available. Complete component assessments to see condition summary.</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-6">Building Systems Condition Matrix</h3>
+    <Card className="stats-card-teal p-6">
+      <h3 className="text-lg font-semibold mb-6 flex items-center gap-3">
+        <div className="stats-icon-teal">
+          <Grid3X3 className="w-5 h-5" />
+        </div>
+        Building Systems Condition Matrix
+      </h3>
       
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b">
-              <th className="py-3 px-4 font-semibold text-left">System</th>
-              <th className="py-3 px-4 font-semibold text-center">Condition</th>
-              <th className="py-3 px-4 font-semibold text-right">Components</th>
-              <th className="py-3 px-4 font-semibold text-right">Est. Repair Cost</th>
+            <tr className="data-table-header">
+              <th className="py-3 px-4 text-left rounded-tl-lg">System</th>
+              <th className="py-3 px-4 text-center">Condition</th>
+              <th className="py-3 px-4 text-right">Components</th>
+              <th className="py-3 px-4 text-right rounded-tr-lg">Est. Repair Cost</th>
             </tr>
           </thead>
           <tbody>
             {data.systems.map((system) => {
               const config = conditionConfig[system.condition];
               return (
-                <tr key={system.code} className="border-b hover:bg-muted/20 transition-colors">
+                <tr key={system.code} className="data-table-row">
                   <td className="py-3 px-4 font-medium">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-muted-foreground">{system.code}</span>
@@ -111,12 +129,12 @@ export function ConditionMatrix({ data, isLoading }: ConditionMatrixProps) {
               );
             })}
             {/* Summary Row */}
-            <tr className="font-bold bg-muted/50">
-              <td className="py-3 px-4" colSpan={2}>Total</td>
-              <td className="py-3 px-4 text-right">
+            <tr className="font-bold bg-primary/5">
+              <td className="py-4 px-4 rounded-bl-lg" colSpan={2}>Total</td>
+              <td className="py-4 px-4 text-right">
                 {data.systems.reduce((sum, s) => sum + s.componentCount, 0)}
               </td>
-              <td className="py-3 px-4 text-right text-primary">
+              <td className="py-4 px-4 text-right text-primary rounded-br-lg">
                 ${data.systems.reduce((sum, s) => sum + s.estimatedCost, 0).toLocaleString()}
               </td>
             </tr>
@@ -133,9 +151,8 @@ export function ConditionMatrix({ data, isLoading }: ConditionMatrixProps) {
           <div key={key} className="flex items-center gap-2">
             <span
               className={cn(
-                "inline-block w-3 h-3 rounded-full border",
-                config.bgColor,
-                config.borderColor
+                "inline-block w-3 h-3 rounded-full",
+                config.dotColor
               )}
             />
             <span className="text-muted-foreground">{config.label}</span>

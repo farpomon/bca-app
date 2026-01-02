@@ -835,3 +835,398 @@
     box-shadow: var(--shadow-lg);
   }
 }
+
+
+/* ============================================
+   HIGH-IMPACT UI OPTIMIZATIONS
+   ============================================ */
+
+/* Enhanced Stats Cards with Color Differentiation */
+.stats-card-blue {
+  @apply relative bg-card rounded-xl p-6 border border-border overflow-hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-card-blue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, oklch(0.59 0.20 255), oklch(0.55 0.22 270));
+}
+
+.stats-card-blue:hover {
+  box-shadow: var(--shadow-lg), var(--shadow-glow-blue);
+  transform: translateY(-4px);
+}
+
+.stats-card-teal {
+  @apply relative bg-card rounded-xl p-6 border border-border overflow-hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-card-teal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, oklch(0.65 0.14 175), oklch(0.68 0.15 195));
+}
+
+.stats-card-teal:hover {
+  box-shadow: var(--shadow-lg), var(--shadow-glow-teal);
+  transform: translateY(-4px);
+}
+
+.stats-card-amber {
+  @apply relative bg-card rounded-xl p-6 border border-border overflow-hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-card-amber::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, oklch(0.75 0.18 70), oklch(0.70 0.20 55));
+}
+
+.stats-card-amber:hover {
+  box-shadow: var(--shadow-lg), var(--shadow-glow-amber);
+  transform: translateY(-4px);
+}
+
+.stats-card-purple {
+  @apply relative bg-card rounded-xl p-6 border border-border overflow-hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-card-purple::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, oklch(0.55 0.22 290), oklch(0.50 0.24 300));
+}
+
+.stats-card-purple:hover {
+  box-shadow: var(--shadow-lg), 0 0 20px -5px oklch(0.55 0.22 290 / 0.4);
+  transform: translateY(-4px);
+}
+
+/* Stats Card Icon Backgrounds */
+.stats-icon-blue {
+  @apply p-3 rounded-xl;
+  background: linear-gradient(135deg, oklch(0.59 0.20 255 / 0.15), oklch(0.55 0.22 270 / 0.1));
+  color: oklch(0.59 0.20 255);
+}
+
+.stats-icon-teal {
+  @apply p-3 rounded-xl;
+  background: linear-gradient(135deg, oklch(0.65 0.14 175 / 0.15), oklch(0.68 0.15 195 / 0.1));
+  color: oklch(0.65 0.14 175);
+}
+
+.stats-icon-amber {
+  @apply p-3 rounded-xl;
+  background: linear-gradient(135deg, oklch(0.75 0.18 70 / 0.15), oklch(0.70 0.20 55 / 0.1));
+  color: oklch(0.70 0.18 70);
+}
+
+.stats-icon-purple {
+  @apply p-3 rounded-xl;
+  background: linear-gradient(135deg, oklch(0.55 0.22 290 / 0.15), oklch(0.50 0.24 300 / 0.1));
+  color: oklch(0.55 0.22 290);
+}
+
+/* Enhanced Stats Value Typography */
+.stats-value {
+  @apply text-3xl font-bold tracking-tight;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.stats-value-lg {
+  @apply text-4xl font-bold tracking-tight;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.stats-label {
+  @apply text-sm font-medium text-muted-foreground uppercase tracking-wider;
+}
+
+.stats-sublabel {
+  @apply text-xs text-muted-foreground mt-1;
+}
+
+/* Enhanced Status Badges */
+.status-badge-draft {
+  @apply px-3 py-1.5 rounded-full text-xs font-semibold;
+  background: oklch(0.75 0.18 70 / 0.15);
+  color: oklch(0.60 0.18 70);
+  border: 1px solid oklch(0.75 0.18 70 / 0.3);
+}
+
+.status-badge-in-progress {
+  @apply px-3 py-1.5 rounded-full text-xs font-semibold;
+  background: oklch(0.59 0.20 255 / 0.15);
+  color: oklch(0.50 0.20 255);
+  border: 1px solid oklch(0.59 0.20 255 / 0.3);
+}
+
+.status-badge-completed {
+  @apply px-3 py-1.5 rounded-full text-xs font-semibold;
+  background: oklch(0.65 0.14 175 / 0.15);
+  color: oklch(0.50 0.14 175);
+  border: 1px solid oklch(0.65 0.14 175 / 0.3);
+}
+
+.status-badge-archived {
+  @apply px-3 py-1.5 rounded-full text-xs font-semibold;
+  background: oklch(0.50 0.01 260 / 0.15);
+  color: oklch(0.45 0.01 260);
+  border: 1px solid oklch(0.50 0.01 260 / 0.3);
+}
+
+/* Enhanced Project Cards */
+.project-card-enhanced {
+  @apply bg-card rounded-xl border border-border overflow-hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project-card-enhanced:hover {
+  box-shadow: var(--shadow-xl), var(--shadow-glow-blue);
+  transform: translateY(-6px);
+  border-color: oklch(0.59 0.20 255 / 0.4);
+}
+
+.project-card-enhanced .card-header {
+  @apply p-6 pb-4;
+}
+
+.project-card-enhanced .card-content {
+  @apply px-6 pb-6 pt-0;
+}
+
+.project-card-enhanced .project-title {
+  @apply text-lg font-semibold tracking-tight;
+  transition: color 0.2s ease;
+}
+
+.project-card-enhanced:hover .project-title {
+  color: oklch(0.59 0.20 255);
+}
+
+.project-card-enhanced .project-meta {
+  @apply text-sm text-muted-foreground;
+}
+
+.project-card-enhanced .project-icon-wrapper {
+  @apply p-3 rounded-xl;
+  background: linear-gradient(135deg, oklch(0.59 0.20 255 / 0.1), oklch(0.55 0.22 270 / 0.05));
+}
+
+/* Primary Action Button - Gradient with Glow */
+.btn-gradient {
+  @apply font-semibold rounded-xl px-6 py-3 text-white;
+  background: linear-gradient(135deg, oklch(0.59 0.20 255), oklch(0.55 0.22 270));
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-gradient:hover {
+  box-shadow: var(--shadow-lg), var(--shadow-glow-blue);
+  transform: translateY(-2px);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Secondary Action Button */
+.btn-outline-enhanced {
+  @apply font-semibold rounded-xl px-5 py-2.5 border-2 border-border bg-transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-outline-enhanced:hover {
+  border-color: oklch(0.59 0.20 255);
+  background: oklch(0.59 0.20 255 / 0.05);
+  box-shadow: var(--shadow-md);
+}
+
+/* Empty State Enhancement */
+.empty-state-container {
+  @apply flex flex-col items-center justify-center py-16 px-8;
+}
+
+.empty-state-icon {
+  @apply p-6 rounded-2xl mb-6;
+  background: linear-gradient(135deg, oklch(0.59 0.20 255 / 0.1), oklch(0.55 0.22 270 / 0.05));
+}
+
+.empty-state-title {
+  @apply text-2xl font-bold mb-3 text-center;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.empty-state-description {
+  @apply text-muted-foreground text-center mb-8 max-w-md;
+}
+
+/* Loading State Enhancement */
+.loading-container {
+  @apply flex flex-col items-center justify-center py-16;
+}
+
+.loading-spinner {
+  @apply h-10 w-10 text-primary animate-spin;
+}
+
+.loading-text {
+  @apply mt-4 text-sm text-muted-foreground;
+}
+
+/* Filter Badge */
+.filter-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium;
+  background: oklch(0.59 0.20 255 / 0.1);
+  color: oklch(0.50 0.20 255);
+  border: 1px solid oklch(0.59 0.20 255 / 0.2);
+}
+
+.filter-badge-active {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white;
+  background: linear-gradient(135deg, oklch(0.59 0.20 255), oklch(0.55 0.22 270));
+}
+
+/* Micro-interaction: Card Selection */
+.card-selectable {
+  @apply relative;
+  transition: all 0.2s ease;
+}
+
+.card-selectable.selected {
+  border-color: oklch(0.59 0.20 255);
+  box-shadow: 0 0 0 2px oklch(0.59 0.20 255 / 0.2), var(--shadow-md);
+}
+
+/* Condition Rating Badges */
+.condition-good {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.65 0.14 175 / 0.15);
+  color: oklch(0.50 0.14 175);
+}
+
+.condition-fair {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.59 0.20 255 / 0.15);
+  color: oklch(0.50 0.20 255);
+}
+
+.condition-poor {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.75 0.18 70 / 0.15);
+  color: oklch(0.60 0.18 70);
+}
+
+.condition-critical {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.55 0.22 25 / 0.15);
+  color: oklch(0.50 0.22 25);
+}
+
+/* Priority Badges */
+.priority-immediate {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.55 0.22 25 / 0.15);
+  color: oklch(0.50 0.22 25);
+  border: 1px solid oklch(0.55 0.22 25 / 0.3);
+}
+
+.priority-short-term {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.75 0.18 70 / 0.15);
+  color: oklch(0.60 0.18 70);
+  border: 1px solid oklch(0.75 0.18 70 / 0.3);
+}
+
+.priority-medium-term {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.59 0.20 255 / 0.15);
+  color: oklch(0.50 0.20 255);
+  border: 1px solid oklch(0.59 0.20 255 / 0.3);
+}
+
+.priority-long-term {
+  @apply px-2.5 py-1 rounded-md text-xs font-semibold;
+  background: oklch(0.65 0.14 175 / 0.15);
+  color: oklch(0.50 0.14 175);
+  border: 1px solid oklch(0.65 0.14 175 / 0.3);
+}
+
+/* Data Table Enhancements */
+.data-table-header {
+  @apply bg-muted/50 text-muted-foreground font-semibold text-sm uppercase tracking-wider;
+}
+
+.data-table-row {
+  @apply border-b border-border;
+  transition: all 0.2s ease;
+}
+
+.data-table-row:hover {
+  background: oklch(0.59 0.20 255 / 0.03);
+}
+
+/* Info Card with Icon */
+.info-card {
+  @apply flex items-start gap-4 p-4 rounded-xl border border-border bg-card;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card-icon {
+  @apply p-2 rounded-lg shrink-0;
+  background: linear-gradient(135deg, oklch(0.59 0.20 255 / 0.1), oklch(0.55 0.22 270 / 0.05));
+}
+
+/* Tooltip Enhancement */
+.tooltip-enhanced {
+  @apply px-3 py-2 rounded-lg text-sm;
+  background: oklch(0.20 0.02 260);
+  color: oklch(0.95 0.01 250);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Progress Indicator */
+.progress-bar-container {
+  @apply h-2 rounded-full overflow-hidden;
+  background: oklch(0.96 0.01 250);
+}
+
+.progress-bar-fill {
+  @apply h-full rounded-full;
+  background: linear-gradient(90deg, oklch(0.65 0.14 175), oklch(0.59 0.20 255));
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-bar-fill-warning {
+  background: linear-gradient(90deg, oklch(0.75 0.18 70), oklch(0.70 0.20 55));
+}
+
+.progress-bar-fill-danger {
+  background: linear-gradient(90deg, oklch(0.55 0.22 25), oklch(0.50 0.24 20));
+}

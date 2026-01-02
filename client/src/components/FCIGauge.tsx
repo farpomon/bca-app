@@ -16,33 +16,37 @@ interface FCIGaugeProps {
 const fciConfig = {
   good: {
     label: "Good",
-    color: "bg-green-500",
-    textColor: "text-green-700",
-    bgColor: "bg-green-100",
+    color: "gradient-teal",
+    textColor: "text-teal-700",
+    bgColor: "bg-teal-50",
+    borderColor: "border-teal-200",
     range: "0-5%",
     description: "Facility is in excellent condition with minimal deferred maintenance",
   },
   fair: {
     label: "Fair",
-    color: "bg-yellow-500",
-    textColor: "text-yellow-700",
-    bgColor: "bg-yellow-100",
+    color: "gradient-blue",
+    textColor: "text-blue-700",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
     range: "5-10%",
     description: "Facility requires some attention but is generally well-maintained",
   },
   poor: {
     label: "Poor",
-    color: "bg-orange-500",
-    textColor: "text-orange-700",
-    bgColor: "bg-orange-100",
+    color: "gradient-amber",
+    textColor: "text-amber-700",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
     range: "10-30%",
     description: "Facility has significant deferred maintenance requiring attention",
   },
   critical: {
     label: "Critical",
-    color: "bg-red-600",
+    color: "bg-gradient-to-r from-red-500 to-red-600",
     textColor: "text-red-700",
-    bgColor: "bg-red-100",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
     range: ">30%",
     description: "Facility requires immediate major investment to address critical issues",
   },
@@ -51,9 +55,10 @@ const fciConfig = {
 export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <Card className="stats-card-blue p-6">
+        <div className="loading-container h-64">
+          <Loader2 className="loading-spinner" />
+          <p className="loading-text">Calculating FCI...</p>
         </div>
       </Card>
     );
@@ -61,13 +66,18 @@ export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
 
   if (!data) {
     return (
-      <Card className="p-6">
+      <Card className="stats-card-blue p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Calculator className="w-5 h-5 text-muted-foreground" />
+          <div className="stats-icon-blue">
+            <Calculator className="w-5 h-5" />
+          </div>
           FCI Analysis
         </h3>
-        <div className="flex items-center justify-center h-64 bg-muted/20 rounded-lg border-2 border-dashed">
-          <p className="text-muted-foreground">Add repair costs and replacement values to calculate FCI</p>
+        <div className="empty-state-container h-64 bg-muted/10 rounded-xl border-2 border-dashed">
+          <div className="empty-state-icon">
+            <Calculator className="h-10 w-10 text-primary" />
+          </div>
+          <p className="text-muted-foreground text-center">Add repair costs and replacement values to calculate FCI</p>
         </div>
       </Card>
     );
@@ -87,9 +97,11 @@ export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
   }, [gaugeRotation]);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-        <Calculator className="w-5 h-5 text-muted-foreground" />
+    <Card className="stats-card-blue p-6">
+      <h3 className="text-lg font-semibold mb-6 flex items-center gap-3">
+        <div className="stats-icon-blue">
+          <Calculator className="w-5 h-5" />
+        </div>
         Facility Condition Index (FCI)
       </h3>
 
@@ -123,9 +135,10 @@ export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
         <div className="mt-6 text-center">
           <span
             className={cn(
-              "px-4 py-2 rounded-full font-bold text-sm",
+              "px-5 py-2.5 rounded-full font-bold text-sm border",
               config.bgColor,
-              config.textColor
+              config.textColor,
+              config.borderColor
             )}
           >
             {config.label}
@@ -164,14 +177,14 @@ export function FCIGauge({ data, isLoading }: FCIGaugeProps) {
       </div>
 
       {/* Cost Summary */}
-      <div className="mt-6 pt-4 border-t grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-xs text-muted-foreground mb-1">Total Replacement Value</p>
-          <p className="text-lg font-bold">${data.totalReplacementValue.toLocaleString()}</p>
+      <div className="mt-6 pt-4 border-t grid grid-cols-2 gap-6">
+        <div className="p-4 rounded-xl bg-muted/30">
+          <p className="stats-label mb-2">Total Replacement Value</p>
+          <p className="stats-value text-foreground">${data.totalReplacementValue.toLocaleString()}</p>
         </div>
-        <div>
-          <p className="text-xs text-muted-foreground mb-1">Current Repair Needs</p>
-          <p className="text-lg font-bold text-destructive">${data.totalRepairCost.toLocaleString()}</p>
+        <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+          <p className="stats-label mb-2">Current Repair Needs</p>
+          <p className="stats-value text-destructive">${data.totalRepairCost.toLocaleString()}</p>
         </div>
       </div>
     </Card>

@@ -551,15 +551,15 @@ export default function Projects() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-500";
+        return "status-badge-completed";
       case "in_progress":
-        return "bg-blue-500";
+        return "status-badge-in-progress";
       case "draft":
-        return "bg-gray-500";
+        return "status-badge-draft";
       case "archived":
-        return "bg-yellow-500";
+        return "status-badge-archived";
       default:
-        return "bg-gray-500";
+        return "status-badge-draft";
     }
   };
 
@@ -1087,18 +1087,19 @@ export default function Projects() {
 
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="loading-container">
+            <Loader2 className="loading-spinner" />
+            <p className="loading-text">Loading projects...</p>
           </div>
         ) : filteredAndSortedProjects && filteredAndSortedProjects.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredAndSortedProjects.map((project) => (
               <Card
                 key={project.id}
-                className="professional-card hover-lift cursor-pointer group"
+                className="project-card-enhanced cursor-pointer group"
                 onClick={() => setLocation(`/projects/${project.id}/assets`)}
               >
-                <CardHeader className="p-6">
+                <CardHeader className="card-header">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <input
@@ -1111,14 +1112,14 @@ export default function Projects() {
                         onClick={(e) => e.stopPropagation()}
                         className="rounded"
                       />
-                      <div className="p-2.5 rounded-lg bg-primary/10">
+                      <div className="project-icon-wrapper">
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(project.status)}>
+                      <span className={getStatusColor(project.status)}>
                         {getStatusLabel(project.status)}
-                      </Badge>
+                      </span>
                       <ProjectDocumentBadge projectId={project.id} />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -1247,12 +1248,12 @@ export default function Projects() {
                       </DropdownMenu>
                     </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors mb-1">{project.name}</CardTitle>
+                  <CardTitle className="project-title mb-1">{project.name}</CardTitle>
                   {project.clientName && (
                     <p className="text-sm text-muted-foreground">Client: {project.clientName}</p>
                   )}
                 </CardHeader>
-                <CardContent className="px-6 pb-6 pt-0">
+                <CardContent className="card-content">
                   <div className="space-y-2.5 text-sm text-muted-foreground">
                     {project.address && (
                       <div className="flex items-center gap-2">
@@ -1274,15 +1275,15 @@ export default function Projects() {
           </div>
         ) : projects && projects.length > 0 ? (
           <Card className="border-dashed border-2">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="p-4 rounded-full bg-muted mb-4">
+            <CardContent className="empty-state-container">
+              <div className="empty-state-icon">
                 <Filter className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No projects match your filters</h3>
-              <p className="text-muted-foreground text-center mb-6 max-w-md">
+              <h3 className="empty-state-title">No projects match your filters</h3>
+              <p className="empty-state-description">
                 Try adjusting your search query or filter criteria to find what you're looking for
               </p>
-              <Button onClick={clearFilters} variant="outline">
+              <Button onClick={clearFilters} className="btn-outline-enhanced">
                 <X className="mr-2 h-4 w-4" />
                 Clear All Filters
               </Button>
@@ -1290,15 +1291,15 @@ export default function Projects() {
           </Card>
         ) : (
           <Card className="border-dashed border-2">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="p-4 rounded-full bg-primary/10 mb-4">
+            <CardContent className="empty-state-container">
+              <div className="empty-state-icon">
                 <Building2 className="h-12 w-12 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
-              <p className="text-muted-foreground text-center mb-6 max-w-md">
+              <h3 className="empty-state-title">No projects yet</h3>
+              <p className="empty-state-description">
                 Get started by creating your first building condition assessment project and begin tracking facility conditions
               </p>
-              <Button onClick={() => setDialogOpen(true)} className="btn-gradient shadow-md hover:shadow-lg">
+              <Button onClick={() => setDialogOpen(true)} className="btn-gradient">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Your First Project
               </Button>

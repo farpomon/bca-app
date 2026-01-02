@@ -119,13 +119,13 @@ export default function AssetsList() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="default">Active</Badge>;
+        return <span className="status-badge-completed">Active</span>;
       case "inactive":
-        return <Badge variant="secondary">Inactive</Badge>;
+        return <span className="status-badge-draft">Inactive</span>;
       case "demolished":
-        return <Badge variant="destructive">Demolished</Badge>;
+        return <span className="status-badge-archived">Demolished</span>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <span className="status-badge-draft">{status}</span>;
     }
   };
 
@@ -172,15 +172,16 @@ export default function AssetsList() {
 
         {/* Assets Grid */}
         {assetsLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="loading-container">
+            <Loader2 className="loading-spinner" />
+            <p className="loading-text">Loading assets...</p>
           </div>
         ) : filteredAssets && filteredAssets.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredAssets.map((asset) => (
               <Card 
                 key={asset.id} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="project-card-enhanced cursor-pointer group"
                 onClick={() => setLocation(`/projects/${projectId}/assets/${asset.id}`)}
               >
                 <CardHeader>
@@ -268,19 +269,21 @@ export default function AssetsList() {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+          <Card className="border-dashed border-2">
+            <CardContent className="empty-state-container">
+              <div className="empty-state-icon">
+                <Building2 className="h-12 w-12 text-primary" />
+              </div>
               {searchQuery ? (
                 <>
-                  <h3 className="text-lg font-semibold mb-2">No assets found</h3>
-                  <p className="text-muted-foreground mb-4">Try adjusting your search query</p>
+                  <h3 className="empty-state-title">No assets found</h3>
+                  <p className="empty-state-description">Try adjusting your search query</p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-semibold mb-2">No assets yet</h3>
-                  <p className="text-muted-foreground mb-4">Get started by adding your first asset</p>
-                  <Button onClick={() => setAssetDialogOpen(true)}>
+                  <h3 className="empty-state-title">No assets yet</h3>
+                  <p className="empty-state-description">Get started by adding your first asset to this project</p>
+                  <Button onClick={() => setAssetDialogOpen(true)} className="btn-gradient">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Asset
                   </Button>

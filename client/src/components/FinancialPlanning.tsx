@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, DollarSign } from "lucide-react";
 
 interface FinancialPlanningProps {
   data: {
@@ -23,9 +23,10 @@ interface FinancialPlanningProps {
 export function FinancialPlanning({ data, isLoading }: FinancialPlanningProps) {
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <Card className="stats-card-amber p-6">
+        <div className="loading-container h-64">
+          <Loader2 className="loading-spinner" />
+          <p className="loading-text">Loading financial data...</p>
         </div>
       </Card>
     );
@@ -33,10 +34,18 @@ export function FinancialPlanning({ data, isLoading }: FinancialPlanningProps) {
 
   if (!data || data.groups.length === 0) {
     return (
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Financial Planning</h3>
-        <div className="flex items-center justify-center h-64 bg-muted/20 rounded-lg border-2 border-dashed">
-          <p className="text-muted-foreground">No cost data available. Add action years and costs to assessments.</p>
+      <Card className="stats-card-amber p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-3">
+          <div className="stats-icon-amber">
+            <DollarSign className="w-5 h-5" />
+          </div>
+          Financial Planning
+        </h3>
+        <div className="empty-state-container h-64 bg-muted/10 rounded-xl border-2 border-dashed">
+          <div className="empty-state-icon">
+            <DollarSign className="h-10 w-10 text-primary" />
+          </div>
+          <p className="text-muted-foreground text-center max-w-md">No cost data available. Add action years and costs to assessments.</p>
         </div>
       </Card>
     );
@@ -57,8 +66,13 @@ export function FinancialPlanning({ data, isLoading }: FinancialPlanningProps) {
   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-6">Expenditure Forecast by Building System</h3>
+    <Card className="stats-card-amber p-6">
+      <h3 className="text-lg font-semibold mb-6 flex items-center gap-3">
+        <div className="stats-icon-amber">
+          <DollarSign className="w-5 h-5" />
+        </div>
+        Expenditure Forecast by Building System
+      </h3>
       
       {/* Bar Chart */}
       <div className="mb-8 h-[300px]">
@@ -112,45 +126,45 @@ export function FinancialPlanning({ data, isLoading }: FinancialPlanningProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b">
-              <th className="py-3 px-4 font-semibold text-left">System / Group</th>
+            <tr className="data-table-header">
+              <th className="py-3 px-4 text-left rounded-tl-lg">System / Group</th>
               {data.periods.map((period) => (
-                <th key={period.label} className="py-3 px-4 font-semibold text-right">
+                <th key={period.label} className="py-3 px-4 text-right">
                   {period.label}
                 </th>
               ))}
-              <th className="py-3 px-4 font-semibold text-right bg-muted/50">Total</th>
+              <th className="py-3 px-4 text-right bg-amber-50 rounded-tr-lg">Total</th>
             </tr>
           </thead>
           <tbody>
             {data.groups.map((group) => (
-              <tr key={group.code} className="border-b hover:bg-muted/20 transition-colors">
+              <tr key={group.code} className="data-table-row">
                 <td className="py-3 px-4 font-medium">{group.name}</td>
                 {group.periods.map((cost, idx) => (
                   <td key={idx} className="py-3 px-4 text-right text-muted-foreground">
                     {cost > 0 ? `$${cost.toLocaleString()}` : '-'}
                   </td>
                 ))}
-                <td className="py-3 px-4 text-right font-bold bg-muted/50">
+                <td className="py-3 px-4 text-right font-bold bg-amber-50/50">
                   ${group.total.toLocaleString()}
                 </td>
               </tr>
             ))}
             {/* Totals Row */}
-            <tr className="font-bold bg-muted/50">
-              <td className="py-3 px-4">Total</td>
+            <tr className="font-bold bg-primary/5">
+              <td className="py-4 px-4 rounded-bl-lg">Total</td>
               {data.periods.map((_, periodIndex) => {
                 const periodTotal = data.groups.reduce(
                   (sum, group) => sum + group.periods[periodIndex],
                   0
                 );
                 return (
-                  <td key={periodIndex} className="py-3 px-4 text-right">
+                  <td key={periodIndex} className="py-4 px-4 text-right">
                     ${periodTotal.toLocaleString()}
                   </td>
                 );
               })}
-              <td className="py-3 px-4 text-right text-primary">
+              <td className="py-4 px-4 text-right text-primary rounded-br-lg">
                 ${data.grandTotal.toLocaleString()}
               </td>
             </tr>
