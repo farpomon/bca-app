@@ -2977,3 +2977,30 @@ Testing:
 - [x] Integrate ChunkedUploader into AI Document Import dialog for large BCA documents
 - [x] Add memory alerts to admin dashboard with real-time monitoring
 - [x] Wire SSE progress to bulk PDF export feature
+
+## 🌱 LEED v5 ESG Best Practices Integration
+
+### GHG Emissions Tracking
+- [x] Add GHG emissions data model (Scope 1, 2, 3)
+- [x] Implement GHG emissions calculation based on LEED v5 methodology
+- [x] Add GHG reduction targets and tracking
+- [x] Create GHG emissions dashboard visualization
+
+### Grid Carbon Intensity
+- [x] Add grid carbon intensity data by region/province
+- [x] Implement time-of-use carbon intensity tracking
+- [x] Calculate carbon impact based on electricity consumption timing
+- [x] Add grid decarbonization projections
+
+### Embodied Carbon
+- [x] Add embodied carbon tracking for building materials
+- [x] Implement whole-building life cycle assessment (LCA) support
+- [x] Add material carbon footprint database
+- [x] Calculate embodied carbon per square meter metrics
+
+### LEED v5 Compliance Features
+- [x] Add LEED v5 credit tracking system
+- [x] Implement prerequisite compliance checking
+- [x] Add certification level calculator (Certified, Silver, Gold, Platinum)
+- [x] Create LEED v5 compliance report generation
+

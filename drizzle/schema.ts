@@ -2678,3 +2678,351 @@ export type BulkServiceLifeUpdate = typeof bulkServiceLifeUpdates.$inferSelect;
 export type InsertBulkServiceLifeUpdate = typeof bulkServiceLifeUpdates.$inferInsert;
 export type BulkUpdateAffectedItem = typeof bulkUpdateAffectedItems.$inferSelect;
 export type InsertBulkUpdateAffectedItem = typeof bulkUpdateAffectedItems.$inferInsert;
+
+// ============================================
+// LEED v5 ESG Enhancement Tables
+// ============================================
+
+/**
+ * Grid Carbon Intensity - Province/region-specific emission factors
+ * Based on Canadian electricity grid data
+ */
+export const gridCarbonIntensity = mysqlTable("grid_carbon_intensity", {
+	id: int().autoincrement().notNull().primaryKey(),
+	region: varchar({ length: 100 }).notNull(), // Province or grid region
+	country: varchar({ length: 100 }).default('Canada').notNull(),
+	year: int().notNull(),
+	// Average emission factors (g CO2e/kWh)
+	avgEmissionFactor: decimal({ precision: 10, scale: 4 }).notNull(),
+	marginalEmissionFactor: decimal({ precision: 10, scale: 4 }), // For time-of-use calculations
+	// Time-of-use factors (optional)
+	peakEmissionFactor: decimal({ precision: 10, scale: 4 }),
+	offPeakEmissionFactor: decimal({ precision: 10, scale: 4 }),
+	// Grid composition percentages
+	renewablePercent: decimal({ precision: 5, scale: 2 }),
+	nuclearPercent: decimal({ precision: 5, scale: 2 }),
+	naturalGasPercent: decimal({ precision: 5, scale: 2 }),
+	coalPercent: decimal({ precision: 5, scale: 2 }),
+	hydroPercent: decimal({ precision: 5, scale: 2 }),
+	windPercent: decimal({ precision: 5, scale: 2 }),
+	solarPercent: decimal({ precision: 5, scale: 2 }),
+	otherPercent: decimal({ precision: 5, scale: 2 }),
+	// Future projections
+	projectedEmissionFactor2030: decimal({ precision: 10, scale: 4 }),
+	projectedEmissionFactor2040: decimal({ precision: 10, scale: 4 }),
+	projectedEmissionFactor2050: decimal({ precision: 10, scale: 4 }),
+	dataSource: varchar({ length: 255 }),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_grid_region_year").on(table.region, table.year),
+	index("idx_grid_country").on(table.country),
+]);
+
+/**
+ * Embodied Carbon Materials - Material-level GWP tracking for WBLCA
+ */
+export const embodiedCarbonMaterials = mysqlTable("embodied_carbon_materials", {
+	id: int().autoincrement().notNull().primaryKey(),
+	materialCategory: varchar({ length: 100 }).notNull(), // concrete, steel, wood, insulation, etc.
+	materialName: varchar({ length: 255 }).notNull(),
+	materialDescription: text(),
+	// GWP values (kg CO2e per unit)
+	gwpPerUnit: decimal({ precision: 15, scale: 4 }).notNull(),
+	unit: varchar({ length: 50 }).notNull(), // kg, m3, m2, etc.
+	// LCA module coverage
+	lcaModulesIncluded: varchar({ length: 50 }).default('A1-A3'), // A1-A3, A1-A5, A-C, etc.
+	// EPD information
+	epdNumber: varchar({ length: 100 }),
+	epdSource: varchar({ length: 255 }),
+	epdExpiryDate: timestamp({ mode: 'string' }),
+	// Industry benchmarks
+	industryAvgGwp: decimal({ precision: 15, scale: 4 }),
+	industryBestGwp: decimal({ precision: 15, scale: 4 }),
+	// Regional factors
+	region: varchar({ length: 100 }),
+	transportDistance: decimal({ precision: 10, scale: 2 }), // km
+	// Biogenic carbon (for wood products)
+	biogenicCarbon: decimal({ precision: 15, scale: 4 }),
+	dataSource: varchar({ length: 255 }),
+	validFrom: timestamp({ mode: 'string' }),
+	validTo: timestamp({ mode: 'string' }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_material_category").on(table.materialCategory),
+	index("idx_material_name").on(table.materialName),
+]);
+
+/**
+ * Project Embodied Carbon - Whole-building embodied carbon tracking
+ */
+export const projectEmbodiedCarbon = mysqlTable("project_embodied_carbon", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	assetId: int(), // Optional - if null, applies to entire project
+	assessmentDate: timestamp({ mode: 'string' }).notNull(),
+	assessmentType: mysqlEnum(['baseline', 'design', 'as_built', 'renovation']).default('design').notNull(),
+	// Total GWP by LCA module (kg CO2e)
+	gwpModuleA1A3: decimal({ precision: 15, scale: 2 }), // Product stage
+	gwpModuleA4: decimal({ precision: 15, scale: 2 }), // Transport to site
+	gwpModuleA5: decimal({ precision: 15, scale: 2 }), // Construction
+	gwpModuleB1B5: decimal({ precision: 15, scale: 2 }), // Use stage (maintenance, repair, replacement)
+	gwpModuleC1C4: decimal({ precision: 15, scale: 2 }), // End of life
+	gwpModuleD: decimal({ precision: 15, scale: 2 }), // Beyond system boundary (recycling benefits)
+	gwpTotal: decimal({ precision: 15, scale: 2 }).notNull(), // Total A-C
+	// Intensity metrics
+	gwpPerSqm: decimal({ precision: 10, scale: 4 }), // kg CO2e per m²
+	gwpPerSqft: decimal({ precision: 10, scale: 4 }), // kg CO2e per sq ft
+	// Breakdown by material category (JSON)
+	materialBreakdown: json(), // { concrete: 45000, steel: 12000, ... }
+	// Comparison to baseline
+	baselineGwp: decimal({ precision: 15, scale: 2 }),
+	reductionPercent: decimal({ precision: 5, scale: 2 }),
+	// LEED v5 points calculation
+	leedPointsEarned: int(),
+	leedPathway: mysqlEnum(['wblca', 'epd_project_avg', 'epd_materials', 'construction_tracking']),
+	// Other impact categories (WBLCA)
+	ozoneDepletion: decimal({ precision: 15, scale: 6 }), // kg CFC-11e
+	acidification: decimal({ precision: 15, scale: 4 }), // kg SO2e
+	eutrophication: decimal({ precision: 15, scale: 4 }), // kg N eq
+	smogFormation: decimal({ precision: 15, scale: 4 }), // kg O3e
+	nonRenewableEnergy: decimal({ precision: 15, scale: 2 }), // MJ
+	// Metadata
+	lcaSoftware: varchar({ length: 100 }),
+	lcaMethodology: varchar({ length: 255 }),
+	dataQualityScore: decimal({ precision: 3, scale: 2 }), // 1-5 scale
+	notes: text(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_embodied_project").on(table.projectId),
+	index("idx_embodied_asset").on(table.assetId),
+	index("idx_embodied_date").on(table.assessmentDate),
+]);
+
+/**
+ * Project Material Quantities - Detailed material tracking for embodied carbon
+ */
+export const projectMaterialQuantities = mysqlTable("project_material_quantities", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	assetId: int(),
+	embodiedCarbonId: int(), // Link to project_embodied_carbon assessment
+	materialId: int(), // Link to embodied_carbon_materials
+	// Material details
+	materialCategory: varchar({ length: 100 }).notNull(),
+	materialName: varchar({ length: 255 }).notNull(),
+	quantity: decimal({ precision: 15, scale: 4 }).notNull(),
+	unit: varchar({ length: 50 }).notNull(),
+	// GWP calculation
+	gwpPerUnit: decimal({ precision: 15, scale: 4 }).notNull(),
+	totalGwp: decimal({ precision: 15, scale: 2 }).notNull(),
+	// EPD reference
+	epdNumber: varchar({ length: 100 }),
+	isProductSpecificEpd: tinyint().default(0),
+	// Building element (UNIFORMAT)
+	uniformatCode: varchar({ length: 20 }),
+	uniformatDescription: varchar({ length: 255 }),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_material_qty_project").on(table.projectId),
+	index("idx_material_qty_embodied").on(table.embodiedCarbonId),
+	index("idx_material_qty_category").on(table.materialCategory),
+]);
+
+/**
+ * LEED v5 Credits - Credit tracking and compliance
+ */
+export const leedCredits = mysqlTable("leed_credits", {
+	id: int().autoincrement().notNull().primaryKey(),
+	creditCode: varchar({ length: 20 }).notNull(), // EAp1, EAc1, MRc2, etc.
+	creditName: varchar({ length: 255 }).notNull(),
+	category: mysqlEnum(['IP', 'LT', 'SS', 'WE', 'EA', 'MR', 'EQ', 'IN', 'RP']).notNull(),
+	creditType: mysqlEnum(['prerequisite', 'credit']).notNull(),
+	maxPoints: int().notNull(),
+	// Applicability
+	applicableToNewConstruction: tinyint().default(1),
+	applicableToCoreShell: tinyint().default(1),
+	// Impact areas
+	impactDecarbonization: tinyint().default(0),
+	impactQualityOfLife: tinyint().default(0),
+	impactEcologicalConservation: tinyint().default(0),
+	description: text(),
+	requirements: text(),
+	documentationRequired: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_leed_credit_code").on(table.creditCode),
+	index("idx_leed_category").on(table.category),
+]);
+
+/**
+ * Project LEED Tracking - Track LEED credits for projects
+ */
+export const projectLeedTracking = mysqlTable("project_leed_tracking", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	leedVersion: varchar({ length: 20 }).default('v5').notNull(),
+	registrationDate: timestamp({ mode: 'string' }),
+	targetCertification: mysqlEnum(['certified', 'silver', 'gold', 'platinum']),
+	// Credit tracking
+	creditId: int().notNull(), // Link to leed_credits
+	status: mysqlEnum(['not_started', 'in_progress', 'submitted', 'achieved', 'denied', 'not_pursuing']).default('not_started').notNull(),
+	pointsTargeted: int(),
+	pointsAchieved: int(),
+	// Pathway selection (for credits with multiple options)
+	selectedPathway: varchar({ length: 100 }),
+	// Documentation
+	documentationStatus: mysqlEnum(['not_started', 'in_progress', 'complete', 'submitted']).default('not_started'),
+	documentationNotes: text(),
+	// Review
+	reviewStatus: mysqlEnum(['pending', 'under_review', 'approved', 'denied', 'appealed']),
+	reviewComments: text(),
+	reviewDate: timestamp({ mode: 'string' }),
+	// Metadata
+	assignedTo: int(),
+	dueDate: timestamp({ mode: 'string' }),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_leed_tracking_project").on(table.projectId),
+	index("idx_leed_tracking_credit").on(table.creditId),
+	index("idx_leed_tracking_status").on(table.status),
+]);
+
+/**
+ * Building Performance Factors - ASHRAE climate zone BPFs from LEED v5
+ */
+export const buildingPerformanceFactors = mysqlTable("building_performance_factors", {
+	id: int().autoincrement().notNull().primaryKey(),
+	buildingType: varchar({ length: 100 }).notNull(), // multifamily, healthcare, hotel, office, etc.
+	ashraeStandard: varchar({ length: 20 }).notNull(), // 90.1-2019, 90.1-2022
+	climateZone: varchar({ length: 5 }).notNull(), // 0A, 0B, 1A, 1B, 2A, 2B, 3A, 3B, 3C, 4A, 4B, 4C, 5A, 5B, 5C, 6A, 6B, 7, 8
+	bpf: decimal({ precision: 4, scale: 2 }).notNull(), // Building Performance Factor
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_bpf_building_type").on(table.buildingType),
+	index("idx_bpf_climate_zone").on(table.climateZone),
+	index("idx_bpf_standard").on(table.ashraeStandard),
+]);
+
+/**
+ * Refrigerant Inventory - Track refrigerants for GWP compliance
+ */
+export const refrigerantInventory = mysqlTable("refrigerant_inventory", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	assetId: int(),
+	equipmentName: varchar({ length: 255 }).notNull(),
+	equipmentType: mysqlEnum(['hvac', 'heat_pump', 'chiller', 'refrigeration', 'data_center', 'other']).notNull(),
+	refrigerantType: varchar({ length: 50 }).notNull(), // R-410A, R-32, R-134a, etc.
+	refrigerantGwp: int().notNull(), // 100-year GWP relative to CO2
+	chargeAmount: decimal({ precision: 10, scale: 2 }).notNull(), // kg
+	totalGwpCharge: decimal({ precision: 15, scale: 2 }), // kg * GWP = tCO2e
+	// LEED v5 benchmarks
+	gwpBenchmark: int(), // 1400, 700, or 300 depending on equipment
+	meetsLeedBenchmark: tinyint(),
+	// Leakage tracking
+	annualLeakageRate: decimal({ precision: 5, scale: 2 }), // percentage
+	lastLeakCheck: timestamp({ mode: 'string' }),
+	leakDetectionSystem: tinyint().default(0),
+	// Maintenance
+	installDate: timestamp({ mode: 'string' }),
+	expectedLifespan: int(), // years
+	maintenanceSchedule: varchar({ length: 100 }),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_refrigerant_project").on(table.projectId),
+	index("idx_refrigerant_asset").on(table.assetId),
+	index("idx_refrigerant_type").on(table.refrigerantType),
+]);
+
+/**
+ * Operational Carbon Tracking - Detailed GHG emissions tracking
+ */
+export const operationalCarbonTracking = mysqlTable("operational_carbon_tracking", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	assetId: int(),
+	recordDate: timestamp({ mode: 'string' }).notNull(),
+	recordPeriod: mysqlEnum(['monthly', 'quarterly', 'annual']).default('monthly').notNull(),
+	// Scope 1 - Direct emissions
+	scope1Natural_gas: decimal({ precision: 15, scale: 4 }), // tCO2e
+	scope1Propane: decimal({ precision: 15, scale: 4 }),
+	scope1Diesel: decimal({ precision: 15, scale: 4 }),
+	scope1Refrigerants: decimal({ precision: 15, scale: 4 }),
+	scope1Other: decimal({ precision: 15, scale: 4 }),
+	scope1Total: decimal({ precision: 15, scale: 4 }),
+	// Scope 2 - Indirect emissions (purchased energy)
+	scope2Electricity: decimal({ precision: 15, scale: 4 }), // tCO2e
+	scope2DistrictHeating: decimal({ precision: 15, scale: 4 }),
+	scope2DistrictCooling: decimal({ precision: 15, scale: 4 }),
+	scope2Steam: decimal({ precision: 15, scale: 4 }),
+	scope2Total: decimal({ precision: 15, scale: 4 }),
+	// Scope 2 calculation method
+	scope2Method: mysqlEnum(['location_based', 'market_based']).default('location_based'),
+	gridEmissionFactor: decimal({ precision: 10, scale: 4 }), // g CO2e/kWh used
+	// Scope 3 - Other indirect (optional)
+	scope3Commuting: decimal({ precision: 15, scale: 4 }),
+	scope3Waste: decimal({ precision: 15, scale: 4 }),
+	scope3WaterSupply: decimal({ precision: 15, scale: 4 }),
+	scope3Other: decimal({ precision: 15, scale: 4 }),
+	scope3Total: decimal({ precision: 15, scale: 4 }),
+	// Totals
+	totalEmissions: decimal({ precision: 15, scale: 4 }).notNull(),
+	emissionsIntensity: decimal({ precision: 10, scale: 4 }), // kg CO2e per sqft
+	// Energy consumption (for reference)
+	electricityKwh: decimal({ precision: 15, scale: 2 }),
+	naturalGasM3: decimal({ precision: 15, scale: 2 }),
+	// Verification
+	verificationStatus: mysqlEnum(['unverified', 'self_verified', 'third_party_verified']).default('unverified'),
+	verifiedBy: varchar({ length: 255 }),
+	verificationDate: timestamp({ mode: 'string' }),
+	notes: text(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_op_carbon_project").on(table.projectId),
+	index("idx_op_carbon_asset").on(table.assetId),
+	index("idx_op_carbon_date").on(table.recordDate),
+]);
+
+// Type exports for LEED v5 ESG tables
+export type GridCarbonIntensity = typeof gridCarbonIntensity.$inferSelect;
+export type InsertGridCarbonIntensity = typeof gridCarbonIntensity.$inferInsert;
+export type EmbodiedCarbonMaterial = typeof embodiedCarbonMaterials.$inferSelect;
+export type InsertEmbodiedCarbonMaterial = typeof embodiedCarbonMaterials.$inferInsert;
+export type ProjectEmbodiedCarbon = typeof projectEmbodiedCarbon.$inferSelect;
+export type InsertProjectEmbodiedCarbon = typeof projectEmbodiedCarbon.$inferInsert;
+export type ProjectMaterialQuantity = typeof projectMaterialQuantities.$inferSelect;
+export type InsertProjectMaterialQuantity = typeof projectMaterialQuantities.$inferInsert;
+export type LeedCredit = typeof leedCredits.$inferSelect;
+export type InsertLeedCredit = typeof leedCredits.$inferInsert;
+export type ProjectLeedTracking = typeof projectLeedTracking.$inferSelect;
+export type InsertProjectLeedTracking = typeof projectLeedTracking.$inferInsert;
+export type BuildingPerformanceFactor = typeof buildingPerformanceFactors.$inferSelect;
+export type InsertBuildingPerformanceFactor = typeof buildingPerformanceFactors.$inferInsert;
+export type RefrigerantInventory = typeof refrigerantInventory.$inferSelect;
+export type InsertRefrigerantInventory = typeof refrigerantInventory.$inferInsert;
+export type OperationalCarbonTracking = typeof operationalCarbonTracking.$inferSelect;
+export type InsertOperationalCarbonTracking = typeof operationalCarbonTracking.$inferInsert;

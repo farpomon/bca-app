@@ -411,7 +411,7 @@ export const esgLeedRouter = router({
         installDate: input.installDate?.toISOString(),
         cost: input.cost.toString(),
         estimatedAnnualSavings: input.estimatedAnnualSavings?.toString(),
-        energySavingsKWh: input.estimatedEnergySavings?.toString(),
+        energySavingsKwh: input.estimatedEnergySavings?.toString(),
         waterSavingsGallons: input.estimatedWaterSavings ? (input.estimatedWaterSavings * 0.264172).toString() : undefined, // Convert L to gallons
         co2ReductionMt: co2Reduction > 0 ? co2Reduction.toString() : undefined,
         paybackPeriod: paybackPeriod?.toString(),
@@ -643,6 +643,567 @@ export const esgLeedRouter = router({
           count: g.count,
         })),
       };
+    }),
+
+  // ============================================================================
+  // LEED v5 GRID CARBON INTENSITY
+  // ============================================================================
+
+  /**
+   * Get grid carbon intensity for a Canadian province
+   */
+  getGridCarbonIntensity: protectedProcedure
+    .input(z.object({
+      region: z.string().optional(),
+      year: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query = sql`SELECT * FROM grid_carbon_intensity WHERE 1=1`;
+      
+      if (input.region) {
+        query = sql`SELECT * FROM grid_carbon_intensity WHERE region = ${input.region}`;
+      }
+      if (input.year) {
+        query = sql`SELECT * FROM grid_carbon_intensity WHERE year = ${input.year}`;
+      }
+      if (input.region && input.year) {
+        query = sql`SELECT * FROM grid_carbon_intensity WHERE region = ${input.region} AND year = ${input.year}`;
+      }
+      if (!input.region && !input.year) {
+        query = sql`SELECT * FROM grid_carbon_intensity ORDER BY avgEmissionFactor ASC`;
+      }
+
+      const result = await db.execute(query);
+      return Array.isArray(result[0]) ? result[0] : [];
+    }),
+
+  // ============================================================================
+  // LEED v5 EMBODIED CARBON
+  // ============================================================================
+
+  /**
+   * Get embodied carbon materials library
+   */
+  getEmbodiedCarbonMaterials: protectedProcedure
+    .input(z.object({
+      category: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query;
+      if (input.category) {
+        query = sql`SELECT * FROM embodied_carbon_materials WHERE materialCategory = ${input.category} ORDER BY materialName`;
+      } else {
+        query = sql`SELECT * FROM embodied_carbon_materials ORDER BY materialCategory, materialName`;
+      }
+
+      const result = await db.execute(query);
+      return Array.isArray(result[0]) ? result[0] : [];
+    }),
+
+  /**
+   * Record project embodied carbon assessment
+   */
+  recordEmbodiedCarbonAssessment: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetId: z.number().optional(),
+      assessmentDate: z.date(),
+      assessmentType: z.enum(['baseline', 'design', 'as_built', 'renovation']),
+      gwpModuleA1A3: z.number().optional(),
+      gwpModuleA4: z.number().optional(),
+      gwpModuleA5: z.number().optional(),
+      gwpModuleB1B5: z.number().optional(),
+      gwpModuleC1C4: z.number().optional(),
+      gwpModuleD: z.number().optional(),
+      gwpTotal: z.number(),
+      gwpPerSqm: z.number().optional(),
+      gwpPerSqft: z.number().optional(),
+      materialBreakdown: z.record(z.number()).optional(),
+      baselineGwp: z.number().optional(),
+      lcaSoftware: z.string().optional(),
+      lcaMethodology: z.string().optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Calculate reduction percentage if baseline provided
+      let reductionPercent = null;
+      let leedPointsEarned = 0;
+      if (input.baselineGwp && input.baselineGwp > 0) {
+        reductionPercent = ((input.baselineGwp - input.gwpTotal) / input.baselineGwp) * 100;
+        // LEED v5 points calculation
+        if (reductionPercent >= 40) leedPointsEarned = 6;
+        else if (reductionPercent >= 30) leedPointsEarned = 5;
+        else if (reductionPercent >= 20) leedPointsEarned = 4;
+        else if (reductionPercent >= 10) leedPointsEarned = 3;
+        else if (reductionPercent >= 0) leedPointsEarned = 2;
+      }
+
+      await db.execute(sql`
+        INSERT INTO project_embodied_carbon 
+        (projectId, assetId, assessmentDate, assessmentType, gwpModuleA1A3, gwpModuleA4, gwpModuleA5, 
+         gwpModuleB1B5, gwpModuleC1C4, gwpModuleD, gwpTotal, gwpPerSqm, gwpPerSqft, materialBreakdown,
+         baselineGwp, reductionPercent, leedPointsEarned, lcaSoftware, lcaMethodology, notes, createdBy)
+        VALUES (${input.projectId}, ${input.assetId || null}, ${input.assessmentDate.toISOString()}, 
+                ${input.assessmentType}, ${input.gwpModuleA1A3 || null}, ${input.gwpModuleA4 || null}, 
+                ${input.gwpModuleA5 || null}, ${input.gwpModuleB1B5 || null}, ${input.gwpModuleC1C4 || null}, 
+                ${input.gwpModuleD || null}, ${input.gwpTotal}, ${input.gwpPerSqm || null}, 
+                ${input.gwpPerSqft || null}, ${input.materialBreakdown ? JSON.stringify(input.materialBreakdown) : null},
+                ${input.baselineGwp || null}, ${reductionPercent}, ${leedPointsEarned}, 
+                ${input.lcaSoftware || null}, ${input.lcaMethodology || null}, ${input.notes || null}, ${ctx.user?.id || null})
+      `);
+
+      return { 
+        success: true, 
+        reductionPercent: reductionPercent ? Math.round(reductionPercent * 10) / 10 : null,
+        leedPointsEarned,
+      };
+    }),
+
+  /**
+   * Get project embodied carbon assessments
+   */
+  getProjectEmbodiedCarbon: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetId: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query;
+      if (input.assetId) {
+        query = sql`SELECT * FROM project_embodied_carbon WHERE projectId = ${input.projectId} AND assetId = ${input.assetId} ORDER BY assessmentDate DESC`;
+      } else {
+        query = sql`SELECT * FROM project_embodied_carbon WHERE projectId = ${input.projectId} ORDER BY assessmentDate DESC`;
+      }
+
+      const result = await db.execute(query);
+      return Array.isArray(result[0]) ? result[0] : [];
+    }),
+
+  // ============================================================================
+  // LEED v5 CREDIT TRACKING
+  // ============================================================================
+
+  /**
+   * Get all LEED v5 credits
+   */
+  getLeedCredits: protectedProcedure
+    .input(z.object({
+      category: z.enum(['IP', 'LT', 'SS', 'WE', 'EA', 'MR', 'EQ', 'IN', 'RP']).optional(),
+      creditType: z.enum(['prerequisite', 'credit']).optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query = sql`SELECT * FROM leed_credits WHERE 1=1`;
+      if (input.category && input.creditType) {
+        query = sql`SELECT * FROM leed_credits WHERE category = ${input.category} AND creditType = ${input.creditType} ORDER BY creditCode`;
+      } else if (input.category) {
+        query = sql`SELECT * FROM leed_credits WHERE category = ${input.category} ORDER BY creditCode`;
+      } else if (input.creditType) {
+        query = sql`SELECT * FROM leed_credits WHERE creditType = ${input.creditType} ORDER BY creditCode`;
+      } else {
+        query = sql`SELECT * FROM leed_credits ORDER BY category, creditCode`;
+      }
+
+      const result = await db.execute(query);
+      return Array.isArray(result[0]) ? result[0] : [];
+    }),
+
+  /**
+   * Initialize LEED tracking for a project
+   */
+  initializeProjectLeedTracking: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      targetCertification: z.enum(['certified', 'silver', 'gold', 'platinum']),
+      registrationDate: z.date().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get all LEED credits
+      const creditsResult = await db.execute(sql`SELECT id, creditCode, creditType FROM leed_credits`);
+      const credits = Array.isArray(creditsResult[0]) ? creditsResult[0] : [];
+
+      // Create tracking entries for each credit
+      for (const credit of credits as any[]) {
+        await db.execute(sql`
+          INSERT IGNORE INTO project_leed_tracking 
+          (projectId, leedVersion, registrationDate, targetCertification, creditId, status)
+          VALUES (${input.projectId}, 'v5', ${input.registrationDate?.toISOString() || null}, 
+                  ${input.targetCertification}, ${credit.id}, 'not_started')
+        `);
+      }
+
+      return { success: true, creditsInitialized: credits.length };
+    }),
+
+  /**
+   * Get project LEED tracking status
+   */
+  getProjectLeedTracking: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const query = sql`
+        SELECT plt.*, lc.creditCode, lc.creditName, lc.category, lc.creditType, lc.maxPoints,
+               lc.impactDecarbonization, lc.impactQualityOfLife, lc.impactEcologicalConservation
+        FROM project_leed_tracking plt
+        JOIN leed_credits lc ON plt.creditId = lc.id
+        WHERE plt.projectId = ${input.projectId}
+        ORDER BY lc.category, lc.creditCode
+      `;
+
+      const result = await db.execute(query);
+      const tracking = Array.isArray(result[0]) ? result[0] : [];
+
+      // Calculate summary
+      let totalPointsTargeted = 0;
+      let totalPointsAchieved = 0;
+      let prerequisitesMet = 0;
+      let prerequisitesTotal = 0;
+
+      for (const t of tracking as any[]) {
+        if (t.creditType === 'prerequisite') {
+          prerequisitesTotal++;
+          if (t.status === 'achieved') prerequisitesMet++;
+        } else {
+          totalPointsTargeted += t.pointsTargeted || 0;
+          totalPointsAchieved += t.pointsAchieved || 0;
+        }
+      }
+
+      // Determine certification level
+      let projectedCertification = 'none';
+      if (totalPointsAchieved >= 80) projectedCertification = 'platinum';
+      else if (totalPointsAchieved >= 60) projectedCertification = 'gold';
+      else if (totalPointsAchieved >= 50) projectedCertification = 'silver';
+      else if (totalPointsAchieved >= 40) projectedCertification = 'certified';
+
+      return {
+        credits: tracking,
+        summary: {
+          totalPointsTargeted,
+          totalPointsAchieved,
+          prerequisitesMet,
+          prerequisitesTotal,
+          projectedCertification,
+        },
+      };
+    }),
+
+  /**
+   * Update LEED credit status for a project
+   */
+  updateLeedCreditStatus: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      creditId: z.number(),
+      status: z.enum(['not_started', 'in_progress', 'submitted', 'achieved', 'denied', 'not_pursuing']),
+      pointsTargeted: z.number().optional(),
+      pointsAchieved: z.number().optional(),
+      selectedPathway: z.string().optional(),
+      documentationStatus: z.enum(['not_started', 'in_progress', 'complete', 'submitted']).optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      await db.execute(sql`
+        UPDATE project_leed_tracking 
+        SET status = ${input.status},
+            pointsTargeted = COALESCE(${input.pointsTargeted || null}, pointsTargeted),
+            pointsAchieved = COALESCE(${input.pointsAchieved || null}, pointsAchieved),
+            selectedPathway = COALESCE(${input.selectedPathway || null}, selectedPathway),
+            documentationStatus = COALESCE(${input.documentationStatus || null}, documentationStatus),
+            notes = COALESCE(${input.notes || null}, notes),
+            updatedAt = NOW()
+        WHERE projectId = ${input.projectId} AND creditId = ${input.creditId}
+      `);
+
+      return { success: true };
+    }),
+
+  // ============================================================================
+  // LEED v5 REFRIGERANT MANAGEMENT
+  // ============================================================================
+
+  /**
+   * Record refrigerant equipment
+   */
+  recordRefrigerantEquipment: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetId: z.number().optional(),
+      equipmentName: z.string(),
+      equipmentType: z.enum(['hvac', 'heat_pump', 'chiller', 'refrigeration', 'data_center', 'other']),
+      refrigerantType: z.string(),
+      refrigerantGwp: z.number(),
+      chargeAmount: z.number(), // kg
+      installDate: z.date().optional(),
+      expectedLifespan: z.number().optional(),
+      leakDetectionSystem: z.boolean().default(false),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Calculate total GWP charge
+      const totalGwpCharge = input.chargeAmount * input.refrigerantGwp / 1000; // Convert to tCO2e
+
+      // Determine LEED v5 benchmark based on equipment type
+      let gwpBenchmark = 700; // Default for HVAC
+      if (input.equipmentType === 'heat_pump') gwpBenchmark = 1400;
+      else if (input.equipmentType === 'refrigeration' || input.equipmentType === 'data_center') gwpBenchmark = 300;
+
+      const meetsLeedBenchmark = input.refrigerantGwp <= gwpBenchmark ? 1 : 0;
+
+      await db.execute(sql`
+        INSERT INTO refrigerant_inventory 
+        (projectId, assetId, equipmentName, equipmentType, refrigerantType, refrigerantGwp, 
+         chargeAmount, totalGwpCharge, gwpBenchmark, meetsLeedBenchmark, leakDetectionSystem,
+         installDate, expectedLifespan, notes)
+        VALUES (${input.projectId}, ${input.assetId || null}, ${input.equipmentName}, 
+                ${input.equipmentType}, ${input.refrigerantType}, ${input.refrigerantGwp},
+                ${input.chargeAmount}, ${totalGwpCharge}, ${gwpBenchmark}, ${meetsLeedBenchmark},
+                ${input.leakDetectionSystem ? 1 : 0}, ${input.installDate?.toISOString() || null},
+                ${input.expectedLifespan || null}, ${input.notes || null})
+      `);
+
+      return { 
+        success: true, 
+        totalGwpCharge: Math.round(totalGwpCharge * 100) / 100,
+        meetsLeedBenchmark: meetsLeedBenchmark === 1,
+        gwpBenchmark,
+      };
+    }),
+
+  /**
+   * Get refrigerant inventory for a project
+   */
+  getRefrigerantInventory: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetId: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query;
+      if (input.assetId) {
+        query = sql`SELECT * FROM refrigerant_inventory WHERE projectId = ${input.projectId} AND assetId = ${input.assetId}`;
+      } else {
+        query = sql`SELECT * FROM refrigerant_inventory WHERE projectId = ${input.projectId}`;
+      }
+
+      const result = await db.execute(query);
+      const inventory = Array.isArray(result[0]) ? result[0] : [];
+
+      // Calculate summary
+      let totalGwpCharge = 0;
+      let equipmentMeetingBenchmark = 0;
+      for (const item of inventory as any[]) {
+        totalGwpCharge += parseFloat(item.totalGwpCharge || 0);
+        if (item.meetsLeedBenchmark) equipmentMeetingBenchmark++;
+      }
+
+      return {
+        inventory,
+        summary: {
+          totalEquipment: inventory.length,
+          totalGwpCharge: Math.round(totalGwpCharge * 100) / 100,
+          equipmentMeetingBenchmark,
+          complianceRate: inventory.length > 0 
+            ? Math.round((equipmentMeetingBenchmark / inventory.length) * 100) 
+            : 0,
+        },
+      };
+    }),
+
+  // ============================================================================
+  // LEED v5 OPERATIONAL CARBON TRACKING
+  // ============================================================================
+
+  /**
+   * Record operational carbon emissions
+   */
+  recordOperationalCarbon: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetId: z.number().optional(),
+      recordDate: z.date(),
+      recordPeriod: z.enum(['monthly', 'quarterly', 'annual']),
+      province: z.string().default('Alberta'),
+      // Scope 1
+      scope1NaturalGas: z.number().optional(), // tCO2e
+      scope1Propane: z.number().optional(),
+      scope1Diesel: z.number().optional(),
+      scope1Refrigerants: z.number().optional(),
+      scope1Other: z.number().optional(),
+      // Scope 2
+      electricityKwh: z.number().optional(),
+      scope2DistrictHeating: z.number().optional(),
+      scope2DistrictCooling: z.number().optional(),
+      scope2Method: z.enum(['location_based', 'market_based']).default('location_based'),
+      // Scope 3 (optional)
+      scope3Commuting: z.number().optional(),
+      scope3Waste: z.number().optional(),
+      scope3WaterSupply: z.number().optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get grid emission factor for the province
+      const gridResult = await db.execute(sql`
+        SELECT avgEmissionFactor FROM grid_carbon_intensity 
+        WHERE region = ${input.province} AND year = 2024 LIMIT 1
+      `);
+      const gridData = Array.isArray(gridResult[0]) && gridResult[0].length > 0 
+        ? (gridResult[0][0] as any) 
+        : { avgEmissionFactor: 540 }; // Default to Alberta if not found
+
+      const gridEmissionFactor = parseFloat(gridData.avgEmissionFactor);
+
+      // Calculate Scope 2 electricity emissions
+      const scope2Electricity = input.electricityKwh 
+        ? (input.electricityKwh * gridEmissionFactor / 1000000) // Convert g to tonnes
+        : 0;
+
+      // Calculate totals
+      const scope1Total = (input.scope1NaturalGas || 0) + (input.scope1Propane || 0) + 
+                          (input.scope1Diesel || 0) + (input.scope1Refrigerants || 0) + 
+                          (input.scope1Other || 0);
+      const scope2Total = scope2Electricity + (input.scope2DistrictHeating || 0) + 
+                          (input.scope2DistrictCooling || 0);
+      const scope3Total = (input.scope3Commuting || 0) + (input.scope3Waste || 0) + 
+                          (input.scope3WaterSupply || 0);
+      const totalEmissions = scope1Total + scope2Total + scope3Total;
+
+      await db.execute(sql`
+        INSERT INTO operational_carbon_tracking 
+        (projectId, assetId, recordDate, recordPeriod, scope1Natural_gas, scope1Propane, 
+         scope1Diesel, scope1Refrigerants, scope1Other, scope1Total, scope2Electricity,
+         scope2DistrictHeating, scope2DistrictCooling, scope2Total, scope2Method, gridEmissionFactor,
+         scope3Commuting, scope3Waste, scope3WaterSupply, scope3Total, totalEmissions,
+         electricityKwh, notes, createdBy)
+        VALUES (${input.projectId}, ${input.assetId || null}, ${input.recordDate.toISOString()}, 
+                ${input.recordPeriod}, ${input.scope1NaturalGas || null}, ${input.scope1Propane || null},
+                ${input.scope1Diesel || null}, ${input.scope1Refrigerants || null}, ${input.scope1Other || null},
+                ${scope1Total}, ${scope2Electricity}, ${input.scope2DistrictHeating || null},
+                ${input.scope2DistrictCooling || null}, ${scope2Total}, ${input.scope2Method},
+                ${gridEmissionFactor}, ${input.scope3Commuting || null}, ${input.scope3Waste || null},
+                ${input.scope3WaterSupply || null}, ${scope3Total}, ${totalEmissions},
+                ${input.electricityKwh || null}, ${input.notes || null}, ${ctx.user?.id || null})
+      `);
+
+      return { 
+        success: true,
+        emissions: {
+          scope1Total: Math.round(scope1Total * 1000) / 1000,
+          scope2Total: Math.round(scope2Total * 1000) / 1000,
+          scope3Total: Math.round(scope3Total * 1000) / 1000,
+          totalEmissions: Math.round(totalEmissions * 1000) / 1000,
+        },
+        gridEmissionFactor,
+      };
+    }),
+
+  /**
+   * Get operational carbon history for a project
+   */
+  getOperationalCarbonHistory: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetId: z.number().optional(),
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query;
+      if (input.assetId) {
+        query = sql`SELECT * FROM operational_carbon_tracking WHERE projectId = ${input.projectId} AND assetId = ${input.assetId} ORDER BY recordDate DESC`;
+      } else {
+        query = sql`SELECT * FROM operational_carbon_tracking WHERE projectId = ${input.projectId} ORDER BY recordDate DESC`;
+      }
+
+      const result = await db.execute(query);
+      const records = Array.isArray(result[0]) ? result[0] : [];
+
+      // Calculate summary
+      let totalScope1 = 0, totalScope2 = 0, totalScope3 = 0;
+      for (const r of records as any[]) {
+        totalScope1 += parseFloat(r.scope1Total || 0);
+        totalScope2 += parseFloat(r.scope2Total || 0);
+        totalScope3 += parseFloat(r.scope3Total || 0);
+      }
+
+      return {
+        records,
+        summary: {
+          totalScope1: Math.round(totalScope1 * 1000) / 1000,
+          totalScope2: Math.round(totalScope2 * 1000) / 1000,
+          totalScope3: Math.round(totalScope3 * 1000) / 1000,
+          totalEmissions: Math.round((totalScope1 + totalScope2 + totalScope3) * 1000) / 1000,
+          recordCount: records.length,
+        },
+      };
+    }),
+
+  // ============================================================================
+  // LEED v5 BUILDING PERFORMANCE FACTORS
+  // ============================================================================
+
+  /**
+   * Get building performance factors by type and climate zone
+   */
+  getBuildingPerformanceFactors: protectedProcedure
+    .input(z.object({
+      buildingType: z.string().optional(),
+      climateZone: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query;
+      if (input.buildingType && input.climateZone) {
+        query = sql`SELECT * FROM building_performance_factors WHERE buildingType = ${input.buildingType} AND climateZone = ${input.climateZone}`;
+      } else if (input.buildingType) {
+        query = sql`SELECT * FROM building_performance_factors WHERE buildingType = ${input.buildingType} ORDER BY climateZone`;
+      } else if (input.climateZone) {
+        query = sql`SELECT * FROM building_performance_factors WHERE climateZone = ${input.climateZone} ORDER BY buildingType`;
+      } else {
+        query = sql`SELECT * FROM building_performance_factors ORDER BY buildingType, climateZone`;
+      }
+
+      const result = await db.execute(query);
+      return Array.isArray(result[0]) ? result[0] : [];
     }),
 });
 

@@ -251,7 +251,8 @@ export const assetDocumentsRouter = router({
           
         const isProjectOwner = project && project.userId === ctx.user.id;
         const isSameCompany = project && ctx.user.company && project.company === ctx.user.company;
-        const isSameCompanyId = project && ctx.user.companyId && project.companyId === ctx.user.companyId;
+        // Note: projects table uses 'company' (string) field, not companyId
+        const isSameCompanyId = project && ctx.user.companyId && project.company === ctx.user.company;
         
         if (!isUploader && !isSuperAdmin && !isAdmin && !isProjectOwner && !isSameCompany && !isSameCompanyId) {
           throw new TRPCError({ code: "FORBIDDEN", message: `Not authorized to delete document ${docId}` });
