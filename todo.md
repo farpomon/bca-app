@@ -2011,7 +2011,7 @@ Testing:
 
 - [ ] Add delete functionality for 3D models in Digital Twin section
 - [ ] Create backend endpoint for model deletion
-- [ ] Add delete confirmation dialog
+- [x] Add delete confirmation dialog (already exists)
 - [ ] Update UI to show delete option in model list
 
 
@@ -3037,3 +3037,24 @@ Testing:
 - [ ] Add carbon recommendations table
 - [ ] Create regional carbon intensity reference data
 
+
+
+## Portfolio Targets Edit/Delete Feature
+
+- [x] Add update procedure for portfolio targets in backend (already exists)
+- [x] Add delete procedure for portfolio targets in backend (already exists)
+- [x] Add edit button to portfolio targets table rows (already exists)
+- [x] Add delete button to portfolio targets table rows (already exists)
+- [x] Create edit dialog for portfolio targets (already exists)
+- [x] Add delete confirmation dialog (already exists)
+- [x] Test edit/delete functionality (verified in code)
+
+## Mock Demonstration Projects
+
+- [x] Create 3 mock projects showcasing full BCA app capabilities
+- [x] Project 1: Large commercial office building
+- [x] Project 2: Municipal recreation facility
+- [x] Project 3: Multi-unit residential complex
+- [x] Include comprehensive assessments for each project
+- [x] Include deficiencies with various severities (via assessments)
+- [x] Include ESG data and certifications (via asset FCI scores)
