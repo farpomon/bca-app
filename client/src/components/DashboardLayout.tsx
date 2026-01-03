@@ -111,9 +111,9 @@ const adminItems = [
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
-const DEFAULT_WIDTH = 280;
-const MIN_WIDTH = 200;
-const MAX_WIDTH = 480;
+const DEFAULT_WIDTH = 260;
+const MIN_WIDTH = 180;
+const MAX_WIDTH = 360;
 
 // Collapsible state keys
 const ADMIN_COLLAPSED_KEY = "sidebar-admin-collapsed";
@@ -214,15 +214,19 @@ function DashboardLayoutContent({
   const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
   
   // Collapsible states with localStorage persistence
+  // On mobile, default to collapsed for a cleaner sidebar
   const [adminOpen, setAdminOpen] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return false;
     const saved = localStorage.getItem(ADMIN_COLLAPSED_KEY);
     return saved !== "false";
   });
   const [sustainabilityOpen, setSustainabilityOpen] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return false;
     const saved = localStorage.getItem(SUSTAINABILITY_COLLAPSED_KEY);
     return saved !== "false";
   });
   const [analyticsOpen, setAnalyticsOpen] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return false;
     const saved = localStorage.getItem(ANALYTICS_COLLAPSED_KEY);
     return saved !== "false";
   });
@@ -293,25 +297,31 @@ function DashboardLayoutContent({
 
   const isAdmin = user?.role === 'admin';
 
-  // Helper to render menu items
+  // Helper to render menu items - compact for mobile
   const renderMenuItem = (item: { icon: React.ComponentType<{ className?: string }>; label: string; path: string }) => {
     const isActive = location === item.path;
     return (
       <SidebarMenuItem key={item.path}>
         <SidebarMenuButton
           isActive={isActive}
-          onClick={() => setLocation(item.path)}
+          onClick={() => {
+            setLocation(item.path);
+            // Auto-close sidebar on mobile after navigation
+            if (isMobile) {
+              toggleSidebar();
+            }
+          }}
           tooltip={item.label}
-          className="h-9 transition-all font-normal"
+          className="h-8 transition-all font-normal text-sm"
         >
-          <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-          <span>{item.label}</span>
+          <item.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+          <span className="truncate">{item.label}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
   };
 
-  // Helper to render collapsible section
+  // Helper to render collapsible section - compact for mobile
   const renderCollapsibleSection = (
     title: string,
     icon: React.ComponentType<{ className?: string }>,
@@ -326,19 +336,19 @@ function DashboardLayoutContent({
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
         <SidebarGroup className="py-0">
           <CollapsibleTrigger asChild>
-            <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md px-2 py-1.5 transition-colors">
-              <div className="flex items-center gap-2">
-                <Icon className={`h-4 w-4 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-xs font-medium uppercase tracking-wider ${hasActiveItem ? "text-primary" : ""}`}>
+            <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md px-2 py-1 transition-colors h-7">
+              <div className="flex items-center gap-1.5">
+                <Icon className={`h-3.5 w-3.5 shrink-0 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-[11px] font-medium uppercase tracking-wide ${hasActiveItem ? "text-primary" : ""}`}>
                   {title}
                 </span>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
+              <ChevronRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
             </SidebarGroupLabel>
           </CollapsibleTrigger>
           <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
             <SidebarGroupContent>
-              <SidebarMenu className="px-0 py-1">
+              <SidebarMenu className="px-0 py-0.5 space-y-0">
                 {items.map(renderMenuItem)}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -357,7 +367,7 @@ function DashboardLayoutContent({
           disableTransition={isResizing}
         >
           <SidebarHeader className="border-b border-sidebar-border/50">
-            <div className="flex flex-col gap-2 py-2">
+            <div className="flex flex-col gap-1.5 py-1.5">
               {/* App Logo and Title */}
               <div className="flex items-center gap-3 pl-2 group-data-[collapsible=icon]:px-0 transition-all w-full">
                 {isCollapsed ? (
@@ -376,21 +386,21 @@ function DashboardLayoutContent({
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <img
                         src={APP_LOGO}
-                        className="h-8 w-8 rounded-md object-cover ring-1 ring-border shrink-0"
+                        className="h-7 w-7 rounded-md object-cover ring-1 ring-border shrink-0"
                         alt="Logo"
                       />
-                      <span className="font-bold tracking-tight truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      <span className="font-bold tracking-tight truncate text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                         {APP_TITLE}
                       </span>
                     </div>
                     <button
                       onClick={toggleSidebar}
-                      className="ml-auto h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                      className="ml-auto h-7 w-7 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                     >
-                      <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                      <PanelLeft className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
                   </>
                 )}
@@ -412,16 +422,19 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             {/* Main Navigation */}
-            <SidebarGroup className="py-2">
+            <SidebarGroup className="py-1.5">
               <SidebarGroupContent>
-                <SidebarMenu className="px-2">
+                <SidebarMenu className="px-2 space-y-0.5">
                   {mainMenuItems.map(renderMenuItem)}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
+            {/* Divider */}
+            <div className="mx-3 my-1 border-t border-sidebar-border/30" />
+
             {/* Analytics & Reports Section */}
-            <div className="px-2">
+            <div className="px-2 pt-0.5">
               {renderCollapsibleSection(
                 "Analytics & Reports",
                 BarChart3,
@@ -436,7 +449,7 @@ function DashboardLayoutContent({
             </div>
 
             {/* Sustainability & ESG Section */}
-            <div className="px-2">
+            <div className="px-2 pt-0.5">
               {renderCollapsibleSection(
                 "Sustainability & ESG",
                 Leaf,
@@ -448,7 +461,7 @@ function DashboardLayoutContent({
 
             {/* Admin Section (only for admins) */}
             {isAdmin && (
-              <div className="px-2">
+              <div className="px-2 pt-0.5">
                 {renderCollapsibleSection(
                   "Administration",
                   Shield,
@@ -460,16 +473,16 @@ function DashboardLayoutContent({
             )}
 
             {/* Offline Status Section */}
-            <div className="mt-auto px-2 py-2 border-t">
+            <div className="mt-auto px-2 py-1.5 border-t">
               <SidebarOfflineStatus isCollapsed={isCollapsed} />
             </div>
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
+          <SidebarFooter className="p-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <Avatar className="h-9 w-9 border shrink-0">
+                <button className="flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Avatar className="h-8 w-8 border shrink-0">
                     <AvatarFallback className="text-xs font-medium">
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -478,7 +491,7 @@ function DashboardLayoutContent({
                     <p className="text-sm font-medium truncate leading-none">
                       {user?.name || "-"}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate mt-1.5">
+                    <p className="text-[11px] text-muted-foreground truncate mt-1">
                       {user?.email || "-"}
                     </p>
                   </div>

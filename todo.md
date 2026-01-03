@@ -3108,3 +3108,4 @@ Testing:
 - [x] Improve visual hierarchy with section headers
 - [x] Remove duplicate/redundant menu items
 - [x] Test navigation changes across all pages
+- [x] Fix clumsy sidebar when expanded on mobile - make more compact and organized
