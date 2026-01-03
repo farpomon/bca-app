@@ -51,6 +51,7 @@ import { chatbotRouter } from "./routers/chatbot.router";
 import { projectPermissionsRouter } from "./routers/projectPermissions.router";
 import { ratingRouter } from "./routers/rating.router";
 import { companyRolesRouter } from "./companyRolesRouter";
+import { pageVisibilityRouter } from "./pageVisibilityRouter";
 import { buildingTemplatesRouter } from "./routers/buildingTemplates.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
@@ -99,6 +100,7 @@ export const appRouter = router({
   rsmeans: rsmeansRouter,
   portfolioTargets: portfolioTargetsRouter,
   companyRoles: companyRolesRouter,
+  pageVisibility: pageVisibilityRouter,
   analytics: analyticsRouter,
   backup: backupRouter,
   chatbot: chatbotRouter,

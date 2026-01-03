@@ -70,6 +70,7 @@ import { CompanySelector, CompanySelectorCompact } from './CompanySelector';
 import { PendingInvitationsBanner } from './PendingInvitationsBanner';
 import { CreateCompanyDialog } from './CreateCompanyDialog';
 import { useCompany } from '@/contexts/CompanyContext';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 
 // Main navigation items (always visible)
 const mainMenuItems = [
@@ -211,6 +212,7 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const { isSuperAdmin, selectedCompany } = useCompany();
+  const { filterMenuItems } = usePageVisibility();
   const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
   
   // Collapsible states with localStorage persistence
@@ -425,7 +427,7 @@ function DashboardLayoutContent({
             <SidebarGroup className="py-1.5">
               <SidebarGroupContent>
                 <SidebarMenu className="px-2 space-y-0.5">
-                  {mainMenuItems.map(renderMenuItem)}
+                  {filterMenuItems(mainMenuItems).map(renderMenuItem)}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -438,11 +440,11 @@ function DashboardLayoutContent({
               {renderCollapsibleSection(
                 "Analytics & Reports",
                 BarChart3,
-                analyticsItems.filter(item => {
+                filterMenuItems(analyticsItems.filter(item => {
                   // Hide portfolio analytics if no projects have multiple assets
                   if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
                   return true;
-                }),
+                })),
                 analyticsOpen,
                 setAnalyticsOpen
               )}
@@ -453,7 +455,7 @@ function DashboardLayoutContent({
               {renderCollapsibleSection(
                 "Sustainability & ESG",
                 Leaf,
-                sustainabilityItems,
+                filterMenuItems(sustainabilityItems),
                 sustainabilityOpen,
                 setSustainabilityOpen
               )}
@@ -465,7 +467,7 @@ function DashboardLayoutContent({
                 {renderCollapsibleSection(
                   "Administration",
                   Shield,
-                  adminItems,
+                  filterMenuItems(adminItems),
                   adminOpen,
                   setAdminOpen
                 )}

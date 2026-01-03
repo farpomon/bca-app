@@ -41,6 +41,8 @@ import { MFATimeRestrictionDialog } from "@/components/MFATimeRestrictionDialog"
 import { BackupManagement } from "@/components/BackupManagement";
 import { BackButton } from "@/components/BackButton";
 import { ProjectPermissionsManager } from "@/components/ProjectPermissionsManager";
+import { CompanyPageVisibilityManager } from "@/components/CompanyPageVisibilityManager";
+import { Eye } from "lucide-react";
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -305,6 +307,10 @@ export default function Admin() {
           <TabsTrigger value="project-permissions" className="gap-2">
             <Shield className="w-4 h-4" />
             Project Permissions
+          </TabsTrigger>
+          <TabsTrigger value="page-visibility" className="gap-2">
+            <Eye className="w-4 h-4" />
+            Page Visibility
           </TabsTrigger>
         </TabsList>
 
@@ -901,6 +907,11 @@ export default function Admin() {
         {/* Project Permissions Tab */}
         <TabsContent value="project-permissions" className="space-y-4">
           <ProjectPermissionsManager />
+        </TabsContent>
+
+        {/* Page Visibility Tab (Super Admin Only) */}
+        <TabsContent value="page-visibility" className="space-y-4">
+          <CompanyPageVisibilityManager />
         </TabsContent>
       </Tabs>
 

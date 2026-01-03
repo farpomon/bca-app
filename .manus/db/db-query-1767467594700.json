@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, replacementValue FROM assets WHERE projectId = 12",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, replacementValue FROM assets WHERE projectId = 12",
+  "rows": [
+    {
+      "id": "108",
+      "name": "Tower A - Main Office Building",
+      "replacementValue": "125000000.00"
+    },
+    {
+      "id": "109",
+      "name": "Tower B - Corporate Headquarters",
+      "replacementValue": "98000000.00"
+    },
+    {
+      "id": "110",
+      "name": "Retail Podium",
+      "replacementValue": "28000000.00"
+    },
+    {
+      "id": "111",
+      "name": "Parking Structure",
+      "replacementValue": "42000000.00"
+    },
+    {
+      "id": "112",
+      "name": "Central Plant",
+      "replacementValue": "35000000.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\treplacementValue\n108\tTower A - Main Office Building\t125000000.00\n109\tTower B - Corporate Headquarters\t98000000.00\n110\tRetail Podium\t28000000.00\n111\tParking Structure\t42000000.00\n112\tCentral Plant\t35000000.00\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

@@ -1,0 +1,14 @@
+{
+  "query": "SELECT SUM(a.estimatedRepairCost) as totalRepairCost, COUNT(*) as assessmentCount\nFROM assessments a\nJOIN assets ast ON a.assetId = ast.id\nWHERE ast.projectId = 12",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT SUM(a.estimatedRepairCost) as totalRepairCost, COUNT(*) as assessmentCount\nFROM assessments a\nJOIN assets ast ON a.assetId = ast.id\nWHERE ast.projectId = 12",
+  "rows": [
+    {
+      "totalRepairCost": "12820000.00",
+      "assessmentCount": "39"
+    }
+  ],
+  "messages": [],
+  "stdout": "totalRepairCost\tassessmentCount\n12820000.00\t39\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

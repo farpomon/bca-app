@@ -3174,3 +3174,11 @@ Testing:
 - [ ] Deficiencies table has projectIds (3120001, 3630001, etc.) that don't match actual projects (1, 2, 3, 7, 8, etc.)
 - [ ] This affects Priority Breakdown and Deficiency Trends in Portfolio Analytics
 - [ ] This affects the 5-Year Capital Planning Forecast in Portfolio Report
+
+
+## Superadmin Page Visibility Controls
+- [x] Create companyPageVisibility table in database schema
+- [x] Add backend procedures for managing page visibility per company
+- [x] Update DashboardLayout to filter navigation based on company page visibility
+- [x] Create superadmin UI to toggle pages on/off for each company
+- [x] Test page visibility controls

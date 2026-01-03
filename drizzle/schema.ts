@@ -3027,3 +3027,26 @@ export type RefrigerantInventory = typeof refrigerantInventory.$inferSelect;
 export type InsertRefrigerantInventory = typeof refrigerantInventory.$inferInsert;
 export type OperationalCarbonTracking = typeof operationalCarbonTracking.$inferSelect;
 export type InsertOperationalCarbonTracking = typeof operationalCarbonTracking.$inferInsert;
+
+
+/**
+ * Company Page Visibility Table
+ * Controls which dashboard pages are visible/accessible for each company
+ * Super admins can toggle pages on/off per company
+ */
+export const companyPageVisibility = mysqlTable("company_page_visibility", {
+	id: int().autoincrement().notNull().primaryKey(),
+	companyId: int().notNull(),
+	pageKey: varchar({ length: 100 }).notNull(), // e.g., 'projects', 'rsmeans', 'esg-dashboard'
+	isVisible: tinyint().default(1).notNull(), // 1 = visible, 0 = hidden
+	updatedBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_company_page").on(table.companyId, table.pageKey),
+	index("idx_company_visibility").on(table.companyId),
+]);
+
+export type CompanyPageVisibility = typeof companyPageVisibility.$inferSelect;
+export type InsertCompanyPageVisibility = typeof companyPageVisibility.$inferInsert;
