@@ -3109,3 +3109,17 @@ Testing:
 - [x] Remove duplicate/redundant menu items
 - [x] Test navigation changes across all pages
 - [x] Fix clumsy sidebar when expanded on mobile - make more compact and organized
+
+## BUG FIX: Financial Data Display Issue (January 2026)
+- [x] Fix Riverside Community Center showing $0 and 0 deficiencies - Fixed by updating AssetDetail.tsx to calculate totalEstimatedCost from assessments.estimatedRepairCost
+- [x] Ensure repair costs are calculated from assessments (not just deficiencies) - Fixed in AssetDetail.tsx, AssetOptimization.tsx, and AssetFinancialTab.tsx
+- [x] Ensure replacement costs are included in financial KPIs - Fixed getCostAnalysis in analyticsDb.ts to get replacementValue from assets table instead of non-existent assessments.replacementValue
+- [x] Fix getProjectStats to count assessments via assets table (assessments don't have projectId) - Fixed in db.ts
+- [x] Fix formatCurrency in ProjectDetail.tsx to not divide by 100 (values are in dollars, not cents)
+- [x] Verify all financial data displays across dashboards and sections - Verified:
+  - Asset Dashboard: $350,000 ✓
+  - Asset Financial Tab: $350K deferred maintenance, 2.8% FCI ✓
+  - Asset Optimization Tab: $350,000 total estimated cost ✓
+  - Project Detail: $350,000, 6 assessments ✓
+  - Project Analytics: $350K deferred maintenance, 0.3% FCI ✓
+- [x] Double-check financial calculations in all views - All verified and working correctly

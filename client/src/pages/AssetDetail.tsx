@@ -280,7 +280,26 @@ export default function AssetDetail() {
   const totalAssessments = assessments?.length || 0;
   const totalDeficiencies = deficiencies?.length || 0;
   const criticalDeficiencies = deficiencies?.filter(d => d.severity === 'critical').length || 0;
-  const totalEstimatedCost = deficiencies?.reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
+  
+  // Calculate total costs from BOTH assessments (repair costs) AND deficiencies
+  const assessmentRepairCost = assessments?.reduce((sum, a) => sum + (a.estimatedRepairCost || 0), 0) || 0;
+  const deficiencyCost = deficiencies?.reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
+  // Use the higher of assessment repair costs or deficiency costs to avoid double-counting
+  // If assessments have repair costs, use those; otherwise fall back to deficiency costs
+  const totalEstimatedCost = assessmentRepairCost > 0 ? assessmentRepairCost : deficiencyCost;
+  
+  // Calculate overall condition from assessments
+  const getOverallCondition = () => {
+    if (!assessments || assessments.length === 0) return '-';
+    const conditionScores: Record<string, number> = { 'good': 4, 'fair': 3, 'poor': 2, 'critical': 1, 'not_assessed': 0 };
+    const avgScore = assessments.reduce((sum, a) => sum + (conditionScores[a.condition || 'not_assessed'] || 0), 0) / assessments.length;
+    if (avgScore >= 3.5) return 'Good';
+    if (avgScore >= 2.5) return 'Fair';
+    if (avgScore >= 1.5) return 'Poor';
+    if (avgScore > 0) return 'Critical';
+    return '-';
+  };
+  const overallCondition = getOverallCondition();
 
   return (
     <>
@@ -462,7 +481,7 @@ export default function AssetDetail() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">-</div>
+                  <div className="text-2xl font-bold">{overallCondition}</div>
                   <p className="text-xs text-muted-foreground">Overall rating</p>
                 </CardContent>
               </Card>

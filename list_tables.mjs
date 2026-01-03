@@ -4,9 +4,9 @@ async function main() {
   const connection = await mysql.createConnection(process.env.DATABASE_URL);
   
   try {
-    const [columns] = await connection.execute(`DESCRIBE assessments`);
-    console.log("=== Assessments Table Columns ===");
-    columns.forEach(col => console.log(`${col.Field}: ${col.Type}`));
+    const [tables] = await connection.execute(`SHOW TABLES`);
+    console.log("=== All Tables ===");
+    tables.forEach(t => console.log(Object.values(t)[0]));
   } finally {
     await connection.end();
   }

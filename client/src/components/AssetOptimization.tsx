@@ -34,8 +34,11 @@ export default function AssetOptimization({ assetId, assessments = [], deficienc
     return !isNaN(numCost) && isFinite(numCost) && numCost >= 0 ? numCost : 0;
   };
 
-  // Calculate total estimated costs from deficiencies with validation
-  const totalEstimatedCost = deficiencies.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0);
+  // Calculate total estimated costs from BOTH assessments (repair costs) AND deficiencies
+  const assessmentRepairCost = assessments.reduce((sum, a) => sum + getValidCost(a.estimatedRepairCost), 0);
+  const deficiencyTotalCost = deficiencies.reduce((sum, d) => sum + getValidCost(d.estimatedCost), 0);
+  // Use assessment repair costs if available, otherwise use deficiency costs
+  const totalEstimatedCost = assessmentRepairCost > 0 ? assessmentRepairCost : deficiencyTotalCost;
 
   // Group deficiencies by priority
   const deficienciesByPriority = {

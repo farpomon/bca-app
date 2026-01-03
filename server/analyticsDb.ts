@@ -283,42 +283,66 @@ export async function getCostAnalysis(
     };
   }
 
-  let query = db
+  // Query repair costs from assessments
+  let repairQuery = db
     .select({
       totalRepair: sum(assessments.estimatedRepairCost),
-      totalReplacement: sum(assessments.replacementValue),
       avgRepair: avg(assessments.estimatedRepairCost),
-      avgReplacement: avg(assessments.replacementValue),
       count: count(),
     })
     .from(assessments);
 
-  // Apply filters
-  const whereConditions = [];
+  // Apply filters for repair costs
+  const repairWhereConditions = [];
   if (filters?.projectId) {
-    query = query.innerJoin(assets, eq(assessments.assetId, assets.id));
-    whereConditions.push(eq(assets.projectId, filters.projectId));
+    repairQuery = repairQuery.innerJoin(assets, eq(assessments.assetId, assets.id));
+    repairWhereConditions.push(eq(assets.projectId, filters.projectId));
   }
   if (filters?.companyId) {
-    query = query
+    repairQuery = repairQuery
       .innerJoin(assets, eq(assessments.assetId, assets.id))
       .innerJoin(projects, eq(assets.projectId, projects.id));
-    whereConditions.push(eq(projects.companyId, filters.companyId));
+    repairWhereConditions.push(eq(projects.companyId, filters.companyId));
   }
 
-  if (whereConditions.length > 0) {
-    query = query.where(and(...whereConditions));
+  if (repairWhereConditions.length > 0) {
+    repairQuery = repairQuery.where(and(...repairWhereConditions));
   }
 
-  const results = await query;
-  const result = results[0];
+  const repairResults = await repairQuery;
+  const repairResult = repairResults[0];
+
+  // Query replacement values from assets table (not assessments)
+  let replacementQuery = db
+    .select({
+      totalReplacement: sum(assets.replacementValue),
+      avgReplacement: avg(assets.replacementValue),
+    })
+    .from(assets);
+
+  // Apply filters for replacement values
+  const replacementWhereConditions = [];
+  if (filters?.projectId) {
+    replacementWhereConditions.push(eq(assets.projectId, filters.projectId));
+  }
+  if (filters?.companyId) {
+    replacementQuery = replacementQuery.innerJoin(projects, eq(assets.projectId, projects.id));
+    replacementWhereConditions.push(eq(projects.companyId, filters.companyId));
+  }
+
+  if (replacementWhereConditions.length > 0) {
+    replacementQuery = replacementQuery.where(and(...replacementWhereConditions));
+  }
+
+  const replacementResults = await replacementQuery;
+  const replacementResult = replacementResults[0];
 
   return {
-    totalRepairCost: Number(result?.totalRepair || 0),
-    totalReplacementCost: Number(result?.totalReplacement || 0),
-    avgRepairCost: Number(result?.avgRepair || 0),
-    avgReplacementCost: Number(result?.avgReplacement || 0),
-    assessmentCount: Number(result?.count || 0),
+    totalRepairCost: Number(repairResult?.totalRepair || 0),
+    totalReplacementCost: Number(replacementResult?.totalReplacement || 0),
+    avgRepairCost: Number(repairResult?.avgRepair || 0),
+    avgReplacementCost: Number(replacementResult?.avgReplacement || 0),
+    assessmentCount: Number(repairResult?.count || 0),
   };
 }
 

@@ -984,20 +984,42 @@ export async function getProjectStats(projectId: number) {
     .from(deficiencies)
     .where(eq(deficiencies.projectId, projectId));
   
-  const [assessmentCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Count assessments via assets (assessments don't have projectId directly)
+  const assessmentCountResult = await db.execute(sql`
+    SELECT COUNT(*) as count
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  const assessmentCount = { count: (assessmentCountResult as any)?.[0]?.[0]?.count || 0 };
   
-  const [photoCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(photos)
-    .where(eq(photos.projectId, projectId));
+  // Count photos via assets (photos don't have projectId directly)
+  const photoCountResult = await db.execute(sql`
+    SELECT COUNT(*) as count
+    FROM photos p
+    INNER JOIN assets ast ON p.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  const photoCount = { count: (photoCountResult as any)?.[0]?.[0]?.count || 0 };
   
-  const [totalCost] = await db
+  // Calculate total cost from deficiencies
+  const [deficiencyCost] = await db
     .select({ total: sql<number>`sum(estimatedCost)` })
     .from(deficiencies)
     .where(eq(deficiencies.projectId, projectId));
+  
+  // Calculate total repair cost from assessments (via assets linked to project)
+  const [assessmentCost] = await db.execute(sql`
+    SELECT COALESCE(SUM(a.estimatedRepairCost), 0) as total
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  
+  // Use assessment repair costs if available, otherwise use deficiency costs
+  const assessmentTotal = (assessmentCost as any)?.[0]?.total || 0;
+  const deficiencyTotal = deficiencyCost?.total || 0;
+  const totalCost = { total: assessmentTotal > 0 ? assessmentTotal : deficiencyTotal };
   
   // Count project documents
   const [documentCount] = await db
