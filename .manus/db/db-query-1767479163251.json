@@ -1,0 +1,120 @@
+{
+  "query": "SELECT id, name, currentReplacementValue, deferredMaintenanceCost, status, city, province, \nCASE WHEN currentReplacementValue > 0 THEN ROUND((deferredMaintenanceCost / currentReplacementValue) * 100, 2) ELSE 0 END as FCI\nFROM projects ORDER BY id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, currentReplacementValue, deferredMaintenanceCost, status, city, province, \nCASE WHEN currentReplacementValue > 0 THEN ROUND((deferredMaintenanceCost / currentReplacementValue) * 100, 2) ELSE 0 END as FCI\nFROM projects ORDER BY id DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "14",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "currentReplacementValue": "247500000.00",
+      "deferredMaintenanceCost": "45750000.00",
+      "status": "in_progress",
+      "city": "Edmonton",
+      "province": "Alberta",
+      "FCI": "18.48"
+    },
+    {
+      "id": "13",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "currentReplacementValue": "247500000.00",
+      "deferredMaintenanceCost": "45750000.00",
+      "status": "in_progress",
+      "city": "Edmonton",
+      "province": "Alberta",
+      "FCI": "18.48"
+    },
+    {
+      "id": "12",
+      "name": "Financial Metrics Demo Portfolio",
+      "currentReplacementValue": "328000000.00",
+      "deferredMaintenanceCost": "7842500.00",
+      "status": "archived",
+      "city": "Toronto",
+      "province": "Ontario",
+      "FCI": "2.39"
+    },
+    {
+      "id": "11",
+      "name": "Financial Metrics Demo Portfolio",
+      "currentReplacementValue": "NULL",
+      "deferredMaintenanceCost": "NULL",
+      "status": "archived",
+      "city": "Toronto",
+      "province": "Ontario",
+      "FCI": "0.00"
+    },
+    {
+      "id": "10",
+      "name": "Financial Metrics Demo Portfolio",
+      "currentReplacementValue": "NULL",
+      "deferredMaintenanceCost": "NULL",
+      "status": "archived",
+      "city": "Toronto",
+      "province": "Ontario",
+      "FCI": "0.00"
+    },
+    {
+      "id": "9",
+      "name": "Heritage Manor Condominiums Assessment",
+      "currentReplacementValue": "96200000.00",
+      "deferredMaintenanceCost": "910000.00",
+      "status": "archived",
+      "city": "NULL",
+      "province": "NULL",
+      "FCI": "0.95"
+    },
+    {
+      "id": "8",
+      "name": "Riverside Community Center Assessment",
+      "currentReplacementValue": "110500000.00",
+      "deferredMaintenanceCost": "260000.00",
+      "status": "archived",
+      "city": "NULL",
+      "province": "NULL",
+      "FCI": "0.24"
+    },
+    {
+      "id": "7",
+      "name": "Oakwood Corporate Tower Assessment",
+      "currentReplacementValue": "NULL",
+      "deferredMaintenanceCost": "NULL",
+      "status": "deleted",
+      "city": "NULL",
+      "province": "NULL",
+      "FCI": "0.00"
+    },
+    {
+      "id": "3",
+      "name": "Lakewood Parks Assessment",
+      "currentReplacementValue": "NULL",
+      "deferredMaintenanceCost": "NULL",
+      "status": "deleted",
+      "city": "NULL",
+      "province": "NULL",
+      "FCI": "0.00"
+    },
+    {
+      "id": "2",
+      "name": "Riverside Schools FCA",
+      "currentReplacementValue": "NULL",
+      "deferredMaintenanceCost": "NULL",
+      "status": "deleted",
+      "city": "NULL",
+      "province": "NULL",
+      "FCI": "0.00"
+    },
+    {
+      "id": "1",
+      "name": "2024 Municipal Building Assessment",
+      "currentReplacementValue": "NULL",
+      "deferredMaintenanceCost": "NULL",
+      "status": "deleted",
+      "city": "NULL",
+      "province": "NULL",
+      "FCI": "0.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcurrentReplacementValue\tdeferredMaintenanceCost\tstatus\tcity\tprovince\tFCI\n14\tCity of Edmonton - Municipal Building Portfolio\t247500000.00\t45750000.00\tin_progress\tEdmonton\tAlberta\t18.48\n13\tCity of Edmonton - Municipal Building Portfolio\t247500000.00\t45750000.00\tin_progress\tEdmonton\tAlberta\t18.48\n12\tFinancial Metrics Demo Portfolio\t328000000.00\t7842500.00\tarchived\tToronto\tOntario\t2.39\n11\tFinancial Metrics Demo Portfolio\tNULL\tNULL\tarchived\tToronto\tOntario\t0.00\n10\tFinancial Metrics Demo Portfolio\tNULL\tNULL\tarchived\tToronto\tOntario\t0.00\n9\tHeritage Manor Condominiums Assessment\t96200000.00\t910000.00\tarchived\tNULL\tNULL\t0.95\n8\tRiverside Community Center Assessment\t110500000.00\t260000.00\tarchived\tNULL\tNULL\t0.24\n7\tOakwood Corporate Tower Assessment\tNULL\tNULL\tdeleted\tNULL\tNULL\t0.00\n3\tLakewood Parks Assessment\tNULL\tNULL\tdeleted\tNULL\tNULL\t0.00\n2\tRiverside Schools FCA\tNULL\tNULL\tdeleted\tNULL\tNULL\t0.00\n1\t2024 Municipal Building Assessment\tNULL\tNULL\tdeleted\tNULL\tNULL\t0.00\n",
+  "stderr": "",
+  "execution_time_ms": 84
+}

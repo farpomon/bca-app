@@ -3182,3 +3182,10 @@ Testing:
 - [x] Update DashboardLayout to filter navigation based on company page visibility
 - [x] Create superadmin UI to toggle pages on/off for each company
 - [x] Test page visibility controls
+
+## Financial KPIs Data Fix
+
+- [x] Fix City of Edmonton project financial KPIs - CRV and Deferred Maintenance were incorrect
+- [x] Calculate correct values from asset-level FCI scores (FCI = DM/CRV, so DM = FCI * CRV)
+- [x] Updated Project 13 and 14 with correct values: CRV=$1.89B, DM=$307.6M, FCI=16.29%
+
