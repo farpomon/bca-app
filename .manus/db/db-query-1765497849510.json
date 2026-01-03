@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `audit_log`\n  MODIFY COLUMN `action` enum('create','update','delete','view','export','share') NOT NULL,\n  ADD COLUMN IF NOT EXISTS `dataClassification` enum('public','internal','confidential','restricted') DEFAULT 'internal',\n  ADD COLUMN IF NOT EXISTS `complianceTags` text,\n  ADD COLUMN IF NOT EXISTS `retentionPolicy` varchar(50),\n  ADD COLUMN IF NOT EXISTS `ipAddress` varchar(45),\n  ADD COLUMN IF NOT EXISTS `userAgent` text,\n  ADD COLUMN IF NOT EXISTS `sessionId` varchar(100);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE `audit_log`\n  MODIFY COLUMN `action` enum('create','update','delete','view','export','share') NOT NULL,\n  ADD COLUMN IF NOT EXISTS `dataClassification` enum('public','internal','confidential','restricted') DEFAULT 'internal',\n  ADD COLUMN IF NOT EXISTS `complianceTags` text,\n  ADD COLUMN IF NOT EXISTS `retentionPolicy` varchar(50),\n  ADD COLUMN IF NOT EXISTS `ipAddress` varchar(45),\n  ADD COLUMN IF NOT EXISTS `userAgent` text,\n  ADD COLUMN IF NOT EXISTS `sessionId` varchar(100);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1779
+}

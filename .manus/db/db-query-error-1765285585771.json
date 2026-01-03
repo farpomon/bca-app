@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE assessments \nADD COLUMN componentName VARCHAR(255) AFTER componentCode,\nADD COLUMN componentLocation VARCHAR(255) AFTER componentName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE assessments \nADD COLUMN componentName VARCHAR(255) AFTER componentCode,\nADD COLUMN componentLocation VARCHAR(255) AFTER componentName;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'componentname' in 'assessments'"
+  ]
+}

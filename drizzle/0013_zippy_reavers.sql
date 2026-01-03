@@ -1,0 +1,1 @@
+-- Migration skipped (already applied manually)

@@ -1,0 +1,210 @@
+{
+  "query": "SELECT DISTINCT name, COUNT(*) as count FROM projects WHERE name LIKE '%Test%' OR name LIKE '%test%' OR name LIKE '%Demo%' OR name LIKE '%demo%' OR name LIKE '%Sample%' OR name LIKE '%sample%' GROUP BY name ORDER BY count DESC LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT DISTINCT name, COUNT(*) as count FROM projects WHERE name LIKE '%Test%' OR name LIKE '%test%' OR name LIKE '%Demo%' OR name LIKE '%demo%' OR name LIKE '%Sample%' OR name LIKE '%sample%' GROUP BY name ORDER BY count DESC LIMIT 50;",
+  "rows": [
+    {
+      "name": "Consultant Upload Test Project",
+      "count": "189"
+    },
+    {
+      "name": "CI/FCI Test Project",
+      "count": "54"
+    },
+    {
+      "name": "History Test Project",
+      "count": "53"
+    },
+    {
+      "name": "Export Test Project",
+      "count": "14"
+    },
+    {
+      "name": "Test Project",
+      "count": "14"
+    },
+    {
+      "name": "Optimization Test Building",
+      "count": "9"
+    },
+    {
+      "name": "Test Project 2",
+      "count": "9"
+    },
+    {
+      "name": "Test Project 1",
+      "count": "9"
+    },
+    {
+      "name": "Assessment Export Test",
+      "count": "9"
+    },
+    {
+      "name": "Test Project for Deletion",
+      "count": "8"
+    },
+    {
+      "name": "Test Building",
+      "count": "8"
+    },
+    {
+      "name": "Prediction Test Project",
+      "count": "6"
+    },
+    {
+      "name": "Portfolio Prediction Test",
+      "count": "6"
+    },
+    {
+      "name": "ML Prediction Test",
+      "count": "6"
+    },
+    {
+      "name": "Photo Test Project",
+      "count": "5"
+    },
+    {
+      "name": "Test Project with Auto ID",
+      "count": "5"
+    },
+    {
+      "name": "CSV Test Project",
+      "count": "5"
+    },
+    {
+      "name": "Summary Test 1",
+      "count": "5"
+    },
+    {
+      "name": "Validation Test Building",
+      "count": "5"
+    },
+    {
+      "name": "Deficiency CSV Test",
+      "count": "5"
+    },
+    {
+      "name": "Test Facility",
+      "count": "5"
+    },
+    {
+      "name": "Test Project with Custom ID",
+      "count": "5"
+    },
+    {
+      "name": "Photo List Test",
+      "count": "5"
+    },
+    {
+      "name": "Test Project for Asset",
+      "count": "5"
+    },
+    {
+      "name": "Summary Test 2",
+      "count": "5"
+    },
+    {
+      "name": "Cost Export Test",
+      "count": "5"
+    },
+    {
+      "name": "Report Test Project",
+      "count": "5"
+    },
+    {
+      "name": "Complete Workflow Test",
+      "count": "5"
+    },
+    {
+      "name": "Test Project for Update",
+      "count": "4"
+    },
+    {
+      "name": "List Deficiencies Test",
+      "count": "4"
+    },
+    {
+      "name": "Test Building 2",
+      "count": "4"
+    },
+    {
+      "name": "Test Project for Component Fields",
+      "count": "4"
+    },
+    {
+      "name": "Multi-Sheet Test",
+      "count": "4"
+    },
+    {
+      "name": "Test Project for Hierarchy",
+      "count": "4"
+    },
+    {
+      "name": "Condition Matrix Test",
+      "count": "4"
+    },
+    {
+      "name": "Test Compliance Project",
+      "count": "4"
+    },
+    {
+      "name": "Test Building Code Project",
+      "count": "4"
+    },
+    {
+      "name": "FCI Test Project",
+      "count": "4"
+    },
+    {
+      "name": "Deficiency Test Project",
+      "count": "4"
+    },
+    {
+      "name": "Geolocation Test Building",
+      "count": "4"
+    },
+    {
+      "name": "Stats Test Project",
+      "count": "4"
+    },
+    {
+      "name": "PDF Test Project",
+      "count": "4"
+    },
+    {
+      "name": "Full Integration Test Building",
+      "count": "4"
+    },
+    {
+      "name": "Asset Update Test",
+      "count": "4"
+    },
+    {
+      "name": "Multi-Edit Test Project",
+      "count": "4"
+    },
+    {
+      "name": "Annotation Test Project",
+      "count": "4"
+    },
+    {
+      "name": "Excel Test Project",
+      "count": "4"
+    },
+    {
+      "name": "Asset Delete Test",
+      "count": "4"
+    },
+    {
+      "name": "Test Project for Optional Fields",
+      "count": "4"
+    },
+    {
+      "name": "Test Project Without Config",
+      "count": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tcount\nConsultant Upload Test Project\t189\nCI/FCI Test Project\t54\nHistory Test Project\t53\nExport Test Project\t14\nTest Project\t14\nOptimization Test Building\t9\nTest Project 2\t9\nTest Project 1\t9\nAssessment Export Test\t9\nTest Project for Deletion\t8\nTest Building\t8\nPrediction Test Project\t6\nPortfolio Prediction Test\t6\nML Prediction Test\t6\nPhoto Test Project\t5\nTest Project with Auto ID\t5\nCSV Test Project\t5\nSummary Test 1\t5\nValidation Test Building\t5\nDeficiency CSV Test\t5\nTest Facility\t5\nTest Project with Custom ID\t5\nPhoto List Test\t5\nTest Project for Asset\t5\nSummary Test 2\t5\nCost Export Test\t5\nReport Test Project\t5\nComplete Workflow Test\t5\nTest Project for Update\t4\nList Deficiencies Test\t4\nTest Building 2\t4\nTest Project for Component Fields\t4\nMulti-Sheet Test\t4\nTest Project for Hierarchy\t4\nCondition Matrix Test\t4\nTest Compliance Project\t4\nTest Building Code Project\t4\nFCI Test Project\t4\nDeficiency Test Project\t4\nGeolocation Test Building\t4\nStats Test Project\t4\nPDF Test Project\t4\nFull Integration Test Building\t4\nAsset Update Test\t4\nMulti-Edit Test Project\t4\nAnnotation Test Project\t4\nExcel Test Project\t4\nAsset Delete Test\t4\nTest Project for Optional Fields\t4\nTest Project Without Config\t4\n",
+  "stderr": "",
+  "execution_time_ms": 146
+}

@@ -1,0 +1,90 @@
+{
+  "query": "SELECT p.id as project_id, p.name as project_name, a.id as asset_id, a.name as asset_name, \n       COUNT(ass.id) as assessment_count, SUM(ass.estimatedRepairCost) as total_repair_cost\nFROM projects p \nJOIN assets a ON a.projectId = p.id \nLEFT JOIN assessments ass ON ass.assetId = a.id \nWHERE ass.estimatedRepairCost > 0\nGROUP BY p.id, a.id \nORDER BY total_repair_cost DESC \nLIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT p.id as project_id, p.name as project_name, a.id as asset_id, a.name as asset_name, \n       COUNT(ass.id) as assessment_count, SUM(ass.estimatedRepairCost) as total_repair_cost\nFROM projects p \nJOIN assets a ON a.projectId = p.id \nLEFT JOIN assessments ass ON ass.assetId = a.id \nWHERE ass.estimatedRepairCost > 0\nGROUP BY p.id, a.id \nORDER BY total_repair_cost DESC \nLIMIT 10",
+  "rows": [
+    {
+      "project_id": "3300001",
+      "project_name": "Portfolio Test - Downtown Office Complex",
+      "asset_id": "1830001",
+      "asset_name": "Tower A - Main Office Building",
+      "assessment_count": "8",
+      "total_repair_cost": "3025000"
+    },
+    {
+      "project_id": "3210001",
+      "project_name": "Metro Vancouver Public Works Portfolio",
+      "asset_id": "1740006",
+      "asset_name": "Parkade Structure A",
+      "assessment_count": "23",
+      "total_repair_cost": "2430003"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650001",
+      "asset_name": "City Hall Main Building",
+      "assessment_count": "16",
+      "total_repair_cost": "2390375"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650008",
+      "asset_name": "Senior Citizens Centre",
+      "assessment_count": "18",
+      "total_repair_cost": "2252671"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650007",
+      "asset_name": "Water Treatment Plant - East",
+      "assessment_count": "17",
+      "total_repair_cost": "2242371"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650010",
+      "asset_name": "Parks Operations Depot",
+      "assessment_count": "19",
+      "total_repair_cost": "2204137"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650002",
+      "asset_name": "Public Works Maintenance Facility",
+      "assessment_count": "22",
+      "total_repair_cost": "2164967"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650005",
+      "asset_name": "Main Branch Library",
+      "assessment_count": "20",
+      "total_repair_cost": "2070500"
+    },
+    {
+      "project_id": "3120001",
+      "project_name": "City of Vancouver Municipal Complex",
+      "asset_id": "1650003",
+      "asset_name": "Community Recreation Centre",
+      "assessment_count": "19",
+      "total_repair_cost": "2020544"
+    },
+    {
+      "project_id": "3300001",
+      "project_name": "Portfolio Test - Downtown Office Complex",
+      "asset_id": "1830003",
+      "asset_name": "Parking Structure",
+      "assessment_count": "5",
+      "total_repair_cost": "1700000"
+    }
+  ],
+  "messages": [],
+  "stdout": "project_id\tproject_name\tasset_id\tasset_name\tassessment_count\ttotal_repair_cost\n3300001\tPortfolio Test - Downtown Office Complex\t1830001\tTower A - Main Office Building\t8\t3025000\n3210001\tMetro Vancouver Public Works Portfolio\t1740006\tParkade Structure A\t23\t2430003\n3120001\tCity of Vancouver Municipal Complex\t1650001\tCity Hall Main Building\t16\t2390375\n3120001\tCity of Vancouver Municipal Complex\t1650008\tSenior Citizens Centre\t18\t2252671\n3120001\tCity of Vancouver Municipal Complex\t1650007\tWater Treatment Plant - East\t17\t2242371\n3120001\tCity of Vancouver Municipal Complex\t1650010\tParks Operations Depot\t19\t2204137\n3120001\tCity of Vancouver Municipal Complex\t1650002\tPublic Works Maintenance Facility\t22\t2164967\n3120001\tCity of Vancouver Municipal Complex\t1650005\tMain Branch Library\t20\t2070500\n3120001\tCity of Vancouver Municipal Complex\t1650003\tCommunity Recreation Centre\t19\t2020544\n3300001\tPortfolio Test - Downtown Office Complex\t1830003\tParking Structure\t5\t1700000\n",
+  "stderr": "",
+  "execution_time_ms": 138
+}

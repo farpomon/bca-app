@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `backup_schedules` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(255) NOT NULL,\n\t`description` text,\n\t`cronExpression` varchar(100) NOT NULL,\n\t`timezone` varchar(50) NOT NULL DEFAULT 'America/New_York',\n\t`isEnabled` int NOT NULL DEFAULT 1,\n\t`retentionDays` int NOT NULL DEFAULT 30,\n\t`encryptionEnabled` int NOT NULL DEFAULT 1,\n\t`lastRunAt` timestamp,\n\t`nextRunAt` timestamp,\n\t`lastRunStatus` enum('success','failed','skipped'),\n\t`lastRunBackupId` int,\n\t`createdBy` int,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `backup_schedules_id` PRIMARY KEY(`id`),\n\tINDEX `idx_enabled` (`isEnabled`),\n\tINDEX `idx_next_run` (`nextRunAt`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `backup_schedules` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(255) NOT NULL,\n\t`description` text,\n\t`cronExpression` varchar(100) NOT NULL,\n\t`timezone` varchar(50) NOT NULL DEFAULT 'America/New_York',\n\t`isEnabled` int NOT NULL DEFAULT 1,\n\t`retentionDays` int NOT NULL DEFAULT 30,\n\t`encryptionEnabled` int NOT NULL DEFAULT 1,\n\t`lastRunAt` timestamp,\n\t`nextRunAt` timestamp,\n\t`lastRunStatus` enum('success','failed','skipped'),\n\t`lastRunBackupId` int,\n\t`createdBy` int,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `backup_schedules_id` PRIMARY KEY(`id`),\n\tINDEX `idx_enabled` (`isEnabled`),\n\tINDEX `idx_next_run` (`nextRunAt`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 341
+}

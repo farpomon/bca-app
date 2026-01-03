@@ -1,0 +1,64 @@
+{
+  "query": "SELECT id, name, userId, deletedAt FROM projects WHERE userId = 18000035 LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, userId, deletedAt FROM projects WHERE userId = 18000035 LIMIT 20;",
+  "rows": [
+    {
+      "id": "3720165",
+      "name": "Jackson Ave",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720166",
+      "name": "Test Photo Map Project",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720167",
+      "name": "Small Municipal Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720168",
+      "name": "Small Municipal Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720169",
+      "name": "Small Municipal Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720170",
+      "name": "Small Municipal Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720171",
+      "name": "Large Corporate Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720172",
+      "name": "Small Municipal Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "3720173",
+      "name": "Large Corporate Portfolio - Demo",
+      "userId": "18000035",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tuserId\tdeletedAt\n3720165\tJackson Ave\t18000035\tNULL\n3720166\tTest Photo Map Project\t18000035\tNULL\n3720167\tSmall Municipal Portfolio - Demo\t18000035\tNULL\n3720168\tSmall Municipal Portfolio - Demo\t18000035\tNULL\n3720169\tSmall Municipal Portfolio - Demo\t18000035\tNULL\n3720170\tSmall Municipal Portfolio - Demo\t18000035\tNULL\n3720171\tLarge Corporate Portfolio - Demo\t18000035\tNULL\n3720172\tSmall Municipal Portfolio - Demo\t18000035\tNULL\n3720173\tLarge Corporate Portfolio - Demo\t18000035\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 393
+}

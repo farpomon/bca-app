@@ -1,0 +1,50 @@
+{
+  "query": "SELECT projectId, enabledComponents FROM project_hierarchy_config WHERE enabledComponents IS NOT NULL LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT projectId, enabledComponents FROM project_hierarchy_config WHERE enabledComponents IS NOT NULL LIMIT 10",
+  "rows": [
+    {
+      "projectId": "600114",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "600115",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "630005",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "630007",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "660001",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "660002",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "660049",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "660051",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "690005",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    },
+    {
+      "projectId": "690007",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]"
+    }
+  ],
+  "messages": [],
+  "stdout": "projectId\tenabledComponents\n600114\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n600115\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n630005\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n630007\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n660001\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n660002\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n660049\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n660051\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n690005\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n690007\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\n",
+  "stderr": "",
+  "execution_time_ms": 178
+}

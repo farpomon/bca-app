@@ -1,0 +1,140 @@
+{
+  "query": "SELECT projectId, maxDepth, enabledComponents FROM project_hierarchy_config",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT projectId, maxDepth, enabledComponents FROM project_hierarchy_config",
+  "rows": [
+    {
+      "projectId": "600114",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "600115",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "630005",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "630007",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "660001",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "660002",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "660049",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "660051",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "690005",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "690007",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "720006",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "720009",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "720050",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "720051",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "750014",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "750017",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "780012",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "780016",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "810023",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "810026",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "810185",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "810186",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "840064",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "840065",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    },
+    {
+      "projectId": "870072",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\",\"C\"]"
+    },
+    {
+      "projectId": "870073",
+      "maxDepth": "2",
+      "enabledComponents": "[\"A\",\"B\"]"
+    }
+  ],
+  "messages": [],
+  "stdout": "projectId\tmaxDepth\tenabledComponents\n600114\t2\t[\"A\",\"B\",\"C\"]\n600115\t2\t[\"A\",\"B\"]\n630005\t2\t[\"A\",\"B\",\"C\"]\n630007\t2\t[\"A\",\"B\"]\n660001\t2\t[\"A\",\"B\",\"C\"]\n660002\t2\t[\"A\",\"B\"]\n660049\t2\t[\"A\",\"B\",\"C\"]\n660051\t2\t[\"A\",\"B\"]\n690005\t2\t[\"A\",\"B\",\"C\"]\n690007\t2\t[\"A\",\"B\"]\n720006\t2\t[\"A\",\"B\",\"C\"]\n720009\t2\t[\"A\",\"B\"]\n720050\t2\t[\"A\",\"B\",\"C\"]\n720051\t2\t[\"A\",\"B\"]\n750014\t2\t[\"A\",\"B\",\"C\"]\n750017\t2\t[\"A\",\"B\"]\n780012\t2\t[\"A\",\"B\",\"C\"]\n780016\t2\t[\"A\",\"B\"]\n810023\t2\t[\"A\",\"B\",\"C\"]\n810026\t2\t[\"A\",\"B\"]\n810185\t2\t[\"A\",\"B\",\"C\"]\n810186\t2\t[\"A\",\"B\"]\n840064\t2\t[\"A\",\"B\",\"C\"]\n840065\t2\t[\"A\",\"B\"]\n870072\t2\t[\"A\",\"B\",\"C\"]\n870073\t2\t[\"A\",\"B\"]\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

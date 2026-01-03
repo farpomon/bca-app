@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `encryption_key_metadata` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `keyIdentifier` varchar(255) NOT NULL UNIQUE,\n  `keyType` enum('data_encryption','backup_encryption','transport') NOT NULL,\n  `keyOwner` varchar(255) NOT NULL,\n  `algorithm` varchar(100) NOT NULL,\n  `keyStatus` enum('active','rotated','revoked') NOT NULL DEFAULT 'active',\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `rotatedAt` timestamp NULL,\n  `expiresAt` timestamp NULL,\n  `notes` text,\n  CONSTRAINT `encryption_key_metadata_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `encryption_key_metadata` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `keyIdentifier` varchar(255) NOT NULL UNIQUE,\n  `keyType` enum('data_encryption','backup_encryption','transport') NOT NULL,\n  `keyOwner` varchar(255) NOT NULL,\n  `algorithm` varchar(100) NOT NULL,\n  `keyStatus` enum('active','rotated','revoked') NOT NULL DEFAULT 'active',\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `rotatedAt` timestamp NULL,\n  `expiresAt` timestamp NULL,\n  `notes` text,\n  CONSTRAINT `encryption_key_metadata_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 182
+}

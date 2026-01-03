@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `sms_verification_codes` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `phoneNumber` varchar(320) NOT NULL,\n  `code` varchar(10) NOT NULL,\n  `purpose` varchar(50) NOT NULL,\n  `verified` int NOT NULL DEFAULT 0,\n  `attempts` int NOT NULL DEFAULT 0,\n  `expiresAt` timestamp NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `sms_verification_codes_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `sms_verification_codes` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `phoneNumber` varchar(320) NOT NULL,\n  `code` varchar(10) NOT NULL,\n  `purpose` varchar(50) NOT NULL,\n  `verified` int NOT NULL DEFAULT 0,\n  `attempts` int NOT NULL DEFAULT 0,\n  `expiresAt` timestamp NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `sms_verification_codes_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 188
+}

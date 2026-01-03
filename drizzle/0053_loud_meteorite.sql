@@ -1,0 +1,2 @@
+ALTER TABLE `mfa_audit_log` MODIFY COLUMN `action` enum('setup','enable','disable','verify_success','verify_fail','backup_code_used','device_trusted','device_removed','email_sent','email_verified','sms_sent','sms_verified','mfa_reset_by_admin') NOT NULL;--> statement-breakpoint
+ALTER TABLE `mfa_audit_log` MODIFY COLUMN `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;

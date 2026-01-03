@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO portfolios (name, description, userId, createdAt, updatedAt) \nSELECT 'Downtown Commercial Portfolio', 'A collection of commercial buildings in the downtown area for condition assessment tracking', id, NOW(), NOW()\nFROM users WHERE role = 'admin' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute INSERT INTO portfolios (name, description, userId, createdAt, updatedAt) \nSELECT 'Downtown Commercial Portfolio', 'A collection of commercial buildings in the downtown area for condition assessment tracking', id, NOW(), NOW()\nFROM users WHERE role = 'admin' LIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'xnmtzzwx6e46h8jvzbq4ta.portfolios' doesn't exist"
+  ]
+}

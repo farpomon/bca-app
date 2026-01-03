@@ -1,0 +1,80 @@
+{
+  "query": "SELECT p.id, p.name, p.status, p.userId, COUNT(a.id) as assetCount \nFROM projects p \nLEFT JOIN assets a ON a.projectId = p.id \nGROUP BY p.id \nORDER BY assetCount DESC \nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT p.id, p.name, p.status, p.userId, COUNT(a.id) as assetCount \nFROM projects p \nLEFT JOIN assets a ON a.projectId = p.id \nGROUP BY p.id \nORDER BY assetCount DESC \nLIMIT 10;",
+  "rows": [
+    {
+      "id": "3120001",
+      "name": "City of Vancouver Municipal Complex",
+      "status": "in_progress",
+      "userId": "1",
+      "assetCount": "10"
+    },
+    {
+      "id": "3210001",
+      "name": "Metro Vancouver Public Works Portfolio",
+      "status": "in_progress",
+      "userId": "1",
+      "assetCount": "10"
+    },
+    {
+      "id": "3150123",
+      "name": "Asset Test Project",
+      "status": "deleted",
+      "userId": "1",
+      "assetCount": "2"
+    },
+    {
+      "id": "3240184",
+      "name": "Asset Test Project",
+      "status": "deleted",
+      "userId": "1",
+      "assetCount": "2"
+    },
+    {
+      "id": "3240185",
+      "name": "Asset Update Test",
+      "status": "deleted",
+      "userId": "1",
+      "assetCount": "1"
+    },
+    {
+      "id": "3180001",
+      "name": "Comox 3",
+      "status": "draft",
+      "userId": "1",
+      "assetCount": "1"
+    },
+    {
+      "id": "3150127",
+      "name": "Assessment Link Test",
+      "status": "deleted",
+      "userId": "1",
+      "assetCount": "1"
+    },
+    {
+      "id": "3150059",
+      "name": "Export Test Project",
+      "status": "draft",
+      "userId": "1",
+      "assetCount": "1"
+    },
+    {
+      "id": "3150066",
+      "name": "Data-Rich Project",
+      "status": "draft",
+      "userId": "1",
+      "assetCount": "1"
+    },
+    {
+      "id": "3240122",
+      "name": "Deficiency CSV Test",
+      "status": "draft",
+      "userId": "1",
+      "assetCount": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tstatus\tuserId\tassetCount\n3120001\tCity of Vancouver Municipal Complex\tin_progress\t1\t10\n3210001\tMetro Vancouver Public Works Portfolio\tin_progress\t1\t10\n3150123\tAsset Test Project\tdeleted\t1\t2\n3240184\tAsset Test Project\tdeleted\t1\t2\n3240185\tAsset Update Test\tdeleted\t1\t1\n3180001\tComox 3\tdraft\t1\t1\n3150127\tAssessment Link Test\tdeleted\t1\t1\n3150059\tExport Test Project\tdraft\t1\t1\n3150066\tData-Rich Project\tdraft\t1\t1\n3240122\tDeficiency CSV Test\tdraft\t1\t1\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

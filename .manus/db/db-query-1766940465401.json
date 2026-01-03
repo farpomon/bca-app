@@ -1,0 +1,36 @@
+{
+  "query": "SELECT id, projectId, assetId, name, format, fileSize, apsUrn, apsTranslationStatus, apsTranslationProgress, apsTranslationMessage, uploadedAt FROM facility_models ORDER BY uploadedAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, projectId, assetId, name, format, fileSize, apsUrn, apsTranslationStatus, apsTranslationProgress, apsTranslationMessage, uploadedAt FROM facility_models ORDER BY uploadedAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "60003",
+      "projectId": "3120001",
+      "assetId": "1650002",
+      "name": "racadvancedsampleproject",
+      "format": "rvt",
+      "fileSize": "17068032",
+      "apsUrn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmNhLW1vZGVscy1tanB5a2U0aC00MzJxdGYvMzEyMDAwMSUyRjE3NjY5NDA0MjI1MjEtcmFjYWR2YW5jZWRzYW1wbGVwcm9qZWN0LnJ2dA",
+      "apsTranslationStatus": "in_progress",
+      "apsTranslationProgress": "0",
+      "apsTranslationMessage": "NULL",
+      "uploadedAt": "2025-12-28 16:47:05"
+    },
+    {
+      "id": "60002",
+      "projectId": "3120001",
+      "assetId": "1650002",
+      "name": "racadvancedsampleproject",
+      "format": "rvt",
+      "fileSize": "17068032",
+      "apsUrn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmNhLW1vZGVscy1tanB5a2U0aC00MzJxdGYvMzEyMDAwMSUyRjE3NjY5NDAzOTgwNTAtcmFjYWR2YW5jZWRzYW1wbGVwcm9qZWN0LnJ2dA",
+      "apsTranslationStatus": "in_progress",
+      "apsTranslationProgress": "0",
+      "apsTranslationMessage": "Translation in progress: 0%",
+      "uploadedAt": "2025-12-28 16:46:43"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tprojectId\tassetId\tname\tformat\tfileSize\tapsUrn\tapsTranslationStatus\tapsTranslationProgress\tapsTranslationMessage\tuploadedAt\n60003\t3120001\t1650002\tracadvancedsampleproject\trvt\t17068032\tdXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmNhLW1vZGVscy1tanB5a2U0aC00MzJxdGYvMzEyMDAwMSUyRjE3NjY5NDA0MjI1MjEtcmFjYWR2YW5jZWRzYW1wbGVwcm9qZWN0LnJ2dA\tin_progress\t0\tNULL\t2025-12-28 16:47:05\n60002\t3120001\t1650002\tracadvancedsampleproject\trvt\t17068032\tdXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmNhLW1vZGVscy1tanB5a2U0aC00MzJxdGYvMzEyMDAwMSUyRjE3NjY5NDAzOTgwNTAtcmFjYWR2YW5jZWRzYW1wbGVwcm9qZWN0LnJ2dA\tin_progress\t0\tTranslation in progress: 0%\t2025-12-28 16:46:43\n",
+  "stderr": "",
+  "execution_time_ms": 115
+}

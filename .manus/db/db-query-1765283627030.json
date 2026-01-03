@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, projectId, enabledComponents, maxDepth FROM project_hierarchy_config LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, projectId, enabledComponents, maxDepth FROM project_hierarchy_config LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "projectId": "600114",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "2",
+      "projectId": "600115",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "30001",
+      "projectId": "630005",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "30002",
+      "projectId": "630007",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "60001",
+      "projectId": "660001",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "60002",
+      "projectId": "660002",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "60004",
+      "projectId": "660049",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "60005",
+      "projectId": "660051",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "90001",
+      "projectId": "690005",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    },
+    {
+      "id": "90002",
+      "projectId": "690007",
+      "enabledComponents": "[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]",
+      "maxDepth": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tprojectId\tenabledComponents\tmaxDepth\n1\t600114\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n2\t600115\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n30001\t630005\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n30002\t630007\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n60001\t660001\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n60002\t660002\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n60004\t660049\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n60005\t660051\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n90001\t690005\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n90002\t690007\t[\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\"]\t2\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

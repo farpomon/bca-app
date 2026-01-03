@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `bulk_operation_snapshots` (\n  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n  `operationId` int NOT NULL,\n  `recordType` enum('user', 'company', 'access_request') NOT NULL,\n  `recordId` int NOT NULL,\n  `snapshotData` text NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  KEY `idx_operation_id` (`operationId`),\n  KEY `idx_record` (`recordType`, `recordId`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `bulk_operation_snapshots` (\n  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n  `operationId` int NOT NULL,\n  `recordType` enum('user', 'company', 'access_request') NOT NULL,\n  `recordId` int NOT NULL,\n  `snapshotData` text NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  KEY `idx_operation_id` (`operationId`),\n  KEY `idx_record` (`recordType`, `recordId`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 251
+}

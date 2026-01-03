@@ -1,0 +1,1 @@
+ALTER TABLE `assessments` MODIFY COLUMN `assetId` int;

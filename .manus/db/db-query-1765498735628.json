@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `data_disposal_requests` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `requestType` enum('project','user_data','audit_logs','backups','full_account') NOT NULL,\n  `targetId` int,\n  `targetType` varchar(100),\n  `requestedBy` int NOT NULL,\n  `approvedBy` int,\n  `status` enum('pending','approved','in_progress','completed','rejected') NOT NULL DEFAULT 'pending',\n  `reason` text,\n  `disposalMethod` varchar(100),\n  `backupPurgeStatus` enum('not_started','in_progress','completed','failed') DEFAULT 'not_started',\n  `backupPurgeCompletedAt` timestamp NULL,\n  `verificationHash` varchar(255),\n  `requestedAt` timestamp NOT NULL DEFAULT (now()),\n  `approvedAt` timestamp NULL,\n  `completedAt` timestamp NULL,\n  `notes` text,\n  CONSTRAINT `data_disposal_requests_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `data_disposal_requests` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `requestType` enum('project','user_data','audit_logs','backups','full_account') NOT NULL,\n  `targetId` int,\n  `targetType` varchar(100),\n  `requestedBy` int NOT NULL,\n  `approvedBy` int,\n  `status` enum('pending','approved','in_progress','completed','rejected') NOT NULL DEFAULT 'pending',\n  `reason` text,\n  `disposalMethod` varchar(100),\n  `backupPurgeStatus` enum('not_started','in_progress','completed','failed') DEFAULT 'not_started',\n  `backupPurgeCompletedAt` timestamp NULL,\n  `verificationHash` varchar(255),\n  `requestedAt` timestamp NOT NULL DEFAULT (now()),\n  `approvedAt` timestamp NULL,\n  `completedAt` timestamp NULL,\n  `notes` text,\n  CONSTRAINT `data_disposal_requests_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 176
+}

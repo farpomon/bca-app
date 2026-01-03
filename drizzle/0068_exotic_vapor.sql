@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `unitPreference` enum('metric','imperial') DEFAULT 'metric' NOT NULL;

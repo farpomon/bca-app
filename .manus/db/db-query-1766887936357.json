@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE facility_models \nADD COLUMN apsObjectKey VARCHAR(512) NULL,\nADD COLUMN apsBucketKey VARCHAR(128) NULL,\nADD COLUMN apsUrn VARCHAR(512) NULL,\nADD COLUMN apsTranslationStatus ENUM('pending','in_progress','success','failed','timeout') DEFAULT 'pending',\nADD COLUMN apsTranslationProgress INT DEFAULT 0,\nADD COLUMN apsTranslationMessage TEXT NULL,\nADD COLUMN apsDerivativeUrn VARCHAR(512) NULL,\nADD COLUMN apsUploadedAt TIMESTAMP NULL,\nADD COLUMN apsTranslationStartedAt TIMESTAMP NULL,\nADD COLUMN apsTranslationCompletedAt TIMESTAMP NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE facility_models \nADD COLUMN apsObjectKey VARCHAR(512) NULL,\nADD COLUMN apsBucketKey VARCHAR(128) NULL,\nADD COLUMN apsUrn VARCHAR(512) NULL,\nADD COLUMN apsTranslationStatus ENUM('pending','in_progress','success','failed','timeout') DEFAULT 'pending',\nADD COLUMN apsTranslationProgress INT DEFAULT 0,\nADD COLUMN apsTranslationMessage TEXT NULL,\nADD COLUMN apsDerivativeUrn VARCHAR(512) NULL,\nADD COLUMN apsUploadedAt TIMESTAMP NULL,\nADD COLUMN apsTranslationStartedAt TIMESTAMP NULL,\nADD COLUMN apsTranslationCompletedAt TIMESTAMP NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 3114
+}

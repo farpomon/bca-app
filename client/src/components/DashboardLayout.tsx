@@ -1,9 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -19,27 +21,35 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { 
-  LayoutDashboard, 
-  LogOut, 
-  PanelLeft, 
-  Building2, 
-  FolderKanban, 
-  Warehouse,
-  ClipboardCheck
-} from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3, Building2, Plus, Settings, Leaf, DollarSign, Factory, Sparkles, FileText, Award } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { MFAGracePeriodBanner } from './MFAGracePeriodBanner';
+import { OfflineStatusBanner } from './OfflineStatusBanner';
+import { SidebarOfflineStatus } from './SidebarOfflineStatus';
+import { UnitToggleCompact } from './UnitToggle';
+import { CompanySelector, CompanySelectorCompact } from './CompanySelector';
+import { PendingInvitationsBanner } from './PendingInvitationsBanner';
+import { CreateCompanyDialog } from './CreateCompanyDialog';
+import { useCompany } from '@/contexts/CompanyContext';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Building2, label: "Municipalities", path: "/municipalities" },
-  { icon: FolderKanban, label: "Projects", path: "/projects" },
-  { icon: Warehouse, label: "Assets", path: "/assets" },
+  { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
+  { icon: LayoutDashboard, label: "Projects", path: "/" },
+  { icon: Building2, label: "Building Templates", path: "/admin/building-templates", adminOnly: true },
+  { icon: Settings, label: "Bulk Service Life", path: "/admin/bulk-service-life-updates", adminOnly: true },
+  { icon: DollarSign, label: "RSMeans Cost Data", path: "/rsmeans" },
+  { icon: Leaf, label: "ESG Dashboard", path: "/esg-dashboard" },
+  { icon: Award, label: "ESG & LEED", path: "/esg-leed" },
+  { icon: Sparkles, label: "AI Carbon Recommendations", path: "/ai-carbon-recommendations" },
+  { icon: FileText, label: "LEED Compliance Report", path: "/leed-compliance-report" },
+  { icon: Leaf, label: "Sustainability", path: "/sustainability" },
+  { icon: Factory, label: "Carbon Footprint", path: "/carbon-footprint" },
+  { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -57,6 +67,7 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -68,22 +79,24 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-6">
             <div className="relative group">
               <div className="relative">
-                <div className="h-20 w-20 rounded-xl bg-primary/10 flex items-center justify-center shadow-lg">
-                  <Building2 className="h-10 w-10 text-primary" />
-                </div>
+                <img
+                  src={APP_LOGO}
+                  alt={APP_TITLE}
+                  className="h-20 w-20 rounded-xl object-cover shadow"
+                />
               </div>
             </div>
             <div className="text-center space-y-2">
               <h1 className="text-2xl font-bold tracking-tight">{APP_TITLE}</h1>
-              <p className="text-sm text-muted-foreground">
-                Building Condition Assessment System
+              <p className="text-xs text-muted-foreground font-medium">
+                {APP_TAGLINE}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Please sign in to continue
               </p>
             </div>
@@ -104,6 +117,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider
+      defaultOpen={!isMobile}
       style={
         {
           "--sidebar-width": `${sidebarWidth}px`,
@@ -132,8 +146,16 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => location.startsWith(item.path) && (item.path === "/" ? location === "/" : true));
+  const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  const { isSuperAdmin, selectedCompany, hasMultipleCompanies } = useCompany();
+  const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
+  
+  // Check if any project has multiple assets for portfolio analytics visibility
+  const { data: hasMultiAssetProjects } = trpc.projects.hasMultiAssetProjects.useQuery(
+    undefined,
+    { enabled: !!user }
+  );
 
   useEffect(() => {
     if (isCollapsed) {
@@ -179,47 +201,70 @@ function DashboardLayoutContent({
           className="border-r-0"
           disableTransition={isResizing}
         >
-          <SidebarHeader className="h-16 justify-center">
-            <div className="flex items-center gap-3 pl-2 group-data-[collapsible=icon]:px-0 transition-all w-full">
-              {isCollapsed ? (
-                <div className="relative h-8 w-8 shrink-0 group">
-                  <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center ring-1 ring-border">
-                    <Building2 className="h-4 w-4 text-primary" />
+          <SidebarHeader className="border-b border-sidebar-border/50">
+            <div className="flex flex-col gap-2 py-2">
+              {/* App Logo and Title */}
+              <div className="flex items-center gap-3 pl-2 group-data-[collapsible=icon]:px-0 transition-all w-full">
+                {isCollapsed ? (
+                  <div className="relative h-8 w-8 shrink-0 group">
+                    <img
+                      src={APP_LOGO}
+                      className="h-8 w-8 rounded-md object-cover ring-1 ring-border"
+                      alt="Logo"
+                    />
+                    <button
+                      onClick={toggleSidebar}
+                      className="absolute inset-0 flex items-center justify-center bg-accent rounded-md ring-1 ring-border opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <PanelLeft className="h-4 w-4 text-foreground" />
+                    </button>
                   </div>
-                  <button
-                    onClick={toggleSidebar}
-                    className="absolute inset-0 flex items-center justify-center bg-accent rounded-md ring-1 ring-border opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <PanelLeft className="h-4 w-4 text-foreground" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center ring-1 ring-border shrink-0">
-                      <Building2 className="h-4 w-4 text-primary" />
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={APP_LOGO}
+                        className="h-8 w-8 rounded-md object-cover ring-1 ring-border shrink-0"
+                        alt="Logo"
+                      />
+                      <span className="font-bold tracking-tight truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                        {APP_TITLE}
+                      </span>
                     </div>
-                    <span className="font-semibold tracking-tight truncate">
-                      {APP_TITLE}
-                    </span>
-                  </div>
-                  <button
-                    onClick={toggleSidebar}
-                    className="ml-auto h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-                  >
-                    <PanelLeft className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                </>
+                    <button
+                      onClick={toggleSidebar}
+                      className="ml-auto h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                    >
+                      <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </>
+                )}
+              </div>
+              
+              {/* Company Selector */}
+              {!isCollapsed && (
+                <div className="px-2">
+                  <CompanySelector />
+                </div>
+              )}
+              {isCollapsed && (
+                <div className="flex justify-center">
+                  <CompanySelectorCompact />
+                </div>
               )}
             </div>
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
-                const isActive = item.path === "/" 
-                  ? location === "/" 
-                  : location.startsWith(item.path);
+              {menuItems.filter(item => {
+                // Hide admin-only items for non-admins
+                if (item.adminOnly && user?.role !== 'admin') return false;
+                // Hide portfolio analytics if no projects have multiple assets
+                if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
+                return true;
+              }).map(item => {
+                const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
@@ -237,6 +282,11 @@ function DashboardLayoutContent({
                 );
               })}
             </SidebarMenu>
+
+            {/* Offline Status Section */}
+            <div className="mt-auto px-2 py-2 border-t">
+              <SidebarOfflineStatus isCollapsed={isCollapsed} />
+            </div>
           </SidebarContent>
 
           <SidebarFooter className="p-3">
@@ -258,7 +308,35 @@ function DashboardLayoutContent({
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
+                {/* Company Management Options */}
+                {selectedCompany && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => setLocation("/company-users")}
+                      className="cursor-pointer"
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>Company Users</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                
+                {/* Super Admin: Create Company */}
+                {isSuperAdmin && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => setCreateCompanyDialogOpen(true)}
+                      className="cursor-pointer"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      <span>Create Company</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"
@@ -293,10 +371,25 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <CompanySelector compact />
+              <UnitToggleCompact />
+            </div>
           </div>
         )}
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-4 md:p-6">
+          <OfflineStatusBanner />
+          <MFAGracePeriodBanner />
+          <PendingInvitationsBanner />
+          {children}
+        </main>
       </SidebarInset>
+
+      {/* Create Company Dialog */}
+      <CreateCompanyDialog
+        open={createCompanyDialogOpen}
+        onOpenChange={setCreateCompanyDialogOpen}
+      />
     </>
   );
 }

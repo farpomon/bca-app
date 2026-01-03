@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO `data_retention_policies` (`policyName`, `dataType`, `retentionPeriodYears`, `description`, `isActive`, `createdBy`) VALUES\n('Project Data Retention', 'projects', 7, 'Building condition assessment projects and related data retained for 7 years as per municipal requirements', 1, 1),\n('Assessment Data Retention', 'assessments', 7, 'Component assessments, observations, and recommendations retained for 7 years', 1, 1),\n('Audit Log Retention', 'audit_logs', 7, 'Security and compliance audit logs retained for 7 years for regulatory compliance', 1, 1),\n('User Data Retention', 'users', 7, 'User account information and activity history retained for 7 years', 1, 1),\n('Photo/Document Retention', 'media', 7, 'Assessment photos and uploaded documents retained for 7 years', 1, 1);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute INSERT INTO `data_retention_policies` (`policyName`, `dataType`, `retentionPeriodYears`, `description`, `isActive`, `createdBy`) VALUES\n('Project Data Retention', 'projects', 7, 'Building condition assessment projects and related data retained for 7 years as per municipal requirements', 1, 1),\n('Assessment Data Retention', 'assessments', 7, 'Component assessments, observations, and recommendations retained for 7 years', 1, 1),\n('Audit Log Retention', 'audit_logs', 7, 'Security and compliance audit logs retained for 7 years for regulatory compliance', 1, 1),\n('User Data Retention', 'users', 7, 'User account information and activity history retained for 7 years', 1, 1),\n('Photo/Document Retention', 'media', 7, 'Assessment photos and uploaded documents retained for 7 years', 1, 1);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 63
+}
