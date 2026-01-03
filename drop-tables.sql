@@ -1,0 +1,16 @@
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS assessmentComponents;
+DROP TABLE IF EXISTS assessments;
+DROP TABLE IF EXISTS assetCategories;
+DROP TABLE IF EXISTS assets;
+DROP TABLE IF EXISTS capitalProjects;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS documents;
+DROP TABLE IF EXISTS municipalities;
+DROP TABLE IF EXISTS photos;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS building_sections;
+DROP TABLE IF EXISTS floor_plans;
+DROP TABLE IF EXISTS activityLog;
+DROP TABLE IF EXISTS __drizzle_migrations;
+SET FOREIGN_KEY_CHECKS = 1;

@@ -1,0 +1,8 @@
+{
+  "query": "DROP TABLE IF EXISTS assessmentComponents, assessments, assetCategories, assets, capitalProjects, comments, documents, municipalities, photos, projects, building_sections, activityLog;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute DROP TABLE IF EXISTS assessmentComponents, assessments, assetCategories, assets, capitalProjects, comments, documents, municipalities, photos, projects, building_sections, activityLog;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 3730 (HY000) at line 1: Cannot drop table 'projects' referenced by a foreign key constraint 'fk_1' on table 'floor_plans'."
+  ]
+}

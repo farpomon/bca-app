@@ -6,11 +6,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
-import { DeviceProvider } from "./contexts/DeviceContext";
-import { SessionTimeoutProvider } from "./contexts/SessionTimeoutContext";
-import { OfflineSyncProvider } from "./components/OfflineSyncProvider";
 import "./index.css";
-import "./mobile-compat.css";
 
 const queryClient = new QueryClient();
 
@@ -59,13 +55,7 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <OfflineSyncProvider>
-        <DeviceProvider>
-          <SessionTimeoutProvider>
-            <App />
-          </SessionTimeoutProvider>
-        </DeviceProvider>
-      </OfflineSyncProvider>
+      <App />
     </QueryClientProvider>
   </trpc.Provider>
 );

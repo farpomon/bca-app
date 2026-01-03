@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `email_delivery_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `emailType` enum('admin_notification','user_confirmation','user_approved','user_rejected','mfa_code','password_reset','other') NOT NULL,\n  `recipientEmail` varchar(320) NOT NULL,\n  `recipientName` varchar(255),\n  `subject` varchar(500) NOT NULL,\n  `status` enum('sent','delivered','failed','pending') NOT NULL DEFAULT 'pending',\n  `sentAt` timestamp,\n  `deliveredAt` timestamp,\n  `failureReason` text,\n  `metadata` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `email_delivery_log_id` PRIMARY KEY(`id`),\n  INDEX `idx_email_status` (`status`),\n  INDEX `idx_email_type` (`emailType`),\n  INDEX `idx_recipient` (`recipientEmail`),\n  INDEX `idx_sent_at` (`sentAt`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `email_delivery_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `emailType` enum('admin_notification','user_confirmation','user_approved','user_rejected','mfa_code','password_reset','other') NOT NULL,\n  `recipientEmail` varchar(320) NOT NULL,\n  `recipientName` varchar(255),\n  `subject` varchar(500) NOT NULL,\n  `status` enum('sent','delivered','failed','pending') NOT NULL DEFAULT 'pending',\n  `sentAt` timestamp,\n  `deliveredAt` timestamp,\n  `failureReason` text,\n  `metadata` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `email_delivery_log_id` PRIMARY KEY(`id`),\n  INDEX `idx_email_status` (`status`),\n  INDEX `idx_email_type` (`emailType`),\n  INDEX `idx_recipient` (`recipientEmail`),\n  INDEX `idx_sent_at` (`sentAt`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 774
-}

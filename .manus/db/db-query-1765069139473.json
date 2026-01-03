@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `hierarchy_templates` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(255) NOT NULL,\n\t`description` text,\n\t`isDefault` boolean NOT NULL DEFAULT false,\n\t`config` text NOT NULL,\n\t`createdBy` int NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `hierarchy_templates_id` PRIMARY KEY(`id`)\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `hierarchy_templates` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(255) NOT NULL,\n\t`description` text,\n\t`isDefault` boolean NOT NULL DEFAULT false,\n\t`config` text NOT NULL,\n\t`createdBy` int NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `hierarchy_templates_id` PRIMARY KEY(`id`)\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 51
-}

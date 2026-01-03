@@ -1,1 +1,0 @@
-ALTER TABLE `facility_models` MODIFY COLUMN `format` enum('glb','gltf','fbx','obj','skp','rvt','rfa','dwg','dxf') NOT NULL;

@@ -17,25 +17,6 @@ const requireUser = t.middleware(async opts => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
-  // Check if user account is suspended
-  if (ctx.user.accountStatus === "suspended") {
-    throw new TRPCError({ 
-      code: "FORBIDDEN", 
-      message: "Your account has been suspended. Please contact your administrator." 
-    });
-  }
-
-  // Check if trial has expired
-  if (ctx.user.accountStatus === "trial" && ctx.user.trialEndsAt) {
-    const trialEnd = new Date(ctx.user.trialEndsAt);
-    if (trialEnd < new Date()) {
-      throw new TRPCError({ 
-        code: "FORBIDDEN", 
-        message: "Your trial period has expired. Please contact your administrator to continue using the system." 
-      });
-    }
-  }
-
   return next({
     ctx: {
       ...ctx,

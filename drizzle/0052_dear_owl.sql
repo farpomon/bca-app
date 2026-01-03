@@ -1,1 +1,0 @@
-ALTER TABLE `sms_verification_codes` MODIFY COLUMN `code` varchar(64) NOT NULL;

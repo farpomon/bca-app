@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `rating_scale_configs` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`companyId` int,\n\t`scaleType` enum('fci','condition','esg','overall','custom') NOT NULL,\n\t`name` varchar(100) NOT NULL,\n\t`description` text,\n\t`letterGradeThresholds` text NOT NULL,\n\t`zoneThresholds` text NOT NULL,\n\t`isDefault` int NOT NULL DEFAULT 0,\n\t`isActive` int NOT NULL DEFAULT 1,\n\t`createdBy` int,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `rating_scale_configs_id` PRIMARY KEY(`id`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `rating_scale_configs` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`companyId` int,\n\t`scaleType` enum('fci','condition','esg','overall','custom') NOT NULL,\n\t`name` varchar(100) NOT NULL,\n\t`description` text,\n\t`letterGradeThresholds` text NOT NULL,\n\t`zoneThresholds` text NOT NULL,\n\t`isDefault` int NOT NULL DEFAULT 0,\n\t`isActive` int NOT NULL DEFAULT 1,\n\t`createdBy` int,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `rating_scale_configs_id` PRIMARY KEY(`id`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 519
-}

@@ -1,1 +1,0 @@
-ALTER TABLE `deficiencies` MODIFY COLUMN `assessmentId` int;

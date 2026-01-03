@@ -1,8 +1,0 @@
-{
-  "query": "ALTER TABLE projects ADD COLUMN buildingCodeId INT NULL, ADD CONSTRAINT fk_projects_building_code FOREIGN KEY (buildingCodeId) REFERENCES building_codes(id) ON DELETE SET NULL;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE projects ADD COLUMN buildingCodeId INT NULL, ADD CONSTRAINT fk_projects_building_code FOREIGN KEY (buildingCodeId) REFERENCES building_codes(id) ON DELETE SET NULL;",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1072 (42000) at line 1: Key column 'buildingCodeId' doesn't exist in table"
-  ]
-}

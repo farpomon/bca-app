@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS submission_items (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  submissionId INT NOT NULL,\n  projectId INT NOT NULL,\n  itemType ENUM('assessment', 'deficiency') NOT NULL,\n  rowNumber INT,\n  data TEXT NOT NULL,\n  validationStatus ENUM('valid', 'warning', 'error') NOT NULL,\n  validationErrors TEXT,\n  itemStatus ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' NOT NULL,\n  reviewNotes TEXT,\n  finalizedAssessmentId INT,\n  finalizedDeficiencyId INT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS submission_items (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  submissionId INT NOT NULL,\n  projectId INT NOT NULL,\n  itemType ENUM('assessment', 'deficiency') NOT NULL,\n  rowNumber INT,\n  data TEXT NOT NULL,\n  validationStatus ENUM('valid', 'warning', 'error') NOT NULL,\n  validationErrors TEXT,\n  itemStatus ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' NOT NULL,\n  reviewNotes TEXT,\n  finalizedAssessmentId INT,\n  finalizedDeficiencyId INT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 212
-}

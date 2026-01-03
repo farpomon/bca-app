@@ -1,8 +1,0 @@
-{
-  "query": "ALTER TABLE companies \nADD COLUMN defaultTrialDuration INT DEFAULT 14,\nADD COLUMN mfaRequired INT DEFAULT 0,\nADD COLUMN maxUsers INT DEFAULT 100,\nADD COLUMN featureAccess TEXT",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE companies \nADD COLUMN defaultTrialDuration INT DEFAULT 14,\nADD COLUMN mfaRequired INT DEFAULT 0,\nADD COLUMN maxUsers INT DEFAULT 100,\nADD COLUMN featureAccess TEXT",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1060 (42S21) at line 1: Duplicate column name 'defaultTrialDuration'"
-  ]
-}

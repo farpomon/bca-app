@@ -1,1 +1,0 @@
-ALTER TABLE `assessments` ADD `status` enum('initial','active','completed') DEFAULT 'initial' NOT NULL;

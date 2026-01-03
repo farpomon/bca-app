@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `bulk_update_affected_items` (\n\t`id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n\t`bulkUpdateId` int NOT NULL,\n\t`assessmentId` int NOT NULL,\n\t`projectId` int NOT NULL,\n\t`componentCode` varchar(20) NOT NULL,\n\t`previousServiceLife` int,\n\t`newServiceLife` int NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\tINDEX `idx_affected_bulk_update` (`bulkUpdateId`),\n\tINDEX `idx_affected_assessment` (`assessmentId`),\n\tINDEX `idx_affected_project` (`projectId`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `bulk_update_affected_items` (\n\t`id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n\t`bulkUpdateId` int NOT NULL,\n\t`assessmentId` int NOT NULL,\n\t`projectId` int NOT NULL,\n\t`componentCode` varchar(20) NOT NULL,\n\t`previousServiceLife` int,\n\t`newServiceLife` int NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\tINDEX `idx_affected_bulk_update` (`bulkUpdateId`),\n\tINDEX `idx_affected_assessment` (`assessmentId`),\n\tINDEX `idx_affected_project` (`projectId`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 168
-}

@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `project_rating_config` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `projectId` int NOT NULL,\n  `conditionScaleId` int,\n  `priorityScaleId` int,\n  `fciScaleId` int,\n  `useWeightedAverage` boolean NOT NULL DEFAULT true,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `project_rating_config_id` PRIMARY KEY(`id`),\n  CONSTRAINT `project_rating_config_projectId_unique` UNIQUE(`projectId`)\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `project_rating_config` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `projectId` int NOT NULL,\n  `conditionScaleId` int,\n  `priorityScaleId` int,\n  `fciScaleId` int,\n  `useWeightedAverage` boolean NOT NULL DEFAULT true,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `project_rating_config_id` PRIMARY KEY(`id`),\n  CONSTRAINT `project_rating_config_projectId_unique` UNIQUE(`projectId`)\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 175
-}

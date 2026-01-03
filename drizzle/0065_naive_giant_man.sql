@@ -1,1 +1,0 @@
-ALTER TABLE `facility_models` ADD `assetId` int;

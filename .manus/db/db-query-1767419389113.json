@@ -1,0 +1,26 @@
+{
+  "query": "SELECT id, name FROM projects WHERE LOWER(name) LIKE '%riverside%' OR LOWER(name) LIKE '%oakville%' OR LOWER(name) LIKE '%burlington%' ORDER BY name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name FROM projects WHERE LOWER(name) LIKE '%riverside%' OR LOWER(name) LIKE '%oakville%' OR LOWER(name) LIKE '%burlington%' ORDER BY name;",
+  "rows": [
+    {
+      "id": "3780827",
+      "name": "City of Burlington Building Condition Assessment"
+    },
+    {
+      "id": "3780824",
+      "name": "City of Riverside Building Condition Assessment"
+    },
+    {
+      "id": "3780825",
+      "name": "City of Riverside Building Condition Assessment"
+    },
+    {
+      "id": "3780826",
+      "name": "Town of Oakville Building Condition Assessment"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n3780827\tCity of Burlington Building Condition Assessment\n3780824\tCity of Riverside Building Condition Assessment\n3780825\tCity of Riverside Building Condition Assessment\n3780826\tTown of Oakville Building Condition Assessment\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

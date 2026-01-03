@@ -1,8 +1,0 @@
-{
-  "query": "ALTER TABLE projects \nADD COLUMN designLife INT AFTER lastCalculatedAt,\nADD COLUMN endOfLifeDate TIMESTAMP NULL AFTER designLife,\nADD COLUMN holdingDepartment VARCHAR(255) AFTER endOfLifeDate,\nADD COLUMN propertyManager VARCHAR(255) AFTER holdingDepartment,\nADD COLUMN managerEmail VARCHAR(320) AFTER propertyManager,\nADD COLUMN managerPhone VARCHAR(50) AFTER managerEmail,\nADD COLUMN facilityType VARCHAR(100) AFTER managerPhone,\nADD COLUMN occupancyStatus ENUM('occupied', 'vacant', 'partial') AFTER facilityType,\nADD COLUMN criticalityLevel ENUM('critical', 'important', 'standard') AFTER occupancyStatus;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE projects \nADD COLUMN designLife INT AFTER lastCalculatedAt,\nADD COLUMN endOfLifeDate TIMESTAMP NULL AFTER designLife,\nADD COLUMN holdingDepartment VARCHAR(255) AFTER endOfLifeDate,\nADD COLUMN propertyManager VARCHAR(255) AFTER holdingDepartment,\nADD COLUMN managerEmail VARCHAR(320) AFTER propertyManager,\nADD COLUMN managerPhone VARCHAR(50) AFTER managerEmail,\nADD COLUMN facilityType VARCHAR(100) AFTER managerPhone,\nADD COLUMN occupancyStatus ENUM('occupied', 'vacant', 'partial') AFTER facilityType,\nADD COLUMN criticalityLevel ENUM('critical', 'important', 'standard') AFTER occupancyStatus;",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'designlife' in 'projects'"
-  ]
-}

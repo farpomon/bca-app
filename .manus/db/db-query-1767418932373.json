@@ -1,0 +1,385 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "access_requests"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "activityLog"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "assessmentComponents"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "assessment_deletion_log"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "assessment_documents"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "assessment_versions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "assessments"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "asset_documents"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "asset_ratings"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "asset_timeline_events"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "assets"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "audit_log"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "backup_schedules"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "budget_allocations"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "building_codes"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "building_components"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "building_performance_factors"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "building_sections"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "building_type_templates"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "bulk_operation_history"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "bulk_operation_snapshots"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "bulk_service_life_updates"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "bulk_update_affected_items"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "capital_budget_cycles"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "cash_flow_projections"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "chat_context_cache"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "chat_messages"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "chat_sessions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "chatbot_feedback"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "chatbot_sessions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "ci_fci_snapshots"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "city_cost_factors"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "cof_factors"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "companies"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "company_access_codes"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "company_users"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "component_deterioration_config"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "component_history"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "consultant_submissions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "conversations"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "cost_estimates"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "criteria_objective_links"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "criteria_presets"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "critical_equipment"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "custom_components"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "custom_vocabulary"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "dashboard_configs"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "data_access_requests"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "data_disposal_requests"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "data_residency_settings"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "data_retention_policies"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "database_backups"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "deficiencies"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "deficiency_versions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "design_service_life_values"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "deterioration_curves"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "economic_indicators"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "email_delivery_log"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "embodied_carbon_materials"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "emissions_data"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "encryption_key_metadata"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "esg_scores"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "facility_models"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "floor_plans"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "green_upgrades"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "grid_carbon_intensity"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "hierarchy_templates"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "integration_runs"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "kpi_snapshots"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "leed_credits"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "maintenance_entries"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "mfa_audit_log"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "mfa_method_switch_requests"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "mfa_recovery_requests"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "mfa_time_restrictions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "model_annotations"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "model_viewpoints"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "operational_carbon_tracking"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "optimization_scenarios"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "photos"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "pof_factors"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "portfolio_targets"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "prediction_history"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "prioritization_criteria"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_documents"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_embodied_carbon"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_hierarchy_config"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_leed_tracking"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_material_quantities"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_permissions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_priority_scores"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_rating_config"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_ratings"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_scores"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_status_history"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "project_versions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "projects"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "rating_history"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "rating_scale_configs"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "rating_scales"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "refrigerant_inventory"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "renovation_costs"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "report_configurations"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "report_history"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "report_schedules"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "report_sections"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "report_templates"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "risk_assessments"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "risk_mitigation_actions"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "scenario_strategies"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "sms_verification_codes"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "strategic_objectives"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "submission_items"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "submission_photos"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "sustainability_goals"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "template_systems"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "trusted_devices"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "user_consents"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "user_mfa_settings"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "users"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "utility_consumption"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "validation_overrides"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "validation_rules"
+    },
+    {
+      "Tables_in_XnmtZZwX6e46H8JVZbq4Ta": "waste_tracking"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_XnmtZZwX6e46H8JVZbq4Ta\n__drizzle_migrations\naccess_requests\nactivityLog\nassessmentComponents\nassessment_deletion_log\nassessment_documents\nassessment_versions\nassessments\nasset_documents\nasset_ratings\nasset_timeline_events\nassets\naudit_log\nbackup_schedules\nbudget_allocations\nbuilding_codes\nbuilding_components\nbuilding_performance_factors\nbuilding_sections\nbuilding_type_templates\nbulk_operation_history\nbulk_operation_snapshots\nbulk_service_life_updates\nbulk_update_affected_items\ncapital_budget_cycles\ncash_flow_projections\nchat_context_cache\nchat_messages\nchat_sessions\nchatbot_feedback\nchatbot_sessions\nci_fci_snapshots\ncity_cost_factors\ncof_factors\ncompanies\ncompany_access_codes\ncompany_users\ncomponent_deterioration_config\ncomponent_history\nconsultant_submissions\nconversations\ncost_estimates\ncriteria_objective_links\ncriteria_presets\ncritical_equipment\ncustom_components\ncustom_vocabulary\ndashboard_configs\ndata_access_requests\ndata_disposal_requests\ndata_residency_settings\ndata_retention_policies\ndatabase_backups\ndeficiencies\ndeficiency_versions\ndesign_service_life_values\ndeterioration_curves\neconomic_indicators\nemail_delivery_log\nembodied_carbon_materials\nemissions_data\nencryption_key_metadata\nesg_scores\nfacility_models\nfloor_plans\ngreen_upgrades\ngrid_carbon_intensity\nhierarchy_templates\nintegration_runs\nkpi_snapshots\nleed_credits\nmaintenance_entries\nmfa_audit_log\nmfa_method_switch_requests\nmfa_recovery_requests\nmfa_time_restrictions\nmodel_annotations\nmodel_viewpoints\noperational_carbon_tracking\noptimization_scenarios\nphotos\npof_factors\nportfolio_targets\nprediction_history\nprioritization_criteria\nproject_documents\nproject_embodied_carbon\nproject_hierarchy_config\nproject_leed_tracking\nproject_material_quantities\nproject_permissions\nproject_priority_scores\nproject_rating_config\nproject_ratings\nproject_scores\nproject_status_history\nproject_versions\nprojects\nrating_history\nrating_scale_configs\nrating_scales\nrefrigerant_inventory\nrenovation_costs\nreport_configurations\nreport_history\nreport_schedules\nreport_sections\nreport_templates\nrisk_assessments\nrisk_mitigation_actions\nscenario_strategies\nsms_verification_codes\nstrategic_objectives\nsubmission_items\nsubmission_photos\nsustainability_goals\ntemplate_systems\ntrusted_devices\nuser_consents\nuser_mfa_settings\nusers\nutility_consumption\nvalidation_overrides\nvalidation_rules\nwaste_tracking\n",
+  "stderr": "",
+  "execution_time_ms": 76
+}

@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS component_deterioration_config (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  projectId INT NOT NULL,\n  componentCode VARCHAR(50) NOT NULL,\n  bestCaseCurveId INT,\n  designCaseCurveId INT,\n  worstCaseCurveId INT,\n  activeCurve ENUM('best', 'design', 'worst') DEFAULT 'design',\n  customParam1 INT,\n  customParam2 INT,\n  customParam3 INT,\n  customParam4 INT,\n  customParam5 INT,\n  customParam6 INT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS component_deterioration_config (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  projectId INT NOT NULL,\n  componentCode VARCHAR(50) NOT NULL,\n  bestCaseCurveId INT,\n  designCaseCurveId INT,\n  worstCaseCurveId INT,\n  activeCurve ENUM('best', 'design', 'worst') DEFAULT 'design',\n  customParam1 INT,\n  customParam2 INT,\n  customParam3 INT,\n  customParam4 INT,\n  customParam5 INT,\n  customParam6 INT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 211
-}

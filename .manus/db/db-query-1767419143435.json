@@ -1,0 +1,31 @@
+{
+  "query": "SELECT p.id, p.name, p.city, p.status, COUNT(a.id) as asset_count FROM projects p LEFT JOIN assets a ON p.id = a.projectId WHERE p.name LIKE '%Building Condition Assessment' AND p.id >= 3780825 GROUP BY p.id ORDER BY p.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT p.id, p.name, p.city, p.status, COUNT(a.id) as asset_count FROM projects p LEFT JOIN assets a ON p.id = a.projectId WHERE p.name LIKE '%Building Condition Assessment' AND p.id >= 3780825 GROUP BY p.id ORDER BY p.id;",
+  "rows": [
+    {
+      "id": "3780825",
+      "name": "City of Riverside Building Condition Assessment",
+      "city": "Riverside",
+      "status": "draft",
+      "asset_count": "10"
+    },
+    {
+      "id": "3780826",
+      "name": "Town of Oakville Building Condition Assessment",
+      "city": "Oakville",
+      "status": "in_progress",
+      "asset_count": "25"
+    },
+    {
+      "id": "3780827",
+      "name": "City of Burlington Building Condition Assessment",
+      "city": "Burlington",
+      "status": "completed",
+      "asset_count": "50"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcity\tstatus\tasset_count\n3780825\tCity of Riverside Building Condition Assessment\tRiverside\tdraft\t10\n3780826\tTown of Oakville Building Condition Assessment\tOakville\tin_progress\t25\n3780827\tCity of Burlington Building Condition Assessment\tBurlington\tcompleted\t50\n",
+  "stderr": "",
+  "execution_time_ms": 70
+}

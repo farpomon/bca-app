@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS submission_photos (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  submissionId INT NOT NULL,\n  submissionItemId INT,\n  fileName VARCHAR(255) NOT NULL,\n  fileSize INT,\n  mimeType VARCHAR(100),\n  fileKey VARCHAR(500) NOT NULL,\n  url VARCHAR(1000) NOT NULL,\n  thumbnailUrl VARCHAR(1000),\n  componentCode VARCHAR(50),\n  status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' NOT NULL,\n  finalizedPhotoId INT,\n  uploadedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS submission_photos (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  submissionId INT NOT NULL,\n  submissionItemId INT,\n  fileName VARCHAR(255) NOT NULL,\n  fileSize INT,\n  mimeType VARCHAR(100),\n  fileKey VARCHAR(500) NOT NULL,\n  url VARCHAR(1000) NOT NULL,\n  thumbnailUrl VARCHAR(1000),\n  componentCode VARCHAR(50),\n  status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' NOT NULL,\n  finalizedPhotoId INT,\n  uploadedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 197
-}

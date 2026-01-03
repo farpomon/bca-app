@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS chatbot_feedback (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    sessionId INT NOT NULL,\n    messageIndex INT NOT NULL,\n    userId INT NOT NULL,\n    feedback ENUM('positive', 'negative') NOT NULL,\n    comment TEXT,\n    userMessage TEXT,\n    assistantMessage TEXT,\n    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n    INDEX idx_feedback_session (sessionId),\n    INDEX idx_feedback_user (userId),\n    INDEX idx_feedback_type (feedback)\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS chatbot_feedback (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    sessionId INT NOT NULL,\n    messageIndex INT NOT NULL,\n    userId INT NOT NULL,\n    feedback ENUM('positive', 'negative') NOT NULL,\n    comment TEXT,\n    userMessage TEXT,\n    assistantMessage TEXT,\n    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n    INDEX idx_feedback_session (sessionId),\n    INDEX idx_feedback_user (userId),\n    INDEX idx_feedback_type (feedback)\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 211
-}

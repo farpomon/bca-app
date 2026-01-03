@@ -4,44 +4,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Option B: Modern Gradient & Depth Badge Variants
- * - Gradient badges for primary actions
- * - Amber and Teal accent variants
- * - Soft backgrounds with colored text for status indicators
- */
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1.5 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-all duration-200 overflow-hidden",
+  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
   {
     variants: {
       variant: {
-        // Option B: Gradient primary badge
         default:
-          "border-transparent bg-gradient-to-r from-[oklch(0.59_0.20_255)] to-[oklch(0.55_0.22_270)] text-white shadow-sm [a&]:hover:shadow-md [a&]:hover:shadow-primary/20",
+          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/80",
+          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         destructive:
-          "border-transparent bg-gradient-to-r from-destructive to-[oklch(0.50_0.24_25)] text-white shadow-sm [a&]:hover:shadow-md [a&]:hover:shadow-destructive/20",
+          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border-2 border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground [a&]:hover:border-primary/30",
-        // Option B: Amber accent badge
-        amber:
-          "border-transparent bg-[oklch(0.75_0.18_70_/_0.15)] text-[oklch(0.55_0.18_70)] [a&]:hover:bg-[oklch(0.75_0.18_70_/_0.25)]",
-        // Option B: Teal accent badge
-        teal:
-          "border-transparent bg-[oklch(0.65_0.14_175_/_0.15)] text-[oklch(0.45_0.14_175)] [a&]:hover:bg-[oklch(0.65_0.14_175_/_0.25)]",
-        // Option B: Success badge (teal-based)
-        success:
-          "border-transparent bg-[oklch(0.65_0.14_175_/_0.15)] text-[oklch(0.45_0.14_175)] [a&]:hover:bg-[oklch(0.65_0.14_175_/_0.25)]",
-        // Option B: Warning badge (amber-based)
-        warning:
-          "border-transparent bg-[oklch(0.75_0.18_70_/_0.15)] text-[oklch(0.55_0.18_70)] [a&]:hover:bg-[oklch(0.75_0.18_70_/_0.25)]",
-        // Option B: Info badge (cyan-based)
-        info:
-          "border-transparent bg-[oklch(0.68_0.15_195_/_0.15)] text-[oklch(0.48_0.15_195)] [a&]:hover:bg-[oklch(0.68_0.15_195_/_0.25)]",
-        // Option B: Gradient badge (full gradient)
-        gradient:
-          "border-transparent bg-gradient-to-r from-[oklch(0.65_0.14_175)] via-[oklch(0.59_0.20_255)] to-[oklch(0.55_0.22_290)] text-white shadow-sm",
+          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       },
     },
     defaultVariants: {
