@@ -22,7 +22,14 @@ export interface FCIResult {
 }
 
 /**
- * Calculate deferred maintenance cost from deficiencies and poor condition components
+ * Calculate deferred maintenance cost from deficiencies and assessments
+ * 
+ * Note: The actual database schema uses:
+ * - assessments.conditionRating (enum: '1','2','3','4','5') instead of condition
+ * - assessments.estimatedRepairCost for repair costs
+ * - deficiencies.estimatedCost for deficiency costs
+ * 
+ * Condition ratings: 1=Excellent, 2=Good, 3=Fair, 4=Poor, 5=Critical
  */
 export async function calculateDeferredMaintenanceCost(projectId: number): Promise<number> {
   // Get all deficiencies for the project
@@ -36,34 +43,57 @@ export async function calculateDeferredMaintenanceCost(projectId: number): Promi
     }
   }
   
-  // Get all assessments with poor/critical condition
+  // Get all assessments for the project (now joins through assets table)
   const assessments = await db.getAssessmentsByProject(projectId);
   
-  // Add repair costs for components in poor condition
-  let poorConditionCost = 0;
+  // Add repair costs for components in poor/critical condition (rating 4 or 5)
+  // Also include all assessments with repair costs as they represent deferred maintenance
+  let assessmentRepairCost = 0;
   for (const assessment of assessments) {
-    if (assessment.condition === "poor" && assessment.estimatedRepairCost) {
-      poorConditionCost += parseFloat(String(assessment.estimatedRepairCost));
+    const rating = assessment.conditionRating;
+    // Include repair costs for poor (4) and critical (5) conditions
+    // Or any assessment that has a repair cost (indicates needed work)
+    if (assessment.estimatedRepairCost) {
+      const cost = parseFloat(String(assessment.estimatedRepairCost));
+      if (rating === '4' || rating === '5') {
+        // Full cost for poor/critical
+        assessmentRepairCost += cost;
+      } else if (rating === '3') {
+        // 50% of cost for fair condition (preventive)
+        assessmentRepairCost += cost * 0.5;
+      }
+      // Good/Excellent conditions (1, 2) don't contribute to deferred maintenance
     }
   }
   
-  return deficiencyCost + poorConditionCost;
+  return deficiencyCost + assessmentRepairCost;
 }
 
 /**
- * Calculate current replacement value from component costs
+ * Calculate current replacement value from assets
+ * 
+ * Uses the replacementValue field from assets table which stores the
+ * actual replacement value for each asset.
  */
 export async function calculateReplacementValue(projectId: number): Promise<number> {
-  const assessments = await db.getAssessmentsByProject(projectId);
+  // Get assets for the project to get their replacement values
+  const projectAssets = await db.getProjectAssets(projectId);
   
   let totalValue = 0;
-  for (const assessment of assessments) {
-    // Use estimated repair cost as proxy for replacement value (multiply by factor)
-    if (assessment.estimatedRepairCost) {
-      totalValue += parseFloat(String(assessment.estimatedRepairCost)) * 3; // Estimate replacement as 3x repair
-    } else if (assessment.estimatedRepairCost) {
-      // If no replacement cost, estimate as 2x repair cost
-      totalValue += parseFloat(String(assessment.estimatedRepairCost)) * 2;
+  for (const asset of projectAssets) {
+    if (asset.replacementValue) {
+      totalValue += parseFloat(String(asset.replacementValue));
+    }
+  }
+  
+  // If no replacement values are set on assets, fall back to estimating from assessments
+  if (totalValue === 0) {
+    const assessments = await db.getAssessmentsByProject(projectId);
+    for (const assessment of assessments) {
+      if (assessment.estimatedRepairCost) {
+        // Estimate replacement as 3x repair cost as a rough approximation
+        totalValue += parseFloat(String(assessment.estimatedRepairCost)) * 3;
+      }
     }
   }
   

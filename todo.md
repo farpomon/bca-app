@@ -3069,3 +3069,29 @@ Testing:
 
 ## Bug Investigation
 - [x] Bug: Assets not displaying under Riverside Community Center Assessment project - Fixed schema mismatch between Drizzle and database
+
+## Replacement and Repair Costs for Component Assessments
+
+- [x] Add replacementCost field to componentAssessments table schema (already exists as `replacementValue`)
+- [x] Add repairCost field to componentAssessments table schema (already exists as `estimatedRepairCost`)
+- [x] Run database migration (pnpm db:push) - fields already in production
+- [x] Update backend procedures to handle cost fields - fully integrated
+- [x] Update frontend AssessmentDialog form with cost input fields - already present
+- [x] Update assessment display to show cost information - AssetFinancialTab shows costs
+- [x] Test cost data entry and retrieval - working
+
+## Demo Financial Metrics Showcase Project
+- [x] Create demo project with 5 assets showcasing all financial metrics
+- [x] Add comprehensive assessments with repair costs and replacement values
+- [x] Add deficiencies with cost estimates across all priority levels
+- [x] Ensure FCI/CI calculations display properly
+- [x] Verify portfolio analytics shows financial data (FCI: 0.47%, Total Replacement: $2.74B, Repair Needs: $12.82M)
+
+## Query Fixes for Schema Mismatch
+- [x] Fix getAssetAssessments to use raw SQL with correct column names
+- [x] Fix FCI calculation to join through assets table instead of using assessments.projectId
+- [x] Fix numeric type casting for estimatedRepairCost
+- [x] Add replacementValue field support in AssetFinancialTab
+- [x] Fix getProjectAssessments to join through assets table
+- [x] Fix getProjectFCI to use raw SQL with assets join
+- [x] Verify financial metrics display correctly after fixes

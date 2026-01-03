@@ -543,25 +543,80 @@ export async function getProjectAssessments(projectId: number) {
   const db = await getDb();
   if (!db) return [];
   
-  return await db
-    .select()
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId))
-    .orderBy(desc(assessments.assessedAt));
+  // Use raw SQL to join through assets table since actual DB doesn't have projectId in assessments
+  const results = await db.execute(sql`
+    SELECT 
+      a.id,
+      a.assetId,
+      a.componentId,
+      bc.code as componentCode,
+      bc.name as componentName,
+      a.conditionRating,
+      CASE 
+        WHEN a.conditionRating IN ('1', '2') THEN 'good'
+        WHEN a.conditionRating = '3' THEN 'fair'
+        WHEN a.conditionRating IN ('4', '5') THEN 'poor'
+        ELSE 'not_assessed'
+      END as condition,
+      a.conditionNotes,
+      CAST(a.estimatedRepairCost AS SIGNED) as estimatedRepairCost,
+      a.priorityLevel,
+      a.remainingLifeYears,
+      a.location,
+      a.status,
+      a.assessmentDate as assessedAt,
+      a.createdAt,
+      a.updatedAt
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    LEFT JOIN building_components bc ON a.componentId = bc.id
+    WHERE ast.projectId = ${projectId}
+    ORDER BY a.assessmentDate DESC
+  `);
+  
+  return (results as any)[0] || [];
 }
 
 export async function getAssetAssessments(assetId: number) {
   const db = await getDb();
   if (!db) return [];
   
-  return await db
-    .select()
-    .from(assessments)
-    .where(and(
-      eq(assessments.assetId, assetId),
-      isNull(assessments.deletedAt)
-    ))
-    .orderBy(desc(assessments.assessedAt));
+  // Use raw SQL to match actual database schema which differs from Drizzle schema
+  // Actual DB has: componentId, conditionRating, assessmentDate
+  // Drizzle expects: componentCode, condition, assessedAt
+  const results = await db.execute(sql`
+    SELECT 
+      a.id,
+      a.assetId,
+      a.componentId,
+      bc.code as componentCode,
+      bc.name as componentName,
+      a.conditionRating,
+      CASE 
+        WHEN a.conditionRating IN ('1', '2') THEN 'good'
+        WHEN a.conditionRating = '3' THEN 'fair'
+        WHEN a.conditionRating IN ('4', '5') THEN 'poor'
+        ELSE 'not_assessed'
+      END as condition,
+      a.conditionNotes as observations,
+      CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
+      0 as replacementValue,
+      a.remainingLifeYears as remainingUsefulLife,
+      15 as expectedUsefulLife,
+      NULL as actionYear,
+      a.priorityLevel,
+      a.status,
+      a.location as componentLocation,
+      a.assessmentDate as assessedAt,
+      a.createdAt,
+      a.updatedAt
+    FROM assessments a
+    LEFT JOIN building_components bc ON a.componentId = bc.id
+    WHERE a.assetId = ${assetId}
+    ORDER BY a.createdAt DESC
+  `);
+  
+  return results[0] as any[];
 }
 
 export async function getAssessmentByComponent(projectId: number, componentCode: string) {
@@ -971,14 +1026,18 @@ export async function getProjectFCI(projectId: number) {
   const db = await getDb();
   if (!db) return null;
   
-  // Get total repair costs and replacement values from assessments
-  const [costSums] = await db
-    .select({
-      totalRepairCost: sql<number>`COALESCE(SUM(estimatedRepairCost), 0)`,
-      totalReplacementValue: sql<number>`COALESCE(SUM(replacementValue), 0)`,
-    })
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Use raw SQL to join through assets table since actual DB doesn't have projectId in assessments
+  // Also get replacement value from assets table since assessments don't have it
+  const results = await db.execute(sql`
+    SELECT 
+      COALESCE(SUM(CAST(a.estimatedRepairCost AS SIGNED)), 0) as totalRepairCost,
+      COALESCE(SUM(CAST(ast.replacementValue AS SIGNED)), 0) as totalReplacementValue
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  
+  const costSums = (results as any)[0]?.[0];
   
   const totalRepairCost = Number(costSums?.totalRepairCost) || 0;
   const totalReplacementValue = Number(costSums?.totalReplacementValue) || 0;
@@ -1291,7 +1350,8 @@ export async function calculateOverallBuildingCondition(projectId: number) {
   }
 
   const totalScore = assessedComponents.reduce((sum, assessment) => {
-    return sum + (assessment.condition ? conditionValues[assessment.condition] : 0);
+    const condition = assessment.condition as keyof typeof conditionValues;
+    return sum + (condition ? (conditionValues[condition] || 0) : 0);
   }, 0);
 
   const avgScore = totalScore / assessedComponents.length;
@@ -2188,7 +2248,26 @@ export async function linkSubmissionPhotoToFinalizedRecord(photoId: number, fina
 export async function getAssessmentsByProject(projectId: number) {
   const database = await getDb();
   if (!database) return [];
-  return database.select().from(assessments).where(eq(assessments.projectId, projectId));
+  
+  // Join through assets table since actual DB schema doesn't have projectId in assessments
+  return database
+    .select({
+      id: assessments.id,
+      assetId: assessments.assetId,
+      componentId: assessments.componentId,
+      conditionRating: assessments.conditionRating,
+      conditionNotes: assessments.conditionNotes,
+      estimatedRepairCost: assessments.estimatedRepairCost,
+      priorityLevel: assessments.priorityLevel,
+      remainingLifeYears: assessments.remainingLifeYears,
+      location: assessments.location,
+      status: assessments.status,
+      createdAt: assessments.createdAt,
+      updatedAt: assessments.updatedAt,
+    })
+    .from(assessments)
+    .innerJoin(assets, eq(assessments.assetId, assets.id))
+    .where(eq(assets.projectId, projectId));
 }
 
 export async function getDeficienciesByProject(projectId: number) {

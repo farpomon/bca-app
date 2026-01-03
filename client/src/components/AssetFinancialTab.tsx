@@ -71,6 +71,7 @@ interface AssetFinancialTabProps {
     yearBuilt?: number | null;
     grossFloorArea?: number | null;
     currentReplacementValue?: string | null;
+    replacementValue?: string | null;
   };
   assessments: Assessment[] | undefined;
   deficiencies: Deficiency[] | undefined;
@@ -113,7 +114,8 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
     
     // Use asset's CRV if available, otherwise use sum from assessments
     const assetCRV = asset.currentReplacementValue ? parseFloat(asset.currentReplacementValue) : 0;
-    const currentReplacementValue = assetCRV > 0 ? assetCRV : totalReplacementValue;
+    const assetRV = asset.replacementValue ? parseFloat(asset.replacementValue) : 0;
+    const currentReplacementValue = assetCRV > 0 ? assetCRV : (assetRV > 0 ? assetRV : totalReplacementValue);
     
     // Calculate FCI (Facility Condition Index)
     const fci = currentReplacementValue > 0 ? (totalRepairCost / currentReplacementValue) * 100 : 0;
