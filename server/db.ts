@@ -603,7 +603,11 @@ export async function getAssetAssessments(assetId: number) {
       0 as replacementValue,
       a.remainingLifeYears as remainingUsefulLife,
       15 as expectedUsefulLife,
-      NULL as actionYear,
+      CASE 
+        WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
+        THEN YEAR(CURDATE()) + a.remainingLifeYears 
+        ELSE NULL 
+      END as actionYear,
       a.priorityLevel,
       a.status,
       a.location as componentLocation,

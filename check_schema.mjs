@@ -3,13 +3,14 @@ import mysql from 'mysql2/promise';
 async function main() {
   const connection = await mysql.createConnection(process.env.DATABASE_URL);
   
-  try {
-    const [columns] = await connection.execute(`DESCRIBE assessments`);
-    console.log("=== Assessments Table Columns ===");
-    columns.forEach(col => console.log(`${col.Field}: ${col.Type}`));
-  } finally {
-    await connection.end();
-  }
+  // Check deficiencies table columns
+  const [cols] = await connection.execute(
+    "SHOW COLUMNS FROM deficiencies"
+  );
+  console.log("Deficiencies table columns:");
+  cols.forEach(r => console.log("  -", r.Field, ":", r.Type));
+  
+  await connection.end();
 }
 
 main().catch(console.error);

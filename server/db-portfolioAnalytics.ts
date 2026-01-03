@@ -13,6 +13,19 @@
 
 import { eq, and, sql, inArray, desc, asc, gte, lte } from "drizzle-orm";
 import { getDb } from "./db";
+
+/**
+ * Helper function to extract rows from drizzle execute result.
+ * Drizzle's db.execute returns [rows, fields] for mysql2, so we need to extract the rows.
+ */
+function extractRows<T = any>(result: unknown): T[] {
+  if (Array.isArray(result) && Array.isArray(result[0])) {
+    // Result is [rows, fields], return rows
+    return result[0] as T[];
+  }
+  // Result is already rows array
+  return result as T[];
+}
 import {
   projects,
   assets,
@@ -169,14 +182,22 @@ export async function getPortfolioOverview(
     return getEmptyOverview();
   }
 
+  console.log('[getPortfolioOverview] userId:', userId, 'company:', company, 'isAdmin:', isAdmin);
+
   const currentYear = new Date().getFullYear();
 
   // Build base query conditions
+  // For admin with no company, show all projects (1=1)
+  // For admin with company, filter by company
+  // For non-admin with company, show user's projects OR company projects
+  // For non-admin without company, show only user's projects
   let projectConditions = isAdmin
     ? company ? sql`p.company = ${company}` : sql`1=1`
     : company
       ? sql`(p.userId = ${userId} OR p.company = ${company})`
       : sql`p.userId = ${userId}`;
+
+  console.log('[getPortfolioOverview] isAdmin:', isAdmin, 'company:', company);
 
   // Get project metrics
   const projectMetrics = await db.execute(sql`
@@ -189,7 +210,8 @@ export async function getPortfolioOverview(
     WHERE ${projectConditions}
   `);
 
-  const pm = (projectMetrics as any[])[0] || {};
+  const pmRows = extractRows(projectMetrics);
+  const pm = pmRows[0] || {};
   const totalCRV = parseFloat(pm.totalCRV || '0');
   const totalDMC = parseFloat(pm.totalDMC || '0');
   const portfolioFCI = totalCRV > 0 ? (totalDMC / totalCRV) * 100 : 0;
@@ -202,18 +224,19 @@ export async function getPortfolioOverview(
     WHERE ${projectConditions}
   `);
 
-  // Get assessment metrics
+  // Get assessment metrics - join through assets since assessments don't have projectId in actual DB
   const assessmentMetrics = await db.execute(sql`
     SELECT 
       COUNT(DISTINCT ass.id) as totalAssessments,
       AVG(CASE 
-        WHEN ass.condition = 'good' THEN 85
-        WHEN ass.condition = 'fair' THEN 65
-        WHEN ass.condition = 'poor' THEN 35
+        WHEN ass.conditionRating IN ('1', '2') THEN 85
+        WHEN ass.conditionRating = '3' THEN 65
+        WHEN ass.conditionRating IN ('4', '5') THEN 35
         ELSE 50
       END) as avgConditionScore
     FROM assessments ass
-    INNER JOIN projects p ON ass.projectId = p.id
+    INNER JOIN assets a ON ass.assetId = a.id
+    INNER JOIN projects p ON a.projectId = p.id
     WHERE ${projectConditions}
   `);
 
@@ -232,9 +255,12 @@ export async function getPortfolioOverview(
     WHERE ${projectConditions}
   `);
 
-  const am = (assetMetrics as any[])[0] || {};
-  const assm = (assessmentMetrics as any[])[0] || {};
-  const dm = (deficiencyMetrics as any[])[0] || {};
+  const amRows = extractRows(assetMetrics);
+  const am = amRows[0] || {};
+  const assmRows = extractRows(assessmentMetrics);
+  const assm = assmRows[0] || {};
+  const dmRows = extractRows(deficiencyMetrics);
+  const dm = dmRows[0] || {};
 
   const avgConditionScore = parseFloat(assm.avgConditionScore || '50');
 
@@ -299,19 +325,32 @@ export async function getConditionDistribution(
       ? sql`(p.userId = ${userId} OR p.company = ${company})`
       : sql`p.userId = ${userId}`;
 
+  // Join through assets since assessments don't have projectId in actual DB
+  // Map conditionRating (1-5) to condition names
   const result = await db.execute(sql`
     SELECT 
-      COALESCE(ass.condition, 'not_assessed') as condition,
+      CASE 
+        WHEN ass.conditionRating IN ('1', '2') THEN 'good'
+        WHEN ass.conditionRating = '3' THEN 'fair'
+        WHEN ass.conditionRating IN ('4', '5') THEN 'poor'
+        ELSE 'not_assessed'
+      END as condition,
       COUNT(*) as count,
       SUM(COALESCE(ass.estimatedRepairCost, 0)) as totalCost
     FROM assessments ass
-    INNER JOIN projects p ON ass.projectId = p.id
+    INNER JOIN assets a ON ass.assetId = a.id
+    INNER JOIN projects p ON a.projectId = p.id
     WHERE ${projectConditions}
-    GROUP BY COALESCE(ass.condition, 'not_assessed')
+    GROUP BY CASE 
+        WHEN ass.conditionRating IN ('1', '2') THEN 'good'
+        WHEN ass.conditionRating = '3' THEN 'fair'
+        WHEN ass.conditionRating IN ('4', '5') THEN 'poor'
+        ELSE 'not_assessed'
+      END
     ORDER BY count DESC
   `);
 
-  const rows = result as any[];
+  const rows = extractRows(result);
   const total = rows.reduce((sum, r) => sum + parseInt(r.count || '0'), 0);
 
   return rows.map(row => ({
@@ -340,22 +379,25 @@ export async function getCategoryCostBreakdown(
       ? sql`(p.userId = ${userId} OR p.company = ${company})`
       : sql`p.userId = ${userId}`;
 
+  // Join through assets and building_components since assessments use componentId
   const result = await db.execute(sql`
     SELECT 
-      UPPER(SUBSTRING(COALESCE(ass.componentCode, 'Z'), 1, 1)) as categoryCode,
+      UPPER(SUBSTRING(COALESCE(bc.code, 'Z'), 1, 1)) as categoryCode,
       COUNT(DISTINCT ass.id) as assessmentCount,
       SUM(COALESCE(ass.estimatedRepairCost, 0)) as totalRepairCost,
-      SUM(COALESCE(ass.replacementValue, 0)) as totalReplacementValue,
+      0 as totalReplacementValue,
       AVG(CASE 
-        WHEN ass.condition = 'good' THEN 85
-        WHEN ass.condition = 'fair' THEN 65
-        WHEN ass.condition = 'poor' THEN 35
+        WHEN ass.conditionRating IN ('1', '2') THEN 85
+        WHEN ass.conditionRating = '3' THEN 65
+        WHEN ass.conditionRating IN ('4', '5') THEN 35
         ELSE 50
       END) as avgConditionScore
     FROM assessments ass
-    INNER JOIN projects p ON ass.projectId = p.id
+    INNER JOIN assets a ON ass.assetId = a.id
+    INNER JOIN projects p ON a.projectId = p.id
+    LEFT JOIN building_components bc ON ass.componentId = bc.id
     WHERE ${projectConditions}
-    GROUP BY UPPER(SUBSTRING(COALESCE(ass.componentCode, 'Z'), 1, 1))
+    GROUP BY UPPER(SUBSTRING(COALESCE(bc.code, 'Z'), 1, 1))
     ORDER BY totalRepairCost DESC
   `);
 
@@ -371,10 +413,10 @@ export async function getCategoryCostBreakdown(
   `);
 
   const deficiencyMap = new Map(
-    (deficiencyResult as any[]).map(r => [r.categoryCode, parseInt(r.deficiencyCount || '0')])
+    extractRows(deficiencyResult).map(r => [r.categoryCode, parseInt(r.deficiencyCount || '0')])
   );
 
-  const rows = result as any[];
+  const rows = extractRows(result);
   const totalRepairCost = rows.reduce((sum, r) => sum + parseFloat(r.totalRepairCost || '0'), 0);
 
   return rows.map(row => {
@@ -436,8 +478,13 @@ export async function getBuildingComparison(
     WHERE ${projectConditions}
   `);
 
-  const projectRows = projectsResult as any[];
-  const projectIds = projectRows.map(p => p.projectId);
+  // Extract rows from drizzle result
+  const projectRows = extractRows(projectsResult);
+  
+  // Extract project IDs, filtering out any undefined values
+  const projectIds = projectRows
+    .map(p => p.projectId ?? p.id)
+    .filter((id): id is number => id !== undefined && id !== null);
 
   if (projectIds.length === 0) return [];
 
@@ -448,24 +495,25 @@ export async function getBuildingComparison(
     WHERE projectId IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})
     GROUP BY projectId
   `);
-  const assetMap = new Map((assetCounts as any[]).map(r => [r.projectId, parseInt(r.count || '0')]));
+  const assetMap = new Map(extractRows(assetCounts).map(r => [r.projectId, parseInt(r.count || '0')]));
 
-  // Get assessment counts and condition scores
+  // Get assessment counts and condition scores - join through assets
   const assessmentData = await db.execute(sql`
     SELECT 
-      projectId, 
+      a.projectId, 
       COUNT(*) as count,
       AVG(CASE 
-        WHEN condition = 'good' THEN 85
-        WHEN condition = 'fair' THEN 65
-        WHEN condition = 'poor' THEN 35
+        WHEN ass.conditionRating IN ('1', '2') THEN 85
+        WHEN ass.conditionRating = '3' THEN 65
+        WHEN ass.conditionRating IN ('4', '5') THEN 35
         ELSE 50
       END) as avgConditionScore
-    FROM assessments
-    WHERE projectId IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})
-    GROUP BY projectId
+    FROM assessments ass
+    INNER JOIN assets a ON ass.assetId = a.id
+    WHERE a.projectId IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})
+    GROUP BY a.projectId
   `);
-  const assessmentMap = new Map((assessmentData as any[]).map(r => [
+  const assessmentMap = new Map(extractRows(assessmentData).map(r => [
     r.projectId, 
     { count: parseInt(r.count || '0'), avgScore: parseFloat(r.avgConditionScore || '50') }
   ]));
@@ -481,7 +529,7 @@ export async function getBuildingComparison(
     WHERE projectId IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})
     GROUP BY projectId
   `);
-  const deficiencyMap = new Map((deficiencyData as any[]).map(r => [
+  const deficiencyMap = new Map(extractRows(deficiencyData).map(r => [
     r.projectId,
     {
       count: parseInt(r.count || '0'),
@@ -582,7 +630,7 @@ export async function getGeographicDistribution(
     ORDER BY buildingCount DESC
   `);
 
-  const rows = result as any[];
+  const rows = extractRows(result);
 
   // Get deficiency counts per location
   const deficiencyResult = await db.execute(sql`
@@ -597,7 +645,7 @@ export async function getGeographicDistribution(
   `);
 
   const deficiencyMap = new Map(
-    (deficiencyResult as any[]).map(r => [`${r.city}-${r.province}`, parseInt(r.deficiencyCount || '0')])
+    extractRows(deficiencyResult).map(r => [`${r.city}-${r.province}`, parseInt(r.deficiencyCount || '0')])
   );
 
   return rows.map(row => {
@@ -650,7 +698,7 @@ export async function getPropertyTypeDistribution(
     ORDER BY buildingCount DESC
   `);
 
-  const rows = result as any[];
+  const rows = extractRows(result);
 
   // Get deficiency counts per property type
   const deficiencyResult = await db.execute(sql`
@@ -664,7 +712,7 @@ export async function getPropertyTypeDistribution(
   `);
 
   const deficiencyMap = new Map(
-    (deficiencyResult as any[]).map(r => [r.propertyType, parseInt(r.deficiencyCount || '0')])
+    extractRows(deficiencyResult).map(r => [r.propertyType, parseInt(r.deficiencyCount || '0')])
   );
 
   return rows.map(row => {
@@ -715,7 +763,7 @@ export async function getPriorityBreakdown(
     ORDER BY FIELD(COALESCE(d.priority, 'long_term'), 'immediate', 'short_term', 'medium_term', 'long_term')
   `);
 
-  const rows = result as any[];
+  const rows = extractRows(result);
   const totalCost = rows.reduce((sum, r) => sum + parseFloat(r.totalCost || '0'), 0);
 
   return rows.map(row => ({
@@ -764,7 +812,7 @@ export async function getDeficiencyTrends(
     ORDER BY period ASC
   `);
 
-  return (result as any[]).map(row => ({
+  return extractRows(result).map(row => ({
     period: row.period,
     totalDeficiencies: parseInt(row.totalDeficiencies || '0'),
     immediateCount: parseInt(row.immediateCount || '0'),

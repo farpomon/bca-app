@@ -3123,3 +3123,54 @@ Testing:
   - Project Detail: $350,000, 6 assessments ✓
   - Project Analytics: $350K deferred maintenance, 0.3% FCI ✓
 - [x] Double-check financial calculations in all views - All verified and working correctly
+
+## BUG FIX: Capital Forecast Not Calculating (January 2026)
+- [ ] Fix capital forecast showing $0 for all years in the 20-Year Capital Renewal Forecast chart
+- [ ] Investigate capital planning data calculation logic
+- [ ] Verify component action years are being used for forecast projections
+
+## Analytics & Reports Pages Functionality Check (January 2026)
+- [ ] Check Portfolio Analytics page functionality
+- [ ] Check Portfolio BI page functionality
+- [ ] Check Predictions page functionality
+- [ ] Check Prioritization page functionality
+- [ ] Check Capital Budget page functionality (including capital forecast calculation)
+- [ ] Check Portfolio Report page functionality
+
+
+## Analytics Pages Bug Fixes (January 3, 2026)
+
+### Portfolio Analytics Page
+- [x] Fixed Drizzle result extraction - `db.execute` returns `[rows, fields]`, added `extractRows()` helper
+- [x] Fixed SQL queries to join assessments through assets table (assessments -> assets -> projects)
+- [x] Added error handling to `getDashboardData` to prevent one failing query from breaking entire dashboard
+
+### Portfolio BI Page
+- [x] Fixed assessment queries in `portfolioKPI.service.ts` to join through assets table
+- [x] Fixed `componentCount` query to use `componentId` instead of non-existent `componentCode`
+- [x] Fixed ambiguous `status` column references (me.status vs p.status)
+- [x] Added `extractRows()` helper for proper Drizzle result extraction
+
+### Predictions Page
+- [x] Updated Drizzle schema to match actual database structure
+- [x] Added `projectId` column to assessments table and populated from assets
+
+### Prioritization Page
+- [x] Verified working correctly - shows 5 projects pending scoring
+
+### Capital Budget Page
+- [x] Verified working correctly - shows budget cycles and allocations
+
+### Asset Capital Forecast (Original Issue)
+- [x] Fixed `actionYear` calculation in `getAssetAssessments()` - was hardcoded as NULL
+- [x] Now calculates actionYear as `YEAR(CURDATE()) + remainingLifeYears`
+- [x] Capital forecast chart now shows projected expenditures
+
+### Portfolio Report Page
+- [x] Verified working - generates comprehensive PDF report
+- [ ] Note: 5-Year Capital Planning Forecast shows $0 (uses different data source - deficiencies table has mismatched projectIds)
+
+### Known Data Issues
+- [ ] Deficiencies table has projectIds (3120001, 3630001, etc.) that don't match actual projects (1, 2, 3, 7, 8, etc.)
+- [ ] This affects Priority Breakdown and Deficiency Trends in Portfolio Analytics
+- [ ] This affects the 5-Year Capital Planning Forecast in Portfolio Report

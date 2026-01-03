@@ -27,29 +27,39 @@ import {
   getCapitalPlanningForecast,
 } from "../db-portfolioAnalytics";
 
+// Helper to get effective admin status and company for analytics queries
+function getAnalyticsContext(ctx: any) {
+  const isAdmin = ctx.user.role === 'admin';
+  const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+  // For super admins, pass null company to see all projects
+  const effectiveCompany = isSuperAdmin ? null : ctx.user.company;
+  const effectiveIsAdmin = isAdmin || isSuperAdmin;
+  return { effectiveCompany, effectiveIsAdmin };
+}
+
 export const portfolioAnalyticsRouter = router({
   /**
    * Get comprehensive portfolio overview metrics
    */
   getOverview: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
-    return await getPortfolioOverview(ctx.user.id, ctx.user.company, isAdmin);
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
+    return await getPortfolioOverview(ctx.user.id, effectiveCompany, effectiveIsAdmin);
   }),
 
   /**
    * Get condition distribution across all assessments
    */
   getConditionDistribution: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
-    return await getConditionDistribution(ctx.user.id, ctx.user.company, isAdmin);
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
+    return await getConditionDistribution(ctx.user.id, effectiveCompany, effectiveIsAdmin);
   }),
 
   /**
    * Get cost breakdown by UNIFORMAT category
    */
   getCategoryCostBreakdown: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
-    return await getCategoryCostBreakdown(ctx.user.id, ctx.user.company, isAdmin);
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
+    return await getCategoryCostBreakdown(ctx.user.id, effectiveCompany, effectiveIsAdmin);
   }),
 
   /**
@@ -62,33 +72,33 @@ export const portfolioAnalyticsRouter = router({
       limit: z.number().min(1).max(100).default(50),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const isAdmin = ctx.user.role === 'admin';
+      const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
       const { sortBy = 'priorityScore', sortOrder = 'desc', limit = 50 } = input || {};
-      return await getBuildingComparison(ctx.user.id, ctx.user.company, isAdmin, sortBy, sortOrder, limit);
+      return await getBuildingComparison(ctx.user.id, effectiveCompany, effectiveIsAdmin, sortBy, sortOrder, limit);
     }),
 
   /**
    * Get geographic distribution of buildings
    */
   getGeographicDistribution: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
-    return await getGeographicDistribution(ctx.user.id, ctx.user.company, isAdmin);
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
+    return await getGeographicDistribution(ctx.user.id, effectiveCompany, effectiveIsAdmin);
   }),
 
   /**
    * Get property type distribution
    */
   getPropertyTypeDistribution: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
-    return await getPropertyTypeDistribution(ctx.user.id, ctx.user.company, isAdmin);
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
+    return await getPropertyTypeDistribution(ctx.user.id, effectiveCompany, effectiveIsAdmin);
   }),
 
   /**
    * Get priority breakdown of deficiencies
    */
   getPriorityBreakdown: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
-    return await getPriorityBreakdown(ctx.user.id, ctx.user.company, isAdmin);
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
+    return await getPriorityBreakdown(ctx.user.id, effectiveCompany, effectiveIsAdmin);
   }),
 
   /**
@@ -99,9 +109,9 @@ export const portfolioAnalyticsRouter = router({
       months: z.number().min(1).max(24).default(12),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const isAdmin = ctx.user.role === 'admin';
+      const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
       const months = input?.months || 12;
-      return await getDeficiencyTrends(ctx.user.id, ctx.user.company, isAdmin, months);
+      return await getDeficiencyTrends(ctx.user.id, effectiveCompany, effectiveIsAdmin, months);
     }),
 
   /**
@@ -112,40 +122,51 @@ export const portfolioAnalyticsRouter = router({
       years: z.number().min(1).max(10).default(5),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const isAdmin = ctx.user.role === 'admin';
+      const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
       const years = input?.years || 5;
-      return await getCapitalPlanningForecast(ctx.user.id, ctx.user.company, isAdmin, years);
+      return await getCapitalPlanningForecast(ctx.user.id, effectiveCompany, effectiveIsAdmin, years);
     }),
 
   /**
    * Get all analytics data in a single request (for dashboard)
    */
   getDashboardData: protectedProcedure.query(async ({ ctx }) => {
-    const isAdmin = ctx.user.role === 'admin';
+    const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
     const userId = ctx.user.id;
-    const company = ctx.user.company;
 
-    const [
-      overview,
-      conditionDistribution,
-      categoryCostBreakdown,
-      buildingComparison,
-      geographicDistribution,
-      propertyTypeDistribution,
-      priorityBreakdown,
-      deficiencyTrends,
-      capitalForecast,
-    ] = await Promise.all([
-      getPortfolioOverview(userId, company, isAdmin),
-      getConditionDistribution(userId, company, isAdmin),
-      getCategoryCostBreakdown(userId, company, isAdmin),
-      getBuildingComparison(userId, company, isAdmin, 'priorityScore', 'desc', 10),
-      getGeographicDistribution(userId, company, isAdmin),
-      getPropertyTypeDistribution(userId, company, isAdmin),
-      getPriorityBreakdown(userId, company, isAdmin),
-      getDeficiencyTrends(userId, company, isAdmin, 12),
-      getCapitalPlanningForecast(userId, company, isAdmin, 5),
+    // Use Promise.allSettled to prevent one failing query from breaking the entire dashboard
+    const results = await Promise.allSettled([
+      getPortfolioOverview(userId, effectiveCompany, effectiveIsAdmin),
+      getConditionDistribution(userId, effectiveCompany, effectiveIsAdmin),
+      getCategoryCostBreakdown(userId, effectiveCompany, effectiveIsAdmin),
+      getBuildingComparison(userId, effectiveCompany, effectiveIsAdmin, 'priorityScore', 'desc', 10),
+      getGeographicDistribution(userId, effectiveCompany, effectiveIsAdmin),
+      getPropertyTypeDistribution(userId, effectiveCompany, effectiveIsAdmin),
+      getPriorityBreakdown(userId, effectiveCompany, effectiveIsAdmin),
+      getDeficiencyTrends(userId, effectiveCompany, effectiveIsAdmin, 12),
+      getCapitalPlanningForecast(userId, effectiveCompany, effectiveIsAdmin, 5),
     ]);
+
+    // Extract values, using defaults for failed queries
+    const getValue = <T>(result: PromiseSettledResult<T>, defaultValue: T): T => {
+      if (result.status === 'fulfilled') return result.value;
+      console.error('[PortfolioAnalytics] Query failed:', result.reason);
+      return defaultValue;
+    };
+
+    const overview = getValue(results[0], {
+      totalBuildings: 0, totalAssets: 0, totalAssessments: 0, totalDeficiencies: 0,
+      portfolioFCI: 0, totalCRV: 0, totalDMC: 0, avgBuildingAge: 0,
+      avgConditionScore: 0, immediateNeeds: 0, shortTermNeeds: 0
+    });
+    const conditionDistribution = getValue(results[1], []);
+    const categoryCostBreakdown = getValue(results[2], []);
+    const buildingComparison = getValue(results[3], []);
+    const geographicDistribution = getValue(results[4], []);
+    const propertyTypeDistribution = getValue(results[5], []);
+    const priorityBreakdown = getValue(results[6], []);
+    const deficiencyTrends = getValue(results[7], []);
+    const capitalForecast = getValue(results[8], []);
 
     return {
       overview,

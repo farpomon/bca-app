@@ -1,6 +1,19 @@
 import { getDb } from "../db";
 import { sql } from "drizzle-orm";
 
+/**
+ * Helper function to extract rows from drizzle execute result.
+ * Drizzle's db.execute returns [rows, fields] for mysql2, so we need to extract the rows.
+ */
+function extractRows<T = any>(result: unknown): T[] {
+  if (Array.isArray(result) && Array.isArray(result[0])) {
+    // Result is [rows, fields], return rows
+    return result[0] as T[];
+  }
+  // Result is already rows array
+  return result as T[];
+}
+
 export interface PortfolioKPIs {
   portfolioFCI: number;
   portfolioCI: number;
@@ -74,7 +87,8 @@ export async function calculatePortfolioKPIs(
     WHERE ${whereClause}
   `));
 
-  const metrics = portfolioMetrics[0] as any;
+  const metricsRows = extractRows(portfolioMetrics);
+  const metrics = metricsRows[0] as any || {};
   const totalReplacementValue = parseFloat(metrics.totalReplacementValue || "0");
   const totalRepairCosts = parseFloat(metrics.totalRepairCosts || "0");
   
@@ -84,19 +98,21 @@ export async function calculatePortfolioKPIs(
     : 0;
   const portfolioCI = 100 - portfolioFCI;
 
-  // Get component and assessment counts - building_components is a reference table without projectId
-  // Count assessments as proxy for component coverage
+  // Get component and assessment counts - assessments link to projects through assets
+  // Count unique components assessed (using componentId)
   const componentData = await db.execute(sql.raw(`
-    SELECT COUNT(DISTINCT a.componentCode) as componentCount
+    SELECT COUNT(DISTINCT a.componentId) as componentCount
     FROM assessments a
-    INNER JOIN projects p ON a.projectId = p.id
+    INNER JOIN assets ast ON a.assetId = ast.id
+    INNER JOIN projects p ON ast.projectId = p.id
     WHERE ${whereClause}
   `));
 
   const assessmentData = await db.execute(sql.raw(`
     SELECT COUNT(*) as assessmentCount
     FROM assessments a
-    INNER JOIN projects p ON a.projectId = p.id
+    INNER JOIN assets ast ON a.assetId = ast.id
+    INNER JOIN projects p ON ast.projectId = p.id
     WHERE ${whereClause}
   `));
 
@@ -111,28 +127,30 @@ export async function calculatePortfolioKPIs(
   // Calculate maintenance backlog (sum of all identified but not completed maintenance)
   const maintenanceData = await db.execute(sql.raw(`
     SELECT 
-      SUM(CASE WHEN status IN ('identified', 'planned') THEN estimatedCost ELSE 0 END) as maintenanceBacklog,
-      SUM(CASE WHEN status = 'deferred' THEN estimatedCost ELSE 0 END) as deferredMaintenance
+      SUM(CASE WHEN me.status IN ('identified', 'planned') THEN me.estimatedCost ELSE 0 END) as maintenanceBacklog,
+      SUM(CASE WHEN me.status = 'deferred' THEN me.estimatedCost ELSE 0 END) as deferredMaintenance
     FROM maintenance_entries me
     INNER JOIN projects p ON me.projectId = p.id
     WHERE ${whereClause}
   `));
 
-  const maintenance = maintenanceData[0] as any;
+  const maintenanceRows = extractRows(maintenanceData);
+  const maintenance = maintenanceRows[0] as any || {};
   const maintenanceBacklog = parseFloat(maintenance?.maintenanceBacklog || "0");
   const deferredMaintenance = parseFloat(maintenance?.deferredMaintenance || "0");
 
   // Calculate budget utilization (completed vs planned costs)
   const budgetData = await db.execute(sql.raw(`
     SELECT 
-      SUM(CASE WHEN status = 'completed' THEN actualCost ELSE 0 END) as completedCosts,
-      SUM(CASE WHEN status IN ('planned', 'approved', 'in_progress') THEN estimatedCost ELSE 0 END) as plannedCosts
+      SUM(CASE WHEN me.status = 'completed' THEN me.actualCost ELSE 0 END) as completedCosts,
+      SUM(CASE WHEN me.status IN ('planned', 'approved', 'in_progress') THEN me.estimatedCost ELSE 0 END) as plannedCosts
     FROM maintenance_entries me
     INNER JOIN projects p ON me.projectId = p.id
     WHERE ${whereClause}
   `));
 
-  const budget = budgetData[0] as any;
+  const budgetRows = extractRows(budgetData);
+  const budget = budgetRows[0] as any || {};
   const completedCosts = parseFloat(budget?.completedCosts || "0");
   const plannedCosts = parseFloat(budget?.plannedCosts || "0");
   const budgetUtilization = plannedCosts > 0 ? (completedCosts / plannedCosts) * 100 : 0;
@@ -147,10 +165,10 @@ export async function calculatePortfolioKPIs(
     budgetUtilization: Math.round(budgetUtilization * 100) / 100,
     completedProjects: parseInt(metrics.completedProjects || "0"),
     activeProjects: parseInt(metrics.activeProjects || "0"),
-    criticalDeficiencies: parseInt((deficiencyData[0] as any)?.criticalDeficiencies || "0"),
+    criticalDeficiencies: parseInt((extractRows(deficiencyData)[0] as any)?.criticalDeficiencies || "0"),
     facilityCount: parseInt(metrics.facilityCount || "0"),
-    componentCount: parseInt((componentData[0] as any)?.componentCount || "0"),
-    assessmentCount: parseInt((assessmentData[0] as any)?.assessmentCount || "0"),
+    componentCount: parseInt((extractRows(componentData)[0] as any)?.componentCount || "0"),
+    assessmentCount: parseInt((extractRows(assessmentData)[0] as any)?.assessmentCount || "0"),
   };
 }
 
@@ -204,13 +222,13 @@ export async function calculateTrends(
   `));
 
   const kpiMap = new Map(
-    (kpiTrends as any[]).map(row => [
+    extractRows(kpiTrends).map(row => [
       row.period,
       { fci: parseFloat(row.fci || "0"), ci: parseFloat(row.ci || "0") }
     ])
   );
 
-  return (result as any[]).map(row => ({
+  return extractRows(result).map(row => ({
     period: row.period,
     totalCosts: parseFloat(row.totalCosts || "0"),
     maintenanceCosts: parseFloat(row.maintenanceCosts || "0"),
@@ -284,7 +302,7 @@ export async function getFacilityComparisons(
     ORDER BY fci DESC
   `));
 
-  return (facilities as any[]).map(facility => ({
+  return extractRows(facilities).map(facility => ({
     projectId: facility.projectId,
     projectName: facility.projectName,
     fci: parseFloat(facility.fci || "0"),
