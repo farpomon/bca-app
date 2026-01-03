@@ -1205,21 +1205,328 @@ export const esgLeedRouter = router({
       const result = await db.execute(query);
       return Array.isArray(result[0]) ? result[0] : [];
     }),
+
+  // ============================================================================
+  // AI CARBON REDUCTION RECOMMENDATIONS
+  // ============================================================================
+
+  /**
+   * Get AI-powered carbon reduction recommendations for a project
+   */
+  getAICarbonRecommendations: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      province: z.string().default("Alberta"),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get project utility data
+      const utilityResult = await db.execute(sql`
+        SELECT utilityType, SUM(CAST(consumption AS DECIMAL(15,2))) as totalConsumption
+        FROM utility_consumption
+        WHERE projectId = ${input.projectId}
+        GROUP BY utilityType
+      `);
+      const utilities = Array.isArray(utilityResult[0]) ? utilityResult[0] : [];
+
+      // Get operational carbon data
+      const carbonResult = await db.execute(sql`
+        SELECT 
+          SUM(CAST(scope1Total AS DECIMAL(15,4))) as totalScope1,
+          SUM(CAST(scope2Total AS DECIMAL(15,4))) as totalScope2,
+          SUM(CAST(totalEmissions AS DECIMAL(15,4))) as totalEmissions
+        FROM operational_carbon_tracking
+        WHERE projectId = ${input.projectId}
+      `);
+      const carbonData = Array.isArray(carbonResult[0]) && carbonResult[0].length > 0 
+        ? (carbonResult[0][0] as any) 
+        : { totalScope1: 0, totalScope2: 0, totalEmissions: 0 };
+
+      // Get green upgrades already planned/completed
+      const upgradesResult = await db.execute(sql`
+        SELECT upgradeType, status FROM green_upgrades WHERE projectId = ${input.projectId}
+      `);
+      const existingUpgrades = Array.isArray(upgradesResult[0]) ? upgradesResult[0] : [];
+      const existingTypes = new Set((existingUpgrades as any[]).map(u => u.upgradeType));
+
+      // Get grid emission factor for the province
+      const gridFactor = leedCalc.CANADIAN_EMISSION_FACTORS.electricity[
+        input.province.toLowerCase() as keyof typeof leedCalc.CANADIAN_EMISSION_FACTORS.electricity
+      ] || leedCalc.CANADIAN_EMISSION_FACTORS.electricity.national_avg;
+
+      // Generate recommendations based on data
+      const recommendations: Array<{
+        title: string;
+        description: string;
+        priority: 'high' | 'medium' | 'low';
+        category: 'operational' | 'embodied' | 'renewable';
+        estimatedSavings: number | null;
+        estimatedCost: number | null;
+        paybackYears: number | null;
+      }> = [];
+
+      // Electricity-based recommendations
+      const electricityData = (utilities as any[]).find(u => u.utilityType === 'electricity');
+      if (electricityData && parseFloat(electricityData.totalConsumption) > 0) {
+        const consumption = parseFloat(electricityData.totalConsumption);
+        
+        // LED Lighting
+        if (!existingTypes.has('lighting')) {
+          const savings = consumption * 0.30 * gridFactor / 1000;
+          recommendations.push({
+            title: "LED Lighting Retrofit",
+            description: "Replace existing lighting with LED fixtures to reduce electricity consumption by up to 30%. LEDs also produce less heat, reducing cooling loads.",
+            priority: savings > 10 ? 'high' : 'medium',
+            category: 'operational',
+            estimatedSavings: Math.round(savings * 10) / 10,
+            estimatedCost: Math.round(consumption * 0.15),
+            paybackYears: Math.round((consumption * 0.15) / (savings * 150) * 10) / 10,
+          });
+        }
+
+        // Building Automation
+        if (!existingTypes.has('building_automation')) {
+          const savings = consumption * 0.15 * gridFactor / 1000;
+          recommendations.push({
+            title: "Building Automation System",
+            description: "Install smart building controls to optimize HVAC scheduling, lighting, and equipment operation based on occupancy and weather.",
+            priority: 'medium',
+            category: 'operational',
+            estimatedSavings: Math.round(savings * 10) / 10,
+            estimatedCost: Math.round(consumption * 0.25),
+            paybackYears: Math.round((consumption * 0.25) / (savings * 150) * 10) / 10,
+          });
+        }
+
+        // Solar PV (especially for high-carbon grids)
+        if (!existingTypes.has('solar') && gridFactor > 200) {
+          const savings = consumption * 0.25 * gridFactor / 1000;
+          recommendations.push({
+            title: "Rooftop Solar PV Installation",
+            description: `With ${input.province}'s grid emission factor of ${gridFactor} g CO₂e/kWh, on-site solar generation provides significant carbon reduction benefits.`,
+            priority: gridFactor > 400 ? 'high' : 'medium',
+            category: 'renewable',
+            estimatedSavings: Math.round(savings * 10) / 10,
+            estimatedCost: Math.round(consumption * 0.8),
+            paybackYears: Math.round((consumption * 0.8) / (savings * 150) * 10) / 10,
+          });
+        }
+      }
+
+      // Natural gas recommendations
+      const gasData = (utilities as any[]).find(u => u.utilityType === 'natural_gas');
+      if (gasData && parseFloat(gasData.totalConsumption) > 0) {
+        const consumption = parseFloat(gasData.totalConsumption);
+        
+        // High-efficiency boiler
+        if (!existingTypes.has('boiler')) {
+          const savings = consumption * 0.15 * leedCalc.CANADIAN_EMISSION_FACTORS.natural_gas / 1000;
+          recommendations.push({
+            title: "High-Efficiency Condensing Boiler",
+            description: "Replace aging boilers with 95%+ efficiency condensing units. Modern boilers can reduce natural gas consumption by 15-20%.",
+            priority: savings > 5 ? 'high' : 'medium',
+            category: 'operational',
+            estimatedSavings: Math.round(savings * 10) / 10,
+            estimatedCost: Math.round(consumption * 0.5),
+            paybackYears: Math.round((consumption * 0.5) / (savings * 150) * 10) / 10,
+          });
+        }
+
+        // Heat pump conversion
+        if (!existingTypes.has('hvac') && gridFactor < 200) {
+          const savings = consumption * 0.40 * leedCalc.CANADIAN_EMISSION_FACTORS.natural_gas / 1000;
+          recommendations.push({
+            title: "Electric Heat Pump Conversion",
+            description: `With ${input.province}'s clean electricity grid (${gridFactor} g CO₂e/kWh), converting to electric heat pumps can significantly reduce emissions.`,
+            priority: 'high',
+            category: 'operational',
+            estimatedSavings: Math.round(savings * 10) / 10,
+            estimatedCost: Math.round(consumption * 1.2),
+            paybackYears: Math.round((consumption * 1.2) / (savings * 150) * 10) / 10,
+          });
+        }
+      }
+
+      // Water recommendations
+      const waterData = (utilities as any[]).find(u => u.utilityType === 'water');
+      if (waterData && parseFloat(waterData.totalConsumption) > 0) {
+        if (!existingTypes.has('water_fixtures')) {
+          const consumption = parseFloat(waterData.totalConsumption);
+          const savings = consumption * 0.30 * leedCalc.CANADIAN_EMISSION_FACTORS.water / 1000000;
+          recommendations.push({
+            title: "Low-Flow Water Fixtures",
+            description: "Install low-flow faucets, toilets, and showerheads to reduce water consumption by up to 30%. Also reduces water heating energy.",
+            priority: 'low',
+            category: 'operational',
+            estimatedSavings: Math.round(savings * 100) / 100,
+            estimatedCost: Math.round(consumption * 0.01),
+            paybackYears: Math.round((consumption * 0.01) / (savings * 150) * 10) / 10 || 2,
+          });
+        }
+      }
+
+      // Building envelope recommendations
+      if (!existingTypes.has('insulation') && !existingTypes.has('windows')) {
+        recommendations.push({
+          title: "Building Envelope Improvements",
+          description: "Upgrade insulation and windows to reduce heating and cooling loads. Prioritize areas with highest heat loss based on thermal imaging.",
+          priority: 'medium',
+          category: 'operational',
+          estimatedSavings: null,
+          estimatedCost: null,
+          paybackYears: null,
+        });
+      }
+
+      // Embodied carbon recommendations
+      recommendations.push({
+        title: "Low-Carbon Material Specifications",
+        description: "For future renovations, specify materials with Environmental Product Declarations (EPDs) and lower Global Warming Potential. Prioritize concrete with supplementary cite materials and recycled steel.",
+        priority: 'low',
+        category: 'embodied',
+        estimatedSavings: null,
+        estimatedCost: null,
+        paybackYears: null,
+      });
+
+      // Sort by priority
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      recommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+      return recommendations;
+    }),
+
+  // ============================================================================
+  // LEED COMPLIANCE REPORT DATA
+  // ============================================================================
+
+  /**
+   * Get comprehensive LEED compliance report data for a project
+   */
+  getLeedComplianceReportData: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get project info
+      const projectResult = await db.execute(sql`
+        SELECT id, name, address, city, province, yearBuilt, propertyType, constructionType
+        FROM projects WHERE id = ${input.projectId}
+      `);
+      const project = Array.isArray(projectResult[0]) && projectResult[0].length > 0 
+        ? (projectResult[0][0] as any) 
+        : null;
+
+      if (!project) {
+        throw new Error("Project not found");
+      }
+
+      // Get LEED tracking data
+      const trackingResult = await db.execute(sql`
+        SELECT plt.*, lc.creditCode, lc.creditName, lc.category, lc.creditType, lc.maxPoints,
+               lc.description, lc.requirements, lc.documentationRequired,
+               lc.impactDecarbonization, lc.impactQualityOfLife, lc.impactEcologicalConservation
+        FROM project_leed_tracking plt
+        JOIN leed_credits lc ON plt.creditId = lc.id
+        WHERE plt.projectId = ${input.projectId}
+        ORDER BY lc.category, lc.creditCode
+      `);
+      const tracking = Array.isArray(trackingResult[0]) ? trackingResult[0] : [];
+
+      // Calculate summary by category
+      const byCategory: Record<string, {
+        achieved: number;
+        targeted: number;
+        maxPoints: number;
+        credits: any[];
+        prerequisites: any[];
+      }> = {};
+
+      let totalAchieved = 0;
+      let totalTargeted = 0;
+      let prerequisitesMet = 0;
+      let prerequisitesTotal = 0;
+
+      for (const credit of tracking as any[]) {
+        const cat = credit.category;
+        if (!byCategory[cat]) {
+          byCategory[cat] = { achieved: 0, targeted: 0, maxPoints: 0, credits: [], prerequisites: [] };
+        }
+
+        if (credit.creditType === 'prerequisite') {
+          prerequisitesTotal++;
+          if (credit.status === 'achieved') prerequisitesMet++;
+          byCategory[cat].prerequisites.push(credit);
+        } else {
+          byCategory[cat].achieved += credit.pointsAchieved || 0;
+          byCategory[cat].targeted += credit.pointsTargeted || 0;
+          byCategory[cat].maxPoints += credit.maxPoints || 0;
+          byCategory[cat].credits.push(credit);
+          totalAchieved += credit.pointsAchieved || 0;
+          totalTargeted += credit.pointsTargeted || 0;
+        }
+      }
+
+      // Determine certification level
+      let certificationLevel = 'Not Certified';
+      if (totalAchieved >= 80) certificationLevel = 'Platinum';
+      else if (totalAchieved >= 60) certificationLevel = 'Gold';
+      else if (totalAchieved >= 50) certificationLevel = 'Silver';
+      else if (totalAchieved >= 40) certificationLevel = 'Certified';
+
+      // Get documentation status summary
+      const docStatusResult = await db.execute(sql`
+        SELECT documentationStatus, COUNT(*) as count
+        FROM project_leed_tracking
+        WHERE projectId = ${input.projectId}
+        GROUP BY documentationStatus
+      `);
+      const docStatus = Array.isArray(docStatusResult[0]) ? docStatusResult[0] : [];
+
+      // Get action items (credits not started or in progress)
+      const actionItems = (tracking as any[])
+        .filter(c => c.status === 'not_started' || c.status === 'in_progress')
+        .filter(c => c.creditType !== 'prerequisite' || c.status !== 'achieved')
+        .map(c => ({
+          creditCode: c.creditCode,
+          creditName: c.creditName,
+          category: c.category,
+          status: c.status,
+          documentationStatus: c.documentationStatus,
+          maxPoints: c.maxPoints,
+          requirements: c.requirements,
+          documentationRequired: c.documentationRequired,
+        }));
+
+      return {
+        project: {
+          id: project.id,
+          name: project.name,
+          address: project.address,
+          city: project.city,
+          province: project.province,
+          yearBuilt: project.yearBuilt,
+          propertyType: project.propertyType,
+          constructionType: project.constructionType,
+        },
+        summary: {
+          totalAchieved,
+          totalTargeted,
+          maxPossible: 110,
+          certificationLevel,
+          prerequisitesMet,
+          prerequisitesTotal,
+          allPrerequisitesMet: prerequisitesMet === prerequisitesTotal,
+        },
+        byCategory,
+        documentationStatus: docStatus,
+        actionItems,
+        generatedAt: new Date().toISOString(),
+      };
+    }),
 });
-
-// Helper function to get savings percentage by project type
-function getSavingsPercentage(projectType: string, category: 'energy' | 'water'): number {
-  const savingsMap: Record<string, { energy: number; water: number }> = {
-    lighting: { energy: 30, water: 0 },
-    hvac: { energy: 20, water: 0 },
-    boiler: { energy: 15, water: 0 },
-    windows: { energy: 10, water: 0 },
-    insulation: { energy: 15, water: 0 },
-    solar: { energy: 25, water: 0 },
-    water_fixtures: { energy: 0, water: 30 },
-    building_automation: { energy: 15, water: 10 },
-    roof: { energy: 8, water: 0 },
-  };
-
-  return savingsMap[projectType.toLowerCase()]?.[category] || 10;
-}

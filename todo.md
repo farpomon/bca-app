@@ -3004,3 +3004,36 @@ Testing:
 - [x] Add certification level calculator (Certified, Silver, Gold, Platinum)
 - [x] Create LEED v5 compliance report generation
 
+
+## 🌱 ESG Dashboard & LEED Compliance Features
+
+### ESG Dashboard UI
+- [x] Create ESG Dashboard page with navigation
+- [x] Build grid carbon intensity map component (regional visualization)
+- [x] Implement embodied carbon assessment display by project
+- [x] Create LEED credit progress tracker component
+- [x] Add project selector for ESG metrics
+- [x] Display operational vs embodied carbon breakdown
+
+### Carbon Reduction Recommendations
+- [x] Create AI-powered carbon reduction recommendation engine
+- [x] Implement regional carbon intensity data integration
+- [x] Generate operational carbon reduction suggestions
+- [x] Generate embodied carbon reduction suggestions
+- [x] Add recommendation priority scoring
+- [x] Display estimated carbon savings per recommendation
+
+### LEED Compliance Reports
+- [x] Create LEED v5 credit status tracking schema
+- [x] Implement projected certification level calculator
+- [x] Build documentation requirements checklist
+- [x] Generate exportable PDF reports with LEED status
+- [x] Add credit-by-credit breakdown in reports
+- [x] Include action items for missing credits
+
+### Database Schema for ESG
+- [ ] Add ESG metrics table (carbon intensity, embodied carbon)
+- [ ] Add LEED credits tracking table
+- [ ] Add carbon recommendations table
+- [ ] Create regional carbon intensity reference data
+

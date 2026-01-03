@@ -33,6 +33,9 @@ import PortfolioTargets from "./pages/PortfolioTargets";
 import Analytics from "./pages/Analytics";
 import ProjectAnalytics from "./pages/ProjectAnalytics";
 import ESGDashboard from "./pages/ESGDashboard";
+import ESGLeedDashboard from "./pages/ESGLeedDashboard";
+import AICarbonRecommendations from "./pages/AICarbonRecommendations";
+import LEEDComplianceReport from "./pages/LEEDComplianceReport";
 import SustainabilityDashboard from "./pages/SustainabilityDashboard";
 import CarbonFootprintReport from "./pages/CarbonFootprintReport";
 import RSMeansCostBrowser from "./pages/RSMeansCostBrowser";
@@ -105,6 +108,9 @@ function Router() {
       <Route path={"/admin/portfolio-targets"} component={PortfolioTargets} />
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/esg-dashboard"} component={ESGDashboard} />
+      <Route path={"/esg-leed"} component={ESGLeedDashboard} />
+      <Route path={"/ai-carbon-recommendations"} component={AICarbonRecommendations} />
+      <Route path={"/leed-compliance-report"} component={LEEDComplianceReport} />
       <Route path={"/sustainability"} component={SustainabilityDashboard} />
       <Route path={"/carbon-footprint"} component={CarbonFootprintReport} />
       <Route path={"/rsmeans"} component={RSMeansCostBrowser} />
