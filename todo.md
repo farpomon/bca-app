@@ -3095,3 +3095,16 @@ Testing:
 - [x] Fix getProjectAssessments to join through assets table
 - [x] Fix getProjectFCI to use raw SQL with assets join
 - [x] Verify financial metrics display correctly after fixes
+
+## Bug Fixes (January 2026)
+
+- [x] Fix project deletion bug - database query fails when trying to delete a project (status enum was missing 'deleted' value)
+
+## Navigation Restructure
+
+- [x] Restructure sidebar navigation for better organization
+- [x] Group related menu items into logical sections
+- [x] Add collapsible sections for Admin, Sustainability, and Reports
+- [x] Improve visual hierarchy with section headers
+- [x] Remove duplicate/redundant menu items
+- [x] Test navigation changes across all pages

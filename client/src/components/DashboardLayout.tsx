@@ -19,11 +19,45 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Shield, Trash2, BarChart3, Building2, Plus, Settings, Leaf, DollarSign, Factory, Sparkles, FileText, Award } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  LogOut, 
+  PanelLeft, 
+  Users, 
+  Shield, 
+  Trash2, 
+  Building2, 
+  Plus, 
+  Settings, 
+  Leaf, 
+  DollarSign, 
+  Factory, 
+  Sparkles, 
+  FileText, 
+  Award,
+  ChevronRight,
+  BarChart3,
+  TrendingUp,
+  Target,
+  LineChart,
+  ClipboardCheck,
+  Lock,
+  History,
+  FileCheck,
+  Calculator
+} from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -37,25 +71,54 @@ import { PendingInvitationsBanner } from './PendingInvitationsBanner';
 import { CreateCompanyDialog } from './CreateCompanyDialog';
 import { useCompany } from '@/contexts/CompanyContext';
 
-const menuItems = [
-  { icon: Shield, label: "Admin", path: "/admin", adminOnly: true },
+// Main navigation items (always visible)
+const mainMenuItems = [
   { icon: LayoutDashboard, label: "Projects", path: "/" },
-  { icon: Building2, label: "Building Templates", path: "/admin/building-templates", adminOnly: true },
-  { icon: Settings, label: "Bulk Service Life", path: "/admin/bulk-service-life-updates", adminOnly: true },
   { icon: DollarSign, label: "RSMeans Cost Data", path: "/rsmeans" },
+  { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
+];
+
+// Sustainability & ESG section
+const sustainabilityItems = [
   { icon: Leaf, label: "ESG Dashboard", path: "/esg-dashboard" },
   { icon: Award, label: "ESG & LEED", path: "/esg-leed" },
   { icon: Sparkles, label: "AI Carbon Recommendations", path: "/ai-carbon-recommendations" },
   { icon: FileText, label: "LEED Compliance Report", path: "/leed-compliance-report" },
   { icon: Leaf, label: "Sustainability", path: "/sustainability" },
   { icon: Factory, label: "Carbon Footprint", path: "/carbon-footprint" },
-  { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
+];
+
+// Analytics & Reports section
+const analyticsItems = [
+  { icon: BarChart3, label: "Portfolio Analytics", path: "/portfolio-analytics" },
+  { icon: TrendingUp, label: "Portfolio BI", path: "/portfolio-bi" },
+  { icon: LineChart, label: "Predictions", path: "/predictions" },
+  { icon: Target, label: "Prioritization", path: "/prioritization" },
+  { icon: Calculator, label: "Capital Budget", path: "/capital-budget" },
+  { icon: FileCheck, label: "Portfolio Report", path: "/portfolio-report" },
+];
+
+// Admin section items
+const adminItems = [
+  { icon: Shield, label: "Admin Dashboard", path: "/admin" },
+  { icon: Building2, label: "Building Templates", path: "/admin/building-templates" },
+  { icon: Settings, label: "Bulk Service Life", path: "/admin/bulk-service-life-updates" },
+  { icon: ClipboardCheck, label: "Compliance", path: "/admin/compliance" },
+  { icon: Lock, label: "Data Security", path: "/admin/data-security" },
+  { icon: History, label: "Audit Trail", path: "/admin/audit-trail" },
+  { icon: TrendingUp, label: "Economic Indicators", path: "/admin/economic-indicators" },
+  { icon: Target, label: "Portfolio Targets", path: "/admin/portfolio-targets" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 480;
+
+// Collapsible state keys
+const ADMIN_COLLAPSED_KEY = "sidebar-admin-collapsed";
+const SUSTAINABILITY_COLLAPSED_KEY = "sidebar-sustainability-collapsed";
+const ANALYTICS_COLLAPSED_KEY = "sidebar-analytics-collapsed";
 
 export default function DashboardLayout({
   children,
@@ -146,16 +209,51 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
-  const { isSuperAdmin, selectedCompany, hasMultipleCompanies } = useCompany();
+  const { isSuperAdmin, selectedCompany } = useCompany();
   const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
+  
+  // Collapsible states with localStorage persistence
+  const [adminOpen, setAdminOpen] = useState(() => {
+    const saved = localStorage.getItem(ADMIN_COLLAPSED_KEY);
+    return saved !== "false";
+  });
+  const [sustainabilityOpen, setSustainabilityOpen] = useState(() => {
+    const saved = localStorage.getItem(SUSTAINABILITY_COLLAPSED_KEY);
+    return saved !== "false";
+  });
+  const [analyticsOpen, setAnalyticsOpen] = useState(() => {
+    const saved = localStorage.getItem(ANALYTICS_COLLAPSED_KEY);
+    return saved !== "false";
+  });
   
   // Check if any project has multiple assets for portfolio analytics visibility
   const { data: hasMultiAssetProjects } = trpc.projects.hasMultiAssetProjects.useQuery(
     undefined,
     { enabled: !!user }
   );
+
+  // Get active menu item label for mobile header
+  const allMenuItems = [
+    ...mainMenuItems,
+    ...sustainabilityItems,
+    ...analyticsItems,
+    ...adminItems,
+  ];
+  const activeMenuItem = allMenuItems.find(item => item.path === location);
+
+  // Persist collapsible states
+  useEffect(() => {
+    localStorage.setItem(ADMIN_COLLAPSED_KEY, adminOpen.toString());
+  }, [adminOpen]);
+  
+  useEffect(() => {
+    localStorage.setItem(SUSTAINABILITY_COLLAPSED_KEY, sustainabilityOpen.toString());
+  }, [sustainabilityOpen]);
+  
+  useEffect(() => {
+    localStorage.setItem(ANALYTICS_COLLAPSED_KEY, analyticsOpen.toString());
+  }, [analyticsOpen]);
 
   useEffect(() => {
     if (isCollapsed) {
@@ -192,6 +290,63 @@ function DashboardLayoutContent({
       document.body.style.userSelect = "";
     };
   }, [isResizing, setSidebarWidth]);
+
+  const isAdmin = user?.role === 'admin';
+
+  // Helper to render menu items
+  const renderMenuItem = (item: { icon: React.ComponentType<{ className?: string }>; label: string; path: string }) => {
+    const isActive = location === item.path;
+    return (
+      <SidebarMenuItem key={item.path}>
+        <SidebarMenuButton
+          isActive={isActive}
+          onClick={() => setLocation(item.path)}
+          tooltip={item.label}
+          className="h-9 transition-all font-normal"
+        >
+          <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+          <span>{item.label}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
+
+  // Helper to render collapsible section
+  const renderCollapsibleSection = (
+    title: string,
+    icon: React.ComponentType<{ className?: string }>,
+    items: Array<{ icon: React.ComponentType<{ className?: string }>; label: string; path: string }>,
+    isOpen: boolean,
+    setIsOpen: (open: boolean) => void
+  ) => {
+    const Icon = icon;
+    const hasActiveItem = items.some(item => location === item.path);
+    
+    return (
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
+        <SidebarGroup className="py-0">
+          <CollapsibleTrigger asChild>
+            <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md px-2 py-1.5 transition-colors">
+              <div className="flex items-center gap-2">
+                <Icon className={`h-4 w-4 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-xs font-medium uppercase tracking-wider ${hasActiveItem ? "text-primary" : ""}`}>
+                  {title}
+                </span>
+              </div>
+              <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
+            </SidebarGroupLabel>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+            <SidebarGroupContent>
+              <SidebarMenu className="px-0 py-1">
+                {items.map(renderMenuItem)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </CollapsibleContent>
+        </SidebarGroup>
+      </Collapsible>
+    );
+  };
 
   return (
     <>
@@ -256,32 +411,53 @@ function DashboardLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1">
-              {menuItems.filter(item => {
-                // Hide admin-only items for non-admins
-                if (item.adminOnly && user?.role !== 'admin') return false;
-                // Hide portfolio analytics if no projects have multiple assets
-                if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
-                return true;
-              }).map(item => {
-                const isActive = location === item.path;
-                return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+            {/* Main Navigation */}
+            <SidebarGroup className="py-2">
+              <SidebarGroupContent>
+                <SidebarMenu className="px-2">
+                  {mainMenuItems.map(renderMenuItem)}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            {/* Analytics & Reports Section */}
+            <div className="px-2">
+              {renderCollapsibleSection(
+                "Analytics & Reports",
+                BarChart3,
+                analyticsItems.filter(item => {
+                  // Hide portfolio analytics if no projects have multiple assets
+                  if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
+                  return true;
+                }),
+                analyticsOpen,
+                setAnalyticsOpen
+              )}
+            </div>
+
+            {/* Sustainability & ESG Section */}
+            <div className="px-2">
+              {renderCollapsibleSection(
+                "Sustainability & ESG",
+                Leaf,
+                sustainabilityItems,
+                sustainabilityOpen,
+                setSustainabilityOpen
+              )}
+            </div>
+
+            {/* Admin Section (only for admins) */}
+            {isAdmin && (
+              <div className="px-2">
+                {renderCollapsibleSection(
+                  "Administration",
+                  Shield,
+                  adminItems,
+                  adminOpen,
+                  setAdminOpen
+                )}
+              </div>
+            )}
 
             {/* Offline Status Section */}
             <div className="mt-auto px-2 py-2 border-t">
