@@ -151,7 +151,12 @@ export async function getUserProjects(
   isSuperAdmin: boolean = false
 ) {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) {
+    console.error("[Projects] Database connection not available");
+    return [];
+  }
+  
+  console.log(`[getUserProjects] Starting query - userId: ${userId}, isAdmin: ${isAdmin}, isSuperAdmin: ${isSuperAdmin}, companyId: ${companyId}, userCompany: ${userCompany}`);
   
   // Build where conditions with company isolation
   let whereConditions;
@@ -159,6 +164,7 @@ export async function getUserProjects(
   if (isAdmin) {
     if (isSuperAdmin) {
       // Super admins can see all projects
+      console.log("[getUserProjects] Super admin - fetching all non-deleted projects");
       whereConditions = includeDeleted
         ? undefined
         : ne(projects.status, "deleted");
@@ -197,9 +203,17 @@ export async function getUserProjects(
   
   const query = db.select().from(projects);
   
-  return whereConditions
-    ? await query.where(whereConditions).orderBy(desc(projects.updatedAt))
-    : await query.orderBy(desc(projects.updatedAt));
+  try {
+    const result = whereConditions
+      ? await query.where(whereConditions).orderBy(desc(projects.updatedAt))
+      : await query.orderBy(desc(projects.updatedAt));
+    
+    console.log(`[getUserProjects] Query returned ${result.length} projects`);
+    return result;
+  } catch (error) {
+    console.error("[getUserProjects] Query error:", error);
+    return [];
+  }
 }
 
 export async function getDeletedProjects(

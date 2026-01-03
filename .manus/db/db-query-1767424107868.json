@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, uniqueId, name, clientName, propertyType, city, province, status FROM projects WHERE status != 'deleted' ORDER BY id DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, uniqueId, name, clientName, propertyType, city, province, status FROM projects WHERE status != 'deleted' ORDER BY id DESC;",
+  "rows": [
+    {
+      "id": "9",
+      "uniqueId": "NULL",
+      "name": "Heritage Manor Condominiums Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "province": "NULL",
+      "status": "in_progress"
+    },
+    {
+      "id": "8",
+      "uniqueId": "NULL",
+      "name": "Riverside Community Center Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "province": "NULL",
+      "status": "completed"
+    },
+    {
+      "id": "7",
+      "uniqueId": "NULL",
+      "name": "Oakwood Corporate Tower Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "province": "NULL",
+      "status": "in_progress"
+    },
+    {
+      "id": "3",
+      "uniqueId": "NULL",
+      "name": "Lakewood Parks Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "province": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "2",
+      "uniqueId": "NULL",
+      "name": "Riverside Schools FCA",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "province": "NULL",
+      "status": "in_progress"
+    },
+    {
+      "id": "1",
+      "uniqueId": "NULL",
+      "name": "2024 Municipal Building Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "province": "NULL",
+      "status": "in_progress"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuniqueId\tname\tclientName\tpropertyType\tcity\tprovince\tstatus\n9\tNULL\tHeritage Manor Condominiums Assessment\tNULL\tNULL\tNULL\tNULL\tin_progress\n8\tNULL\tRiverside Community Center Assessment\tNULL\tNULL\tNULL\tNULL\tcompleted\n7\tNULL\tOakwood Corporate Tower Assessment\tNULL\tNULL\tNULL\tNULL\tin_progress\n3\tNULL\tLakewood Parks Assessment\tNULL\tNULL\tNULL\tNULL\tdraft\n2\tNULL\tRiverside Schools FCA\tNULL\tNULL\tNULL\tNULL\tin_progress\n1\tNULL\t2024 Municipal Building Assessment\tNULL\tNULL\tNULL\tNULL\tin_progress\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

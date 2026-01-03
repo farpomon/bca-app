@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name, clientName, propertyType, city, status FROM projects WHERE status != 'deleted' ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, clientName, propertyType, city, status FROM projects WHERE status != 'deleted' ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "9",
+      "name": "Heritage Manor Condominiums Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "status": "in_progress"
+    },
+    {
+      "id": "8",
+      "name": "Riverside Community Center Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "status": "completed"
+    },
+    {
+      "id": "7",
+      "name": "Oakwood Corporate Tower Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "status": "in_progress"
+    },
+    {
+      "id": "3",
+      "name": "Lakewood Parks Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "2",
+      "name": "Riverside Schools FCA",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "status": "in_progress"
+    },
+    {
+      "id": "1",
+      "name": "2024 Municipal Building Assessment",
+      "clientName": "NULL",
+      "propertyType": "NULL",
+      "city": "NULL",
+      "status": "in_progress"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tclientName\tpropertyType\tcity\tstatus\n9\tHeritage Manor Condominiums Assessment\tNULL\tNULL\tNULL\tin_progress\n8\tRiverside Community Center Assessment\tNULL\tNULL\tNULL\tcompleted\n7\tOakwood Corporate Tower Assessment\tNULL\tNULL\tNULL\tin_progress\n3\tLakewood Parks Assessment\tNULL\tNULL\tNULL\tdraft\n2\tRiverside Schools FCA\tNULL\tNULL\tNULL\tin_progress\n1\t2024 Municipal Building Assessment\tNULL\tNULL\tNULL\tin_progress\n",
+  "stderr": "",
+  "execution_time_ms": 81
+}

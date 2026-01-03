@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, uniqueId FROM projects WHERE name LIKE '%Riverside%' OR name LIKE '%Community%' ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, uniqueId FROM projects WHERE name LIKE '%Riverside%' OR name LIKE '%Community%' ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "8",
+      "name": "Riverside Community Center Assessment",
+      "uniqueId": "NULL"
+    },
+    {
+      "id": "2",
+      "name": "Riverside Schools FCA",
+      "uniqueId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tuniqueId\n8\tRiverside Community Center Assessment\tNULL\n2\tRiverside Schools FCA\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

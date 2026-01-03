@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE projects ADD COLUMN uniqueId VARCHAR(50) UNIQUE;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE projects ADD COLUMN uniqueId VARCHAR(50) UNIQUE;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 8200 (HY000) at line 1: unsupported add column 'uniqueid' constraint UNIQUE KEY when altering 'XnmtZZwX6e46H8JVZbq4Ta.projects'"
+  ]
+}

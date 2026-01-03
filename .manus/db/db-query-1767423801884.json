@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE projects \nADD COLUMN address TEXT,\nADD COLUMN clientName VARCHAR(255),\nADD COLUMN propertyType VARCHAR(100),\nADD COLUMN constructionType VARCHAR(100),\nADD COLUMN yearBuilt INT,\nADD COLUMN numberOfUnits INT,\nADD COLUMN numberOfStories INT,\nADD COLUMN buildingCode VARCHAR(100),\nADD COLUMN assessmentDate TIMESTAMP,\nADD COLUMN observations TEXT;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE projects \nADD COLUMN address TEXT,\nADD COLUMN clientName VARCHAR(255),\nADD COLUMN propertyType VARCHAR(100),\nADD COLUMN constructionType VARCHAR(100),\nADD COLUMN yearBuilt INT,\nADD COLUMN numberOfUnits INT,\nADD COLUMN numberOfStories INT,\nADD COLUMN buildingCode VARCHAR(100),\nADD COLUMN assessmentDate TIMESTAMP,\nADD COLUMN observations TEXT;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2890
+}

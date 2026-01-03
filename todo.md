@@ -3058,3 +3058,14 @@ Testing:
 - [x] Include comprehensive assessments for each project
 - [x] Include deficiencies with various severities (via assessments)
 - [x] Include ESG data and certifications (via asset FCI scores)
+
+
+## Mock Assets for Demonstration Projects
+- [x] Add mock assets to Project 7 (Oakwood Corporate Tower - Commercial Office) - 5 assets added
+- [x] Add mock assets to Project 8 (Riverside Community Center - Municipal Recreation) - 6 assets added
+- [x] Add mock assets to Project 9 (Heritage Manor Condominiums - Multi-unit Residential) - 8 assets added
+- [x] Include realistic Canadian addresses and building details (Toronto, Vancouver, Calgary)
+- [x] Verify assets display correctly in project views
+
+## Bug Investigation
+- [x] Bug: Assets not displaying under Riverside Community Center Assessment project - Fixed schema mismatch between Drizzle and database

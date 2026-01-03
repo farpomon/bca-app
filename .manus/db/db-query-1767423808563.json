@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE projects \nADD COLUMN overallConditionScore INT,\nADD COLUMN overallFciScore INT,\nADD COLUMN overallConditionRating VARCHAR(50),\nADD COLUMN ci DECIMAL(5, 2),\nADD COLUMN fci DECIMAL(5, 4),\nADD COLUMN deferredMaintenanceCost DECIMAL(15, 2),\nADD COLUMN currentReplacementValue DECIMAL(15, 2),\nADD COLUMN lastCalculatedAt TIMESTAMP;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE projects \nADD COLUMN overallConditionScore INT,\nADD COLUMN overallFciScore INT,\nADD COLUMN overallConditionRating VARCHAR(50),\nADD COLUMN ci DECIMAL(5, 2),\nADD COLUMN fci DECIMAL(5, 4),\nADD COLUMN deferredMaintenanceCost DECIMAL(15, 2),\nADD COLUMN currentReplacementValue DECIMAL(15, 2),\nADD COLUMN lastCalculatedAt TIMESTAMP;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2310
+}
