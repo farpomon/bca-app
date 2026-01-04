@@ -380,13 +380,21 @@ export async function getCategoryCostBreakdown(
       ? sql`(p.userId = ${userId} OR p.company = ${company})`
       : sql`p.userId = ${userId}`;
 
-  // Join through assets and building_components since assessments use componentId
+  // First, get total replacement value across all assets in the portfolio
+  const totalRVResult = await db.execute(sql`
+    SELECT SUM(COALESCE(a.replacementValue, 0)) as totalRV
+    FROM assets a
+    INNER JOIN projects p ON a.projectId = p.id
+    WHERE ${projectConditions}
+  `);
+  const totalPortfolioRV = parseFloat(extractRows(totalRVResult)[0]?.totalRV || '0');
+
+  // Get assessment counts per category to calculate proportional replacement values
   const result = await db.execute(sql`
     SELECT 
       UPPER(SUBSTRING(COALESCE(bc.code, 'Z'), 1, 1)) as categoryCode,
       COUNT(DISTINCT ass.id) as assessmentCount,
       SUM(COALESCE(ass.estimatedRepairCost, 0)) as totalRepairCost,
-      0 as totalReplacementValue,
       AVG(CASE 
         WHEN ass.conditionRating IN ('1', '2') THEN 85
         WHEN ass.conditionRating = '3' THEN 65
@@ -419,10 +427,15 @@ export async function getCategoryCostBreakdown(
 
   const rows = extractRows(result);
   const totalRepairCost = rows.reduce((sum, r) => sum + parseFloat(r.totalRepairCost || '0'), 0);
+  const totalAssessments = rows.reduce((sum, r) => sum + parseInt(r.assessmentCount || '0'), 0);
 
   return rows.map(row => {
     const repairCost = parseFloat(row.totalRepairCost || '0');
-    const replacementValue = parseFloat(row.totalReplacementValue || '0');
+    const assessmentCount = parseInt(row.assessmentCount || '0');
+    // Distribute total portfolio replacement value proportionally by assessment count
+    const replacementValue = totalAssessments > 0 
+      ? (totalPortfolioRV * assessmentCount / totalAssessments)
+      : 0;
     // FCI as decimal ratio (0-1 scale)
     const fci = replacementValue > 0 ? repairCost / replacementValue : 0;
     const avgScore = parseFloat(row.avgConditionScore || '50');

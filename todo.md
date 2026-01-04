@@ -3266,3 +3266,8 @@ Testing:
 - [x] Change Building Comparison dashboard to compare individual buildings/assets instead of projects
 - [x] Update backend query to fetch assets instead of projects
 - [x] Update frontend to display asset-level metrics (FCI, Condition, Priority Score)
+
+## Fix Portfolio Analytics Costs Tab
+- [x] Fix Category Cost Summary table showing $0 for Replacement Value
+- [x] Fix FCI by Category chart showing no data
+- [x] Ensure category-level metrics are calculated correctly from assessments and components
