@@ -149,8 +149,8 @@ export default function PortfolioAnalytics() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container py-6 space-y-6">
-        {/* Enhanced Analytics Banner */}
-        <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+        {/* Enhanced Analytics Banner - Hidden */}
+        {/* <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
           <AlertDescription className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <span className="text-sm">
               🚀 <strong>New!</strong> Advanced Portfolio Analytics with predictive forecasting, financial modeling, and benchmarking is now available.
@@ -161,7 +161,7 @@ export default function PortfolioAnalytics() {
               </Button>
             </Link>
           </AlertDescription>
-        </Alert>
+        </Alert> */}
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

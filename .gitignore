@@ -105,3 +105,6 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Large PDF files (should be stored in S3 instead)
+building-codes/*.pdf
