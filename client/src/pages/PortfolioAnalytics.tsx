@@ -428,10 +428,10 @@ export default function PortfolioAnalytics() {
                     </thead>
                     <tbody>
                       {(buildingComparison || dashboardData.buildingComparison).map((building) => (
-                        <tr key={building.projectId} className="border-b hover:bg-muted/50">
+                        <tr key={building.assetId} className="border-b hover:bg-muted/50">
                           <td className="p-3">
                             <div>
-                              <p className="font-medium">{building.projectName}</p>
+                              <p className="font-medium">{building.assetName}</p>
                               <p className="text-xs text-muted-foreground">
                                 {building.city && building.province ? `${building.city}, ${building.province}` : building.address || 'No address'}
                               </p>
@@ -462,7 +462,7 @@ export default function PortfolioAnalytics() {
                             </div>
                           </td>
                           <td className="p-3">
-                            <Link href={`/projects/${building.projectId}`}>
+                            <Link href={`/assets/${building.assetId}`}>
                               <Button variant="ghost" size="sm">
                                 <ChevronRight className="h-4 w-4" />
                               </Button>

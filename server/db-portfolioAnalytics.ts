@@ -83,6 +83,8 @@ export interface CategoryCostBreakdown {
 }
 
 export interface BuildingComparison {
+  assetId: number;
+  assetName: string;
   projectId: number;
   projectName: string;
   address: string | null;
@@ -91,7 +93,6 @@ export interface BuildingComparison {
   propertyType: string | null;
   yearBuilt: number | null;
   buildingAge: number;
-  assetCount: number;
   assessmentCount: number;
   deficiencyCount: number;
   currentReplacementValue: number;
@@ -463,45 +464,39 @@ export async function getBuildingComparison(
       ? sql`(p.userId = ${userId} OR p.company = ${company})`
       : sql`p.userId = ${userId}`;
 
-  // Get all projects with their metrics
-  const projectsResult = await db.execute(sql`
+  // Get all assets with their project information
+  const assetsResult = await db.execute(sql`
     SELECT 
-      p.id as projectId,
-      p.name as projectName,
-      p.address,
+      a.id as assetId,
+      a.name as assetName,
+      a.projectId,
+      a.address,
       p.city,
       p.province,
       p.propertyType,
-      p.yearBuilt,
-      COALESCE(p.currentReplacementValue, 0) as crv,
-      COALESCE(p.deferredMaintenanceCost, 0) as dmc
-    FROM projects p
+      a.yearBuilt,
+      COALESCE(a.replacementValue, 0) as crv,
+      COALESCE(p.deferredMaintenanceCost, 0) as dmc,
+      p.name as projectName
+    FROM assets a
+    INNER JOIN projects p ON a.projectId = p.id
     WHERE ${projectConditions}
   `);
 
   // Extract rows from drizzle result
-  const projectRows = extractRows(projectsResult);
+  const assetRows = extractRows(assetsResult);
   
-  // Extract project IDs, filtering out any undefined values
-  const projectIds = projectRows
-    .map(p => p.projectId ?? p.id)
+  // Extract asset IDs, filtering out any undefined values
+  const assetIds = assetRows
+    .map(a => a.assetId ?? a.id)
     .filter((id): id is number => id !== undefined && id !== null);
 
-  if (projectIds.length === 0) return [];
+  if (assetIds.length === 0) return [];
 
-  // Get asset counts
-  const assetCounts = await db.execute(sql`
-    SELECT projectId, COUNT(*) as count
-    FROM assets
-    WHERE projectId IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})
-    GROUP BY projectId
-  `);
-  const assetMap = new Map(extractRows(assetCounts).map(r => [r.projectId, parseInt(r.count || '0')]));
-
-  // Get assessment counts and condition scores - join through assets
+  // Get assessment counts and condition scores per asset
   const assessmentData = await db.execute(sql`
     SELECT 
-      a.projectId, 
+      ass.assetId, 
       COUNT(*) as count,
       AVG(CASE 
         WHEN ass.conditionRating IN ('1', '2') THEN 85
@@ -510,16 +505,16 @@ export async function getBuildingComparison(
         ELSE 50
       END) as avgConditionScore
     FROM assessments ass
-    INNER JOIN assets a ON ass.assetId = a.id
-    WHERE a.projectId IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})
-    GROUP BY a.projectId
+    WHERE ass.assetId IN (${sql.join(assetIds.map(id => sql`${id}`), sql`, `)})
+    GROUP BY ass.assetId
   `);
   const assessmentMap = new Map(extractRows(assessmentData).map(r => [
-    r.projectId, 
+    r.assetId, 
     { count: parseInt(r.count || '0'), avgScore: parseFloat(r.avgConditionScore || '50') }
   ]));
 
-  // Get deficiency data
+  // Get deficiency data per project (deficiencies are project-level, not asset-level)
+  const projectIds = [...new Set(assetRows.map(a => a.projectId))];
   const deficiencyData = await db.execute(sql`
     SELECT 
       projectId,
@@ -539,15 +534,15 @@ export async function getBuildingComparison(
     }
   ]));
 
-  // Build comparison data
-  const comparisons: BuildingComparison[] = projectRows.map(p => {
-    const crv = parseFloat(p.crv || '0');
-    const dmc = parseFloat(p.dmc || '0');
+  // Build comparison data for each asset
+  const comparisons: BuildingComparison[] = assetRows.map(a => {
+    const crv = parseFloat(a.crv || '0');
+    const dmc = parseFloat(a.dmc || '0');
     // FCI as decimal ratio (0-1 scale)
     const fci = crv > 0 ? dmc / crv : 0;
-    const buildingAge = p.yearBuilt ? currentYear - p.yearBuilt : 0;
-    const assessmentInfo = assessmentMap.get(p.projectId) || { count: 0, avgScore: 50 };
-    const deficiencyInfo = deficiencyMap.get(p.projectId) || { count: 0, immediateNeeds: 0, shortTermNeeds: 0 };
+    const buildingAge = a.yearBuilt ? currentYear - a.yearBuilt : 0;
+    const assessmentInfo = assessmentMap.get(a.assetId) || { count: 0, avgScore: 50 };
+    const deficiencyInfo = deficiencyMap.get(a.projectId) || { count: 0, immediateNeeds: 0, shortTermNeeds: 0 };
 
     // Calculate priority score (fci is now 0-1, so adjust threshold from 30% to 0.30)
     const totalNeeds = deficiencyInfo.immediateNeeds + deficiencyInfo.shortTermNeeds;
@@ -560,15 +555,16 @@ export async function getBuildingComparison(
     );
 
     return {
-      projectId: p.projectId,
-      projectName: p.projectName,
-      address: p.address,
-      city: p.city,
-      province: p.province,
-      propertyType: p.propertyType,
-      yearBuilt: p.yearBuilt,
+      assetId: a.assetId,
+      assetName: a.assetName,
+      projectId: a.projectId,
+      projectName: a.projectName,
+      address: a.address,
+      city: a.city,
+      province: a.province,
+      propertyType: a.propertyType,
+      yearBuilt: a.yearBuilt,
       buildingAge,
-      assetCount: assetMap.get(p.projectId) || 0,
       assessmentCount: assessmentInfo.count,
       deficiencyCount: deficiencyInfo.count,
       currentReplacementValue: crv,

@@ -3258,3 +3258,11 @@ Testing:
 - [x] Ensure photos are properly filed by assessment/asset
 - [x] Display photos in assessment details view
 - [x] Photo Gallery tab working with upload, view, and delete functionality
+
+## Bug: Predictive Analytics Dashboard Shows 0 for All Metrics
+- [ ] Fix Predictive Analytics Dashboard showing 0 for Total Components, Critical Risk, High Risk when project is selected
+
+## Fix Building Comparison Dashboard
+- [x] Change Building Comparison dashboard to compare individual buildings/assets instead of projects
+- [x] Update backend query to fetch assets instead of projects
+- [x] Update frontend to display asset-level metrics (FCI, Condition, Priority Score)
