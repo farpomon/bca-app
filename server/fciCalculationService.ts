@@ -11,6 +11,7 @@
  */
 
 import * as db from "./db";
+import { getProjectAssets } from "./db-assets";
 
 export interface FCIResult {
   fci: number;
@@ -77,7 +78,7 @@ export async function calculateDeferredMaintenanceCost(projectId: number): Promi
  */
 export async function calculateReplacementValue(projectId: number): Promise<number> {
   // Get assets for the project to get their replacement values
-  const projectAssets = await db.getProjectAssets(projectId);
+  const projectAssets = await getProjectAssets(projectId);
   
   let totalValue = 0;
   for (const asset of projectAssets) {

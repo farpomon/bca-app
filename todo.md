@@ -3212,3 +3212,29 @@ Testing:
 - [x] Add client-side validation feedback with error messages
 - [x] Add server-side validation in tRPC procedures
 - [x] Add validation for photo file types and sizes
+
+
+## FCI Calculation Fix (Completed)
+- [x] Identified FCI calculation inconsistency - stored as percentage (0-100) instead of decimal ratio (0-1)
+- [x] Fixed fciCalculationService.ts to return decimal ratio
+- [x] Fixed db.ts getProjectFCI and getSectionFCI functions
+- [x] Fixed db-portfolioAnalytics.ts category breakdown and building comparison
+- [x] Fixed portfolioReportCalculations.ts calculateFCI and getFCIRating functions
+- [x] Fixed assetReportGenerator.ts FCI calculation
+- [x] Created fix-fci-values.ts script to correct existing database values
+- [x] Ran fix script - corrected 7 projects with incorrect FCI values
+- [x] Verified all FCI values now match calculated values
+
+## City of Edmonton Assessments with Repair/Replacement Costs
+- [x] Identify City of Edmonton project (ID: 14) with 20 assets
+- [x] Create assessments for all 20 assets across 22 UNIFORMAT II components
+- [x] Generate 440 total assessments with condition ratings (1-5)
+- [x] Calculate repair costs based on building age, component type, and condition
+- [x] Add deficiency descriptions for components in fair/poor/critical condition
+- [x] Set recommended actions (monitor, preventive_maintenance, repair, replace, immediate_action)
+- [x] Calculate remaining life years for each component
+- [x] Total repair cost: $1,065,313,722 across all assessments
+
+## Hide Analytics Feature
+
+- [x] Hide Analytics tab from project navigation (temporarily)

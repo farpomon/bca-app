@@ -141,12 +141,14 @@ export default function AssetsList() {
             <p className="text-muted-foreground">{project.name}</p>
           </div>
           <div className="flex gap-2">
+            {/* Analytics button temporarily hidden
             {assets && assets.length > 1 && (
               <Button variant="outline" onClick={() => setLocation(`/projects/${projectId}/analytics`)}>
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Analytics
               </Button>
             )}
+            */}
             <Button variant="outline" onClick={() => setAiImportDialogOpen(true)}>
               <Sparkles className="mr-2 h-4 w-4" />
               AI Import

@@ -145,9 +145,9 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     ? totalReplacementValue 
     : (data.asset.grossFloorArea ? data.asset.grossFloorArea * 350 : totalDeferredMaintenance * 10);
 
-  // Calculate FCI
-  const fci = estimatedCRV > 0 ? (totalDeferredMaintenance / estimatedCRV) * 100 : 0;
-  const fciRating = fci <= 5 ? "Good" : fci <= 10 ? "Fair" : fci <= 30 ? "Poor" : "Critical";
+  // Calculate FCI as decimal ratio (0-1 scale)
+  const fci = estimatedCRV > 0 ? totalDeferredMaintenance / estimatedCRV : 0;
+  const fciRating = fci <= 0.05 ? "Good" : fci <= 0.10 ? "Fair" : fci <= 0.30 ? "Poor" : "Critical";
 
   // Economic analysis calculations
   const discountRate = 0.05; // 5% industry standard

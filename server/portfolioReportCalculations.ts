@@ -81,26 +81,31 @@ export interface PriorityMatrix {
 
 /**
  * Calculate FCI (Facility Condition Index)
- * FCI = (Deferred Maintenance Cost / Current Replacement Value) × 100
+ * FCI = Deferred Maintenance Cost / Current Replacement Value
  * 
- * Industry standard ranges:
- * - 0-5%: Good condition
- * - 5-10%: Fair condition
- * - 10-30%: Poor condition
- * - >30%: Critical condition
+ * Returns decimal ratio (0-1 scale):
+ * - 0-0.05: Good condition (0-5%)
+ * - 0.05-0.10: Fair condition (5-10%)
+ * - 0.10-0.30: Poor condition (10-30%)
+ * - >0.30: Critical condition (>30%)
  */
 export function calculateFCI(deferredMaintenanceCost: number, currentReplacementValue: number): number {
   if (currentReplacementValue <= 0) return 0;
-  return (deferredMaintenanceCost / currentReplacementValue) * 100;
+  return deferredMaintenanceCost / currentReplacementValue;
 }
 
 /**
- * Get FCI Rating based on industry standards
+ * Get FCI Rating from decimal ratio
+ * FCI is expected as decimal ratio (0-1 scale)
+ * - Good: 0-0.05 (0-5%)
+ * - Fair: 0.05-0.10 (5-10%)
+ * - Poor: 0.10-0.30 (10-30%)
+ * - Critical: >0.30 (>30%)
  */
 export function getFCIRating(fci: number): string {
-  if (fci <= 5) return 'Good';
-  if (fci <= 10) return 'Fair';
-  if (fci <= 30) return 'Poor';
+  if (fci <= 0.05) return 'Good';
+  if (fci <= 0.10) return 'Fair';
+  if (fci <= 0.30) return 'Poor';
   return 'Critical';
 }
 

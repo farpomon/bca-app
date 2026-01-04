@@ -1069,15 +1069,16 @@ export async function getProjectFCI(projectId: number) {
   const totalReplacementValue = Number(costSums?.totalReplacementValue) || 0;
   
   // FCI = Total Repair Cost / Total Replacement Value
-  // FCI ranges: Good (0-5%), Fair (5-10%), Poor (10-30%), Critical (>30%)
-  const fci = totalReplacementValue > 0 ? (totalRepairCost / totalReplacementValue) * 100 : 0;
+  // FCI ranges: Good (0-0.05), Fair (0.05-0.10), Poor (0.10-0.30), Critical (>0.30)
+  // Returns as decimal ratio (0-1 scale), NOT percentage
+  const fci = totalReplacementValue > 0 ? totalRepairCost / totalReplacementValue : 0;
   
   let rating: 'good' | 'fair' | 'poor' | 'critical';
-  if (fci <= 5) {
+  if (fci <= 0.05) {
     rating = 'good';
-  } else if (fci <= 10) {
+  } else if (fci <= 0.10) {
     rating = 'fair';
-  } else if (fci <= 30) {
+  } else if (fci <= 0.30) {
     rating = 'poor';
   } else {
     rating = 'critical';
@@ -1086,7 +1087,7 @@ export async function getProjectFCI(projectId: number) {
   return {
     totalRepairCost,
     totalReplacementValue,
-    fci: Number(fci.toFixed(2)),
+    fci: Number(fci.toFixed(4)),
     rating,
   };
 }
@@ -1718,18 +1719,19 @@ export async function getSectionFCI(sectionId: number) {
   const totalRepairCost = Number(costSums?.totalRepairCost) || 0;
   const totalReplacementValue = Number(costSums?.totalReplacementValue) || 0;
   
-  const fci = totalReplacementValue > 0 ? (totalRepairCost / totalReplacementValue) * 100 : 0;
+  // FCI as decimal ratio (0-1 scale)
+  const fci = totalReplacementValue > 0 ? totalRepairCost / totalReplacementValue : 0;
   
   let rating: 'good' | 'fair' | 'poor' | 'critical';
-  if (fci <= 5) rating = 'good';
-  else if (fci <= 10) rating = 'fair';
-  else if (fci <= 30) rating = 'poor';
+  if (fci <= 0.05) rating = 'good';
+  else if (fci <= 0.10) rating = 'fair';
+  else if (fci <= 0.30) rating = 'poor';
   else rating = 'critical';
   
   return {
     totalRepairCost,
     totalReplacementValue,
-    fci: Number(fci.toFixed(2)),
+    fci: Number(fci.toFixed(4)),
     rating,
   };
 }

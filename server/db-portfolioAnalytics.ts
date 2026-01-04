@@ -422,7 +422,8 @@ export async function getCategoryCostBreakdown(
   return rows.map(row => {
     const repairCost = parseFloat(row.totalRepairCost || '0');
     const replacementValue = parseFloat(row.totalReplacementValue || '0');
-    const fci = replacementValue > 0 ? (repairCost / replacementValue) * 100 : 0;
+    // FCI as decimal ratio (0-1 scale)
+    const fci = replacementValue > 0 ? repairCost / replacementValue : 0;
     const avgScore = parseFloat(row.avgConditionScore || '50');
 
     return {
@@ -433,7 +434,7 @@ export async function getCategoryCostBreakdown(
       assessmentCount: parseInt(row.assessmentCount || '0'),
       deficiencyCount: deficiencyMap.get(row.categoryCode) || 0,
       averageCondition: getConditionRating(avgScore),
-      fci: Math.round(fci * 100) / 100,
+      fci: Math.round(fci * 10000) / 10000,
       percentage: totalRepairCost > 0 ? Math.round((repairCost / totalRepairCost) * 100) : 0,
     };
   });
@@ -542,16 +543,17 @@ export async function getBuildingComparison(
   const comparisons: BuildingComparison[] = projectRows.map(p => {
     const crv = parseFloat(p.crv || '0');
     const dmc = parseFloat(p.dmc || '0');
-    const fci = crv > 0 ? (dmc / crv) * 100 : 0;
+    // FCI as decimal ratio (0-1 scale)
+    const fci = crv > 0 ? dmc / crv : 0;
     const buildingAge = p.yearBuilt ? currentYear - p.yearBuilt : 0;
     const assessmentInfo = assessmentMap.get(p.projectId) || { count: 0, avgScore: 50 };
     const deficiencyInfo = deficiencyMap.get(p.projectId) || { count: 0, immediateNeeds: 0, shortTermNeeds: 0 };
 
-    // Calculate priority score
+    // Calculate priority score (fci is now 0-1, so adjust threshold from 30% to 0.30)
     const totalNeeds = deficiencyInfo.immediateNeeds + deficiencyInfo.shortTermNeeds;
     const immediateRatio = totalNeeds > 0 ? deficiencyInfo.immediateNeeds / totalNeeds : 0;
     const priorityScore = Math.round(
-      Math.min(fci / 30, 1) * 40 +
+      Math.min(fci / 0.30, 1) * 40 +
       immediateRatio * 25 +
       Math.min(buildingAge / 50, 1) * 20 +
       Math.min(deficiencyInfo.count / 20, 1) * 15
@@ -571,7 +573,7 @@ export async function getBuildingComparison(
       deficiencyCount: deficiencyInfo.count,
       currentReplacementValue: crv,
       deferredMaintenanceCost: dmc,
-      fci: Math.round(fci * 100) / 100,
+      fci: Math.round(fci * 10000) / 10000,
       fciRating: getFCIRating(fci),
       conditionScore: Math.round(assessmentInfo.avgScore),
       conditionRating: getConditionRating(assessmentInfo.avgScore),
