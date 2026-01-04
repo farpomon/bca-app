@@ -1001,6 +1001,17 @@ Provide helpful insights, recommendations, and analysis based on this project da
         }
         const { id, projectId, ...data } = input;
         await assetsDb.updateAsset(id, projectId, data);
+        
+        // Trigger automatic recalculation if replacement value changed
+        if (data.currentReplacementValue !== undefined) {
+          const { recalculateProjectMetrics } = await import("./services/recalculation.service");
+          try {
+            await recalculateProjectMetrics(projectId, ctx.user.id);
+          } catch (error) {
+            console.error("[Asset Update] Recalculation failed:", error);
+          }
+        }
+        
         return { success: true };
       }),
 
@@ -1013,6 +1024,15 @@ Provide helpful insights, recommendations, and analysis based on this project da
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
         await assetsDb.deleteAsset(input.id, input.projectId);
+        
+        // Trigger automatic recalculation after asset deletion
+        const { recalculateProjectMetrics } = await import("./services/recalculation.service");
+        try {
+          await recalculateProjectMetrics(input.projectId, ctx.user.id);
+        } catch (error) {
+          console.error("[Asset Delete] Recalculation failed:", error);
+        }
+        
         return { success: true };
       }),
 
@@ -1887,6 +1907,15 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           ...input,
           status: "open",
         });
+        
+        // Trigger automatic recalculation after deficiency creation
+        const { recalculateProjectMetrics } = await import("./services/recalculation.service");
+        try {
+          await recalculateProjectMetrics(input.projectId, ctx.user.id);
+        } catch (error) {
+          console.error("[Deficiency Create] Recalculation failed:", error);
+        }
+        
         return { id: deficiencyId };
       }),
 
@@ -1917,6 +1946,15 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         
         const { id, projectId, ...data } = input;
         await db.updateDeficiency(id, data);
+        
+        // Trigger automatic recalculation after deficiency update
+        const { recalculateProjectMetrics } = await import("./services/recalculation.service");
+        try {
+          await recalculateProjectMetrics(projectId, ctx.user.id);
+        } catch (error) {
+          console.error("[Deficiency Update] Recalculation failed:", error);
+        }
+        
         return { success: true };
       }),
 
@@ -1935,6 +1973,15 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         }
         
         await db.deleteDeficiency(input.id);
+        
+        // Trigger automatic recalculation after deficiency deletion
+        const { recalculateProjectMetrics } = await import("./services/recalculation.service");
+        try {
+          await recalculateProjectMetrics(input.projectId, ctx.user.id);
+        } catch (error) {
+          console.error("[Deficiency Delete] Recalculation failed:", error);
+        }
+        
         return { success: true };
       }),
   }),

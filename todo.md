@@ -3189,3 +3189,26 @@ Testing:
 - [x] Calculate correct values from asset-level FCI scores (FCI = DM/CRV, so DM = FCI * CRV)
 - [x] Updated Project 13 and 14 with correct values: CRV=$1.89B, DM=$307.6M, FCI=16.29%
 
+
+
+## 🔥 Automatic Recalculation & Data Validation
+
+### Automatic Recalculation
+- [x] Implement automatic FCI (Facility Condition Index) recalculation when assessments change
+- [x] Implement automatic total repair cost recalculation when deficiencies are added/updated/deleted
+- [x] Implement automatic replacement value recalculation when asset data changes
+- [x] Add real-time portfolio summary updates when project data changes
+- [x] Implement automatic priority score recalculation based on condition changes
+- [ ] Add automatic capital planning budget recalculation when costs change
+
+### Data Validation
+- [x] Add input validation for assessment condition ratings (must be valid enum)
+- [x] Add input validation for cost fields (must be positive numbers)
+- [x] Add input validation for date fields (must be valid dates, not in future for assessments)
+- [x] Add input validation for area/size fields (must be positive numbers)
+- [x] Add validation for required fields in assessment forms
+- [x] Add validation for deficiency priority values
+- [x] Add validation for UNIFORMAT II component codes
+- [x] Add client-side validation feedback with error messages
+- [x] Add server-side validation in tRPC procedures
+- [x] Add validation for photo file types and sizes

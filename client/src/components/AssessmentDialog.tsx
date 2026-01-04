@@ -885,9 +885,23 @@ export function AssessmentDialog({
               <Input
                 id="esl"
                 type="number"
+                min="0"
+                max="200"
                 value={estimatedServiceLife}
-                onChange={(e) => setEstimatedServiceLife(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 200)) {
+                    setEstimatedServiceLife(value);
+                  }
+                }}
+                className={estimatedServiceLife && (parseInt(estimatedServiceLife) < 0 || parseInt(estimatedServiceLife) > 200) ? 'border-destructive' : ''}
               />
+              {estimatedServiceLife && parseInt(estimatedServiceLife) < 0 && (
+                <p className="text-sm text-destructive">Useful life cannot be negative</p>
+              )}
+              {estimatedServiceLife && parseInt(estimatedServiceLife) > 200 && (
+                <p className="text-sm text-destructive">Useful life cannot exceed 200 years</p>
+              )}
             </div>
           </div>
 
@@ -898,9 +912,18 @@ export function AssessmentDialog({
               <Input
                 id="reviewYear"
                 type="number"
+                min="1800"
+                max={new Date().getFullYear() + 50}
                 value={reviewYear}
                 onChange={(e) => setReviewYear(e.target.value)}
+                className={reviewYear && (parseInt(reviewYear) < 1800 || parseInt(reviewYear) > new Date().getFullYear() + 50) ? 'border-destructive' : ''}
               />
+              {reviewYear && parseInt(reviewYear) < 1800 && (
+                <p className="text-sm text-destructive">Year must be after 1800</p>
+              )}
+              {reviewYear && parseInt(reviewYear) > new Date().getFullYear() + 50 && (
+                <p className="text-sm text-destructive">Year cannot be more than 50 years in the future</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -908,9 +931,18 @@ export function AssessmentDialog({
               <Input
                 id="lastAction"
                 type="number"
+                min="1800"
+                max={new Date().getFullYear()}
                 value={lastTimeAction}
                 onChange={(e) => setLastTimeAction(e.target.value)}
+                className={lastTimeAction && (parseInt(lastTimeAction) < 1800 || parseInt(lastTimeAction) > new Date().getFullYear()) ? 'border-destructive' : ''}
               />
+              {lastTimeAction && parseInt(lastTimeAction) < 1800 && (
+                <p className="text-sm text-destructive">Year must be after 1800</p>
+              )}
+              {lastTimeAction && parseInt(lastTimeAction) > new Date().getFullYear() && (
+                <p className="text-sm text-destructive">Year cannot be in the future</p>
+              )}
             </div>
           </div>
 
@@ -921,9 +953,20 @@ export function AssessmentDialog({
               <Input
                 id="repairCost"
                 type="number"
+                min="0"
+                step="0.01"
                 value={estimatedRepairCost}
-                onChange={(e) => setEstimatedRepairCost(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    setEstimatedRepairCost(value);
+                  }
+                }}
+                className={parseFloat(estimatedRepairCost) < 0 ? 'border-destructive' : ''}
               />
+              {parseFloat(estimatedRepairCost) < 0 && (
+                <p className="text-sm text-destructive">Cost cannot be negative</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -931,9 +974,20 @@ export function AssessmentDialog({
               <Input
                 id="replacementValue"
                 type="number"
+                min="0"
+                step="0.01"
                 value={replacementValue}
-                onChange={(e) => setReplacementValue(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    setReplacementValue(value);
+                  }
+                }}
+                className={parseFloat(replacementValue) < 0 ? 'border-destructive' : ''}
               />
+              {parseFloat(replacementValue) < 0 && (
+                <p className="text-sm text-destructive">Value cannot be negative</p>
+              )}
             </div>
           </div>
 
