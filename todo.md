@@ -3238,3 +3238,23 @@ Testing:
 ## Hide Analytics Feature
 
 - [x] Hide Analytics tab from project navigation (temporarily)
+
+## Bug: Photos Not Showing in Assessment Page
+
+- [x] Fix: Existing Photos section shows infinite loading spinner
+- [x] Fix: Photos taken during assessment are not displayed
+
+## Photo Management Enhancement
+- [ ] Ensure assessment photos are properly filed and organized by assessment/component
+- [ ] Display photos clearly in assessment views with proper thumbnails
+- [ ] Show photos in assessment details with full-size preview capability
+- [ ] Fix any issues with photo display in assessment list
+
+
+## Photo Management Enhancement
+
+- [x] Add photo count indicator to assessment list items
+- [x] Add deletedAt column to photos table for soft delete support
+- [x] Ensure photos are properly filed by assessment/asset
+- [x] Display photos in assessment details view
+- [x] Photo Gallery tab working with upload, view, and delete functionality

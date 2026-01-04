@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `company_users` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `companyId` int NOT NULL,\n  `userId` int NOT NULL,\n  `companyRole` enum('company_admin', 'project_manager', 'editor', 'viewer') NOT NULL,\n  `invitedBy` int,\n  `invitedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `acceptedAt` timestamp,\n  `status` enum('active', 'inactive', 'pending') NOT NULL DEFAULT 'active',\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `company_users_id` PRIMARY KEY(`id`),\n  INDEX `idx_company_user` (`companyId`, `userId`),\n  INDEX `idx_user_companies` (`userId`),\n  INDEX `idx_company_role` (`companyId`, `companyRole`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `company_users` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `companyId` int NOT NULL,\n  `userId` int NOT NULL,\n  `companyRole` enum('company_admin', 'project_manager', 'editor', 'viewer') NOT NULL,\n  `invitedBy` int,\n  `invitedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `acceptedAt` timestamp,\n  `status` enum('active', 'inactive', 'pending') NOT NULL DEFAULT 'active',\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `company_users_id` PRIMARY KEY(`id`),\n  INDEX `idx_company_user` (`companyId`, `userId`),\n  INDEX `idx_user_companies` (`userId`),\n  INDEX `idx_company_role` (`companyId`, `companyRole`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1220
-}

@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE `conversations` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `contextType` enum('project','asset') NOT NULL,\n  `contextId` int NOT NULL,\n  `messages` text NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `conversations_id` PRIMARY KEY(`id`),\n  INDEX `idx_conversation_context` (`userId`, `contextType`, `contextId`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE `conversations` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `userId` int NOT NULL,\n  `contextType` enum('project','asset') NOT NULL,\n  `contextId` int NOT NULL,\n  `messages` text NOT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `conversations_id` PRIMARY KEY(`id`),\n  INDEX `idx_conversation_context` (`userId`, `contextType`, `contextId`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 191
-}

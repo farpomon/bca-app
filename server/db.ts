@@ -613,7 +613,8 @@ export async function getAssetAssessments(assetId: number) {
       a.location as componentLocation,
       a.assessmentDate as assessedAt,
       a.createdAt,
-      a.updatedAt
+      a.updatedAt,
+      (SELECT COUNT(*) FROM photos p WHERE p.assessmentId = a.id AND p.deletedAt IS NULL) as photoCount
     FROM assessments a
     LEFT JOIN building_components bc ON a.componentId = bc.id
     WHERE a.assetId = ${assetId}

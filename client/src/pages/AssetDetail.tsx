@@ -586,6 +586,12 @@ export default function AssetDetail() {
                               )}
                             </div>
                             <div className="flex items-center gap-2">
+                              {(assessment as any).photoCount > 0 && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                                  <Camera className="h-3 w-3" />
+                                  <span>{(assessment as any).photoCount}</span>
+                                </div>
+                              )}
                               <Badge variant={assessment.condition === 'good' ? 'default' : assessment.condition === 'fair' ? 'secondary' : 'destructive'}>
                                 {assessment.condition}
                               </Badge>

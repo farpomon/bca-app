@@ -1,9 +1,0 @@
-{
-  "query": "SELECT d.*, a.assetId, ast.name as assetName \nFROM deficiencies d \nLEFT JOIN assessments a ON d.assessmentId = a.id \nLEFT JOIN assets ast ON a.assetId = ast.id\nWHERE ast.name LIKE '%Comox%' OR ast.address LIKE '%Comox%'\nLIMIT 20;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT d.*, a.assetId, ast.name as assetName \nFROM deficiencies d \nLEFT JOIN assessments a ON d.assessmentId = a.id \nLEFT JOIN assets ast ON a.assetId = ast.id\nWHERE ast.name LIKE '%Comox%' OR ast.address LIKE '%Comox%'\nLIMIT 20;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 62
-}

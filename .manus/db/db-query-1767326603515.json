@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `template_systems` (\n\t`id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n\t`templateId` int NOT NULL,\n\t`componentCode` varchar(20) NOT NULL,\n\t`componentName` varchar(255) NOT NULL,\n\t`defaultServiceLife` int NOT NULL,\n\t`defaultReplacementCost` decimal(15,2),\n\t`defaultCostUnit` varchar(50),\n\t`defaultQuantityFormula` varchar(255),\n\t`typicalCondition` enum('good','fair','poor') DEFAULT 'good',\n\t`priority` int DEFAULT 1,\n\t`isRequired` int NOT NULL DEFAULT 0,\n\t`notes` text,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tINDEX `idx_template_system_template` (`templateId`),\n\tINDEX `idx_template_system_component` (`componentCode`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `template_systems` (\n\t`id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n\t`templateId` int NOT NULL,\n\t`componentCode` varchar(20) NOT NULL,\n\t`componentName` varchar(255) NOT NULL,\n\t`defaultServiceLife` int NOT NULL,\n\t`defaultReplacementCost` decimal(15,2),\n\t`defaultCostUnit` varchar(50),\n\t`defaultQuantityFormula` varchar(255),\n\t`typicalCondition` enum('good','fair','poor') DEFAULT 'good',\n\t`priority` int DEFAULT 1,\n\t`isRequired` int NOT NULL DEFAULT 0,\n\t`notes` text,\n\t`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n\tINDEX `idx_template_system_template` (`templateId`),\n\tINDEX `idx_template_system_component` (`componentCode`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 173
-}

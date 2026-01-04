@@ -402,7 +402,8 @@ export const portfolioAnalyticsEnhancedRouter = router({
    * Get comprehensive analytics dashboard data
    */
   getAdvancedDashboardData: protectedProcedure.query(async ({ ctx }) => {
-    const companyId = ctx.user.company ? parseInt(ctx.user.company) : undefined;
+    // Use companyId from user table, not the company string field
+    const companyId = ctx.user.companyId ?? undefined;
 
     const [
       metricsTrend,

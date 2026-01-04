@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `assets` (\n  `id` int AUTO_INCREMENT PRIMARY KEY,\n  `projectId` int NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `description` text,\n  `assetType` varchar(100),\n  `address` text,\n  `yearBuilt` int,\n  `grossFloorArea` int,\n  `numberOfStories` int,\n  `constructionType` varchar(100),\n  `currentReplacementValue` decimal(15, 2),\n  `status` enum('active', 'inactive', 'demolished') NOT NULL DEFAULT 'active',\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `assets` (\n  `id` int AUTO_INCREMENT PRIMARY KEY,\n  `projectId` int NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `description` text,\n  `assetType` varchar(100),\n  `address` text,\n  `yearBuilt` int,\n  `grossFloorArea` int,\n  `numberOfStories` int,\n  `constructionType` varchar(100),\n  `currentReplacementValue` decimal(15, 2),\n  `status` enum('active', 'inactive', 'demolished') NOT NULL DEFAULT 'active',\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 232
-}

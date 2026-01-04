@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `rating_history` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`entityType` enum('asset','project') NOT NULL,\n\t`entityId` int NOT NULL,\n\t`ratingType` enum('overall','fci','condition','esg') NOT NULL,\n\t`score` decimal(5,2) NOT NULL,\n\t`letterGrade` varchar(5),\n\t`zone` enum('green','yellow','orange','red'),\n\t`previousScore` decimal(5,2),\n\t`previousGrade` varchar(5),\n\t`changeReason` text,\n\t`recordedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`recordedBy` int,\n\tCONSTRAINT `rating_history_id` PRIMARY KEY(`id`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `rating_history` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`entityType` enum('asset','project') NOT NULL,\n\t`entityId` int NOT NULL,\n\t`ratingType` enum('overall','fci','condition','esg') NOT NULL,\n\t`score` decimal(5,2) NOT NULL,\n\t`letterGrade` varchar(5),\n\t`zone` enum('green','yellow','orange','red'),\n\t`previousScore` decimal(5,2),\n\t`previousGrade` varchar(5),\n\t`changeReason` text,\n\t`recordedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\t`recordedBy` int,\n\tCONSTRAINT `rating_history_id` PRIMARY KEY(`id`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 534
-}

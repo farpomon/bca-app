@@ -107,11 +107,16 @@ export default function PortfolioAnalyticsEnhanced() {
   const [scenarioType, setScenarioType] = useState<"best_case" | "most_likely" | "worst_case">("most_likely");
 
   // Fetch advanced dashboard data
-  const { data: dashboardData, isLoading, refetch, isRefetching } = 
+  const { data: dashboardData, isLoading, refetch, isRefetching, error } = 
     trpc.portfolioAnalyticsEnhanced.getAdvancedDashboardData.useQuery(
       undefined,
-      { enabled: !!user }
+      { enabled: !!user, retry: false }
     );
+
+  // Log any errors for debugging
+  if (error) {
+    console.error('Dashboard data error:', error);
+  }
 
   // Fetch metrics trend
   const { data: metricsTrend } = trpc.portfolioAnalyticsEnhanced.getMetricsTrend.useQuery(
@@ -145,7 +150,31 @@ export default function PortfolioAnalyticsEnhanced() {
     );
   }
 
-  if (!dashboardData) {
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <p className="text-muted-foreground mb-2">Error loading analytics data</p>
+          <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state only if there's no data at all
+  const hasData = dashboardData && (
+    (dashboardData.metricsTrend && dashboardData.metricsTrend.length > 0) ||
+    (dashboardData.targets && dashboardData.targets.length > 0) ||
+    dashboardData.economicIndicators
+  );
+
+  if (!hasData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

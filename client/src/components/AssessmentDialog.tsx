@@ -20,8 +20,15 @@ import { initOfflineDB, STORES } from "@/lib/offlineStorage";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: number; projectId: number }) {
-  const { data: photos, isLoading, refetch } = trpc.photos.byAssessment.useQuery({ assessmentId, projectId });
+  const { data: photos, isLoading, isError, error, refetch } = trpc.photos.byAssessment.useQuery(
+    { assessmentId, projectId },
+    {
+      retry: 2,
+      retryDelay: 1000,
+    }
+  );
   const [offlinePhotos, setOfflinePhotos] = useState<Array<{ id: string; url: string; caption: string | null }>>([]);
+  const [selectedPreviewPhoto, setSelectedPreviewPhoto] = useState<{ url: string; caption: string | null } | null>(null);
   
   const deletePhoto = trpc.photos.delete.useMutation({
     onSuccess: () => {
@@ -38,10 +45,17 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
     const loadOfflinePhotos = async () => {
       try {
         // Using static import from top of file
-        const db = await initOfflineDB();
-        const tx = db.transaction(STORES.PHOTOS, 'readonly');
-        const store = tx.objectStore(STORES.PHOTOS);
-        const allOfflinePhotos = await store.getAll();
+        const database = await initOfflineDB();
+        
+        // Properly wrap IDB operation in a Promise
+        const allOfflinePhotos = await new Promise<any[]>((resolve, reject) => {
+          const tx = database.transaction(STORES.PHOTOS, 'readonly');
+          const store = tx.objectStore(STORES.PHOTOS);
+          const request = store.getAll();
+          
+          request.onsuccess = () => resolve(request.result || []);
+          request.onerror = () => reject(request.error);
+        });
         
         // Filter photos for this assessment
         const relevantPhotos = allOfflinePhotos.filter(
@@ -60,6 +74,8 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
         setOfflinePhotos(photosWithUrls);
       } catch (error) {
         console.error('Failed to load offline photos:', error);
+        // Don't block the UI on offline photo errors
+        setOfflinePhotos([]);
       }
     };
     
@@ -81,6 +97,45 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
     );
   }
 
+  if (isError) {
+    console.error('Failed to load photos:', error);
+    // Still show offline photos even if server request fails
+    if (offlinePhotos.length > 0) {
+      return (
+        <div className="space-y-2">
+          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+            Unable to load server photos. Showing offline photos only.
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {offlinePhotos.map((photo) => (
+              <div key={photo.id} className="relative group border rounded-lg overflow-hidden">
+                <img
+                  src={photo.url}
+                  alt={photo.caption || "Assessment photo"}
+                  className="w-full h-32 object-cover"
+                />
+                <Badge variant="outline" className="absolute top-1 left-1 text-xs bg-amber-50 text-amber-700 border-amber-200">
+                  <WifiOff className="w-3 h-3 mr-1" />
+                  Offline
+                </Badge>
+                {photo.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate">
+                    {photo.caption}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="text-sm text-muted-foreground p-4 border rounded-lg text-center">
+        No photos uploaded yet
+      </div>
+    );
+  }
+
   const allPhotos = [...(photos || []), ...offlinePhotos.map(p => ({ ...p, id: p.id, isOffline: true }))];
 
   if (allPhotos.length === 0) {
@@ -92,42 +147,73 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2">
-      {allPhotos.map((photo) => (
-        <div key={photo.id} className="relative group border rounded-lg overflow-hidden">
-          <img
-            src={photo.url}
-            alt={photo.caption || "Assessment photo"}
-            className="w-full h-32 object-cover"
-          />
-          {(photo as any).isOffline && (
-            <Badge variant="outline" className="absolute top-1 left-1 text-xs bg-amber-50 text-amber-700 border-amber-200">
-              <WifiOff className="w-3 h-3 mr-1" />
-              Offline
-            </Badge>
-          )}
-          {!(photo as any).isOffline && (
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-1 right-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-7 w-7"
-              onClick={() => {
-                if (confirm("Delete this photo?")) {
-                  deletePhoto.mutate({ id: photo.id as number });
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-          {photo.caption && (
-            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate">
-              {photo.caption}
+    <>
+      {/* Photo count header */}
+      <div className="text-xs text-muted-foreground mb-2">
+        {allPhotos.length} photo{allPhotos.length !== 1 ? 's' : ''} attached to this assessment
+      </div>
+      
+      {/* Photo grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {allPhotos.map((photo) => (
+          <div 
+            key={photo.id} 
+            className="relative group border rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+            onClick={() => setSelectedPreviewPhoto({ url: photo.url, caption: photo.caption || null })}
+          >
+            <img
+              src={photo.url}
+              alt={photo.caption || "Assessment photo"}
+              className="w-full h-24 sm:h-32 object-cover"
+            />
+            {(photo as any).isOffline && (
+              <Badge variant="outline" className="absolute top-1 left-1 text-xs bg-amber-50 text-amber-700 border-amber-200">
+                <WifiOff className="w-3 h-3 mr-1" />
+                Offline
+              </Badge>
+            )}
+            {!(photo as any).isOffline && (
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-1 right-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm("Delete this photo?")) {
+                    deletePhoto.mutate({ id: photo.id as number });
+                  }
+                }}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+            {photo.caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate">
+                {photo.caption}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Full-size preview dialog */}
+      <Dialog open={!!selectedPreviewPhoto} onOpenChange={(open) => !open && setSelectedPreviewPhoto(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle>{selectedPreviewPhoto?.caption || 'Photo Preview'}</DialogTitle>
+          </DialogHeader>
+          {selectedPreviewPhoto && (
+            <div className="p-4 pt-2">
+              <img
+                src={selectedPreviewPhoto.url}
+                alt={selectedPreviewPhoto.caption || "Assessment photo"}
+                className="w-full max-h-[70vh] object-contain rounded-lg"
+              />
             </div>
           )}
-        </div>
-      ))}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

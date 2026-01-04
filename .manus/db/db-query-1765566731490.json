@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `project_documents` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `projectId` int NOT NULL,\n  `fileName` varchar(255) NOT NULL,\n  `fileKey` varchar(500) NOT NULL,\n  `url` text NOT NULL,\n  `mimeType` varchar(100) NOT NULL,\n  `fileSize` int NOT NULL,\n  `uploadedBy` int NOT NULL,\n  `description` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`),\n  INDEX `idx_project_documents_projectId` (`projectId`),\n  INDEX `idx_project_documents_uploadedBy` (`uploadedBy`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `project_documents` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `projectId` int NOT NULL,\n  `fileName` varchar(255) NOT NULL,\n  `fileKey` varchar(500) NOT NULL,\n  `url` text NOT NULL,\n  `mimeType` varchar(100) NOT NULL,\n  `fileSize` int NOT NULL,\n  `uploadedBy` int NOT NULL,\n  `description` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`),\n  INDEX `idx_project_documents_projectId` (`projectId`),\n  INDEX `idx_project_documents_uploadedBy` (`uploadedBy`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 240
-}

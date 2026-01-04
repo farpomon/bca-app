@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO project_permissions (projectId, userId, permission, createdAt, updatedAt) VALUES \n(1, 18000035, 'edit', NOW(), NOW()),\n(2, 18000035, 'edit', NOW(), NOW()),\n(3, 18000035, 'edit', NOW(), NOW()),\n(7, 18000035, 'edit', NOW(), NOW()),\n(8, 18000035, 'edit', NOW(), NOW()),\n(9, 18000035, 'edit', NOW(), NOW());",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute INSERT INTO project_permissions (projectId, userId, permission, createdAt, updatedAt) VALUES \n(1, 18000035, 'edit', NOW(), NOW()),\n(2, 18000035, 'edit', NOW(), NOW()),\n(3, 18000035, 'edit', NOW(), NOW()),\n(7, 18000035, 'edit', NOW(), NOW()),\n(8, 18000035, 'edit', NOW(), NOW()),\n(9, 18000035, 'edit', NOW(), NOW());",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 98
-}

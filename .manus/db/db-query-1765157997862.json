@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS cash_flow_projections (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  scenarioId INT NOT NULL,\n  year INT NOT NULL,\n  capitalExpenditure DECIMAL(15,2) DEFAULT 0,\n  maintenanceCost DECIMAL(15,2) DEFAULT 0,\n  operatingCost DECIMAL(15,2) DEFAULT 0,\n  totalCost DECIMAL(15,2) DEFAULT 0,\n  costAvoidance DECIMAL(15,2) DEFAULT 0,\n  efficiencyGains DECIMAL(15,2) DEFAULT 0,\n  totalBenefit DECIMAL(15,2) DEFAULT 0,\n  netCashFlow DECIMAL(15,2) DEFAULT 0,\n  cumulativeCashFlow DECIMAL(15,2) DEFAULT 0,\n  projectedCI DECIMAL(5,2),\n  projectedFCI DECIMAL(5,4),\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS cash_flow_projections (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  scenarioId INT NOT NULL,\n  year INT NOT NULL,\n  capitalExpenditure DECIMAL(15,2) DEFAULT 0,\n  maintenanceCost DECIMAL(15,2) DEFAULT 0,\n  operatingCost DECIMAL(15,2) DEFAULT 0,\n  totalCost DECIMAL(15,2) DEFAULT 0,\n  costAvoidance DECIMAL(15,2) DEFAULT 0,\n  efficiencyGains DECIMAL(15,2) DEFAULT 0,\n  totalBenefit DECIMAL(15,2) DEFAULT 0,\n  netCashFlow DECIMAL(15,2) DEFAULT 0,\n  cumulativeCashFlow DECIMAL(15,2) DEFAULT 0,\n  projectedCI DECIMAL(5,2),\n  projectedFCI DECIMAL(5,4),\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 187
-}
