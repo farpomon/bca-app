@@ -3408,3 +3408,18 @@ Testing:
 - [ ] Write vitest tests for export functions
 - [ ] Test end-to-end report workflow
 - [ ] Create checkpoint after completion
+
+## Fix Database Schema Mismatch - assessments.projectId
+
+- [ ] Search for all queries referencing assessments.projectId
+- [ ] Update all queries to use joins through assets table
+- [ ] Test report generation to verify fixes work
+- [ ] Verify all assessment-related features still work correctly
+
+## Fix Dashboard Sidebar UI - Expand/Collapse
+
+- [x] Analyze current DashboardLayout component structure
+- [x] Implement proper sidebar collapse/expand with smooth transitions
+- [x] Fix section expansion UI for ANALYTICS & REPORTS and ADMINISTRATION
+- [x] Prevent sidebar from overlapping main content
+- [x] Test sidebar functionality across different screen sizes

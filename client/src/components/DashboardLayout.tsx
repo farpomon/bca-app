@@ -334,6 +334,19 @@ function DashboardLayoutContent({
     const Icon = icon;
     const hasActiveItem = items.some(item => location === item.path);
     
+    // When sidebar is collapsed, don't show collapsible sections
+    if (isCollapsed) {
+      return (
+        <SidebarGroup className="py-0">
+          <SidebarGroupContent>
+            <SidebarMenu className="px-0 py-0.5 space-y-0">
+              {items.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      );
+    }
+    
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
         <SidebarGroup className="py-0">
