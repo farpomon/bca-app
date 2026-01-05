@@ -71,6 +71,8 @@ import { PendingInvitationsBanner } from './PendingInvitationsBanner';
 import { CreateCompanyDialog } from './CreateCompanyDialog';
 import { useCompany } from '@/contexts/CompanyContext';
 import { usePageVisibility } from '@/hooks/usePageVisibility';
+import { Input } from '@/components/ui/input';
+import { Search, X } from 'lucide-react';
 
 // Main navigation items (always visible)
 const mainMenuItems = [
@@ -214,6 +216,7 @@ function DashboardLayoutContent({
   const { isSuperAdmin, selectedCompany } = useCompany();
   const { filterMenuItems } = usePageVisibility();
   const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Collapsible states with localStorage persistence
   // On mobile, default to collapsed for a cleaner sidebar
@@ -299,8 +302,15 @@ function DashboardLayoutContent({
 
   const isAdmin = user?.role === 'admin';
 
+  // Filter menu items based on search query
+  const filterBySearch = <T extends { label: string }>(items: T[]): T[] => {
+    if (!searchQuery.trim()) return items;
+    const query = searchQuery.toLowerCase();
+    return items.filter(item => item.label.toLowerCase().includes(query));
+  };
+
   // Helper to render menu items - compact for mobile
-  const renderMenuItem = (item: { icon: React.ComponentType<{ className?: string }>; label: string; path: string }) => {
+  const renderMenuItem = (item: { icon: React.ComponentType<{ className?: string }>; label: string; path: string }, badge?: number) => {
     const isActive = location === item.path;
     return (
       <SidebarMenuItem key={item.path}>
@@ -314,10 +324,16 @@ function DashboardLayoutContent({
             }
           }}
           tooltip={item.label}
-          className="h-8 transition-all font-normal text-sm"
+          className="h-9 transition-all font-normal text-sm hover:scale-[1.02] group/item"
+          aria-label={item.label}
         >
-          <item.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+          <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-foreground"}`} />
           <span className="truncate">{item.label}</span>
+          {badge && badge > 0 && (
+            <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
+              {badge > 9 ? '9+' : badge}
+            </span>
+          )}
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
@@ -351,20 +367,25 @@ function DashboardLayoutContent({
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
         <SidebarGroup className="py-0">
           <CollapsibleTrigger asChild>
-            <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md px-2 py-1 transition-colors h-7">
-              <div className="flex items-center gap-1.5">
-                <Icon className={`h-3.5 w-3.5 shrink-0 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-[11px] font-medium uppercase tracking-wide ${hasActiveItem ? "text-primary" : ""}`}>
+            <SidebarGroupLabel 
+              className="flex items-center justify-between cursor-pointer hover:bg-accent/60 rounded-lg px-2.5 py-2 transition-all h-8 group/trigger"
+              role="button"
+              aria-expanded={isOpen}
+              aria-label={`${title} section`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground group-hover/trigger:text-foreground"}`} />
+                <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground group-hover/trigger:text-foreground"}`}>
                   {title}
                 </span>
               </div>
-              <ChevronRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
+              <ChevronRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover/trigger:text-foreground transition-all duration-300 ${isOpen ? "rotate-90" : ""}`} />
             </SidebarGroupLabel>
           </CollapsibleTrigger>
-          <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+          <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
             <SidebarGroupContent>
-              <SidebarMenu className="px-0 py-0.5 space-y-0">
-                {items.map(renderMenuItem)}
+              <SidebarMenu className="px-0 py-1 space-y-1">
+                {items.map(item => renderMenuItem(item))}
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>
@@ -432,43 +453,69 @@ function DashboardLayoutContent({
                   <CompanySelectorCompact />
                 </div>
               )}
+              
+              {/* Search Bar */}
+              {!isCollapsed && (
+                <div className="px-2 pb-1">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <Input
+                      type="text"
+                      placeholder="Search menu..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-8 pl-8 pr-8 text-xs bg-background/50 border-sidebar-border focus-visible:ring-1"
+                      aria-label="Search navigation menu"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded hover:bg-accent transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
             {/* Main Navigation */}
-            <SidebarGroup className="py-1.5">
+            <SidebarGroup className="py-2">
               <SidebarGroupContent>
-                <SidebarMenu className="px-2 space-y-0.5">
-                  {filterMenuItems(mainMenuItems).map(renderMenuItem)}
+                <SidebarMenu className="px-2 space-y-1">
+                  {filterBySearch(filterMenuItems(mainMenuItems)).map(item => renderMenuItem(item))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
             {/* Divider */}
-            <div className="mx-3 my-1 border-t border-sidebar-border/30" />
+            <div className="mx-3 my-2 border-t border-sidebar-border/40" />
 
             {/* Analytics & Reports Section */}
-            <div className="px-2 pt-0.5">
+            <div className="px-2 pt-1">
               {renderCollapsibleSection(
                 "Analytics & Reports",
                 BarChart3,
-                filterMenuItems(analyticsItems.filter(item => {
+                filterBySearch(filterMenuItems(analyticsItems.filter(item => {
                   // Hide portfolio analytics if no projects have multiple assets
                   if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
                   return true;
-                })),
+                }))),
                 analyticsOpen,
                 setAnalyticsOpen
               )}
             </div>
 
             {/* Sustainability & ESG Section */}
-            <div className="px-2 pt-0.5">
+            <div className="px-2 pt-1">
               {renderCollapsibleSection(
                 "Sustainability & ESG",
                 Leaf,
-                filterMenuItems(sustainabilityItems),
+                filterBySearch(filterMenuItems(sustainabilityItems)),
                 sustainabilityOpen,
                 setSustainabilityOpen
               )}
@@ -476,11 +523,11 @@ function DashboardLayoutContent({
 
             {/* Admin Section (only for admins) */}
             {isAdmin && (
-              <div className="px-2 pt-0.5">
+              <div className="px-2 pt-1">
                 {renderCollapsibleSection(
                   "Administration",
                   Shield,
-                  filterMenuItems(adminItems),
+                  filterBySearch(filterMenuItems(adminItems)),
                   adminOpen,
                   setAdminOpen
                 )}
@@ -496,23 +543,27 @@ function DashboardLayoutContent({
           <SidebarFooter className="p-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <Avatar className="h-8 w-8 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium">
+                <button 
+                  className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-accent/60 transition-all w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-sm"
+                  aria-label="User menu"
+                >
+                  <Avatar className="h-9 w-9 border-2 border-border shrink-0 ring-1 ring-background">
+                    <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate leading-none">
+                    <p className="text-sm font-semibold truncate leading-none">
                       {user?.name || "-"}
                     </p>
-                    <p className="text-[11px] text-muted-foreground truncate mt-1">
+                    <p className="text-[10px] text-muted-foreground truncate mt-1.5">
                       {user?.email || "-"}
                     </p>
                   </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-data-[collapsible=icon]:hidden" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
                 {/* Company Management Options */}
                 {selectedCompany && (
                   <>
@@ -542,8 +593,16 @@ function DashboardLayoutContent({
                 )}
                 
                 <DropdownMenuItem
+                  onClick={() => setLocation("/admin")}
+                  className="cursor-pointer"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
                   onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive"
+                  className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign out</span>

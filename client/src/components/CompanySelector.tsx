@@ -36,9 +36,16 @@ export function CompanySelector({ className, compact = false }: CompanySelectorP
 
   if (!companies || companies.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Building2 className="h-4 w-4" />
-        {!compact && <span>No companies</span>}
+      <div className="flex flex-col gap-1.5 p-2 rounded-md bg-muted/50 border border-border/50">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Building2 className="h-3.5 w-3.5" />
+          {!compact && <span className="font-medium">No companies yet</span>}
+        </div>
+        {!compact && (
+          <p className="text-[10px] text-muted-foreground leading-tight">
+            Contact your admin to get added to a company
+          </p>
+        )}
       </div>
     );
   }
