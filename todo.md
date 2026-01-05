@@ -3311,3 +3311,7 @@ Testing:
 
 - [x] Fix AI parsing asset creation database error (assetCode required field not provided)
 - [x] Fix photo display loading spinner stuck on component assessment page (added query options and error handling)
+
+## Current Bug (Jan 5, 2026)
+
+- [x] Fix photo upload and display - photos not showing after upload from laptop or phone (fixed schema mismatch - added projectId, deficiencyId, fileKey, componentCode, altitude, locationAccuracy, ocrText, ocrConfidence columns)
