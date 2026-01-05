@@ -189,6 +189,22 @@ export const assessments = mysqlTable("assessments", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	projectId: int(),
+	componentCode: varchar({ length: 20 }),
+	componentName: varchar({ length: 255 }),
+	componentLocation: varchar({ length: 500 }),
+	condition: varchar({ length: 50 }),
+	conditionPercentage: varchar({ length: 10 }),
+	observations: text(),
+	recommendations: text(),
+	remainingUsefulLife: int(),
+	expectedUsefulLife: int(),
+	reviewYear: int(),
+	lastTimeAction: int(),
+	replacementValue: int(),
+	actionYear: int(),
+	assessedAt: timestamp({ mode: 'string' }),
+	hasValidationOverrides: int().default(0),
+	validationWarnings: text(),
 });
 
 // Assessment deletion audit log

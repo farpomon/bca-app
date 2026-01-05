@@ -1,0 +1,9 @@
+{
+  "query": "SELECT p.id, p.assessmentId, p.url, p.caption \nFROM photos p \nWHERE p.assessmentId IS NOT NULL AND p.deletedAt IS NULL\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT p.id, p.assessmentId, p.url, p.caption \nFROM photos p \nWHERE p.assessmentId IS NOT NULL AND p.deletedAt IS NULL\nLIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 410
+}

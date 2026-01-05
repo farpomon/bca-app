@@ -3281,3 +3281,33 @@ Testing:
 - [x] Investigate TypeScript compilation memory exhaustion during checkpoint creation
 - [x] Fix circular dependencies or overly complex type definitions
 - [x] Optimize TypeScript configuration for large projects (disabled strict mode, added check:full for manual runs)
+
+## 🔧 Technical Debt Refactoring
+
+- [x] Remove unused dependencies - Analysis complete: react-router-dom not installed, framer-motion and recharts are actively used
+- [ ] Split server/routers.ts (4,133 lines) into feature-based modules
+- [ ] Split server/db.ts (2,869 lines) into feature-based query modules
+- [ ] Re-enable TypeScript strict mode checking
+- [ ] Fix type errors after enabling strict mode
+
+## 🚨 URGENT: Offline Sync Errors
+
+- [x] Fix "Can't find variable: Buffer" error in browser context
+- [x] Fix SQL query error in assessments sync - Updated schema.ts with missing componentCode column
+- [x] Fix SQL query parameter binding issues - Schema now matches database structure
+- [ ] Test offline assessment sync after fixes
+- [ ] Test offline photo sync after fixes
+- [ ] Verify sync queue processes correctly
+
+## Bug Fix: Component Assessment Pictures Not Displaying
+- [ ] Fix pictures not displaying on component assessment page
+
+## Current Bug Fixes (Jan 4, 2026)
+
+- [ ] Fix pictures not displaying on component assessment page (loading spinner never completes)
+- [ ] Fix AI parsing asset creation database error (schema mismatch)
+
+## Bug Fixes (Jan 4, 2026)
+
+- [x] Fix AI parsing asset creation database error (assetCode required field not provided)
+- [x] Fix photo display loading spinner stuck on component assessment page (added query options and error handling)

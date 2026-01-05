@@ -339,8 +339,13 @@ async function uploadPhotoChunked(
 
   // For small files, upload directly
   if (totalChunks === 1) {
-    const buffer = Buffer.from(arrayBuffer);
-    const base64 = buffer.toString('base64');
+    // Convert to base64 using browser-native APIs
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = btoa(binary);
 
     const result = await trpcClient.offlineSync.syncPhoto.mutate({
       offlineId: photo.id,
@@ -371,8 +376,13 @@ async function uploadPhotoChunked(
   // For large files, upload in chunks
   // Note: This requires a chunked upload endpoint on the server
   // For now, we'll still upload the full file but track progress
-  const buffer = Buffer.from(arrayBuffer);
-  const base64 = buffer.toString('base64');
+  // Convert to base64 using browser-native APIs
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
 
   // Simulate chunk progress
   for (let i = 0; i < totalChunks; i++) {

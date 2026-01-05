@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, projectId, assetId FROM assessments WHERE projectId = 14 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, projectId, assetId FROM assessments WHERE projectId = 14 LIMIT 10;",
+  "rows": [
+    {
+      "id": "143",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "144",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "145",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "146",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "147",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "148",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "149",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "150",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "151",
+      "projectId": "14",
+      "assetId": "133"
+    },
+    {
+      "id": "152",
+      "projectId": "14",
+      "assetId": "133"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tprojectId\tassetId\n143\t14\t133\n144\t14\t133\n145\t14\t133\n146\t14\t133\n147\t14\t133\n148\t14\t133\n149\t14\t133\n150\t14\t133\n151\t14\t133\n152\t14\t133\n",
+  "stderr": "",
+  "execution_time_ms": 407
+}

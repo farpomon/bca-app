@@ -1,0 +1,250 @@
+{
+  "query": "SHOW COLUMNS FROM assets;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SHOW COLUMNS FROM assets;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "projectId",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "categoryId",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "assetCode",
+      "Type": "varchar(100)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "description",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "address",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "latitude",
+      "Type": "decimal(10,8)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "longitude",
+      "Type": "decimal(11,8)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "yearBuilt",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "yearRenovated",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "squareFootage",
+      "Type": "decimal(12,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "numberOfFloors",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "numberOfUnits",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "occupancyType",
+      "Type": "enum('occupied','vacant','partially_occupied','seasonal')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "occupied",
+      "Extra": ""
+    },
+    {
+      "Field": "ownershipType",
+      "Type": "enum('municipal','state','federal','private','mixed')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "municipal",
+      "Extra": ""
+    },
+    {
+      "Field": "constructionType",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "primaryUse",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "secondaryUse",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "replacementValue",
+      "Type": "decimal(15,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "insuranceValue",
+      "Type": "decimal(15,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "annualMaintenanceCost",
+      "Type": "decimal(12,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastInspectionDate",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "nextInspectionDate",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "status",
+      "Type": "enum('active','inactive','pending_demolition','under_construction','renovating')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "active",
+      "Extra": ""
+    },
+    {
+      "Field": "overallCondition",
+      "Type": "enum('excellent','good','fair','poor','critical')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "fciScore",
+      "Type": "decimal(5,4)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "metadata",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nprojectId\tint(11)\tNO\t\tNULL\t\ncategoryId\tint(11)\tYES\t\tNULL\t\nname\tvarchar(255)\tNO\t\tNULL\t\nassetCode\tvarchar(100)\tNO\t\tNULL\t\ndescription\ttext\tYES\t\tNULL\t\naddress\ttext\tYES\t\tNULL\t\nlatitude\tdecimal(10,8)\tYES\t\tNULL\t\nlongitude\tdecimal(11,8)\tYES\t\tNULL\t\nyearBuilt\tint(11)\tYES\t\tNULL\t\nyearRenovated\tint(11)\tYES\t\tNULL\t\nsquareFootage\tdecimal(12,2)\tYES\t\tNULL\t\nnumberOfFloors\tint(11)\tYES\t\tNULL\t\nnumberOfUnits\tint(11)\tYES\t\tNULL\t\noccupancyType\tenum('occupied','vacant','partially_occupied','seasonal')\tYES\t\toccupied\t\nownershipType\tenum('municipal','state','federal','private','mixed')\tYES\t\tmunicipal\t\nconstructionType\tvarchar(100)\tYES\t\tNULL\t\nprimaryUse\tvarchar(255)\tYES\t\tNULL\t\nsecondaryUse\tvarchar(255)\tYES\t\tNULL\t\nreplacementValue\tdecimal(15,2)\tYES\t\tNULL\t\ninsuranceValue\tdecimal(15,2)\tYES\t\tNULL\t\nannualMaintenanceCost\tdecimal(12,2)\tYES\t\tNULL\t\nlastInspectionDate\ttimestamp\tYES\t\tNULL\t\nnextInspectionDate\ttimestamp\tYES\t\tNULL\t\nstatus\tenum('active','inactive','pending_demolition','under_construction','renovating')\tYES\t\tactive\t\noverallCondition\tenum('excellent','good','fair','poor','critical')\tYES\t\tNULL\t\nfciScore\tdecimal(5,4)\tYES\t\tNULL\t\nmetadata\tjson\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\n",
+  "stderr": "",
+  "execution_time_ms": 392
+}

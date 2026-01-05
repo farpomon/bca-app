@@ -55,9 +55,14 @@ export async function createAsset(data: InsertAsset) {
   const { generateAssetUniqueId } = await import("./utils/uniqueId.js");
   const uniqueId = data.uniqueId || generateAssetUniqueId();
   
+  // Generate assetCode if not provided (required field)
+  // Format: ASSET-{timestamp}-{random4digits}
+  const assetCode = data.assetCode || `ASSET-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  
   const assetData = {
     ...data,
     uniqueId,
+    assetCode,
   };
   
   const result = await db.insert(assets).values(assetData);

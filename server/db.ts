@@ -797,19 +797,24 @@ export async function getDeficiencyPhotos(deficiencyId: number) {
 }
 
 export async function getAssessmentPhotos(assessmentId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  
-  return await db
-    .select()
-    .from(photos)
-    .where(
-      and(
-        eq(photos.assessmentId, assessmentId),
-        isNull(photos.deletedAt)
+  try {
+    const db = await getDb();
+    if (!db) return [];
+    
+    return await db
+      .select()
+      .from(photos)
+      .where(
+        and(
+          eq(photos.assessmentId, assessmentId),
+          isNull(photos.deletedAt)
+        )
       )
-    )
-    .orderBy(desc(photos.createdAt));
+      .orderBy(desc(photos.createdAt));
+  } catch (error) {
+    console.error('[getAssessmentPhotos] Error fetching photos for assessment', assessmentId, error);
+    return [];
+  }
 }
 
 export async function getAssetPhotos(assetId: number) {

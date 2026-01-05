@@ -20,11 +20,14 @@ import { initOfflineDB, STORES } from "@/lib/offlineStorage";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: number; projectId: number }) {
-  const { data: photos, isLoading, isError, error, refetch } = trpc.photos.byAssessment.useQuery(
+  const { data: photos, isLoading, isError, error, refetch, isFetching } = trpc.photos.byAssessment.useQuery(
     { assessmentId, projectId },
     {
       retry: 2,
       retryDelay: 1000,
+      staleTime: 30000, // Cache for 30 seconds to avoid refetching
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      enabled: !!assessmentId && !!projectId, // Only run query when we have valid IDs
     }
   );
   const [offlinePhotos, setOfflinePhotos] = useState<Array<{ id: string; url: string; caption: string | null }>>([]);

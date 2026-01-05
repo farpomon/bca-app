@@ -294,10 +294,14 @@ export class SyncEngine {
     await updatePhotoSyncStatus(photoId, "syncing", 0);
 
     try {
-      // Convert blob to base64 for transmission
+      // Convert blob to base64 for transmission (browser-native approach)
       const arrayBuffer = await photo.blob.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const base64 = buffer.toString('base64');
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
 
       // Update progress
       await updatePhotoSyncStatus(photoId, "syncing", 30);
