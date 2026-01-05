@@ -62,16 +62,26 @@ export async function getProjectAssetsWithMetrics(projectId: number): Promise<As
   
   const assetIds = projectAssets.map(a => a.id);
   
-  // Get assessments for all assets
-  const assetAssessments = await db
-    .select()
-    .from(assessments)
-    .where(
-      and(
-        eq(assessments.projectId, projectId),
-        inArray(assessments.assetId, assetIds)
-      )
-    );
+  // Get assessments for all assets using raw SQL
+  const assessmentResults = await db.execute(sql`
+    SELECT 
+      a.id,
+      a.assetId,
+      a.componentCode,
+      a.conditionRating,
+      a.condition,
+      a.estimatedRepairCost,
+      a.replacementValue,
+      a.priorityLevel,
+      a.remainingLifeYears,
+      a.actionYear,
+      a.status,
+      a.createdAt,
+      a.updatedAt
+    FROM assessments a
+    WHERE a.assetId IN (${sql.raw(assetIds.join(','))})
+  `);
+  const assetAssessments = (assessmentResults as any)[0] || [];
   
   // Get deficiencies for all assets (via assessments)
   const assessmentIds = assetAssessments.map(a => a.id);
@@ -189,17 +199,20 @@ export async function getProjectAssessmentsForReport(projectId: number) {
   const db = await getDb();
   if (!db) return [];
   
-  return await db
-    .select({
-      id: assessments.id,
-      componentCode: assessments.componentCode,
-      componentName: assessments.componentName,
-      estimatedRepairCost: assessments.estimatedRepairCost,
-      replacementValue: assessments.replacementValue,
-      condition: assessments.condition
-    })
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Use raw SQL with join through assets
+  const results = await db.execute(sql`
+    SELECT 
+      a.id,
+      a.componentCode,
+      a.componentName,
+      a.estimatedRepairCost,
+      a.replacementValue,
+      a.condition
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  return (results as any)[0] || [];
 }
 
 /**

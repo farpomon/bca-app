@@ -1581,8 +1581,11 @@ export const reportTemplates = mysqlTable("report_templates", {
 	type: mysqlEnum(['executive_summary','detailed_assessment','financial_analysis','compliance','risk_assessment','optimization_results','custom']).notNull(),
 	stakeholder: varchar({ length: 100 }),
 	isGlobal: tinyint().default(0).notNull(),
+	isDefault: tinyint().default(0).notNull(),
 	userId: int(),
 	projectId: int(),
+	createdBy: int().references(() => users.id, { onDelete: "cascade" }),
+	companyId: int(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
@@ -1590,6 +1593,8 @@ export const reportTemplates = mysqlTable("report_templates", {
 	index("idx_type").on(table.type),
 	index("idx_isGlobal").on(table.isGlobal),
 	index("idx_projectId").on(table.projectId),
+	index("idx_template_company").on(table.companyId),
+	index("idx_template_created_by").on(table.createdBy),
 ]);
 
 export const riskAssessments = mysqlTable("risk_assessments", {
@@ -2514,6 +2519,82 @@ export type ReportSection = typeof reportSections.$inferSelect;
 export type InsertReportSection = typeof reportSections.$inferInsert;
 export type ReportTemplate = typeof reportTemplates.$inferSelect;
 export type InsertReportTemplate = typeof reportTemplates.$inferInsert;
+
+/**
+ * Report Template Sections Table
+ * Defines the sections within each report template (e.g., Executive Summary, Findings, Recommendations)
+ */
+export const reportTemplateSections = mysqlTable("report_template_sections", {
+	id: int().autoincrement().notNull().primaryKey(),
+	templateId: int().notNull().references(() => reportTemplates.id, { onDelete: "cascade" }),
+	sectionName: varchar({ length: 255 }).notNull(),
+	sectionType: mysqlEnum(['narrative', 'data_table', 'chart', 'photo_gallery', 'cost_summary']).notNull(),
+	displayOrder: int().notNull(),
+	defaultContent: text(), // Default narrative text or configuration JSON
+	isRequired: tinyint().default(1).notNull(), // 1 = required, 0 = optional
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_section_template").on(table.templateId),
+	index("idx_section_order").on(table.templateId, table.displayOrder),
+]);
+
+export type ReportTemplateSection = typeof reportTemplateSections.$inferSelect;
+export type InsertReportTemplateSection = typeof reportTemplateSections.$inferInsert;
+
+/**
+ * Generated Reports Table
+ * Stores reports generated from templates with customized content
+ */
+export const generatedReports = mysqlTable("generated_reports", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull().references(() => projects.id, { onDelete: "cascade" }),
+	templateId: int().references(() => reportTemplates.id, { onDelete: "set null" }),
+	reportName: varchar({ length: 255 }).notNull(),
+	reportType: mysqlEnum(['executive_summary','detailed_assessment','financial_analysis','compliance','risk_assessment','optimization_results','custom']).default('custom').notNull(),
+	status: mysqlEnum(['draft', 'finalized', 'archived']).default('draft').notNull(),
+	generatedBy: int().notNull().references(() => users.id, { onDelete: "cascade" }),
+	pdfUrl: text(), // S3 URL for PDF export
+	docxUrl: text(), // S3 URL for Word export
+	xlsxUrl: text(), // S3 URL for Excel export
+	metadata: json(), // Additional metadata (date range, filters, etc.)
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_report_project").on(table.projectId),
+	index("idx_report_template").on(table.templateId),
+	index("idx_report_generated_by").on(table.generatedBy),
+	index("idx_report_status").on(table.status),
+]);
+
+export type GeneratedReport = typeof generatedReports.$inferSelect;
+export type InsertGeneratedReport = typeof generatedReports.$inferInsert;
+
+/**
+ * Generated Report Sections Table
+ * Stores the actual content for each section in a generated report
+ */
+export const generatedReportSections = mysqlTable("generated_report_sections", {
+	id: int().autoincrement().notNull().primaryKey(),
+	reportId: int().notNull().references(() => generatedReports.id, { onDelete: "cascade" }),
+	templateSectionId: int().references(() => reportTemplateSections.id, { onDelete: "set null" }),
+	sectionName: varchar({ length: 255 }).notNull(),
+	sectionType: mysqlEnum(['narrative', 'data_table', 'chart', 'photo_gallery', 'cost_summary']).notNull(),
+	displayOrder: int().notNull(),
+	content: text(), // Narrative text or JSON data for tables/charts
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_section_report").on(table.reportId),
+	index("idx_section_template_ref").on(table.templateSectionId),
+	index("idx_section_display_order").on(table.reportId, table.displayOrder),
+]);
+
+export type GeneratedReportSection = typeof generatedReportSections.$inferSelect;
+export type InsertGeneratedReportSection = typeof generatedReportSections.$inferInsert;
 export type RiskAssessment = typeof riskAssessments.$inferSelect;
 export type InsertRiskAssessment = typeof riskAssessments.$inferInsert;
 export type RiskMitigationAction = typeof riskMitigationActions.$inferSelect;
@@ -3067,3 +3148,5 @@ export const companyPageVisibility = mysqlTable("company_page_visibility", {
 
 export type CompanyPageVisibility = typeof companyPageVisibility.$inferSelect;
 export type InsertCompanyPageVisibility = typeof companyPageVisibility.$inferInsert;
+
+

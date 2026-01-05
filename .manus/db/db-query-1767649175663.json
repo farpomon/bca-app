@@ -1,0 +1,106 @@
+{
+  "query": "SHOW COLUMNS FROM report_templates",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SHOW COLUMNS FROM report_templates",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "description",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "type",
+      "Type": "enum('executive_summary','detailed_assessment','financial_analysis','compliance','risk_assessment','optimization_results','custom')",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stakeholder",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "isGlobal",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "userId",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "projectId",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "companyId",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdBy",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nname\tvarchar(255)\tNO\t\tNULL\t\ndescription\ttext\tYES\t\tNULL\t\ntype\tenum('executive_summary','detailed_assessment','financial_analysis','compliance','risk_assessment','optimization_results','custom')\tNO\tMUL\tNULL\t\nstakeholder\tvarchar(100)\tYES\t\tNULL\t\nisGlobal\ttinyint(1)\tNO\tMUL\t0\t\nuserId\tint(11)\tYES\t\tNULL\t\nprojectId\tint(11)\tYES\tMUL\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\ncompanyId\tint(11)\tYES\t\tNULL\t\ncreatedBy\tint(11)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 393
+}

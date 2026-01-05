@@ -1669,9 +1669,10 @@ Testing:
 - [ ] Implement constraint-based planning (budget, timeline, resources)
 
 ### Data Export & Reporting
-- [ ] Add comprehensive Excel export with multiple worksheets
-- [ ] Implement PDF report generation with executive summary
-- [ ] Add customizable report templates
+- [x] Add comprehensive Excel export with multiple worksheets
+- [x] Implement PDF report generation with executive summary
+- [x] Add customizable report templates
+- [x] Implement multi-format export (PDF, Word, Excel, HTML)
 - [ ] Implement scheduled report generation and email delivery
 - [ ] Add data export for external BI tools
 - [ ] Implement audit trail for all analytics queries
@@ -3374,3 +3375,36 @@ Testing:
 ## Bug Fixes - Cost Breakdown
 
 - [x] Fix FCI calculation in Cost Breakdown tab - showing 0.0% when replacement value is $0, should show "-" or "N/A" instead
+
+## 🔥 CURRENT PRIORITY: Customizable Reporting Feature
+
+### Database Schema
+- [ ] Design report templates table with narrative sections support
+- [ ] Design generated reports table with metadata
+- [ ] Design report sections table for flexible content structure
+- [ ] Push database schema changes
+
+### Backend Implementation
+- [ ] Create report template management functions (CRUD)
+- [ ] Implement report generation engine with narrative sections
+- [ ] Create tRPC procedures for report operations
+- [ ] Add PDF export functionality
+- [ ] Add Word (DOCX) export functionality
+- [ ] Add Excel (XLSX) export functionality
+- [ ] Implement report data aggregation logic
+
+### Frontend UI
+- [ ] Build report template management interface
+- [ ] Create report customization dialog
+- [ ] Add template selection dropdown
+- [ ] Implement narrative section editor
+- [ ] Build report preview component
+- [ ] Add multi-format export buttons
+- [ ] Integrate report generation into project workflow
+
+### Testing
+- [ ] Write vitest tests for report generation
+- [ ] Write vitest tests for template management
+- [ ] Write vitest tests for export functions
+- [ ] Test end-to-end report workflow
+- [ ] Create checkpoint after completion

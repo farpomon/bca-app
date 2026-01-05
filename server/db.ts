@@ -628,16 +628,32 @@ export async function getAssessmentByComponent(projectId: number, componentCode:
   const db = await getDb();
   if (!db) return undefined;
   
-  const result = await db
-    .select()
-    .from(assessments)
-    .where(and(
-      eq(assessments.projectId, projectId),
-      eq(assessments.componentCode, componentCode)
-    ))
-    .limit(1);
+  // Use raw SQL with join through assets table
+  const results = await db.execute(sql`
+    SELECT 
+      a.id,
+      a.assetId,
+      a.componentId,
+      a.componentCode,
+      a.conditionRating,
+      a.conditionNotes,
+      a.estimatedRepairCost,
+      a.priorityLevel,
+      a.remainingLifeYears,
+      a.location,
+      a.status,
+      a.assessmentDate as assessedAt,
+      a.createdAt,
+      a.updatedAt
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+      AND a.componentCode = ${componentCode}
+    LIMIT 1
+  `);
   
-  return result.length > 0 ? result[0] : undefined;
+  const rows = (results as any)[0] || [];
+  return rows.length > 0 ? rows[0] : undefined;
 }
 
 export async function upsertAssessment(data: InsertAssessment) {
@@ -1589,43 +1605,106 @@ export async function auditChange<T extends Record<string, any>>(
   }
 }
 
-// Assessment status filtering
+// Assessment status filtering - uses raw SQL to join through assets table
 export async function getProjectAssessmentsByStatus(projectId: number, status?: string) {
   const db = await getDb();
   if (!db) return [];
 
+  let query = sql`
+    SELECT 
+      a.id,
+      a.assetId,
+      a.componentId,
+      a.conditionRating,
+      a.conditionNotes,
+      a.estimatedRepairCost,
+      a.priorityLevel,
+      a.remainingLifeYears,
+      a.location,
+      a.status,
+      a.assessmentDate as assessedAt,
+      a.createdAt,
+      a.updatedAt
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `;
+
   if (status && ["initial", "active", "completed"].includes(status)) {
-    return await db
-      .select()
-      .from(assessments)
-      .where(and(
-        eq(assessments.projectId, projectId),
-        eq(assessments.status, status as "initial" | "active" | "completed")
-      ))
-      .orderBy(desc(assessments.updatedAt));
+    query = sql`
+      SELECT 
+        a.id,
+        a.assetId,
+        a.componentId,
+        a.conditionRating,
+        a.conditionNotes,
+        a.estimatedRepairCost,
+        a.priorityLevel,
+        a.remainingLifeYears,
+        a.location,
+        a.status,
+        a.assessmentDate as assessedAt,
+        a.createdAt,
+        a.updatedAt
+      FROM assessments a
+      INNER JOIN assets ast ON a.assetId = ast.id
+      WHERE ast.projectId = ${projectId}
+        AND a.status = ${status}
+      ORDER BY a.updatedAt DESC
+    `;
+  } else {
+    query = sql`
+      SELECT 
+        a.id,
+        a.assetId,
+        a.componentId,
+        a.conditionRating,
+        a.conditionNotes,
+        a.estimatedRepairCost,
+        a.priorityLevel,
+        a.remainingLifeYears,
+        a.location,
+        a.status,
+        a.assessmentDate as assessedAt,
+        a.createdAt,
+        a.updatedAt
+      FROM assessments a
+      INNER JOIN assets ast ON a.assetId = ast.id
+      WHERE ast.projectId = ${projectId}
+      ORDER BY a.updatedAt DESC
+    `;
   }
 
-  return await db
-    .select()
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId))
-    .orderBy(desc(assessments.updatedAt));
+  const results = await db.execute(query);
+  return (results as any)[0] || [];
 }
 
 export async function getAssessmentStatusCounts(projectId: number) {
   const db = await getDb();
   if (!db) return { initial: 0, active: 0, completed: 0 };
 
-  const allAssessments = await db
-    .select()
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  const results = await db.execute(sql`
+    SELECT 
+      a.status,
+      COUNT(*) as count
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+    GROUP BY a.status
+  `);
 
+  const rows = (results as any)[0] || [];
   const counts = {
-    initial: allAssessments.filter(a => a.status === "initial").length,
-    active: allAssessments.filter(a => a.status === "active").length,
-    completed: allAssessments.filter(a => a.status === "completed").length,
+    initial: 0,
+    active: 0,
+    completed: 0,
   };
+
+  for (const row of rows) {
+    if (row.status === 'initial') counts.initial = Number(row.count);
+    if (row.status === 'active') counts.active = Number(row.count);
+    if (row.status === 'completed') counts.completed = Number(row.count);
+  }
 
   return counts;
 }
@@ -2525,20 +2604,22 @@ export async function getProjectComponents(projectId: number) {
   const database = await getDb();
   if (!database) return [];
 
-  // Get all assessments for this project to find which components have been assessed
-  const projectAssessments = await database
-    .select()
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Get all assessments for this project using raw SQL with join through assets
+  const results = await database.execute(sql`
+    SELECT DISTINCT a.componentCode
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+      AND a.componentCode IS NOT NULL
+  `);
 
-  const componentCodesSet = new Set<string>();
-  projectAssessments.forEach(a => { if (a.componentCode) componentCodesSet.add(a.componentCode); });
-  const componentCodes = Array.from(componentCodesSet);
+  const rows = (results as any)[0] || [];
+  const componentCodes = rows.map((r: any) => r.componentCode).filter(Boolean);
 
   if (componentCodes.length === 0) return [];
 
   // Get component details - just return basic info from assessments
-  const components = componentCodes.map(code => ({
+  const components = componentCodes.map((code: string) => ({
     id: 0,
     componentCode: code,
     name: code,
@@ -2560,16 +2641,31 @@ export async function getAssessmentsByComponent(projectId: number, componentCode
   const database = await getDb();
   if (!database) return [];
 
-  return database
-    .select()
-    .from(assessments)
-    .where(
-      and(
-        eq(assessments.projectId, projectId),
-        eq(assessments.componentCode, componentCode)
-      )
-    )
-    .orderBy(desc(assessments.assessedAt));
+  // Use raw SQL with join through assets table
+  const results = await database.execute(sql`
+    SELECT 
+      a.id,
+      a.assetId,
+      a.componentId,
+      a.componentCode,
+      a.conditionRating,
+      a.conditionNotes,
+      a.estimatedRepairCost,
+      a.priorityLevel,
+      a.remainingLifeYears,
+      a.location,
+      a.status,
+      a.assessmentDate as assessedAt,
+      a.createdAt,
+      a.updatedAt
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+      AND a.componentCode = ${componentCode}
+    ORDER BY a.assessmentDate DESC
+  `);
+
+  return (results as any)[0] || [];
 }
 
 
@@ -2871,4 +2967,16 @@ export async function getAssessmentDeletionLog(projectId?: number, limit: number
     .from(assessmentDeletionLog)
     .orderBy(desc(assessmentDeletionLog.deletedAt))
     .limit(limit);
+}
+
+
+// Get all assets for a project
+export async function getProjectAssets(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(assets)
+    .where(eq(assets.projectId, projectId));
 }

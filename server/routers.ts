@@ -53,6 +53,7 @@ import { ratingRouter } from "./routers/rating.router";
 import { companyRolesRouter } from "./companyRolesRouter";
 import { pageVisibilityRouter } from "./pageVisibilityRouter";
 import { buildingTemplatesRouter } from "./routers/buildingTemplates.router";
+import { customReportsRouter } from "./routers/customReports.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -108,6 +109,7 @@ export const appRouter = router({
   rating: ratingRouter,
   esgLeed: esgLeedRouter,
   buildingTemplates: buildingTemplatesRouter,
+  customReports: customReportsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

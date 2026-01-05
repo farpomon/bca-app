@@ -1,7 +1,5 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getDb } from "./db";
-import { assessments, buildingComponents } from "../drizzle/schema";
-
 // UNIFORMAT Level 1 groups for financial planning
 const UNIFORMAT_GROUPS = {
   A: "Substructure",
@@ -56,14 +54,22 @@ export async function getFinancialPlanningData(projectId: number): Promise<Finan
   ];
 
   // Get all assessments with action years and costs
-  const projectAssessments = await db
-    .select({
-      componentCode: assessments.componentCode,
-      actionYear: assessments.actionYear,
-      estimatedRepairCost: assessments.estimatedRepairCost,
-    })
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Use raw SQL to join through assets table since actual DB doesn't have projectId in assessments
+  const results = await db.execute(sql`
+    SELECT 
+      bc.code as componentCode,
+      CASE 
+        WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
+        THEN YEAR(CURDATE()) + a.remainingLifeYears 
+        ELSE NULL 
+      END as actionYear,
+      CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    LEFT JOIN building_components bc ON a.componentId = bc.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  const projectAssessments = ((results as any)[0] || []) as Array<{componentCode: string | null, actionYear: number | null, estimatedRepairCost: number}>;
 
   // Group by UNIFORMAT Level 1 (first letter of component code)
   const groups = Object.entries(UNIFORMAT_GROUPS).map(([code, name]) => {
@@ -110,11 +116,18 @@ export async function getConditionMatrixData(projectId: number): Promise<Conditi
     return { systems: [] };
   }
 
-  // Get all assessments for the project
-  const projectAssessments = await db
-    .select()
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Get all assessments for the project using raw SQL with join through assets
+  const results = await db.execute(sql`
+    SELECT 
+      a.id,
+      a.componentCode,
+      a.condition,
+      a.estimatedRepairCost
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  const projectAssessments = (results as any)[0] || [];
 
   // Group by UNIFORMAT Level 1
   const systems = Object.entries(UNIFORMAT_GROUPS).map(([code, name]) => {
@@ -172,13 +185,16 @@ export async function getAnnualCostBreakdown(projectId: number, years: number = 
 
   const currentYear = new Date().getFullYear();
   
-  const projectAssessments = await db
-    .select({
-      actionYear: assessments.actionYear,
-      estimatedRepairCost: assessments.estimatedRepairCost,
-    })
-    .from(assessments)
-    .where(eq(assessments.projectId, projectId));
+  // Use raw SQL with join through assets
+  const results = await db.execute(sql`
+    SELECT 
+      a.actionYear,
+      a.estimatedRepairCost
+    FROM assessments a
+    INNER JOIN assets ast ON a.assetId = ast.id
+    WHERE ast.projectId = ${projectId}
+  `);
+  const projectAssessments = (results as any)[0] || [];
 
   return Array.from({ length: years }, (_, i) => {
     const year = currentYear + i;

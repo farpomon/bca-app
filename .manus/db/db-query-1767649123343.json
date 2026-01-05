@@ -1,0 +1,18 @@
+{
+  "query": "SHOW COLUMNS FROM assessments LIKE 'projectId'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SHOW COLUMNS FROM assessments LIKE 'projectId'",
+  "rows": [
+    {
+      "Field": "projectId",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nprojectId\tint(11)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 426
+}

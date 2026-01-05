@@ -975,7 +975,7 @@ export default function ProjectDetail() {
           </TabsContent>
 
           <TabsContent value="report">
-            <ReportTab projectId={projectId} />
+            <ReportTab projectId={projectId} projectName={project?.name || 'Project'} />
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-4">

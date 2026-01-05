@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `generated_report_sections` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `reportId` int NOT NULL,\n  `templateSectionId` int DEFAULT NULL,\n  `sectionName` varchar(255) NOT NULL,\n  `sectionType` enum('narrative','data_table','chart','photo_gallery','cost_summary','executive_summary','condition_summary','deficiencies_list','component_details','risk_assessment','recommendations','appendix') NOT NULL,\n  `displayOrder` int NOT NULL,\n  `content` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`),\n  KEY `idx_section_report` (`reportId`),\n  KEY `idx_section_template_ref` (`templateSectionId`),\n  KEY `idx_section_display_order` (`reportId`, `displayOrder`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `generated_report_sections` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `reportId` int NOT NULL,\n  `templateSectionId` int DEFAULT NULL,\n  `sectionName` varchar(255) NOT NULL,\n  `sectionType` enum('narrative','data_table','chart','photo_gallery','cost_summary','executive_summary','condition_summary','deficiencies_list','component_details','risk_assessment','recommendations','appendix') NOT NULL,\n  `displayOrder` int NOT NULL,\n  `content` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`),\n  KEY `idx_section_report` (`reportId`),\n  KEY `idx_section_template_ref` (`templateSectionId`),\n  KEY `idx_section_display_order` (`reportId`, `displayOrder`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 508
+}
