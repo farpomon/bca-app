@@ -1808,6 +1808,9 @@ export const users = mysqlTable("users", {
 	welcomeEmailSentAt: timestamp({ mode: 'string' }),
 	companyId: int(),
 	isSuperAdmin: tinyint().default(0).notNull(),
+	// JSON array of building IDs the user has access to (for tiered pricing)
+	// Empty array = no building access, null = all buildings (legacy/admin)
+	buildingAccess: text(),
 });
 
 export const utilityConsumption = mysqlTable("utility_consumption", {

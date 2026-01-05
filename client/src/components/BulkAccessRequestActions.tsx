@@ -74,6 +74,7 @@ export function BulkAccessRequestActions({
           role: "viewer",
           accountStatus: "trial",
           trialDays: 30,
+          buildingAccess: [], // Empty array = no building access by default
         });
         successCount++;
       } catch (error) {

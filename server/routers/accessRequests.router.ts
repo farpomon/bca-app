@@ -158,6 +158,7 @@ export const accessRequestsRouter = router({
         accountStatus: z.enum(["active", "trial"]),
         trialDays: z.number().optional(),
         adminNotes: z.string().optional(),
+        buildingAccess: z.array(z.number()).optional(), // Array of building IDs user can access
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -198,6 +199,7 @@ export const accessRequestsRouter = router({
             role: input.role,
             accountStatus: input.accountStatus,
             trialEndsAt: trialEndsAt?.toISOString() || null,
+            buildingAccess: input.buildingAccess ? JSON.stringify(input.buildingAccess) : JSON.stringify([]),
             updatedAt: new Date().toISOString(),
           })
           .where(eq(users.openId, accessRequest.openId));
@@ -212,6 +214,7 @@ export const accessRequestsRouter = router({
           role: input.role,
           accountStatus: input.accountStatus,
           trialEndsAt: trialEndsAt?.toISOString() || null,
+          buildingAccess: input.buildingAccess ? JSON.stringify(input.buildingAccess) : JSON.stringify([]),
         });
       }
 

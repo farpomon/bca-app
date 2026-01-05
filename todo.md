@@ -3423,3 +3423,5 @@ Testing:
 - [x] Fix section expansion UI for ANALYTICS & REPORTS and ADMINISTRATION
 - [x] Prevent sidebar from overlapping main content
 - [x] Test sidebar functionality across different screen sizes
+
+- [x] Update access request system to disable all building options by default for tiered pricing model

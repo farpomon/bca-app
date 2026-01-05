@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,14 @@ export default function ApproveRequestDialog({ request, open, onOpenChange, onSu
     accountStatus: "active" as "active" | "trial",
     trialDays: 30,
     adminNotes: "",
+    buildingAccess: [] as number[], // Empty array = no access by default
   });
+
+  // Fetch all projects to show as building options
+  const { data: projects } = trpc.admin.getAllProjects.useQuery(
+    { limit: 1000, offset: 0 },
+    { enabled: open }
+  );
 
   const approveMutation = trpc.accessRequests.approve.useMutation({
     onSuccess: () => {
@@ -66,6 +73,7 @@ export default function ApproveRequestDialog({ request, open, onOpenChange, onSu
       accountStatus: formData.accountStatus,
       trialDays: formData.accountStatus === "trial" ? formData.trialDays : undefined,
       adminNotes: formData.adminNotes || undefined,
+      buildingAccess: formData.buildingAccess,
     });
   };
 
@@ -148,6 +156,47 @@ export default function ApproveRequestDialog({ request, open, onOpenChange, onSu
               />
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="buildingAccess">Building Access (Tiered Pricing)</Label>
+            <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+              <p className="text-sm text-muted-foreground mb-2">
+                Select which buildings this user can access. Leave empty for no access (default).
+              </p>
+              {projects?.projects && projects.projects.length > 0 ? (
+                projects.projects.map((project) => (
+                  <label key={project.id} className="flex items-center space-x-2 cursor-pointer hover:bg-accent p-2 rounded">
+                    <input
+                      type="checkbox"
+                      checked={formData.buildingAccess.includes(project.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            buildingAccess: [...formData.buildingAccess, project.id],
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            buildingAccess: formData.buildingAccess.filter((id) => id !== project.id),
+                          });
+                        }
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm">
+                      {project.name} - {project.location || 'No location'}
+                    </span>
+                  </label>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No buildings available</p>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Selected: {formData.buildingAccess.length} building(s)
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="adminNotes">Admin Notes (Internal)</Label>
