@@ -58,6 +58,7 @@ import AutomatedReports from "./pages/features/AutomatedReports";
 import ASTMCompliant from "./pages/features/ASTMCompliant";
 import OfflineMode from "./pages/features/OfflineMode";
 import AnalyticsInsights from "./pages/features/AnalyticsInsights";
+import SidebarDemo from "./pages/SidebarDemo";
 import { NotificationPermissionDialog } from "./components/NotificationPermissionDialog";
 import { FloatingChatbot } from "./components/FloatingChatbot";
 import { UnitProvider } from "./contexts/UnitContext";
@@ -72,6 +73,7 @@ function Router() {
       <Route path={"/features/astm-compliant"} component={ASTMCompliant} />
       <Route path={"/features/offline-mode"} component={OfflineMode} />
       <Route path={"/features/analytics-insights"} component={AnalyticsInsights} />
+      <Route path={"/sidebar-demo"} component={SidebarDemo} />
       <Route path={"/signup"} component={SignUp} />
       <Route path={"/privacy"} component={Privacy} />
       <Route path={"/terms"} component={Terms} />
