@@ -230,7 +230,7 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
         repairCost: data.repairCost,
         replacementValue: data.replacementValue,
         count: data.count,
-        fci: data.replacementValue > 0 ? (data.repairCost / data.replacementValue) * 100 : 0,
+        fci: data.replacementValue > 0 ? (data.repairCost / data.replacementValue) * 100 : null,
         components: data.components.sort((a, b) => (b.estimatedRepairCost || 0) - (a.estimatedRepairCost || 0)),
       }))
       .filter(c => c.repairCost > 0)
@@ -833,15 +833,19 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
                                 <td className="py-3 px-4 text-right font-semibold">{formatCurrency(category.repairCost)}</td>
                                 <td className="py-3 px-4 text-right text-muted-foreground">{formatCurrency(category.replacementValue)}</td>
                                 <td className="py-3 px-4 text-right">
-                                  <Badge 
-                                    variant="outline"
-                                    style={{ 
-                                      borderColor: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
-                                      color: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
-                                    }}
-                                  >
-                                    {category.fci.toFixed(1)}%
-                                  </Badge>
+                                  {category.fci !== null ? (
+                                    <Badge 
+                                      variant="outline"
+                                      style={{ 
+                                        borderColor: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
+                                        color: category.fci > 30 ? FCI_COLORS.critical : category.fci > 10 ? FCI_COLORS.poor : category.fci > 5 ? FCI_COLORS.fair : FCI_COLORS.good,
+                                      }}
+                                    >
+                                      {category.fci.toFixed(1)}%
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-muted-foreground">N/A</span>
+                                  )}
                                 </td>
                               </tr>
                               {/* Expanded component assessments */}

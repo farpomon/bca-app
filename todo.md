@@ -3370,3 +3370,7 @@ Testing:
 - [ ] Test reporting with mixed facility/section data
 - [ ] Verify lifecycle calculations per section
 - [ ] Create checkpoint after feature verification
+
+## Bug Fixes - Cost Breakdown
+
+- [x] Fix FCI calculation in Cost Breakdown tab - showing 0.0% when replacement value is $0, should show "-" or "N/A" instead
