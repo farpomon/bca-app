@@ -3330,3 +3330,43 @@ Testing:
 - [ ] User testing: Upload photos offline and verify sync
 - [ ] User testing: Clear failed sync items after fix
 - [ ] User testing: Verify error handling and notifications
+
+## 🏗️ Building Extensions/Sections Feature
+
+### Database Schema
+- [x] Create buildingSections table with facilityId, name, buildYear, renovationYear (ALREADY EXISTS)
+- [x] Add sectionId foreign key to components table (nullable) (ALREADY EXISTS)
+- [x] Add sectionId to assessments table for section-specific assessments
+- [ ] Add database migration for new schema changes
+
+### Backend Procedures
+- [x] Create sections.list procedure to get all sections for a facility (ALREADY EXISTS)
+- [x] Create sections.create procedure to add new section (ALREADY EXISTS)
+- [x] Create sections.update procedure to edit section details (ALREADY EXISTS)
+- [x] Create sections.delete procedure to remove section (ALREADY EXISTS)
+- [x] Update components.create to accept optional sectionId (ALREADY EXISTS)
+- [x] Update components.list to include section information (ALREADY EXISTS)
+- [x] Update reporting queries to support section-level aggregation (getSectionFCI, getSectionAssessmentStats EXIST)
+
+### Frontend UI
+- [x] Add "Sections" tab to facility detail page (ALREADY EXISTS in ProjectDetail.tsx)
+- [x] Create BuildingSectionsManager component with section list (ALREADY EXISTS)
+- [x] Create AddSectionDialog for creating new sections (Integrated in BuildingSectionsManager)
+- [x] Create EditSectionDialog for updating section details (Integrated in BuildingSectionsManager)
+- [x] Add section selector to component assignment forms (BuildingSectionSelector component created)
+- [x] Integrate section selector into AssessmentDialog
+- [ ] Update component lists to display section information (if needed)
+- [ ] Add section filter to component views (if needed)
+
+### Reporting Enhancements
+- [x] Update FCI calculation to support per-section breakdown (getSectionFCI exists)
+- [x] Add section-level lifecycle analysis (getSectionAssessmentStats exists)
+- [ ] Update capital planning reports to show section details (future enhancement)
+- [ ] Add facility-wide vs section-specific toggle in reports (future enhancement)
+
+### Testing
+- [ ] Test section creation and assignment via UI
+- [ ] Test assessment creation with section assignment
+- [ ] Test reporting with mixed facility/section data
+- [ ] Verify lifecycle calculations per section
+- [ ] Create checkpoint after feature verification

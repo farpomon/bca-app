@@ -13,6 +13,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { DocumentList } from "@/components/DocumentList";
+import { BuildingSectionSelector } from "@/components/BuildingSectionSelector";
 import { Badge } from "@/components/ui/badge";
 import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
 import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
@@ -284,6 +285,7 @@ export function AssessmentDialog({
       setEstimatedRepairCost(existingAssessment.estimatedRepairCost?.toString() || "");
       setReplacementValue(existingAssessment.replacementValue?.toString() || "");
       setActionYear(existingAssessment.actionYear?.toString() || "");
+      setSectionId(null); // TODO: Load from existingAssessment if available
     } else {
       // Reset to defaults for new assessment
       setCondition("not_assessed");
@@ -298,6 +300,7 @@ export function AssessmentDialog({
       setEstimatedRepairCost("");
       setReplacementValue("");
       setActionYear("");
+      setSectionId(null);
     }
   }, [existingAssessment, open]);
 
@@ -310,6 +313,7 @@ export function AssessmentDialog({
   const [estimatedRepairCost, setEstimatedRepairCost] = useState("");
   const [replacementValue, setReplacementValue] = useState("");
   const [actionYear, setActionYear] = useState("");
+  const [sectionId, setSectionId] = useState<number | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -402,6 +406,7 @@ export function AssessmentDialog({
         estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
         replacementValue: replacementValue ? parseFloat(replacementValue) : null,
         actionYear: actionYear ? parseInt(actionYear) : null,
+        sectionId: sectionId || null,
       };
 
       const assessmentId = await saveAssessment(assessmentData);
@@ -1090,6 +1095,13 @@ export function AssessmentDialog({
               onChange={(e) => setActionYear(e.target.value)}
             />
           </div>
+
+          {/* Building Section */}
+          <BuildingSectionSelector
+            projectId={projectId}
+            value={sectionId}
+            onChange={setSectionId}
+          />
 
           {/* Observations */}
           <div className="space-y-2">

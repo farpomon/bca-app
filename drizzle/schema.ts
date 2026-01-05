@@ -192,6 +192,7 @@ export const assessments = mysqlTable("assessments", {
 	componentCode: varchar({ length: 20 }),
 	componentName: varchar({ length: 255 }),
 	componentLocation: varchar({ length: 500 }),
+	sectionId: int(), // Optional: link assessment to a specific building section
 	condition: varchar({ length: 50 }),
 	conditionPercentage: varchar({ length: 10 }),
 	observations: text(),
