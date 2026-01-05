@@ -28,6 +28,7 @@ import {
   updateAssessmentSyncStatus,
   updatePhotoSyncStatus,
   deleteItem,
+  initOfflineDB,
   STORES,
   type SyncQueueItem,
   type OfflineAssessment,
@@ -74,6 +75,9 @@ export class SyncEngine {
   private isRunning = false;
   private listeners: Array<(event: SyncEvent) => void> = [];
   private abortController: AbortController | null = null;
+  
+  // Map offline IDs to real database IDs after syncing
+  private assessmentIdMap: Map<string, number> = new Map();
 
   // Exponential backoff configuration
   private readonly INITIAL_RETRY_DELAY = 1000; // 1 second
@@ -263,6 +267,12 @@ export class SyncEngine {
 
       console.log("[SyncEngine] Assessment synced:", result);
       
+      // Store mapping from offline ID to real database ID
+      this.assessmentIdMap.set(assessmentId, result.assessmentId);
+      
+      // Update all photos that reference this offline assessment ID
+      await this.updatePhotosWithRealAssessmentId(assessmentId, result.assessmentId);
+      
       // If there was a conflict, log it
       if (result.conflict) {
         console.warn("[SyncEngine] Conflict detected:", result.resolution);
@@ -280,6 +290,44 @@ export class SyncEngine {
         error instanceof Error ? error.message : "Unknown error"
       );
       throw error;
+    }
+  }
+
+  /**
+   * Update photos that reference an offline assessment ID with the real database ID
+   */
+  private async updatePhotosWithRealAssessmentId(offlineAssessmentId: string, realAssessmentId: number): Promise<void> {
+    try {
+      const database = await initOfflineDB();
+      const transaction = database.transaction([STORES.PHOTOS], "readwrite");
+      const store = transaction.objectStore(STORES.PHOTOS);
+      const request = store.getAll();
+      
+      return new Promise((resolve, reject) => {
+        request.onsuccess = async () => {
+          const photos = request.result as OfflinePhoto[];
+          const photosToUpdate = photos.filter(p => p.assessmentId === offlineAssessmentId);
+          
+          console.log(`[SyncEngine] Updating ${photosToUpdate.length} photos with real assessment ID ${realAssessmentId}`);
+          
+          for (const photo of photosToUpdate) {
+            photo.assessmentId = realAssessmentId.toString();
+            const updateTx = database.transaction([STORES.PHOTOS], "readwrite");
+            const updateStore = updateTx.objectStore(STORES.PHOTOS);
+            await new Promise((res, rej) => {
+              const updateReq = updateStore.put(photo);
+              updateReq.onsuccess = () => res(undefined);
+              updateReq.onerror = () => rej(updateReq.error);
+            });
+          }
+          
+          resolve();
+        };
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[SyncEngine] Failed to update photos with real assessment ID:", error);
+      // Don't throw - this is a non-critical operation
     }
   }
 
@@ -306,11 +354,23 @@ export class SyncEngine {
       // Update progress
       await updatePhotoSyncStatus(photoId, "syncing", 30);
 
+      // Parse assessment ID - it might be a string number or offline ID
+      let assessmentId: number | undefined = undefined;
+      if (photo.assessmentId) {
+        const parsed = parseInt(photo.assessmentId);
+        // Only use if it's a valid number (not NaN)
+        if (!isNaN(parsed)) {
+          assessmentId = parsed;
+        } else {
+          console.warn(`[SyncEngine] Photo ${photoId} has non-numeric assessmentId: ${photo.assessmentId}`);
+        }
+      }
+
       // Sync photo via tRPC (backend will upload to S3)
       const result = await trpcClient.offlineSync.syncPhoto.mutate({
         offlineId: photoId,
         createdAt: new Date(photo.createdAt).toISOString(),
-        assessmentId: photo.assessmentId ? parseInt(photo.assessmentId) : undefined,
+        assessmentId,
         projectId: photo.projectId,
         fileName: photo.fileName,
         caption: photo.caption || undefined,

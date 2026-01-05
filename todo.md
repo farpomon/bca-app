@@ -3315,3 +3315,18 @@ Testing:
 ## Current Bug (Jan 5, 2026)
 
 - [x] Fix photo upload and display - photos not showing after upload from laptop or phone (fixed schema mismatch - added projectId, deficiencyId, fileKey, componentCode, altitude, locationAccuracy, ocrText, ocrConfidence columns)
+
+## 🔥 URGENT: Fix Offline Sync Errors
+
+- [x] Investigate assessmentId NaN error in sync queue
+- [x] Fix offline assessment sync to return valid assessmentId
+- [x] Fix offline photo sync to use correct assessmentId
+- [x] Verify sync queue processes assessments before photos
+- [x] Add ID mapping to update photos with real assessment IDs
+- [x] Add validation to prevent NaN in parseInt operations
+- [x] Write unit tests for NaN validation logic
+- [x] Verify tests pass for assessment ID mapping
+- [ ] User testing: Create offline assessment and verify sync
+- [ ] User testing: Upload photos offline and verify sync
+- [ ] User testing: Clear failed sync items after fix
+- [ ] User testing: Verify error handling and notifications
