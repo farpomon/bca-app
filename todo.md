@@ -1895,8 +1895,8 @@ Testing:
 - [ ] Add historical cost trend analysis with inflation adjustment
 
 ### 8. Risk Assessment Dashboard
-- [ ] Add risk score matrix (likelihood x impact) for each asset
-- [ ] Add risk heat map visualization across all assets
+- [x] Add risk score matrix (likelihood x impact) for each asset
+- [x] Add risk heat map visualization across all assets
 - [ ] Add safety-related deficiency prioritization panel
 - [ ] Add compliance risk tracking (code violations, accessibility)
 - [ ] Add environmental risk indicators (hazmat, water intrusion)
