@@ -42,6 +42,8 @@ import {
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // Color palette for charts
 const COLORS = {
@@ -114,6 +116,8 @@ export default function PortfolioAnalytics() {
   const [activeTab, setActiveTab] = useState("overview");
   const [buildingSortBy, setBuildingSortBy] = useState<string>("priorityScore");
   const [buildingSortOrder, setBuildingSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
+  const [priorityDialogOpen, setPriorityDialogOpen] = useState(false);
 
   // Fetch all analytics data
   const { data: dashboardData, isLoading, refetch, isRefetching } = trpc.portfolioAnalytics.getDashboardData.useQuery(
@@ -126,6 +130,23 @@ export default function PortfolioAnalytics() {
     { sortBy: buildingSortBy as any, sortOrder: buildingSortOrder, limit: 50 },
     { enabled: !!user }
   );
+
+  // Fetch deficiencies for selected priority
+  const { data: priorityDeficiencies } = trpc.deficiencies.getByPriority.useQuery(
+    { priority: selectedPriority! },
+    { enabled: !!selectedPriority }
+  );
+
+  // Handle priority bar click
+  const handlePriorityClick = (priority: string) => {
+    setSelectedPriority(priority);
+    setPriorityDialogOpen(true);
+  };
+
+  // Get priority label
+  const getPriorityLabel = (priority: string) => {
+    return priority.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -356,7 +377,12 @@ export default function PortfolioAnalytics() {
                       <XAxis type="number" tickFormatter={formatCurrency} />
                       <YAxis type="category" dataKey="priority" width={100} />
                       <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                      <Bar dataKey="totalCost" name="Total Cost">
+                      <Bar 
+                        dataKey="totalCost" 
+                        name="Total Cost"
+                        onClick={(data: any) => handlePriorityClick(data.priority)}
+                        style={{ cursor: 'pointer' }}
+                      >
                         {priorityBreakdown.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={PRIORITY_COLORS[entry.priority] || COLORS.muted} />
                         ))}
@@ -761,6 +787,87 @@ export default function PortfolioAnalytics() {
           <p>Data generated at: {new Date(dashboardData.generatedAt).toLocaleString()}</p>
         </div>
       </div>
+
+      {/* Priority Drill-Down Dialog */}
+      <Dialog open={priorityDialogOpen} onOpenChange={setPriorityDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedPriority && getPriorityLabel(selectedPriority)} Priority Deficiencies
+            </DialogTitle>
+            <DialogDescription>
+              {priorityDeficiencies?.length || 0} deficiencies found for this priority level
+            </DialogDescription>
+          </DialogHeader>
+          
+          {priorityDeficiencies && priorityDeficiencies.length > 0 ? (
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Asset</TableHead>
+                    <TableHead>Component</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead className="text-right">Est. Cost</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {priorityDeficiencies.map((deficiency: any) => (
+                    <TableRow key={deficiency.id}>
+                      <TableCell className="font-medium">
+                        {deficiency.asset?.name || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        {deficiency.component?.name || 'N/A'}
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <div className="truncate" title={deficiency.description}>
+                          {deficiency.description || 'No description'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            deficiency.severity === 'critical' ? 'destructive' :
+                            deficiency.severity === 'high' ? 'secondary' : 'outline'
+                          }
+                        >
+                          {deficiency.severity}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {deficiency.estimatedCost 
+                          ? formatCurrency(deficiency.estimatedCost)
+                          : 'N/A'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setPriorityDialogOpen(false);
+                            setLocation(`/assets/${deficiency.assetId}`);
+                          }}
+                        >
+                          View Asset
+                          <ChevronRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No deficiencies found for this priority level
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

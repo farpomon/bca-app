@@ -58,8 +58,8 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
 import { getDb } from "./db";
-import { assessments } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { assessments, deficiencies as deficienciesTable, assets, buildingComponents, projects } from "../drizzle/schema";
+import { eq, and } from "drizzle-orm";
 import * as assetsDb from "./db-assets";
 import * as customComponentsDb from "./db-custom-components";
 import * as dashboardData from "./dashboardData";
@@ -1870,6 +1870,70 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         if (!asset) throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
         
         return await db.getAssetDeficiencies(input.assetId);
+      }),
+
+    getByPriority: protectedProcedure
+      .input(z.object({ priority: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const database = await getDb();
+        if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        
+        const isAdmin = ctx.user.role === 'admin';
+        
+        // Get all deficiencies with the specified priority
+        const allDeficiencies = await database
+          .select()
+          .from(deficienciesTable)
+          .where(eq(deficienciesTable.priority, input.priority));
+        
+        // Filter by user access if not admin
+        let filteredDeficiencies = allDeficiencies;
+        if (!isAdmin) {
+          const userProjects = await database
+            .select({ id: projects.id })
+            .from(projects)
+            .where(eq(projects.userId, ctx.user.id));
+          const userProjectIds = new Set(userProjects.map(p => p.id));
+          filteredDeficiencies = allDeficiencies.filter(d => userProjectIds.has(d.projectId));
+        }
+        
+        // Enrich with asset and component information
+        const enriched = await Promise.all(
+          filteredDeficiencies.map(async (deficiency) => {
+            let assetInfo = null;
+            let componentInfo = null;
+            
+            if (deficiency.assetId) {
+              const assetResult = await database
+                .select({ name: assets.name })
+                .from(assets)
+                .where(eq(assets.id, deficiency.assetId))
+                .limit(1);
+              if (assetResult.length > 0) {
+                assetInfo = { name: assetResult[0].name };
+              }
+            }
+            
+            if (deficiency.componentCode) {
+              const componentResult = await database
+                .select({ name: buildingComponents.name })
+                .from(buildingComponents)
+                .where(eq(buildingComponents.code, deficiency.componentCode))
+                .limit(1);
+              if (componentResult.length > 0) {
+                componentInfo = { name: componentResult[0].name };
+              }
+            }
+            
+            return {
+              ...deficiency,
+              asset: assetInfo,
+              component: componentInfo,
+            };
+          })
+        );
+        
+        return enriched;
       }),
 
     get: protectedProcedure

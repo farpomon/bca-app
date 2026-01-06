@@ -3464,3 +3464,6 @@ Testing:
 ## Portfolio Analytics Deficiency Priority Chart
 
 - [x] Populate Deficiency Priority chart on Portfolio Analytics Overview tab with immediate/short-term/medium-term/long-term breakdown
+
+## Priority Drill-Down Feature
+- [x] Add drill-down capability to priority bars - make priority bars clickable to show filtered deficiencies by priority level
