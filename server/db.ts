@@ -550,7 +550,7 @@ export async function getProjectAssessments(projectId: number) {
       a.assetId,
       a.componentId,
       bc.code as componentCode,
-      bc.name as componentName,
+      COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
       CASE 
         WHEN a.conditionRating IN ('1', '2') THEN 'good'
@@ -590,7 +590,7 @@ export async function getAssetAssessments(assetId: number) {
       a.assetId,
       a.componentId,
       bc.code as componentCode,
-      bc.name as componentName,
+      COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
       CASE 
         WHEN a.conditionRating IN ('1', '2') THEN 'good'
@@ -1619,7 +1619,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.assetId,
         a.componentId,
         bc.code as componentCode,
-        bc.name as componentName,
+        COALESCE(a.componentName, bc.name) as componentName,
         a.conditionRating,
         CASE 
           WHEN a.conditionRating IN ('1', '2') THEN 'good'
@@ -1661,7 +1661,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.assetId,
         a.componentId,
         bc.code as componentCode,
-        bc.name as componentName,
+        COALESCE(a.componentName, bc.name) as componentName,
         a.conditionRating,
         CASE 
           WHEN a.conditionRating IN ('1', '2') THEN 'good'

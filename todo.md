@@ -3510,3 +3510,7 @@ Testing:
 - [x] Bug: Component Name and Component Location fields are erased when photo is uploaded and saved
 - [x] Root cause: uploadPhoto mutation had onSuccess/onError handlers that called handleClose() and onSuccess() for each photo upload
 - [x] Fix: Removed onSuccess/onError handlers from uploadPhoto mutation since we handle success/error manually in handleSaveWithPhoto using mutateAsync with try/catch
+
+## Bug Fixes
+
+- [x] Fix component name not being saved properly in assessments (showing "Unknown Component" instead of user-entered name)
