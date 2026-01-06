@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, projectId, assetId, assessmentId, url, createdAt FROM photos WHERE deletedAt IS NULL ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, projectId, assetId, assessmentId, url, createdAt FROM photos WHERE deletedAt IS NULL ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "8",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669426620-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 03:16:57"
+    },
+    {
+      "id": "7",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669178532-Effective R-Value Calculator Option 5.png",
+      "createdAt": "2026-01-06 03:12:45"
+    },
+    {
+      "id": "6",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669172899-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 03:09:14"
+    },
+    {
+      "id": "5",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767667127559-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 02:38:40"
+    },
+    {
+      "id": "4",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767656174411-image.jpg",
+      "createdAt": "2026-01-05 23:36:06"
+    },
+    {
+      "id": "3",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767656088547-image.jpg",
+      "createdAt": "2026-01-04 06:22:53"
+    },
+    {
+      "id": "2",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767651370426-Effective R-Value Calculator Option 5.png",
+      "createdAt": "2026-01-05 18:41:48"
+    },
+    {
+      "id": "1",
+      "projectId": "14",
+      "assetId": "NULL",
+      "assessmentId": "NULL",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767651368620-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-05 18:40:19"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tprojectId\tassetId\tassessmentId\turl\tcreatedAt\n8\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669426620-Effective R-Value Calculator Option 1.png\t2026-01-06 03:16:57\n7\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669178532-Effective R-Value Calculator Option 5.png\t2026-01-06 03:12:45\n6\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669172899-Effective R-Value Calculator Option 1.png\t2026-01-06 03:09:14\n5\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767667127559-Effective R-Value Calculator Option 1.png\t2026-01-06 02:38:40\n4\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767656174411-image.jpg\t2026-01-05 23:36:06\n3\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767656088547-image.jpg\t2026-01-04 06:22:53\n2\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767651370426-Effective R-Value Calculator Option 5.png\t2026-01-05 18:41:48\n1\t14\tNULL\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767651368620-Effective R-Value Calculator Option 1.png\t2026-01-05 18:40:19\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

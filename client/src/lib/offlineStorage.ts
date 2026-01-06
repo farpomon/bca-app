@@ -36,6 +36,7 @@ export interface OfflineAssessment {
 export interface OfflinePhoto {
   id: string; // Temporary ID (e.g., "offline_photo_123")
   assessmentId: string; // Links to OfflineAssessment.id or real assessment ID
+  assetId: number | null; // Asset ID for asset-level photos
   projectId: number;
   blob: Blob; // Compressed image data
   originalBlob: Blob; // Original uncompressed image

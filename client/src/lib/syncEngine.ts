@@ -371,6 +371,7 @@ export class SyncEngine {
         offlineId: photoId,
         createdAt: new Date(photo.createdAt).toISOString(),
         assessmentId,
+        assetId: photo.assetId || undefined,
         projectId: photo.projectId,
         fileName: photo.fileName,
         caption: photo.caption || undefined,

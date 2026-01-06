@@ -2162,6 +2162,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           ocrConfidence = ocrResult.confidence || undefined;
         }
         
+        console.log('[Photo Upload] Input received:', { projectId: input.projectId, assetId: input.assetId, assessmentId: input.assessmentId });
         const photoId = await db.createPhoto({
           projectId: input.projectId,
           assessmentId: input.assessmentId,
@@ -2179,6 +2180,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           locationAccuracy: input.locationAccuracy?.toString(),
           ocrText,
           ocrConfidence: ocrConfidence?.toString(),
+          uploadedBy: ctx.user.id,
         });
         
         return { id: photoId, url, ocrText, ocrConfidence };

@@ -119,6 +119,7 @@ export const offlineSyncRouter = router({
       
       // Photo data
       assessmentId: z.number().optional(), // May be null if assessment not synced yet
+      assetId: z.number().optional(), // Asset ID for asset-level photos
       projectId: z.number(),
       fileName: z.string(),
       caption: z.string().optional(),
@@ -155,6 +156,7 @@ export const offlineSyncRouter = router({
       // Save photo metadata to database
       const photoId = await db.createPhoto({
         assessmentId: input.assessmentId || null,
+        assetId: input.assetId || null,
         projectId: input.projectId,
         url,
         fileKey,

@@ -1276,6 +1276,7 @@ export const photos = mysqlTable("photos", {
 	floorPlanY: decimal({ precision: 10, scale: 4 }),
 	deletedAt: timestamp({ mode: 'string' }),
 	deletedBy: int(),
+	uploadedBy: int(),
 });
 
 export const pofFactors = mysqlTable("pof_factors", {

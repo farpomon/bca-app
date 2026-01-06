@@ -3472,3 +3472,18 @@ Testing:
 - [x] Add cost summaries for each priority level in drill-down dialog headers
 - [x] Implement CSV export functionality for filtered deficiency lists
 - [x] Fix AI parsing error when creating assets - validation issue with default values
+
+## Photo Upload Issue
+- [x] Fix photo upload - add missing `uploadedBy` column to photos table schema and database
+- [x] Update createPhoto function to include uploadedBy field
+- [x] Fix photo upload component - removed non-existent /api/upload-photo endpoint call
+- [x] Test photo upload functionality after fix - Ready for user testing
+
+## Offline Sync Photo Upload Issue
+- [x] Photos are being queued for offline sync instead of uploading directly when online
+- [ ] Assessment sync is failing due to database schema mismatch - CRITICAL
+- [x] Fix photo upload to bypass offline queue when online
+- [x] Added assetId support to offline sync system
+
+## Assessment Sync Error
+- [x] Fix database schema mismatch for assessments table insert - Added missing columns

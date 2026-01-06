@@ -24,6 +24,7 @@ import { toast } from "sonner";
 
 export interface PhotoUploadData {
   assessmentId: string; // Can be offline ID or real ID
+  assetId?: number; // Asset ID for asset-level photos
   projectId: number;
   file: File;
   caption?: string;
@@ -102,6 +103,7 @@ export function useOfflinePhoto(options: UseOfflinePhotoOptions = {}): UseOfflin
         // Save offline (always queue photos for reliability)
         const photoId = await saveOfflinePhoto({
           assessmentId: data.assessmentId,
+          assetId: data.assetId || null,
           projectId: data.projectId,
           blob: compressedBlob,
           originalBlob: originalBlob,
