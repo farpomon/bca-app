@@ -56,7 +56,8 @@ import {
   Lock,
   History,
   FileCheck,
-  Calculator
+  Calculator,
+  Archive
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -109,6 +110,7 @@ const adminItems = [
   { icon: ClipboardCheck, label: "Compliance", path: "/admin/compliance" },
   { icon: Lock, label: "Data Security", path: "/admin/data-security" },
   { icon: History, label: "Audit Trail", path: "/admin/audit-trail" },
+  { icon: Archive, label: "Archive", path: "/archive" },
   { icon: TrendingUp, label: "Economic Indicators", path: "/admin/economic-indicators" },
   { icon: Target, label: "Portfolio Targets", path: "/admin/portfolio-targets" },
 ];

@@ -42,6 +42,7 @@ import RSMeansCostBrowser from "./pages/RSMeansCostBrowser";
 import BuildingTemplates from "./pages/BuildingTemplates";
 import BulkServiceLifeUpdates from "./pages/BulkServiceLifeUpdates";
 import DeletedProjects from "./pages/DeletedProjects";
+import Archive from "./pages/Archive";
 import PendingApproval from "./pages/PendingApproval";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
 import PrivacySettings from "./pages/PrivacySettings";
@@ -82,6 +83,7 @@ function Router() {
       <Route path={"/admin"} component={Admin} />
       <Route path={"/company-users"} component={CompanyUsersPage} />
       <Route path={"/deleted-projects"} component={DeletedProjects} />
+      <Route path={"/archive"} component={Archive} />
       <Route path={"/projects"} component={Projects} />
       <Route path={"/projects/:id/dashboard"} component={ProjectDashboard} />
       <Route path={"/projects/:id/assets"} component={AssetsList} />

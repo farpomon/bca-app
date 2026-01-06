@@ -41,6 +41,8 @@ import AssetReportTab from "@/components/AssetReportTab";
 // import AssetTimeline from "@/components/AssetTimeline";
 import { AssetLocation } from "@/components/AssetLocation";
 import { BackButton } from "@/components/BackButton";
+import { BulkDeleteAssessmentsDialog } from "@/components/BulkDeleteAssessmentsDialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AssessmentDialog } from "@/components/AssessmentDialog";
 import { AIChatBox, Message } from "@/components/AIChatBox";
 import { toast } from "sonner";
@@ -230,6 +232,9 @@ export default function AssetDetail() {
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [assessmentToDelete, setAssessmentToDelete] = React.useState<any>(null);
   const [deleteReason, setDeleteReason] = React.useState("");
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
+  const [selectedAssessmentIds, setSelectedAssessmentIds] = React.useState<number[]>([]);
+  const [selectionMode, setSelectionMode] = React.useState(false);
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && !isNaN(projectId) }
@@ -636,7 +641,33 @@ export default function AssetDetail() {
               <CardContent>
                 {assessments && assessments.length > 0 ? (
                   <div className="space-y-4">
-                    <div className="flex justify-end">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        {user?.role === 'admin' && (
+                          <>
+                            <Button
+                              variant={selectionMode ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                setSelectionMode(!selectionMode);
+                                setSelectedAssessmentIds([]);
+                              }}
+                            >
+                              {selectionMode ? "Cancel Selection" : "Select Multiple"}
+                            </Button>
+                            {selectionMode && selectedAssessmentIds.length > 0 && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setBulkDeleteDialogOpen(true)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete {selectedAssessmentIds.length} Selected
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
                       <Button onClick={() => setShowComponentSelector(true)}>
                         <ClipboardCheck className="mr-2 h-4 w-4" />
                         Start New Assessment
@@ -646,13 +677,41 @@ export default function AssetDetail() {
                       {assessments.map((assessment) => (
                         <div 
                           key={assessment.id} 
-                          className="p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+                          className={`p-4 border rounded-lg transition-colors ${
+                            selectionMode
+                              ? selectedAssessmentIds.includes(assessment.id)
+                                ? "bg-primary/10 border-primary"
+                                : "hover:bg-accent/30"
+                              : "cursor-pointer hover:bg-accent/50"
+                          }`}
                           onClick={() => {
-                            setSelectedAssessment(assessment);
-                            setShowAssessmentDialog(true);
+                            if (selectionMode) {
+                              setSelectedAssessmentIds(prev =>
+                                prev.includes(assessment.id)
+                                  ? prev.filter(id => id !== assessment.id)
+                                  : [...prev, assessment.id]
+                              );
+                            } else {
+                              setSelectedAssessment(assessment);
+                              setShowAssessmentDialog(true);
+                            }
                           }}
                         >
                           <div className="flex items-center justify-between">
+                            {selectionMode && (
+                              <Checkbox
+                                checked={selectedAssessmentIds.includes(assessment.id)}
+                                onCheckedChange={(checked) => {
+                                  setSelectedAssessmentIds(prev =>
+                                    checked
+                                      ? [...prev, assessment.id]
+                                      : prev.filter(id => id !== assessment.id)
+                                  );
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="mr-3"
+                              />
+                            )}
                             <div className="flex-1">
                               <p className="font-medium">{assessment.componentCode}</p>
                               <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
@@ -1208,6 +1267,19 @@ export default function AssetDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Delete Assessments Dialog */}
+      <BulkDeleteAssessmentsDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        selectedAssessmentIds={selectedAssessmentIds}
+        projectId={projectId}
+        onSuccess={() => {
+          utils.assessments.listByAsset.invalidate({ assetId: assetIdNum, projectId });
+          setSelectedAssessmentIds([]);
+          setSelectionMode(false);
+        }}
+      />
     </>
   );
 }

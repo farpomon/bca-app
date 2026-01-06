@@ -3525,3 +3525,7 @@ Testing:
 - [x] Add H1 heading to homepage
 - [x] Add H2 headings to homepage
 - [x] Fix assessment deletion bug - "assessment not found" error even though assessment exists
+
+## Bulk Assessment Deletion and Archive Features
+- [x] Add bulk assessment deletion - Allow admins to select and delete multiple assessments at once for faster cleanup
+- [x] Add assessment restoration - Create an "Archive" view where admins can view and restore accidentally deleted assessments within a time window

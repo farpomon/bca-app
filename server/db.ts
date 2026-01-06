@@ -2977,6 +2977,117 @@ export async function softDeleteAssessment(assessmentId: number, deletedBy: numb
     .where(eq(assessments.id, assessmentId));
 }
 
+export async function bulkDeleteAssessments(
+  assessmentIds: number[],
+  projectId: number,
+  deletedBy: number,
+  deletedByName: string,
+  deletedByEmail: string,
+  reason: string
+): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get all assessments to be deleted for audit logging
+  const assessmentsToDelete = await db
+    .select()
+    .from(assessments)
+    .where(
+      and(
+        inArray(assessments.id, assessmentIds),
+        eq(assessments.projectId, projectId),
+        isNull(assessments.deletedAt)
+      )
+    );
+
+  // Log each deletion
+  for (const assessment of assessmentsToDelete) {
+    await logAssessmentDeletion({
+      assessmentId: assessment.id,
+      projectId: assessment.projectId || projectId,
+      assetId: assessment.assetId,
+      componentCode: assessment.componentCode,
+      componentName: assessment.componentName,
+      condition: assessment.condition,
+      estimatedRepairCost: assessment.estimatedRepairCost,
+      replacementValue: assessment.replacementValue,
+      deletedBy,
+      deletedByName,
+      deletedByEmail,
+      deletionReason: reason,
+      assessmentData: JSON.stringify(assessment),
+    });
+  }
+
+  // Soft delete all assessments
+  await db
+    .update(assessments)
+    .set({
+      deletedAt: new Date().toISOString(),
+      deletedBy: deletedBy,
+    })
+    .where(
+      and(
+        inArray(assessments.id, assessmentIds),
+        eq(assessments.projectId, projectId),
+        isNull(assessments.deletedAt)
+      )
+    );
+
+  return assessmentsToDelete.length;
+}
+
+export async function getArchivedAssessments(projectId?: number, limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+
+  let query = db
+    .select({
+      id: assessments.id,
+      projectId: assessments.projectId,
+      assetId: assessments.assetId,
+      componentCode: assessments.componentCode,
+      componentName: assessments.componentName,
+      componentLocation: assessments.componentLocation,
+      condition: assessments.condition,
+      observations: assessments.observations,
+      recommendations: assessments.recommendations,
+      estimatedRepairCost: assessments.estimatedRepairCost,
+      replacementValue: assessments.replacementValue,
+      deletedAt: assessments.deletedAt,
+      deletedBy: assessments.deletedBy,
+      createdAt: assessments.createdAt,
+    })
+    .from(assessments)
+    .where(isNotNull(assessments.deletedAt))
+    .orderBy(desc(assessments.deletedAt))
+    .limit(limit);
+
+  if (projectId) {
+    query = query.where(
+      and(
+        isNotNull(assessments.deletedAt),
+        eq(assessments.projectId, projectId)
+      )
+    ) as any;
+  }
+
+  return await query;
+}
+
+export async function restoreAssessment(assessmentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(assessments)
+    .set({
+      deletedAt: null,
+      deletedBy: null,
+    })
+    .where(eq(assessments.id, assessmentId));
+}
+
 export async function getAssessmentDeletionLog(projectId?: number, limit: number = 50) {
   const db = await getDb();
   if (!db) return [];

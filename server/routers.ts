@@ -1865,6 +1865,127 @@ Provide helpful insights, recommendations, and analysis based on this asset data
 
         return await db.getAssessmentDeletionLog(input.projectId, input.limit);
       }),
+
+    // Bulk delete assessments (admin only)
+    bulkDelete: protectedProcedure
+      .input(z.object({
+        assessmentIds: z.array(z.number()),
+        projectId: z.number(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Only admins can bulk delete assessments
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ 
+            code: "FORBIDDEN", 
+            message: "Only administrators can delete assessments" 
+          });
+        }
+
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, true);
+        if (!project) throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+
+        const deletedCount = await db.bulkDeleteAssessments(
+          input.assessmentIds,
+          input.projectId,
+          ctx.user.id,
+          ctx.user.name || 'Unknown',
+          ctx.user.email || 'Unknown',
+          input.reason || 'Bulk deletion'
+        );
+
+        // Recalculate CI/FCI after bulk deletion
+        const { calculateBuildingCI } = await import("./ciCalculationService");
+        const { calculateFCI } = await import("./fciCalculationService");
+        
+        try {
+          const ciResult = await calculateBuildingCI(input.projectId);
+          const fciResult = await calculateFCI(input.projectId);
+          
+          await db.updateProject(input.projectId, ctx.user.id, {
+            ci: ciResult.ci.toString(),
+            fci: fciResult.fci.toString(),
+            deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+            currentReplacementValue: fciResult.currentReplacementValue.toString(),
+            lastCalculatedAt: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error("CI/FCI recalculation after bulk deletion failed:", error);
+        }
+
+        return { success: true, deletedCount, message: `${deletedCount} assessments deleted successfully` };
+      }),
+
+    // Get archived assessments (soft deleted)
+    getArchived: protectedProcedure
+      .input(z.object({
+        projectId: z.number().optional(),
+        limit: z.number().default(100),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Only admins can view archived assessments
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ 
+            code: "FORBIDDEN", 
+            message: "Only administrators can view archived assessments" 
+          });
+        }
+
+        return await db.getArchivedAssessments(input.projectId, input.limit);
+      }),
+
+    // Restore archived assessment
+    restore: protectedProcedure
+      .input(z.object({
+        assessmentId: z.number(),
+        projectId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Only admins can restore assessments
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ 
+            code: "FORBIDDEN", 
+            message: "Only administrators can restore assessments" 
+          });
+        }
+
+        // Verify project access
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, true);
+        if (!project) throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+
+        await db.restoreAssessment(input.assessmentId);
+
+        // Log the restoration
+        await db.createAuditLog({
+          entityType: "assessment",
+          entityId: input.assessmentId,
+          action: "restore",
+          userId: ctx.user.id,
+          changes: JSON.stringify({ restoredBy: ctx.user.name || ctx.user.email })
+        });
+
+        // Recalculate CI/FCI after restoration
+        const { calculateBuildingCI } = await import("./ciCalculationService");
+        const { calculateFCI } = await import("./fciCalculationService");
+        
+        try {
+          const ciResult = await calculateBuildingCI(input.projectId);
+          const fciResult = await calculateFCI(input.projectId);
+          
+          await db.updateProject(input.projectId, ctx.user.id, {
+            ci: ciResult.ci.toString(),
+            fci: fciResult.fci.toString(),
+            deferredMaintenanceCost: fciResult.deferredMaintenanceCost.toString(),
+            currentReplacementValue: fciResult.currentReplacementValue.toString(),
+            lastCalculatedAt: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error("CI/FCI recalculation after restoration failed:", error);
+        }
+
+        return { success: true, message: "Assessment restored successfully" };
+      }),
   }),
 
   deficiencies: router({
