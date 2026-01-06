@@ -1,0 +1,59 @@
+{
+  "query": "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'assessments' AND IS_NULLABLE = 'NO' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'assessments' AND IS_NULLABLE = 'NO' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "auto_increment"
+    },
+    {
+      "COLUMN_NAME": "assetId",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": ""
+    },
+    {
+      "COLUMN_NAME": "componentId",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": ""
+    },
+    {
+      "COLUMN_NAME": "assessmentDate",
+      "COLUMN_TYPE": "timestamp",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "EXTRA": ""
+    },
+    {
+      "COLUMN_NAME": "conditionRating",
+      "COLUMN_TYPE": "enum('1','2','3','4','5')",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": ""
+    },
+    {
+      "COLUMN_NAME": "createdAt",
+      "COLUMN_TYPE": "timestamp",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "EXTRA": ""
+    },
+    {
+      "COLUMN_NAME": "updatedAt",
+      "COLUMN_TYPE": "timestamp",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\tCOLUMN_TYPE\tIS_NULLABLE\tCOLUMN_DEFAULT\tEXTRA\nid\tint(11)\tNO\tNULL\tauto_increment\nassetId\tint(11)\tNO\tNULL\t\ncomponentId\tint(11)\tNO\tNULL\t\nassessmentDate\ttimestamp\tNO\tCURRENT_TIMESTAMP\t\nconditionRating\tenum('1','2','3','4','5')\tNO\tNULL\t\ncreatedAt\ttimestamp\tNO\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

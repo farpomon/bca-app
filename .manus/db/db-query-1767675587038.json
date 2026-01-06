@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, assetId, status, componentCode, componentName, `condition` FROM assessments WHERE componentCode = 'D30' AND projectId = 14 ORDER BY id DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, assetId, status, componentCode, componentName, `condition` FROM assessments WHERE componentCode = 'D30' AND projectId = 14 ORDER BY id DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "30001",
+      "assetId": "133",
+      "status": "initial",
+      "componentCode": "D30",
+      "componentName": "HVAC",
+      "condition": "fair"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tassetId\tstatus\tcomponentCode\tcomponentName\tcondition\n30001\t133\tinitial\tD30\tHVAC\tfair\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

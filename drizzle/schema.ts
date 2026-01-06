@@ -163,11 +163,11 @@ export const assessmentVersions = mysqlTable("assessment_versions", {
 // The database has different columns than the original Drizzle schema
 export const assessments = mysqlTable("assessments", {
 	id: int().autoincrement().notNull(),
-	assetId: int().notNull(),
-	componentId: int().notNull(),
+	assetId: int(), // Made nullable for offline sync
+	componentId: int().default(0),
 	assessorId: int(),
 	assessmentDate: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	conditionRating: mysqlEnum(['1','2','3','4','5']).notNull(),
+	conditionRating: mysqlEnum(['1','2','3','4','5']).default('3'),
 	conditionNotes: text(),
 	deficiencyDescription: text(),
 	deficiencySeverity: mysqlEnum(['minor','moderate','major','critical']),
@@ -182,7 +182,7 @@ export const assessments = mysqlTable("assessments", {
 	safetyHazard: int(),
 	energyEfficiencyIssue: int(),
 	codeViolation: int(),
-	status: mysqlEnum(['draft','submitted','reviewed','approved','rejected']),
+	status: mysqlEnum(['draft','submitted','reviewed','approved','rejected','initial','active','completed']),
 	reviewedById: int(),
 	reviewedAt: timestamp({ mode: 'string' }),
 	reviewNotes: text(),

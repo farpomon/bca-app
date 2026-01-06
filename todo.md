@@ -3481,7 +3481,7 @@ Testing:
 
 ## Offline Sync Photo Upload Issue
 - [x] Photos are being queued for offline sync instead of uploading directly when online
-- [ ] Assessment sync is failing due to database schema mismatch - CRITICAL
+- [x] Assessment sync is failing due to database schema mismatch - CRITICAL (Fixed: added 'initial', 'active', 'completed' to status enum, made assetId nullable, added defaults to componentId and conditionRating)
 - [x] Fix photo upload to bypass offline queue when online
 - [x] Added assetId support to offline sync system
 

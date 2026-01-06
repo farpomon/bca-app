@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO assessments (assetId, estimatedRepairCost, status, projectId, componentCode, componentName, componentLocation, `condition`, observations, remainingUsefulLife, expectedUsefulLife, reviewYear, actionYear, assessedAt) VALUES (133, 4274907, 'initial', 14, 'D30', 'HVAC', 'Building-wide', 'fair', 'HVAC assessed. Condition rating 3/5 based on 12 year building age.', 15, 25, 2026, 2031, '2026-01-06T04:52:15.112Z');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute INSERT INTO assessments (assetId, estimatedRepairCost, status, projectId, componentCode, componentName, componentLocation, `condition`, observations, remainingUsefulLife, expectedUsefulLife, reviewYear, actionYear, assessedAt) VALUES (133, 4274907, 'initial', 14, 'D30', 'HVAC', 'Building-wide', 'fair', 'HVAC assessed. Condition rating 3/5 based on 12 year building age.', 15, 25, 2026, 2031, '2026-01-06T04:52:15.112Z');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 61
+}

@@ -1,0 +1,19 @@
+{
+  "query": "SELECT CONCAT(COLUMN_NAME, ' (', COLUMN_TYPE, ')') as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'assessments' AND IS_NULLABLE = 'NO' AND COLUMN_DEFAULT IS NULL AND EXTRA NOT LIKE '%auto_increment%' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT CONCAT(COLUMN_NAME, ' (', COLUMN_TYPE, ')') as col FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'assessments' AND IS_NULLABLE = 'NO' AND COLUMN_DEFAULT IS NULL AND EXTRA NOT LIKE '%auto_increment%' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "col": "assetId (int(11))"
+    },
+    {
+      "col": "componentId (int(11))"
+    },
+    {
+      "col": "conditionRating (enum('1','2','3','4','5'))"
+    }
+  ],
+  "messages": [],
+  "stdout": "col\nassetId (int(11))\ncomponentId (int(11))\nconditionRating (enum('1','2','3','4','5'))\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}
