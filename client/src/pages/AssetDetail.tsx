@@ -56,10 +56,80 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import ExportButton from "@/components/ExportButton";
 import { Asset3DModelTab } from "@/components/Asset3DModelTab";
 import { AssetFinancialTab } from "@/components/AssetFinancialTab";
 import { FormattedMeasurement } from "@/components/FormattedMeasurement";
+
+// Component selector dialog for choosing UNIFORMAT II components
+function ComponentSelectorDialog({ 
+  open, 
+  onOpenChange, 
+  onSelectComponent 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  onSelectComponent: (code: string, name: string) => void;
+}) {
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const { data: components, isLoading } = trpc.buildingComponents.search.useQuery(
+    { query: searchTerm },
+    { enabled: open }
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Select Component to Assess</DialogTitle>
+          <DialogDescription>
+            Search for a UNIFORMAT II component to create a new assessment
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+          <Input
+            placeholder="Search by code or name (e.g., C3020 or Furnishings)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
+          />
+          <div className="flex-1 overflow-y-auto border rounded-lg">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : components && components.length > 0 ? (
+              <div className="divide-y">
+                {components.map((component: any) => (
+                  <button
+                    key={component.code}
+                    onClick={() => onSelectComponent(component.code, component.name)}
+                    className="w-full p-4 text-left hover:bg-accent transition-colors"
+                  >
+                    <div className="font-medium">{component.code} - {component.name}</div>
+                    {component.description && (
+                      <div className="text-sm text-muted-foreground mt-1">{component.description}</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : searchTerm ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No components found matching "{searchTerm}"
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                Start typing to search for components
+              </div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // Scrollable tabs wrapper with left/right arrow indicators
 function ScrollableTabsWrapper({ children }: { children: React.ReactNode }) {
@@ -150,6 +220,7 @@ export default function AssetDetail() {
   const { user, loading: authLoading } = useAuth();
   const [showAssessmentDialog, setShowAssessmentDialog] = React.useState(false);
   const [selectedAssessment, setSelectedAssessment] = React.useState<any>(null);
+  const [showComponentSelector, setShowComponentSelector] = React.useState(false);
   const [aiMessages, setAiMessages] = React.useState<Message[]>([]);
   const [conversationLoaded, setConversationLoaded] = React.useState(false);
   const [selectedBuildingCode, setSelectedBuildingCode] = React.useState<string>("");
@@ -303,6 +374,22 @@ export default function AssetDetail() {
 
   return (
     <>
+      <ComponentSelectorDialog
+        open={showComponentSelector}
+        onOpenChange={setShowComponentSelector}
+        onSelectComponent={(code, name) => {
+          // Check if assessment already exists for this component
+          const existingAssessment = assessments?.find(a => a.componentCode === code);
+          if (existingAssessment) {
+            toast.error(`An assessment for ${name} already exists. Please click on the existing assessment to edit it.`);
+            setShowComponentSelector(false);
+            return;
+          }
+          setSelectedAssessment({ componentCode: code, componentName: name });
+          setShowComponentSelector(false);
+          setShowAssessmentDialog(true);
+        }}
+      />
       <AssessmentDialog
         open={showAssessmentDialog}
         onOpenChange={(open) => {
@@ -550,9 +637,9 @@ export default function AssetDetail() {
                 {assessments && assessments.length > 0 ? (
                   <div className="space-y-4">
                     <div className="flex justify-end">
-                      <Button onClick={() => setShowAssessmentDialog(true)}>
+                      <Button onClick={() => setShowComponentSelector(true)}>
                         <ClipboardCheck className="mr-2 h-4 w-4" />
-                        Start Assessment
+                        Start New Assessment
                       </Button>
                     </div>
                     <div className="space-y-2">
@@ -619,7 +706,7 @@ export default function AssetDetail() {
                   <div className="text-center py-8">
                     <ClipboardCheck className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <p className="text-sm text-muted-foreground mb-4">No assessments found for this asset</p>
-                    <Button onClick={() => setShowAssessmentDialog(true)}>
+                    <Button onClick={() => setShowComponentSelector(true)}>
                       <ClipboardCheck className="mr-2 h-4 w-4" />
                       Start Assessment
                     </Button>
