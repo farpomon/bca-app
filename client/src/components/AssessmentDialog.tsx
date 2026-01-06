@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,24 +20,56 @@ import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
 import { initOfflineDB, STORES } from "@/lib/offlineStorage";
 
 // Component to display existing photos for an assessment
-function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: number; projectId: number }) {
-  const { data: photos, isLoading, isError, error, refetch, isFetching } = trpc.photos.byAssessment.useQuery(
-    { assessmentId, projectId },
+function ExistingPhotosDisplay({ assessmentId, assetId, projectId }: { assessmentId?: number; assetId: number; projectId: number }) {
+  // Query photos by assessment if we have an assessment ID
+  const { data: assessmentPhotos, isLoading: isLoadingAssessment, isError: isErrorAssessment, error: errorAssessment, refetch: refetchAssessment } = trpc.photos.byAssessment.useQuery(
+    { assessmentId: assessmentId!, projectId },
     {
       retry: 2,
       retryDelay: 1000,
-      staleTime: 30000, // Cache for 30 seconds to avoid refetching
-      refetchOnWindowFocus: false, // Don't refetch on window focus
-      enabled: !!assessmentId && !!projectId, // Only run query when we have valid IDs
+      staleTime: 30000,
+      refetchOnWindowFocus: false,
+      enabled: !!assessmentId && !!projectId,
     }
   );
+  
+  // Query photos by asset (photos without assessment ID)
+  const { data: assetPhotos, isLoading: isLoadingAsset, isError: isErrorAsset, error: errorAsset, refetch: refetchAsset } = trpc.photos.byAsset.useQuery(
+    { assetId, projectId },
+    {
+      retry: 2,
+      retryDelay: 1000,
+      staleTime: 30000,
+      refetchOnWindowFocus: false,
+      enabled: !!assetId && !!projectId,
+    }
+  );
+  
+  // Combine and deduplicate photos
+  const photos = React.useMemo(() => {
+    const allPhotos = [...(assessmentPhotos || []), ...(assetPhotos || [])];
+    // Remove duplicates by ID
+    const uniquePhotos = allPhotos.filter((photo, index, self) => 
+      index === self.findIndex((p) => p.id === photo.id)
+    );
+    return uniquePhotos;
+  }, [assessmentPhotos, assetPhotos]);
+  
+  const isLoading = isLoadingAssessment || isLoadingAsset;
+  const isError = isErrorAssessment && isErrorAsset;
+  const error = errorAssessment || errorAsset;
+  const refetch = () => {
+    refetchAssessment();
+    refetchAsset();
+  };
   const [offlinePhotos, setOfflinePhotos] = useState<Array<{ id: string; url: string; caption: string | null }>>([]);
   const [selectedPreviewPhoto, setSelectedPreviewPhoto] = useState<{ url: string; caption: string | null } | null>(null);
   
   const deletePhoto = trpc.photos.delete.useMutation({
     onSuccess: () => {
       toast.success("Photo deleted successfully");
-      refetch();
+      refetchAssessment();
+      refetchAsset();
     },
     onError: (error) => {
       toast.error("Failed to delete photo: " + error.message);
@@ -61,9 +93,12 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
           request.onerror = () => reject(request.error);
         });
         
-        // Filter photos for this assessment
+        // Filter photos for this assessment or asset
         const relevantPhotos = allOfflinePhotos.filter(
-          (p: any) => p.assessmentId === assessmentId.toString() && p.syncStatus !== 'synced'
+          (p: any) => (
+            (assessmentId && p.assessmentId === assessmentId.toString()) ||
+            (!assessmentId && p.assetId === assetId.toString())
+          ) && p.syncStatus !== 'synced'
         );
         
         // Convert blobs to URLs for display
@@ -83,7 +118,7 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
       }
     };
     
-    if (assessmentId) {
+    if (assessmentId || assetId) {
       loadOfflinePhotos();
     }
     
@@ -91,7 +126,7 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
     return () => {
       offlinePhotos.forEach(p => URL.revokeObjectURL(p.url));
     };
-  }, [assessmentId]);
+  }, [assessmentId, assetId]);
 
   if (isLoading) {
     return (
@@ -154,7 +189,7 @@ function ExistingPhotosDisplay({ assessmentId, projectId }: { assessmentId: numb
     <>
       {/* Photo count header */}
       <div className="text-xs text-muted-foreground mb-2">
-        {allPhotos.length} photo{allPhotos.length !== 1 ? 's' : ''} attached to this assessment
+        {allPhotos.length} photo{allPhotos.length !== 1 ? 's' : ''} {assessmentId ? 'attached to this assessment' : 'available for this asset'}
       </div>
       
       {/* Photo grid */}
@@ -1194,12 +1229,14 @@ export function AssessmentDialog({
           </div>
 
           {/* Existing Photos */}
-          {existingAssessment?.id && (
-            <div className="space-y-2">
-              <Label>Existing Photos</Label>
-              <ExistingPhotosDisplay assessmentId={existingAssessment.id} projectId={projectId} />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label>{existingAssessment?.id ? 'Existing Photos' : 'Asset Photos'}</Label>
+            <ExistingPhotosDisplay 
+              assessmentId={existingAssessment?.id} 
+              assetId={assetId} 
+              projectId={projectId} 
+            />
+          </div>
 
           {/* Existing Documents */}
           {existingAssessment?.id && (
