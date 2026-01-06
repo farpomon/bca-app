@@ -147,6 +147,7 @@
 - [ ] Test building code dropdown with expanded database
 
 ## Current Bug Fixes
+- [x] Fix photo filtering - photos showing in all components instead of only the component where they were taken
 - [x] Fix assessment deletion functionality - delete button not working for component assessments
 
 - [x] Fix: 3D model loading stops working when switching browser tabs

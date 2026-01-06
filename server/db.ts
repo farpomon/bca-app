@@ -834,19 +834,25 @@ export async function getAssessmentPhotos(assessmentId: number) {
   }
 }
 
-export async function getAssetPhotos(assetId: number) {
+export async function getAssetPhotos(assetId: number, componentCode?: string) {
   const db = await getDb();
   if (!db) return [];
+  
+  // Build where conditions
+  const conditions = [
+    eq(photos.assetId, assetId),
+    isNull(photos.deletedAt)
+  ];
+  
+  // If componentCode is provided, filter by it
+  if (componentCode) {
+    conditions.push(eq(photos.componentCode, componentCode));
+  }
   
   return await db
     .select()
     .from(photos)
-    .where(
-      and(
-        eq(photos.assetId, assetId),
-        isNull(photos.deletedAt)
-      )
-    )
+    .where(and(...conditions))
     .orderBy(desc(photos.createdAt));
 }
 

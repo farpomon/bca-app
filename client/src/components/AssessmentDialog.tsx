@@ -20,7 +20,7 @@ import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
 import { initOfflineDB, STORES } from "@/lib/offlineStorage";
 
 // Component to display existing photos for an assessment
-function ExistingPhotosDisplay({ assessmentId, assetId, projectId }: { assessmentId?: number; assetId: number; projectId: number }) {
+function ExistingPhotosDisplay({ assessmentId, assetId, projectId, componentCode }: { assessmentId?: number; assetId: number; projectId: number; componentCode?: string }) {
   // Query photos by assessment if we have an assessment ID
   const { data: assessmentPhotos, isLoading: isLoadingAssessment, isError: isErrorAssessment, error: errorAssessment, refetch: refetchAssessment } = trpc.photos.byAssessment.useQuery(
     { assessmentId: assessmentId!, projectId },
@@ -35,7 +35,7 @@ function ExistingPhotosDisplay({ assessmentId, assetId, projectId }: { assessmen
   
   // Query photos by asset (photos without assessment ID)
   const { data: assetPhotos, isLoading: isLoadingAsset, isError: isErrorAsset, error: errorAsset, refetch: refetchAsset } = trpc.photos.byAsset.useQuery(
-    { assetId, projectId },
+    { assetId, projectId, componentCode },
     {
       retry: 2,
       retryDelay: 1000,
@@ -1234,7 +1234,8 @@ export function AssessmentDialog({
             <ExistingPhotosDisplay 
               assessmentId={existingAssessment?.id} 
               assetId={assetId} 
-              projectId={projectId} 
+              projectId={projectId}
+              componentCode={componentCode}
             />
           </div>
 

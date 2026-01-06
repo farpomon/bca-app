@@ -2232,7 +2232,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
       }),
 
     byAsset: protectedProcedure
-      .input(z.object({ assetId: z.number(), projectId: z.number() }))
+      .input(z.object({ assetId: z.number(), projectId: z.number(), componentCode: z.string().optional() }))
       .query(async ({ ctx, input }) => {
         // Verify user has access to the project
         const isAdmin = ctx.user.role === 'admin';
@@ -2243,7 +2243,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         const asset = await assetsDb.getAssetById(input.assetId, input.projectId);
         if (!asset) throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
         
-        return await db.getAssetPhotos(input.assetId);
+        return await db.getAssetPhotos(input.assetId, input.componentCode);
       }),
 
     upload: protectedProcedure
