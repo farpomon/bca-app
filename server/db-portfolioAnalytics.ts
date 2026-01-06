@@ -770,20 +770,28 @@ export async function getPriorityBreakdown(
     FROM deficiencies d
     INNER JOIN projects p ON d.projectId = p.id
     WHERE ${projectConditions}
-    GROUP BY COALESCE(d.priority, 'long_term')
-    ORDER BY FIELD(COALESCE(d.priority, 'long_term'), 'immediate', 'short_term', 'medium_term', 'long_term')
+    GROUP BY d.priority
   `);
 
   const rows = extractRows(result);
   const totalCost = rows.reduce((sum, r) => sum + parseFloat(r.totalCost || '0'), 0);
 
-  return rows.map(row => ({
-    priority: row.priority,
+  // Map and sort results in JavaScript to avoid SQL GROUP BY issues
+  const priorityOrder = ['immediate', 'short_term', 'medium_term', 'long_term'];
+  const mapped = rows.map(row => ({
+    priority: row.priority || 'long_term',
     count: parseInt(row.count || '0'),
     totalCost: parseFloat(row.totalCost || '0'),
     percentage: totalCost > 0 ? Math.round((parseFloat(row.totalCost || '0') / totalCost) * 100) : 0,
     buildings: row.buildings ? row.buildings.split('|||').slice(0, 5) : [],
   }));
+
+  // Sort by priority order
+  return mapped.sort((a, b) => {
+    const indexA = priorityOrder.indexOf(a.priority);
+    const indexB = priorityOrder.indexOf(b.priority);
+    return indexA - indexB;
+  });
 }
 
 // ============================================================================

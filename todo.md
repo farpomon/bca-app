@@ -3460,3 +3460,7 @@ Testing:
 ## Current Bug Fixes
 
 - [x] Fix Portfolio Analytics arrow button navigation - clicking building rows leads to 404 error at /assets/114 instead of correct asset detail page
+
+## Portfolio Analytics Deficiency Priority Chart
+
+- [x] Populate Deficiency Priority chart on Portfolio Analytics Overview tab with immediate/short-term/medium-term/long-term breakdown
