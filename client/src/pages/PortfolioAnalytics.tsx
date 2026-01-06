@@ -39,6 +39,7 @@ import {
   ChevronRight,
   FileText,
   ArrowLeft,
+  FileDown,
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -136,6 +137,42 @@ export default function PortfolioAnalytics() {
     { priority: selectedPriority! },
     { enabled: !!selectedPriority }
   );
+
+  // Calculate total cost for selected priority
+  const priorityTotalCost = priorityDeficiencies?.reduce(
+    (sum, def) => sum + (def.estimatedCost || 0),
+    0
+  ) || 0;
+
+  // Export deficiencies to CSV
+  const exportDeficienciesToCSV = () => {
+    if (!priorityDeficiencies || priorityDeficiencies.length === 0) return;
+
+    const headers = ['Asset', 'Component', 'Description', 'Severity', 'Priority', 'Estimated Cost'];
+    const rows = priorityDeficiencies.map((def: any) => [
+      def.asset?.name || 'N/A',
+      def.component?.name || 'N/A',
+      (def.description || 'No description').replace(/"/g, '""'), // Escape quotes
+      def.severity || 'N/A',
+      getPriorityLabel(def.priority),
+      def.estimatedCost ? `$${def.estimatedCost.toFixed(2)}` : 'N/A'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${getPriorityLabel(selectedPriority!)}_deficiencies_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Handle priority bar click
   const handlePriorityClick = (priority: string) => {
@@ -792,12 +829,31 @@ export default function PortfolioAnalytics() {
       <Dialog open={priorityDialogOpen} onOpenChange={setPriorityDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {selectedPriority && getPriorityLabel(selectedPriority)} Priority Deficiencies
-            </DialogTitle>
-            <DialogDescription>
-              {priorityDeficiencies?.length || 0} deficiencies found for this priority level
-            </DialogDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <DialogTitle>
+                  {selectedPriority && getPriorityLabel(selectedPriority)} Priority Deficiencies
+                </DialogTitle>
+                <DialogDescription className="mt-2">
+                  {priorityDeficiencies?.length || 0} deficiencies found for this priority level
+                </DialogDescription>
+                <div className="mt-3 flex items-center gap-2">
+                  <Badge variant="secondary" className="text-base px-3 py-1">
+                    Total Estimated Cost: {formatCurrency(priorityTotalCost)}
+                  </Badge>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportDeficienciesToCSV}
+                disabled={!priorityDeficiencies || priorityDeficiencies.length === 0}
+                className="ml-4"
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
           </DialogHeader>
           
           {priorityDeficiencies && priorityDeficiencies.length > 0 ? (

@@ -3467,3 +3467,7 @@ Testing:
 
 ## Priority Drill-Down Feature
 - [x] Add drill-down capability to priority bars - make priority bars clickable to show filtered deficiencies by priority level
+
+## Priority Drill-Down Enhancements
+- [x] Add cost summaries for each priority level in drill-down dialog headers
+- [x] Implement CSV export functionality for filtered deficiency lists
