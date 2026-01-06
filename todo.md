@@ -3524,3 +3524,4 @@ Testing:
 - [x] Add meta keywords
 - [x] Add H1 heading to homepage
 - [x] Add H2 headings to homepage
+- [x] Fix assessment deletion bug - "assessment not found" error even though assessment exists

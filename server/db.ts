@@ -618,6 +618,7 @@ export async function getAssetAssessments(assetId: number) {
     FROM assessments a
     LEFT JOIN building_components bc ON a.componentId = bc.id
     WHERE a.assetId = ${assetId}
+      AND a.deletedAt IS NULL
     ORDER BY a.createdAt DESC
   `);
   
