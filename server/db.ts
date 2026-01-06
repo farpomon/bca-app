@@ -589,28 +589,31 @@ export async function getAssetAssessments(assetId: number) {
       a.id,
       a.assetId,
       a.componentId,
-      bc.code as componentCode,
-      bc.name as componentName,
+      COALESCE(a.componentCode, bc.code) as componentCode,
+      COALESCE(a.componentName, bc.name) as componentName,
+      a.componentLocation,
       a.conditionRating,
-      CASE 
+      COALESCE(a.condition, CASE 
         WHEN a.conditionRating IN ('1', '2') THEN 'good'
         WHEN a.conditionRating = '3' THEN 'fair'
         WHEN a.conditionRating IN ('4', '5') THEN 'poor'
         ELSE 'not_assessed'
-      END as condition,
-      a.conditionNotes as observations,
+      END) as condition,
+      COALESCE(a.observations, a.conditionNotes) as observations,
+      a.recommendations,
       CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
-      0 as replacementValue,
-      a.remainingLifeYears as remainingUsefulLife,
-      15 as expectedUsefulLife,
-      CASE 
+      COALESCE(a.replacementValue, 0) as replacementValue,
+      COALESCE(a.remainingUsefulLife, a.remainingLifeYears) as remainingUsefulLife,
+      COALESCE(a.expectedUsefulLife, 15) as expectedUsefulLife,
+      COALESCE(a.actionYear, CASE 
         WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
         THEN YEAR(CURDATE()) + a.remainingLifeYears 
         ELSE NULL 
-      END as actionYear,
+      END) as actionYear,
+      a.reviewYear,
+      a.lastTimeAction,
       a.priorityLevel,
       a.status,
-      a.location as componentLocation,
       a.assessmentDate as assessedAt,
       a.createdAt,
       a.updatedAt,
@@ -618,6 +621,7 @@ export async function getAssetAssessments(assetId: number) {
     FROM assessments a
     LEFT JOIN building_components bc ON a.componentId = bc.id
     WHERE a.assetId = ${assetId}
+      AND a.deletedAt IS NULL
     ORDER BY a.createdAt DESC
   `);
   
@@ -1618,30 +1622,30 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.id,
         a.assetId,
         a.componentId,
-        bc.code as componentCode,
-        bc.name as componentName,
+        COALESCE(a.componentCode, bc.code) as componentCode,
+        COALESCE(a.componentName, bc.name) as componentName,
+        a.componentLocation,
         a.conditionRating,
-        CASE 
+        COALESCE(a.condition, CASE 
           WHEN a.conditionRating IN ('1', '2') THEN 'good'
           WHEN a.conditionRating = '3' THEN 'fair'
           WHEN a.conditionRating IN ('4', '5') THEN 'poor'
           ELSE 'not_assessed'
-        END as condition,
-        a.conditionNotes as observations,
-        '' as recommendations,
+        END) as condition,
+        COALESCE(a.observations, a.conditionNotes) as observations,
+        a.recommendations,
         CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
-        0 as replacementValue,
-        a.remainingLifeYears as remainingUsefulLife,
-        15 as expectedUsefulLife,
-        YEAR(CURDATE()) as reviewYear,
-        NULL as lastTimeAction,
-        CASE 
+        COALESCE(a.replacementValue, 0) as replacementValue,
+        COALESCE(a.remainingUsefulLife, a.remainingLifeYears) as remainingUsefulLife,
+        COALESCE(a.expectedUsefulLife, 15) as expectedUsefulLife,
+        COALESCE(a.reviewYear, YEAR(CURDATE())) as reviewYear,
+        a.lastTimeAction,
+        COALESCE(a.actionYear, CASE 
           WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
           THEN YEAR(CURDATE()) + a.remainingLifeYears 
           ELSE NULL 
-        END as actionYear,
+        END) as actionYear,
         a.priorityLevel,
-        a.location as componentLocation,
         a.status,
         a.assessmentDate as assessedAt,
         a.createdAt,
@@ -1652,6 +1656,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
       LEFT JOIN building_components bc ON a.componentId = bc.id
       WHERE ast.projectId = ${projectId}
         AND a.status = ${status}
+        AND a.deletedAt IS NULL
       ORDER BY a.updatedAt DESC
     `;
   } else {
@@ -1660,30 +1665,30 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.id,
         a.assetId,
         a.componentId,
-        bc.code as componentCode,
-        bc.name as componentName,
+        COALESCE(a.componentCode, bc.code) as componentCode,
+        COALESCE(a.componentName, bc.name) as componentName,
+        a.componentLocation,
         a.conditionRating,
-        CASE 
+        COALESCE(a.condition, CASE 
           WHEN a.conditionRating IN ('1', '2') THEN 'good'
           WHEN a.conditionRating = '3' THEN 'fair'
           WHEN a.conditionRating IN ('4', '5') THEN 'poor'
           ELSE 'not_assessed'
-        END as condition,
-        a.conditionNotes as observations,
-        '' as recommendations,
+        END) as condition,
+        COALESCE(a.observations, a.conditionNotes) as observations,
+        a.recommendations,
         CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
-        0 as replacementValue,
-        a.remainingLifeYears as remainingUsefulLife,
-        15 as expectedUsefulLife,
-        YEAR(CURDATE()) as reviewYear,
-        NULL as lastTimeAction,
-        CASE 
+        COALESCE(a.replacementValue, 0) as replacementValue,
+        COALESCE(a.remainingUsefulLife, a.remainingLifeYears) as remainingUsefulLife,
+        COALESCE(a.expectedUsefulLife, 15) as expectedUsefulLife,
+        COALESCE(a.reviewYear, YEAR(CURDATE())) as reviewYear,
+        a.lastTimeAction,
+        COALESCE(a.actionYear, CASE 
           WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
           THEN YEAR(CURDATE()) + a.remainingLifeYears 
           ELSE NULL 
-        END as actionYear,
+        END) as actionYear,
         a.priorityLevel,
-        a.location as componentLocation,
         a.status,
         a.assessmentDate as assessedAt,
         a.createdAt,
@@ -1693,6 +1698,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
       INNER JOIN assets ast ON a.assetId = ast.id
       LEFT JOIN building_components bc ON a.componentId = bc.id
       WHERE ast.projectId = ${projectId}
+        AND a.deletedAt IS NULL
       ORDER BY a.updatedAt DESC
     `;
   }
@@ -1712,6 +1718,7 @@ export async function getAssessmentStatusCounts(projectId: number) {
     FROM assessments a
     INNER JOIN assets ast ON a.assetId = ast.id
     WHERE ast.projectId = ${projectId}
+      AND a.deletedAt IS NULL
     GROUP BY a.status
   `);
 

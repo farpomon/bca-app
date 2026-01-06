@@ -274,7 +274,8 @@ export function AssessmentDialog({
   useEffect(() => {
     if (existingAssessment) {
       setCondition(existingAssessment.condition || "not_assessed");
-      setComponentNameField(existingAssessment.componentName || "");
+      // Use existingAssessment.componentName if available, otherwise fall back to prop
+      setComponentNameField(existingAssessment.componentName || componentName || "");
       setComponentLocationField(existingAssessment.componentLocation || "");
       setObservations(existingAssessment.observations || "");
       setRecommendations(existingAssessment.recommendations || "");
@@ -287,9 +288,9 @@ export function AssessmentDialog({
       setActionYear(existingAssessment.actionYear?.toString() || "");
       setSectionId(null); // TODO: Load from existingAssessment if available
     } else {
-      // Reset to defaults for new assessment
+      // Reset to defaults for new assessment - use componentName prop for new assessments
       setCondition("not_assessed");
-      setComponentNameField("");
+      setComponentNameField(componentName || "");
       setComponentLocationField("");
       setObservations("");
       setRecommendations("");
@@ -302,7 +303,7 @@ export function AssessmentDialog({
       setActionYear("");
       setSectionId(null);
     }
-  }, [existingAssessment, open]);
+  }, [existingAssessment, open, componentName]);
 
   const [observations, setObservations] = useState("");
   const [recommendations, setRecommendations] = useState("");

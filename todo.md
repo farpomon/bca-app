@@ -3500,3 +3500,7 @@ Testing:
 - [x] Update frontend AssessmentDialog to support multiple photo uploads
 - [x] Add validation to enforce 5 photo limit
 - [x] Test multiple photo upload functionality
+
+## Bug Fix: Component Assessment Issues
+- [ ] BUG: UNIFORMAT II component selection lost after photo upload
+- [ ] BUG: Delete component functionality not working
