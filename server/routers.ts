@@ -942,8 +942,28 @@ Provide helpful insights, recommendations, and analysis based on this project da
           throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
         }
         
-        // Create the asset
-        const { assessments, ...assetData } = input;
+        // Create the asset - only include defined fields
+        const { assessments, ...inputData } = input;
+        const assetData: any = {
+          projectId: inputData.projectId,
+          name: inputData.name,
+        };
+        
+        // Only add optional fields if they have valid values
+        if (inputData.description) assetData.description = inputData.description;
+        if (inputData.assetType) assetData.primaryUse = inputData.assetType;
+        if (inputData.address) assetData.address = inputData.address;
+        if (inputData.yearBuilt) assetData.yearBuilt = inputData.yearBuilt;
+        if (inputData.grossFloorArea) assetData.squareFootage = inputData.grossFloorArea;
+        if (inputData.numberOfStories) assetData.numberOfFloors = inputData.numberOfStories;
+        if (inputData.constructionType) assetData.constructionType = inputData.constructionType;
+        if (inputData.currentReplacementValue) {
+          // Parse replacement value string to number
+          const numValue = parseFloat(inputData.currentReplacementValue.replace(/[^0-9.-]+/g, ""));
+          if (!isNaN(numValue)) assetData.replacementValue = numValue;
+        }
+        if (inputData.status) assetData.status = inputData.status;
+        
         const assetId = await assetsDb.createAsset(assetData);
         
         // Create assessments if provided

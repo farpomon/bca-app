@@ -3471,3 +3471,4 @@ Testing:
 ## Priority Drill-Down Enhancements
 - [x] Add cost summaries for each priority level in drill-down dialog headers
 - [x] Implement CSV export functionality for filtered deficiency lists
+- [x] Fix AI parsing error when creating assets - validation issue with default values
