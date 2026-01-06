@@ -621,13 +621,31 @@ export function AssessmentDialog({
     },
   });
 
+  const MAX_PHOTOS_PER_ASSESSMENT = 5;
+
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      // Check if adding these photos would exceed the limit
+      const currentCount = photoFiles.length;
+      const remainingSlots = MAX_PHOTOS_PER_ASSESSMENT - currentCount;
+      
+      if (remainingSlots <= 0) {
+        toast.error(`Maximum ${MAX_PHOTOS_PER_ASSESSMENT} photos allowed per assessment`);
+        e.target.value = '';
+        return;
+      }
+      
+      // Limit files to remaining slots
+      const filesToProcess = files.slice(0, remainingSlots);
+      if (files.length > remainingSlots) {
+        toast.warning(`Only ${remainingSlots} more photo(s) can be added. ${files.length - remainingSlots} photo(s) were not added.`);
+      }
+      
       // Process files - convert HEIC if needed and generate previews
       const processedFiles: File[] = [];
       
-      for (const file of files) {
+      for (const file of filesToProcess) {
         try {
           // Check if it's a HEIC file (common on iPhone)
           const isHeic = file.type === 'image/heic' || 
@@ -722,10 +740,25 @@ export function AssessmentDialog({
     );
 
     if (files.length > 0) {
-      setPhotoFiles(prev => [...prev, ...files]);
+      // Check if adding these photos would exceed the limit
+      const currentCount = photoFiles.length;
+      const remainingSlots = MAX_PHOTOS_PER_ASSESSMENT - currentCount;
+      
+      if (remainingSlots <= 0) {
+        toast.error(`Maximum ${MAX_PHOTOS_PER_ASSESSMENT} photos allowed per assessment`);
+        return;
+      }
+      
+      // Limit files to remaining slots
+      const filesToAdd = files.slice(0, remainingSlots);
+      if (files.length > remainingSlots) {
+        toast.warning(`Only ${remainingSlots} more photo(s) can be added. ${files.length - remainingSlots} photo(s) were not added.`);
+      }
+      
+      setPhotoFiles(prev => [...prev, ...filesToAdd]);
       
       // Generate previews for all new files
-      files.forEach(file => {
+      filesToAdd.forEach(file => {
         const reader = new FileReader();
         reader.onloadend = () => {
           setPhotoPreviews(prev => [...prev, reader.result as string]);
@@ -753,7 +786,7 @@ export function AssessmentDialog({
         );
       }
 
-      toast.success(`${files.length} photo${files.length > 1 ? 's' : ''} added`);
+      toast.success(`${filesToAdd.length} photo${filesToAdd.length > 1 ? 's' : ''} added`);
     } else {
       toast.error("Please drop image files only");
     }
@@ -1239,17 +1272,21 @@ export function AssessmentDialog({
                 onChange={handlePhotoChange}
                 className="hidden"
               />
-              <label htmlFor="photo" className="cursor-pointer">
+              <label htmlFor="photo" className={`cursor-pointer ${photoFiles.length >= MAX_PHOTOS_PER_ASSESSMENT ? 'opacity-50 pointer-events-none' : ''}`}>
                 <Upload className={`mx-auto h-12 w-12 mb-2 transition-colors ${
                   isDragging ? 'text-primary' : 'text-muted-foreground'
                 }`} />
                 <p className={`text-sm transition-colors ${
                   isDragging ? 'text-primary font-medium' : 'text-muted-foreground'
                 }`}>
-                  {isDragging ? 'Drop photos here' : 'Click to upload or drag and drop'}
+                  {photoFiles.length >= MAX_PHOTOS_PER_ASSESSMENT 
+                    ? `Maximum ${MAX_PHOTOS_PER_ASSESSMENT} photos reached` 
+                    : isDragging 
+                      ? 'Drop photos here' 
+                      : 'Click to upload or drag and drop'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG, GIF up to 10MB each - Select multiple files
+                  PNG, JPG, GIF up to 10MB each ({photoFiles.length}/{MAX_PHOTOS_PER_ASSESSMENT} photos)
                 </p>
               </label>
             </div>
