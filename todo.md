@@ -3455,3 +3455,8 @@ Testing:
 ### Advanced Enhancements
 - [x] Add notification badges for items requiring attention
 - [x] Implement skeleton loaders for dynamic menu loading
+- [x] Add go-back navigation button to Portfolio Analytics screen
+
+## Current Bug Fixes
+
+- [x] Fix Portfolio Analytics arrow button navigation - clicking building rows leads to 404 error at /assets/114 instead of correct asset detail page

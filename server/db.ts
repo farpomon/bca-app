@@ -1610,44 +1610,46 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
   const db = await getDb();
   if (!db) return [];
 
-  let query = sql`
-    SELECT 
-      a.id,
-      a.assetId,
-      a.componentId,
-      a.conditionRating,
-      a.conditionNotes,
-      a.estimatedRepairCost,
-      a.priorityLevel,
-      a.remainingLifeYears,
-      a.location,
-      a.status,
-      a.assessmentDate as assessedAt,
-      a.createdAt,
-      a.updatedAt
-    FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
-  `;
-
+  let query;
+  
   if (status && ["initial", "active", "completed"].includes(status)) {
     query = sql`
       SELECT 
         a.id,
         a.assetId,
         a.componentId,
+        bc.code as componentCode,
+        bc.name as componentName,
         a.conditionRating,
-        a.conditionNotes,
-        a.estimatedRepairCost,
+        CASE 
+          WHEN a.conditionRating IN ('1', '2') THEN 'good'
+          WHEN a.conditionRating = '3' THEN 'fair'
+          WHEN a.conditionRating IN ('4', '5') THEN 'poor'
+          ELSE 'not_assessed'
+        END as condition,
+        a.conditionNotes as observations,
+        '' as recommendations,
+        CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
+        0 as replacementValue,
+        a.remainingLifeYears as remainingUsefulLife,
+        15 as expectedUsefulLife,
+        YEAR(CURDATE()) as reviewYear,
+        NULL as lastTimeAction,
+        CASE 
+          WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
+          THEN YEAR(CURDATE()) + a.remainingLifeYears 
+          ELSE NULL 
+        END as actionYear,
         a.priorityLevel,
-        a.remainingLifeYears,
-        a.location,
+        a.location as componentLocation,
         a.status,
         a.assessmentDate as assessedAt,
         a.createdAt,
-        a.updatedAt
+        a.updatedAt,
+        (SELECT COUNT(*) FROM photos p WHERE p.assessmentId = a.id AND p.deletedAt IS NULL) as photoCount
       FROM assessments a
       INNER JOIN assets ast ON a.assetId = ast.id
+      LEFT JOIN building_components bc ON a.componentId = bc.id
       WHERE ast.projectId = ${projectId}
         AND a.status = ${status}
       ORDER BY a.updatedAt DESC
@@ -1658,18 +1660,38 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.id,
         a.assetId,
         a.componentId,
+        bc.code as componentCode,
+        bc.name as componentName,
         a.conditionRating,
-        a.conditionNotes,
-        a.estimatedRepairCost,
+        CASE 
+          WHEN a.conditionRating IN ('1', '2') THEN 'good'
+          WHEN a.conditionRating = '3' THEN 'fair'
+          WHEN a.conditionRating IN ('4', '5') THEN 'poor'
+          ELSE 'not_assessed'
+        END as condition,
+        a.conditionNotes as observations,
+        '' as recommendations,
+        CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
+        0 as replacementValue,
+        a.remainingLifeYears as remainingUsefulLife,
+        15 as expectedUsefulLife,
+        YEAR(CURDATE()) as reviewYear,
+        NULL as lastTimeAction,
+        CASE 
+          WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
+          THEN YEAR(CURDATE()) + a.remainingLifeYears 
+          ELSE NULL 
+        END as actionYear,
         a.priorityLevel,
-        a.remainingLifeYears,
-        a.location,
+        a.location as componentLocation,
         a.status,
         a.assessmentDate as assessedAt,
         a.createdAt,
-        a.updatedAt
+        a.updatedAt,
+        (SELECT COUNT(*) FROM photos p WHERE p.assessmentId = a.id AND p.deletedAt IS NULL) as photoCount
       FROM assessments a
       INNER JOIN assets ast ON a.assetId = ast.id
+      LEFT JOIN building_components bc ON a.componentId = bc.id
       WHERE ast.projectId = ${projectId}
       ORDER BY a.updatedAt DESC
     `;

@@ -1199,6 +1199,7 @@ export default function ProjectDetail() {
         componentCode={editingAssessment?.componentCode || ""}
         componentName={editingAssessment?.componentCode || ""}
         existingAssessment={editingAssessment ? {
+          id: editingAssessment.id,
           condition: editingAssessment.condition,
           conditionPercentage: editingAssessment.conditionPercentage,
           observations: editingAssessment.observations,

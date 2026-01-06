@@ -38,9 +38,10 @@ import {
   ArrowDownRight,
   ChevronRight,
   FileText,
+  ArrowLeft,
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 // Color palette for charts
 const COLORS = {
@@ -106,6 +107,10 @@ function getConditionVariant(condition: string): "default" | "secondary" | "dest
 
 export default function PortfolioAnalytics() {
   const { user, loading: authLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  const navigate = (delta: number) => {
+    if (delta === -1) window.history.back();
+  };
   const [activeTab, setActiveTab] = useState("overview");
   const [buildingSortBy, setBuildingSortBy] = useState<string>("priorityScore");
   const [buildingSortOrder, setBuildingSortOrder] = useState<"asc" | "desc">("desc");
@@ -165,11 +170,21 @@ export default function PortfolioAnalytics() {
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Portfolio Analytics</h1>
-            <p className="text-muted-foreground">
-              Comprehensive analysis across {overview.totalBuildings} buildings in your portfolio
-            </p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Portfolio Analytics</h1>
+              <p className="text-muted-foreground">
+                Comprehensive analysis across {overview.totalBuildings} buildings in your portfolio
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => refetch()} disabled={isRefetching}>
@@ -462,7 +477,7 @@ export default function PortfolioAnalytics() {
                             </div>
                           </td>
                           <td className="p-3">
-                            <Link href={`/assets/${building.assetId}`}>
+                            <Link href={`/projects/${building.projectId}/assets/${building.assetId}`}>
                               <Button variant="ghost" size="sm">
                                 <ChevronRight className="h-4 w-4" />
                               </Button>
