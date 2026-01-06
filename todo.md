@@ -3500,3 +3500,13 @@ Testing:
 - [x] Update frontend AssessmentDialog to support multiple photo uploads
 - [x] Add validation to enforce 5 photo limit
 - [x] Test multiple photo upload functionality
+
+## Bug Fix: Component Name and Location Erased on Photo Upload
+- [ ] Fix: Component Name and Component Location fields are erased when photo is uploaded and saved
+
+
+## Bug Fix: Component Name and Location Erased on Photo Upload
+
+- [x] Bug: Component Name and Component Location fields are erased when photo is uploaded and saved
+- [x] Root cause: uploadPhoto mutation had onSuccess/onError handlers that called handleClose() and onSuccess() for each photo upload
+- [x] Fix: Removed onSuccess/onError handlers from uploadPhoto mutation since we handle success/error manually in handleSaveWithPhoto using mutateAsync with try/catch

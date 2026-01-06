@@ -361,18 +361,10 @@ export function AssessmentDialog({
 
   const utils = trpc.useUtils();
 
-  const uploadPhoto = trpc.photos.upload.useMutation({
-    onSuccess: () => {
-      toast.success("Assessment and photo saved successfully");
-      onSuccess();
-      handleClose();
-      setUploadingPhoto(false);
-    },
-    onError: (error) => {
-      toast.error("Failed to upload photo: " + error.message);
-      setUploadingPhoto(false);
-    },
-  });
+  // Note: We don't use onSuccess/onError here because we handle success/error
+  // manually in handleSaveWithPhoto using mutateAsync with try/catch.
+  // Having onSuccess here would cause premature form reset when uploading multiple photos.
+  const uploadPhoto = trpc.photos.upload.useMutation();
 
   const uploadAssessmentDocument = trpc.documents.uploadAssessmentDocument.useMutation({
     onSuccess: () => {

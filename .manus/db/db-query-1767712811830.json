@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, componentCode, componentName, componentLocation, conditionRating, createdAt, updatedAt \nFROM assessments \nWHERE componentName IS NOT NULL AND componentName != '' \nORDER BY updatedAt DESC \nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, componentName, componentLocation, conditionRating, createdAt, updatedAt \nFROM assessments \nWHERE componentName IS NOT NULL AND componentName != '' \nORDER BY updatedAt DESC \nLIMIT 10;",
+  "rows": [
+    {
+      "id": "30007",
+      "componentCode": "A1010",
+      "componentName": "Test Foundation Component",
+      "componentLocation": "Building A - Ground Floor",
+      "conditionRating": "3",
+      "createdAt": "2026-01-06 15:17:58",
+      "updatedAt": "2026-01-06 15:17:58"
+    },
+    {
+      "id": "30006",
+      "componentCode": "F20",
+      "componentName": "Selective Building Demolition",
+      "componentLocation": "Building-wide",
+      "conditionRating": "3",
+      "createdAt": "2026-01-06 15:09:34",
+      "updatedAt": "2026-01-06 15:09:34"
+    },
+    {
+      "id": "30004",
+      "componentCode": "D40",
+      "componentName": "Fire Protection",
+      "componentLocation": "Building-wide",
+      "conditionRating": "3",
+      "createdAt": "2026-01-06 05:34:35",
+      "updatedAt": "2026-01-06 15:09:06"
+    },
+    {
+      "id": "30005",
+      "componentCode": "E10",
+      "componentName": "Equipment",
+      "componentLocation": "Building-wide",
+      "conditionRating": "3",
+      "createdAt": "2026-01-06 15:08:49",
+      "updatedAt": "2026-01-06 15:08:49"
+    },
+    {
+      "id": "30002",
+      "componentCode": "D30",
+      "componentName": "HVAC",
+      "componentLocation": "Building-wide",
+      "conditionRating": "3",
+      "createdAt": "2026-01-06 05:08:42",
+      "updatedAt": "2026-01-06 05:33:40"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcomponentName\tcomponentLocation\tconditionRating\tcreatedAt\tupdatedAt\n30007\tA1010\tTest Foundation Component\tBuilding A - Ground Floor\t3\t2026-01-06 15:17:58\t2026-01-06 15:17:58\n30006\tF20\tSelective Building Demolition\tBuilding-wide\t3\t2026-01-06 15:09:34\t2026-01-06 15:09:34\n30004\tD40\tFire Protection\tBuilding-wide\t3\t2026-01-06 05:34:35\t2026-01-06 15:09:06\n30005\tE10\tEquipment\tBuilding-wide\t3\t2026-01-06 15:08:49\t2026-01-06 15:08:49\n30002\tD30\tHVAC\tBuilding-wide\t3\t2026-01-06 05:08:42\t2026-01-06 05:33:40\n",
+  "stderr": "",
+  "execution_time_ms": 500
+}
