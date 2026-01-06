@@ -402,6 +402,7 @@ export function AssessmentDialog({
       };
 
       const assessmentId = await saveAssessment(assessmentData);
+      console.log('[AssessmentDialog] Assessment saved with ID:', assessmentId, 'Type:', typeof assessmentId);
 
       // Then upload photos with the assessment ID
       if (photoFiles.length > 0) {
@@ -410,6 +411,7 @@ export function AssessmentDialog({
         
         // Check if we're online and have a numeric assessment ID (not offline ID)
         const isOnlineAndSynced = isOnline && typeof assessmentId === 'number';
+        console.log('[AssessmentDialog] Photo upload check - isOnline:', isOnline, 'isOnlineAndSynced:', isOnlineAndSynced, 'assessmentId:', assessmentId);
         
         if (isOnlineAndSynced) {
           // Direct upload to server when online
@@ -430,6 +432,7 @@ export function AssessmentDialog({
               
               await uploadPhoto.mutateAsync({
                 projectId,
+                assetId,
                 assessmentId: assessmentId as number,
                 fileData: base64Data,
                 fileName: file.name,

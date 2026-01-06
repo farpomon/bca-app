@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, CheckCircle, X } from "lucide-react";
+import { Bell, BellOff, CheckCircle, X, Sparkles } from "lucide-react";
 import { useNotificationPermission } from "@/hooks/useNotificationPermission";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,7 @@ export function NotificationPermissionDialog() {
     requestPermission,
     dismissPrompt,
     permission,
+    sendNotification,
   } = useNotificationPermission();
 
   const [isRequesting, setIsRequesting] = useState(false);
@@ -37,6 +38,13 @@ export function NotificationPermissionDialog() {
 
     if (result === "granted") {
       setShowSuccess(true);
+      // Send a test notification
+      setTimeout(() => {
+        sendNotification("Test Notification", {
+          body: "Notifications are working! You'll receive alerts for sync events.",
+          tag: "test-notification",
+        });
+      }, 500);
       // Auto-close after showing success
       setTimeout(() => {
         setShowSuccess(false);
@@ -67,8 +75,12 @@ export function NotificationPermissionDialog() {
               <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Notifications Enabled!</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               You'll receive notifications when your data syncs.
+            </p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              Check your notifications - we sent you a test!
             </p>
           </div>
         ) : (

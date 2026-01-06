@@ -1,0 +1,210 @@
+{
+  "query": "SELECT id, assessmentId, assetId, projectId, caption, url, createdAt, deletedAt FROM photos WHERE projectId = 14 ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, assessmentId, assetId, projectId, caption, url, createdAt, deletedAt FROM photos WHERE projectId = 14 ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "26",
+      "assessmentId": "30002",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (2/2)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735889209-DSC_9245.JPG",
+      "createdAt": "2026-01-06 21:44:49",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "25",
+      "assessmentId": "30002",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/2)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735873767-DSC_9244.JPG",
+      "createdAt": "2026-01-06 21:44:34",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "24",
+      "assessmentId": "30002",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735838265-DSC_9244.JPG",
+      "createdAt": "2026-01-06 21:43:58",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "23",
+      "assessmentId": "30002",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735551981-DSC_9245.JPG",
+      "createdAt": "2026-01-06 21:39:12",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "22",
+      "assessmentId": "30002",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735328718-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 21:35:28",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "21",
+      "assessmentId": "30006",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "F20 - Selective Building Demolition (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735254765-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 21:34:15",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "19",
+      "assessmentId": "30007",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "A1010 - Standard Foundations (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767712679449-IMG_8675.PNG",
+      "createdAt": "2026-01-06 15:17:59",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "18",
+      "assessmentId": "30006",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "F20 - Selective Building Demolition (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767712176965-image.jpg",
+      "createdAt": "2026-01-06 15:09:37",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "17",
+      "assessmentId": "30004",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D40 - Fire Protection (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767677676437-image.jpg",
+      "createdAt": "2026-01-06 05:34:36",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "16",
+      "assessmentId": "30003",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "GENERAL - General Assessment (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767677610979-image.jpg",
+      "createdAt": "2026-01-06 05:33:31",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "15",
+      "assessmentId": "30003",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "GENERAL - General Assessment (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767676237120-image.jpg",
+      "createdAt": "2026-01-06 05:10:37",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "14",
+      "assessmentId": "30003",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "GENERAL - General Assessment (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767676157944-image.jpg",
+      "createdAt": "2026-01-06 05:09:18",
+      "deletedAt": "2026-01-06 05:33:13"
+    },
+    {
+      "id": "13",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767675111740-image.jpg",
+      "createdAt": "2026-01-06 04:51:40",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "20",
+      "assessmentId": "30002",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767733552947-DSC_9245.JPG",
+      "createdAt": "2026-01-06 03:36:50",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "12",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767670478807-DSC_9244.JPG",
+      "createdAt": "2026-01-06 03:34:21",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "11",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767670373780-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 03:32:43",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "10",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669987719-Effective R-Value Calculator Option 5.png",
+      "createdAt": "2026-01-06 03:25:53",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "9",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669854150-Effective R-Value Calculator Option 5.png",
+      "createdAt": "2026-01-06 03:23:56",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "8",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669426620-Effective R-Value Calculator Option 1.png",
+      "createdAt": "2026-01-06 03:16:57",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "7",
+      "assessmentId": "NULL",
+      "assetId": "NULL",
+      "projectId": "14",
+      "caption": "D30 - HVAC (1/1)",
+      "url": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669178532-Effective R-Value Calculator Option 5.png",
+      "createdAt": "2026-01-06 03:12:45",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tassessmentId\tassetId\tprojectId\tcaption\turl\tcreatedAt\tdeletedAt\n26\t30002\tNULL\t14\tD30 - HVAC (2/2)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735889209-DSC_9245.JPG\t2026-01-06 21:44:49\tNULL\n25\t30002\tNULL\t14\tD30 - HVAC (1/2)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735873767-DSC_9244.JPG\t2026-01-06 21:44:34\tNULL\n24\t30002\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735838265-DSC_9244.JPG\t2026-01-06 21:43:58\tNULL\n23\t30002\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735551981-DSC_9245.JPG\t2026-01-06 21:39:12\tNULL\n22\t30002\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735328718-Effective R-Value Calculator Option 1.png\t2026-01-06 21:35:28\tNULL\n21\t30006\tNULL\t14\tF20 - Selective Building Demolition (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767735254765-Effective R-Value Calculator Option 1.png\t2026-01-06 21:34:15\tNULL\n19\t30007\tNULL\t14\tA1010 - Standard Foundations (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767712679449-IMG_8675.PNG\t2026-01-06 15:17:59\tNULL\n18\t30006\tNULL\t14\tF20 - Selective Building Demolition (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767712176965-image.jpg\t2026-01-06 15:09:37\tNULL\n17\t30004\tNULL\t14\tD40 - Fire Protection (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767677676437-image.jpg\t2026-01-06 05:34:36\tNULL\n16\t30003\tNULL\t14\tGENERAL - General Assessment (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767677610979-image.jpg\t2026-01-06 05:33:31\tNULL\n15\t30003\tNULL\t14\tGENERAL - General Assessment (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767676237120-image.jpg\t2026-01-06 05:10:37\tNULL\n14\t30003\tNULL\t14\tGENERAL - General Assessment (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767676157944-image.jpg\t2026-01-06 05:09:18\t2026-01-06 05:33:13\n13\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767675111740-image.jpg\t2026-01-06 04:51:40\tNULL\n20\t30002\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767733552947-DSC_9245.JPG\t2026-01-06 03:36:50\tNULL\n12\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767670478807-DSC_9244.JPG\t2026-01-06 03:34:21\tNULL\n11\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767670373780-Effective R-Value Calculator Option 1.png\t2026-01-06 03:32:43\tNULL\n10\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669987719-Effective R-Value Calculator Option 5.png\t2026-01-06 03:25:53\tNULL\n9\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669854150-Effective R-Value Calculator Option 5.png\t2026-01-06 03:23:56\tNULL\n8\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669426620-Effective R-Value Calculator Option 1.png\t2026-01-06 03:16:57\tNULL\n7\tNULL\tNULL\t14\tD30 - HVAC (1/1)\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663028353512/XnmtZZwX6e46H8JVZbq4Ta/projects/14/photos/1767669178532-Effective R-Value Calculator Option 5.png\t2026-01-06 03:12:45\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

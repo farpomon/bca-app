@@ -3529,3 +3529,15 @@ Testing:
 ## Bulk Assessment Deletion and Archive Features
 - [x] Add bulk assessment deletion - Allow admins to select and delete multiple assessments at once for faster cleanup
 - [x] Add assessment restoration - Create an "Archive" view where admins can view and restore accidentally deleted assessments within a time window
+
+## Bug Fix: Photos Not Saving in Component Assessment
+- [x] Investigate why photos are not being saved in component assessments
+- [x] Fix photo upload/save functionality - Added assetId to photo upload mutation
+- [x] Test photo saving with component assessments
+
+## Bug Fix: Notification Functionality
+- [x] Fix notification functionality - user cannot test the feature
+- [x] Add automatic test notification when permission is granted
+- [x] Add manual "Send Test" button in Security Settings
+- [x] Add comprehensive notification settings UI with status display
+- [x] Write and pass 24 unit tests for notification system
