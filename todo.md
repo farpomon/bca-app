@@ -147,6 +147,7 @@
 - [ ] Test building code dropdown with expanded database
 
 ## Current Bug Fixes
+- [x] Fix assessment deletion functionality - delete button not working for component assessments
 
 - [x] Fix: 3D model loading stops working when switching browser tabs
 - [x] Fix: 3D model loading crash during upload and initial load phase

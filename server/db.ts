@@ -2882,7 +2882,12 @@ export async function getAssessmentById(assessmentId: number) {
   const result = await db
     .select()
     .from(assessments)
-    .where(eq(assessments.id, assessmentId))
+    .where(
+      and(
+        eq(assessments.id, assessmentId),
+        isNull(assessments.deletedAt)
+      )
+    )
     .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
