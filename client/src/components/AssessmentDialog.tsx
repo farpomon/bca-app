@@ -13,6 +13,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { DocumentList } from "@/components/DocumentList";
+import { PhotoList } from "@/components/PhotoList";
 import { BuildingSectionSelector } from "@/components/BuildingSectionSelector";
 import { Badge } from "@/components/ui/badge";
 import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
@@ -1271,6 +1272,14 @@ export function AssessmentDialog({
                 }}
                 disabled={uploadAssessmentDocument.isPending}
               />
+            </div>
+          )}
+
+          {/* Attached Photos */}
+          {existingAssessment?.id && (
+            <div className="space-y-2">
+              <Label>Attached Photos</Label>
+              <PhotoList assessmentId={existingAssessment.id} projectId={projectId} />
             </div>
           )}
 

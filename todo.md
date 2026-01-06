@@ -3543,3 +3543,11 @@ Testing:
 - [x] Add comprehensive notification settings UI with status display
 - [x] Write and pass 24 unit tests for notification system
 - [x] Fix photo association bug - photos stored in Photo Gallery but not appearing in component assessment form
+
+## Attached Photos Section
+
+- [x] Add "Attached Photos" section to assessment page
+- [x] Extend database schema with photos table
+- [x] Implement backend procedures for photo upload and management
+- [x] Create frontend UI for photo display, filtering, and upload
+- [x] Test photo upload and display functionality
