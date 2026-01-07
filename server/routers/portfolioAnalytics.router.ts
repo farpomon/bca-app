@@ -106,12 +106,14 @@ export const portfolioAnalyticsRouter = router({
    */
   getDeficiencyTrends: protectedProcedure
     .input(z.object({
-      months: z.number().min(1).max(24).default(12),
+      months: z.number().min(1).max(60).default(12),
+      granularity: z.enum(['monthly', 'quarterly', 'yearly']).default('monthly'),
     }).optional())
     .query(async ({ ctx, input }) => {
       const { effectiveCompany, effectiveIsAdmin } = getAnalyticsContext(ctx);
       const months = input?.months || 12;
-      return await getDeficiencyTrends(ctx.user.id, effectiveCompany, effectiveIsAdmin, months);
+      const granularity = input?.granularity || 'monthly';
+      return await getDeficiencyTrends(ctx.user.id, effectiveCompany, effectiveIsAdmin, months, granularity);
     }),
 
   /**
@@ -143,7 +145,7 @@ export const portfolioAnalyticsRouter = router({
       getGeographicDistribution(userId, effectiveCompany, effectiveIsAdmin),
       getPropertyTypeDistribution(userId, effectiveCompany, effectiveIsAdmin),
       getPriorityBreakdown(userId, effectiveCompany, effectiveIsAdmin),
-      getDeficiencyTrends(userId, effectiveCompany, effectiveIsAdmin, 12),
+      getDeficiencyTrends(userId, effectiveCompany, effectiveIsAdmin, 12, 'monthly'),
       getCapitalPlanningForecast(userId, effectiveCompany, effectiveIsAdmin, 5),
     ]);
 

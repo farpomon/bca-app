@@ -119,12 +119,25 @@ export default function PortfolioAnalytics() {
   const [buildingSortOrder, setBuildingSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
   const [priorityDialogOpen, setPriorityDialogOpen] = useState(false);
+  
+  // Deficiency trends controls
+  const [trendsPeriod, setTrendsPeriod] = useState<number>(12);
+  const [trendsGranularity, setTrendsGranularity] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
 
   // Fetch all analytics data
   const { data: dashboardData, isLoading, refetch, isRefetching } = trpc.portfolioAnalytics.getDashboardData.useQuery(
     undefined,
     { enabled: !!user }
   );
+  
+  // Fetch deficiency trends with custom parameters
+  const { data: customDeficiencyTrends, isLoading: trendsLoading } = trpc.portfolioAnalytics.getDeficiencyTrends.useQuery(
+    { months: trendsPeriod, granularity: trendsGranularity },
+    { enabled: !!user }
+  );
+  
+  // Use custom trends if available, otherwise fall back to dashboard data
+  const deficiencyTrends = customDeficiencyTrends || dashboardData?.deficiencyTrends || [];
 
   // Fetch building comparison with custom sorting
   const { data: buildingComparison } = trpc.portfolioAnalytics.getBuildingComparison.useQuery(
@@ -207,7 +220,7 @@ export default function PortfolioAnalytics() {
     );
   }
 
-  const { overview, conditionDistribution, categoryCostBreakdown, priorityBreakdown, deficiencyTrends, capitalForecast, geographicDistribution, propertyTypeDistribution } = dashboardData;
+  const { overview, conditionDistribution, categoryCostBreakdown, priorityBreakdown, capitalForecast, geographicDistribution, propertyTypeDistribution } = dashboardData;
 
   return (
     <div className="min-h-screen bg-background">
@@ -664,29 +677,184 @@ export default function PortfolioAnalytics() {
 
           {/* Trends Tab */}
           <TabsContent value="trends" className="space-y-4">
+            {/* Trends Controls */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold">Time Period & Granularity</h3>
+                    <p className="text-sm text-muted-foreground">Customize the view of deficiency trends</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Time Period</label>
+                      <Select value={trendsPeriod.toString()} onValueChange={(v) => setTrendsPeriod(parseInt(v))}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="6">6 Months</SelectItem>
+                          <SelectItem value="12">12 Months</SelectItem>
+                          <SelectItem value="24">24 Months</SelectItem>
+                          <SelectItem value="36">36 Months</SelectItem>
+                          <SelectItem value="60">All Time (5Y)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Granularity</label>
+                      <Select value={trendsGranularity} onValueChange={(v: any) => setTrendsGranularity(v)}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="quarterly">Quarterly</SelectItem>
+                          <SelectItem value="yearly">Yearly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary Statistics */}
+            {deficiencyTrends.length > 0 && (() => {
+              const totalDef = deficiencyTrends.reduce((sum, d) => sum + d.totalDeficiencies, 0);
+              const avgPerPeriod = totalDef / deficiencyTrends.length;
+              const firstPeriod = deficiencyTrends[0]?.totalDeficiencies || 0;
+              const lastPeriod = deficiencyTrends[deficiencyTrends.length - 1]?.totalDeficiencies || 0;
+              const trend = lastPeriod > firstPeriod ? 'increasing' : lastPeriod < firstPeriod ? 'decreasing' : 'stable';
+              const trendPercent = firstPeriod > 0 ? ((lastPeriod - firstPeriod) / firstPeriod * 100) : 0;
+              
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Total Deficiencies</p>
+                        <p className="text-3xl font-bold">{totalDef}</p>
+                        <p className="text-xs text-muted-foreground">In selected period</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Average per Period</p>
+                        <p className="text-3xl font-bold">{avgPerPeriod.toFixed(1)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {trendsGranularity === 'monthly' ? 'Per month' : trendsGranularity === 'quarterly' ? 'Per quarter' : 'Per year'}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Trend Direction</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-3xl font-bold capitalize">{trend}</p>
+                          {trend === 'increasing' && <ArrowUpRight className="h-6 w-6 text-red-500" />}
+                          {trend === 'decreasing' && <ArrowDownRight className="h-6 w-6 text-green-500" />}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {trendPercent > 0 ? '+' : ''}{trendPercent.toFixed(1)}% vs. first period
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })()}
+
+            {/* Deficiency Count Trends - Stacked Area Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>Deficiency Trends</CardTitle>
-                <CardDescription>Monthly deficiency identification over the past 12 months</CardDescription>
+                <CardTitle>Deficiency Count by Priority</CardTitle>
+                <CardDescription>
+                  {trendsGranularity === 'monthly' ? 'Monthly' : trendsGranularity === 'quarterly' ? 'Quarterly' : 'Yearly'} breakdown of deficiencies by priority level
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={deficiencyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="period" />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" tickFormatter={formatCurrency} />
-                    <Tooltip formatter={(value: number, name: string) => 
-                      name === 'totalCost' ? formatCurrency(value) : value
-                    } />
-                    <Legend />
-                    <Line yAxisId="left" type="monotone" dataKey="totalDeficiencies" stroke={COLORS.primary} name="Total" strokeWidth={2} />
-                    <Line yAxisId="left" type="monotone" dataKey="immediateCount" stroke={COLORS.danger} name="Immediate" />
-                    <Line yAxisId="left" type="monotone" dataKey="shortTermCount" stroke={COLORS.warning} name="Short-Term" />
-                    <Line yAxisId="left" type="monotone" dataKey="resolvedCount" stroke={COLORS.success} name="Resolved" strokeDasharray="5 5" />
-                    <Line yAxisId="right" type="monotone" dataKey="totalCost" stroke={COLORS.secondary} name="Total Cost" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {trendsLoading ? (
+                  <div className="h-[350px] flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : deficiencyTrends.length === 0 ? (
+                  <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+                    No data available for selected period
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <AreaChart data={deficiencyTrends}>
+                      <defs>
+                        <linearGradient id="colorImmediate" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={COLORS.danger} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={COLORS.danger} stopOpacity={0.2}/>
+                        </linearGradient>
+                        <linearGradient id="colorShortTerm" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={COLORS.warning} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={COLORS.warning} stopOpacity={0.2}/>
+                        </linearGradient>
+                        <linearGradient id="colorMediumTerm" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={COLORS.info} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={COLORS.info} stopOpacity={0.2}/>
+                        </linearGradient>
+                        <linearGradient id="colorLongTerm" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={COLORS.success} stopOpacity={0.2}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="period" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Area type="monotone" dataKey="immediateCount" stackId="1" stroke={COLORS.danger} fill="url(#colorImmediate)" name="Immediate" />
+                      <Area type="monotone" dataKey="shortTermCount" stackId="1" stroke={COLORS.warning} fill="url(#colorShortTerm)" name="Short-Term" />
+                      <Area type="monotone" dataKey="mediumTermCount" stackId="1" stroke={COLORS.info} fill="url(#colorMediumTerm)" name="Medium-Term" />
+                      <Area type="monotone" dataKey="longTermCount" stackId="1" stroke={COLORS.success} fill="url(#colorLongTerm)" name="Long-Term" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Cost Trends - Line Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Deficiency Cost Trends</CardTitle>
+                <CardDescription>Financial impact of identified deficiencies over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {trendsLoading ? (
+                  <div className="h-[300px] flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : deficiencyTrends.length === 0 ? (
+                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                    No data available for selected period
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={deficiencyTrends}>
+                      <defs>
+                        <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={COLORS.secondary} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={COLORS.secondary} stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="period" />
+                      <YAxis tickFormatter={formatCurrency} />
+                      <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                      <Legend />
+                      <Area type="monotone" dataKey="totalCost" stroke={COLORS.secondary} fill="url(#colorCost)" name="Total Cost" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
 

@@ -3598,3 +3598,17 @@ Testing:
 - [x] Update backend procedures to filter out hidden assessments by default
 - [ ] Add toggle hidden assessments option for viewing archived items
 - [x] Update frontend assessment list to hide "Test Component for Deletion" assessment
+
+## 🎨 Portfolio Analytics - Deficiency Trends UI Enhancement
+
+- [x] Add time period selector (6 months, 12 months, 24 months, 36 months, All time)
+- [x] Add granularity selector (Monthly, Quarterly, Yearly)
+- [x] Split deficiency trends into two separate charts (count vs cost)
+- [x] Replace line chart with area chart for better visual impact
+- [x] Add stacked area chart to show priority breakdown
+- [x] Add summary statistics above charts (total, average, trend direction)
+- [x] Implement trend indicators with percentage changes
+- [x] Update backend query to support flexible date ranges and aggregation
+- [x] Add interactive tooltips with detailed information
+- [x] Improve color palette with gradients for better readability
+- [ ] Test with real data to ensure performance

@@ -143,7 +143,7 @@ export async function sendApprovalNotification(data: {
       <p>You can now log in to the BCA System and start using all available features.</p>
       
       <div style="margin: 30px 0;">
-        <a href="${process.env.VITE_APP_URL || 'https://bca-app.manus.space'}" 
+        <a href="https://www.b3nma.com" 
            style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
           Log In to BCA System
         </a>

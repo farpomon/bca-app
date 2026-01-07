@@ -802,7 +802,8 @@ export async function getDeficiencyTrends(
   userId: number,
   company: string | null,
   isAdmin: boolean,
-  months: number = 12
+  months: number = 12,
+  granularity: 'monthly' | 'quarterly' | 'yearly' = 'monthly'
 ): Promise<DeficiencyTrend[]> {
   const db = await getDb();
   if (!db) return [];
@@ -813,9 +814,45 @@ export async function getDeficiencyTrends(
       ? sql`(p.userId = ${userId} OR p.company = ${company})`
       : sql`p.userId = ${userId}`;
 
+  // Determine date format and grouping based on granularity
+  let dateFormat: string;
+  let intervalType: string;
+  let intervalValue: number;
+  
+  switch (granularity) {
+    case 'yearly':
+      dateFormat = '%Y';
+      intervalType = 'YEAR';
+      intervalValue = Math.ceil(months / 12);
+      break;
+    case 'quarterly':
+      dateFormat = '%Y-Q';
+      intervalType = 'MONTH';
+      intervalValue = months;
+      break;
+    case 'monthly':
+    default:
+      dateFormat = '%Y-%m';
+      intervalType = 'MONTH';
+      intervalValue = months;
+      break;
+  }
+
+  let selectClause: any;
+  let groupByClause: any;
+  
+  if (granularity === 'quarterly') {
+    // For quarterly, we need to calculate the quarter
+    selectClause = sql.raw(`CONCAT(YEAR(d.createdAt), '-Q', QUARTER(d.createdAt))`);
+    groupByClause = sql.raw(`CONCAT(YEAR(d.createdAt), '-Q', QUARTER(d.createdAt))`);
+  } else {
+    selectClause = sql.raw(`DATE_FORMAT(d.createdAt, '${dateFormat}')`);
+    groupByClause = sql.raw(`DATE_FORMAT(d.createdAt, '${dateFormat}')`);
+  }
+
   const result = await db.execute(sql`
     SELECT 
-      DATE_FORMAT(d.createdAt, '%Y-%m') as period,
+      ${selectClause} as period,
       COUNT(*) as totalDeficiencies,
       SUM(CASE WHEN d.priority = 'immediate' THEN 1 ELSE 0 END) as immediateCount,
       SUM(CASE WHEN d.priority = 'short_term' THEN 1 ELSE 0 END) as shortTermCount,
@@ -826,8 +863,8 @@ export async function getDeficiencyTrends(
     FROM deficiencies d
     INNER JOIN projects p ON d.projectId = p.id
     WHERE ${projectConditions}
-      AND d.createdAt >= DATE_SUB(NOW(), INTERVAL ${months} MONTH)
-    GROUP BY DATE_FORMAT(d.createdAt, '%Y-%m')
+      AND d.createdAt >= DATE_SUB(NOW(), INTERVAL ${sql.raw(intervalValue.toString())} ${sql.raw(intervalType)})
+    GROUP BY ${groupByClause}
     ORDER BY period ASC
   `);
 
