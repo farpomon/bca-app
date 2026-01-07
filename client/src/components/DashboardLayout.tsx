@@ -24,11 +24,7 @@ import {
   SidebarGroupContent,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { 
@@ -120,10 +116,7 @@ const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 180;
 const MAX_WIDTH = 360;
 
-// Collapsible state keys
-const ADMIN_COLLAPSED_KEY = "sidebar-admin-collapsed";
-const SUSTAINABILITY_COLLAPSED_KEY = "sidebar-sustainability-collapsed";
-const ANALYTICS_COLLAPSED_KEY = "sidebar-analytics-collapsed";
+
 
 export default function DashboardLayout({
   children,
@@ -220,23 +213,7 @@ function DashboardLayoutContent({
   const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Collapsible states with localStorage persistence
-  // On mobile, default to collapsed for a cleaner sidebar
-  const [adminOpen, setAdminOpen] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return false;
-    const saved = localStorage.getItem(ADMIN_COLLAPSED_KEY);
-    return saved !== "false";
-  });
-  const [sustainabilityOpen, setSustainabilityOpen] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return false;
-    const saved = localStorage.getItem(SUSTAINABILITY_COLLAPSED_KEY);
-    return saved !== "false";
-  });
-  const [analyticsOpen, setAnalyticsOpen] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return false;
-    const saved = localStorage.getItem(ANALYTICS_COLLAPSED_KEY);
-    return saved !== "false";
-  });
+
   
   // Check if any project has multiple assets for portfolio analytics visibility
   const { data: hasMultiAssetProjects } = trpc.projects.hasMultiAssetProjects.useQuery(
@@ -253,18 +230,7 @@ function DashboardLayoutContent({
   ];
   const activeMenuItem = allMenuItems.find(item => item.path === location);
 
-  // Persist collapsible states
-  useEffect(() => {
-    localStorage.setItem(ADMIN_COLLAPSED_KEY, adminOpen.toString());
-  }, [adminOpen]);
-  
-  useEffect(() => {
-    localStorage.setItem(SUSTAINABILITY_COLLAPSED_KEY, sustainabilityOpen.toString());
-  }, [sustainabilityOpen]);
-  
-  useEffect(() => {
-    localStorage.setItem(ANALYTICS_COLLAPSED_KEY, analyticsOpen.toString());
-  }, [analyticsOpen]);
+
 
   useEffect(() => {
     if (isCollapsed) {
@@ -341,58 +307,33 @@ function DashboardLayoutContent({
     );
   };
 
-  // Helper to render collapsible section - compact for mobile
-  const renderCollapsibleSection = (
+  // Helper to render static section with label
+  const renderStaticSection = (
     title: string,
     icon: React.ComponentType<{ className?: string }>,
-    items: Array<{ icon: React.ComponentType<{ className?: string }>; label: string; path: string }>,
-    isOpen: boolean,
-    setIsOpen: (open: boolean) => void
+    items: Array<{ icon: React.ComponentType<{ className?: string }>; label: string; path: string }>
   ) => {
     const Icon = icon;
     const hasActiveItem = items.some(item => location === item.path);
     
-    // When sidebar is collapsed, don't show collapsible sections
-    if (isCollapsed) {
-      return (
-        <SidebarGroup className="py-0">
-          <SidebarGroupContent>
-            <SidebarMenu className="px-0 py-0.5 space-y-0">
-              {items.map(renderMenuItem)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      );
-    }
+    if (items.length === 0) return null;
     
     return (
-      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible px-2 mb-2">
-        <SidebarGroup className="py-0">
-          <CollapsibleTrigger asChild>
-            <SidebarGroupLabel 
-              className="flex items-center justify-between cursor-pointer hover:bg-accent/60 rounded-lg px-2.5 py-2 transition-all h-8 group/trigger"
-              role="button"
-              aria-expanded={isOpen}
-              aria-label={`${title} section`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground group-hover/trigger:text-foreground"}`} />
-                <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground group-hover/trigger:text-foreground"}`}>
-                  {title}
-                </span>
-              </div>
-              <ChevronRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover/trigger:text-foreground transition-all duration-200 ${isOpen ? "rotate-90" : ""}`} />
-            </SidebarGroupLabel>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="transition-all duration-200 ease-in-out data-[state=closed]:animate-[collapsible-up_200ms_ease-out] data-[state=open]:animate-[collapsible-down_200ms_ease-out]">
-            <SidebarGroupContent>
-              <SidebarMenu className="px-0 py-1 space-y-1">
-                {items.map(item => renderMenuItem(item))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </CollapsibleContent>
-        </SidebarGroup>
-      </Collapsible>
+      <SidebarGroup className="px-2 py-2">
+        {!isCollapsed && (
+          <SidebarGroupLabel className="flex items-center gap-2 px-2.5 py-1.5 mb-1">
+            <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
+            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
+              {title}
+            </span>
+          </SidebarGroupLabel>
+        )}
+        <SidebarGroupContent>
+          <SidebarMenu className="space-y-1">
+            {items.map(item => renderMenuItem(item))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
     );
   };
 
@@ -498,34 +439,34 @@ function DashboardLayoutContent({
             <div className="mx-3 my-2 border-t border-sidebar-border/40" />
 
             {/* Analytics & Reports Section */}
-            {renderCollapsibleSection(
+            {renderStaticSection(
               "Analytics & Reports",
               BarChart3,
               filterBySearch(filterMenuItems(analyticsItems.filter(item => {
                 // Hide portfolio analytics if no projects have multiple assets
                 if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
                 return true;
-              }))),
-              analyticsOpen,
-              setAnalyticsOpen
+              })))
             )}
+
+            {/* Divider */}
+            <div className="mx-3 my-2 border-t border-sidebar-border/40" />
 
             {/* Sustainability & ESG Section */}
-            {renderCollapsibleSection(
+            {renderStaticSection(
               "Sustainability & ESG",
               Leaf,
-              filterBySearch(filterMenuItems(sustainabilityItems)),
-              sustainabilityOpen,
-              setSustainabilityOpen
+              filterBySearch(filterMenuItems(sustainabilityItems))
             )}
 
+            {/* Divider */}
+            {isAdmin && <div className="mx-3 my-2 border-t border-sidebar-border/40" />}
+
             {/* Admin Section (only for admins) */}
-            {isAdmin && renderCollapsibleSection(
+            {isAdmin && renderStaticSection(
               "Administration",
               Shield,
-              filterBySearch(filterMenuItems(adminItems)),
-              adminOpen,
-              setAdminOpen
+              filterBySearch(filterMenuItems(adminItems))
             )}
 
             {/* Offline Status Section */}

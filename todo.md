@@ -3584,3 +3584,4 @@ Testing:
 ## Building Age Column Addition
 - [x] Add building age column to Buildings page in Portfolio Analytics
 - [x] Add building age column to Buildings Comparison page in Portfolio Analytics
+- [x] Fix DashboardLayout sidebar navigation - remove dynamic expand/collapse, make all menu items static to prevent overlapping
