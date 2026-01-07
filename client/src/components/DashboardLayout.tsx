@@ -24,6 +24,7 @@ import {
   SidebarGroupContent,
   useSidebar,
 } from "@/components/ui/sidebar";
+// Collapsible sections are now handled with simple state
 
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -44,6 +45,7 @@ import {
   FileText, 
   Award,
   ChevronRight,
+  ChevronDown,
   BarChart3,
   TrendingUp,
   Target,
@@ -116,7 +118,10 @@ const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 180;
 const MAX_WIDTH = 360;
 
+// Key for storing collapsed sections state
+const SIDEBAR_SECTIONS_KEY = "sidebar-sections-state";
 
+type SectionKey = 'analytics' | 'sustainability' | 'admin';
 
 export default function DashboardLayout({
   children,
@@ -213,7 +218,31 @@ function DashboardLayoutContent({
   const [createCompanyDialogOpen, setCreateCompanyDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Collapsible sections state - persisted to localStorage
+  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem(SIDEBAR_SECTIONS_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+    // Default: all sections collapsed for cleaner initial view
+    return { analytics: false, sustainability: false, admin: false };
+  });
 
+  // Save expanded sections to localStorage
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_SECTIONS_KEY, JSON.stringify(expandedSections));
+  }, [expandedSections]);
+
+  const toggleSection = (section: SectionKey) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   
   // Check if any project has multiple assets for portfolio analytics visibility
   const { data: hasMultiAssetProjects } = trpc.projects.hasMultiAssetProjects.useQuery(
@@ -229,8 +258,6 @@ function DashboardLayoutContent({
     ...adminItems,
   ];
   const activeMenuItem = allMenuItems.find(item => item.path === location);
-
-
 
   useEffect(() => {
     if (isCollapsed) {
@@ -277,7 +304,7 @@ function DashboardLayoutContent({
     return items.filter(item => item.label.toLowerCase().includes(query));
   };
 
-  // Helper to render menu items - compact for mobile
+  // Helper to render menu items
   const renderMenuItem = (item: { icon: React.ComponentType<{ className?: string }>; label: string; path: string }, badge?: number) => {
     const isActive = location === item.path;
     return (
@@ -307,35 +334,75 @@ function DashboardLayoutContent({
     );
   };
 
-  // Helper to render static section with label
-  const renderStaticSection = (
+  // Render a collapsible section with proper spacing
+  const renderCollapsibleSection = (
+    sectionKey: SectionKey,
     title: string,
     icon: React.ComponentType<{ className?: string }>,
     items: Array<{ icon: React.ComponentType<{ className?: string }>; label: string; path: string }>
   ) => {
     const Icon = icon;
     const hasActiveItem = items.some(item => location === item.path);
+    const isExpanded = expandedSections[sectionKey];
     
     if (items.length === 0) return null;
     
     return (
-      <SidebarGroup className="px-2 py-2">
+      <div className="flex flex-col">
         {!isCollapsed && (
-          <SidebarGroupLabel className="flex items-center gap-2 px-2.5 py-1.5 mb-1">
+          <button 
+            onClick={() => toggleSection(sectionKey)}
+            className="flex items-center gap-2 w-full px-4 py-2.5 cursor-pointer hover:bg-sidebar-accent/50 transition-colors mx-2 select-none text-left"
+            style={{ width: 'calc(100% - 16px)' }}
+          >
             <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
+            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors flex-1 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
               {title}
             </span>
-          </SidebarGroupLabel>
+            {isExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
+            )}
+          </button>
         )}
-        <SidebarGroupContent>
-          <SidebarMenu className="space-y-1">
-            {items.map(item => renderMenuItem(item))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+        {isExpanded && (
+          <div className="flex flex-col gap-0.5 px-2 pb-1">
+            {items.map(item => {
+              const isActive = location === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => {
+                    setLocation(item.path);
+                    if (isMobile) toggleSidebar();
+                  }}
+                  className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-all text-left ${
+                    isActive 
+                      ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
+                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                  }`}
+                >
+                  <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
     );
   };
+
+  // Get filtered items for each section
+  const filteredMainItems = filterBySearch(filterMenuItems(mainMenuItems));
+  const filteredAnalyticsItems = filterBySearch(filterMenuItems(analyticsItems.filter(item => {
+    // Hide portfolio analytics if no projects have multiple assets
+    if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
+    return true;
+  })));
+  const filteredSustainabilityItems = filterBySearch(filterMenuItems(sustainabilityItems));
+  const filteredAdminItems = filterBySearch(filterMenuItems(adminItems));
 
   return (
     <>
@@ -425,48 +492,53 @@ function DashboardLayoutContent({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0">
+          <SidebarContent className="gap-0 overflow-y-auto">
             {/* Main Navigation */}
             <SidebarGroup className="py-2">
               <SidebarGroupContent>
-                <SidebarMenu className="px-2 space-y-1">
-                  {filterBySearch(filterMenuItems(mainMenuItems)).map(item => renderMenuItem(item))}
+                <SidebarMenu className="px-2 space-y-0.5">
+                  {filteredMainItems.map(item => renderMenuItem(item))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
             {/* Divider */}
-            <div className="mx-3 my-2 border-t border-sidebar-border/40" />
+            {filteredAnalyticsItems.length > 0 && (
+              <div className="mx-3 my-1 border-t border-sidebar-border/40" />
+            )}
 
-            {/* Analytics & Reports Section */}
-            {renderStaticSection(
+            {/* Analytics & Reports Section - Collapsible */}
+            {renderCollapsibleSection(
+              'analytics',
               "Analytics & Reports",
               BarChart3,
-              filterBySearch(filterMenuItems(analyticsItems.filter(item => {
-                // Hide portfolio analytics if no projects have multiple assets
-                if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
-                return true;
-              })))
+              filteredAnalyticsItems
             )}
 
             {/* Divider */}
-            <div className="mx-3 my-2 border-t border-sidebar-border/40" />
+            {filteredSustainabilityItems.length > 0 && (
+              <div className="mx-3 my-1 border-t border-sidebar-border/40" />
+            )}
 
-            {/* Sustainability & ESG Section */}
-            {renderStaticSection(
+            {/* Sustainability & ESG Section - Collapsible */}
+            {renderCollapsibleSection(
+              'sustainability',
               "Sustainability & ESG",
               Leaf,
-              filterBySearch(filterMenuItems(sustainabilityItems))
+              filteredSustainabilityItems
             )}
 
             {/* Divider */}
-            {isAdmin && <div className="mx-3 my-2 border-t border-sidebar-border/40" />}
+            {isAdmin && filteredAdminItems.length > 0 && (
+              <div className="mx-3 my-1 border-t border-sidebar-border/40" />
+            )}
 
-            {/* Admin Section (only for admins) */}
-            {isAdmin && renderStaticSection(
+            {/* Admin Section (only for admins) - Collapsible */}
+            {isAdmin && renderCollapsibleSection(
+              'admin',
               "Administration",
               Shield,
-              filterBySearch(filterMenuItems(adminItems))
+              filteredAdminItems
             )}
 
             {/* Offline Status Section */}
