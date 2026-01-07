@@ -2409,7 +2409,10 @@ export async function getAssessmentsByProject(projectId: number) {
     })
     .from(assessments)
     .innerJoin(assets, eq(assessments.assetId, assets.id))
-    .where(eq(assets.projectId, projectId));
+    .where(and(
+      eq(assets.projectId, projectId),
+      eq(assessments.hidden, 0)
+    ));
 }
 
 export async function getDeficienciesByProject(projectId: number) {
@@ -2691,6 +2694,7 @@ export async function getAssessmentsByComponent(projectId: number, componentCode
     INNER JOIN assets ast ON a.assetId = ast.id
     WHERE ast.projectId = ${projectId}
       AND a.componentCode = ${componentCode}
+      AND a.hidden = 0
     ORDER BY a.assessmentDate DESC
   `);
 

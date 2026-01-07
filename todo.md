@@ -3591,3 +3591,10 @@ Testing:
 - [x] Implement proper collapsible menu sections
 - [x] Ensure menu items dont overlap with section headers
 
+
+## Hide/Archive Component Assessments
+
+- [x] Add hidden field to componentAssessments table schema
+- [x] Update backend procedures to filter out hidden assessments by default
+- [ ] Add toggle hidden assessments option for viewing archived items
+- [x] Update frontend assessment list to hide "Test Component for Deletion" assessment

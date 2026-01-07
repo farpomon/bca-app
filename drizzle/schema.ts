@@ -208,6 +208,7 @@ export const assessments = mysqlTable("assessments", {
 	validationWarnings: text(),
 	deletedAt: timestamp({ mode: 'string' }),
 	deletedBy: int(),
+	hidden: int().default(0).notNull(),
 });
 
 // Assessment deletion audit log
