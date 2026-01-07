@@ -3575,3 +3575,5 @@ Testing:
 - [x] Added componentCode to photo upload mutation
 - [x] Improved photo query logic to fetch both assessment and asset photos
 - [x] Added debug logging to diagnose photo display issues
+
+- [x] Hide "Attached Photos" section from component assessment page

@@ -1292,13 +1292,14 @@ export function AssessmentDialog({
             </div>
           )}
 
-          {/* Attached Photos */}
+          {/* Attached Photos - Hidden for now
           {existingAssessment?.id && (
             <div className="space-y-2">
               <Label>Attached Photos</Label>
               <PhotoList assessmentId={existingAssessment.id} projectId={projectId} />
             </div>
           )}
+          */}
 
           {/* Photo Upload */}
           <div className="space-y-2">
