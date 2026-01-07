@@ -466,7 +466,7 @@ export function AssessmentDialog({
                 reader.readAsDataURL(file);
               });
               
-              await uploadPhoto.mutateAsync({
+              const result = await uploadPhoto.mutateAsync({
                 projectId,
                 assetId,
                 assessmentId: assessmentId as number,
@@ -478,7 +478,13 @@ export function AssessmentDialog({
                 longitude: photoGeolocation?.longitude,
                 altitude: photoGeolocation?.altitude,
                 locationAccuracy: photoGeolocation?.accuracy,
+                extractGPS: true, // Auto-extract GPS from EXIF if not provided
               });
+              
+              // If GPS was extracted from EXIF and we didn't have it before, show notification
+              if (result.gpsData && !photoGeolocation) {
+                console.log('[Photo Upload] GPS extracted from EXIF:', result.gpsData);
+              }
             }
             setUploadingPhoto(false);
             toast.success(`Assessment and ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} saved successfully`);
@@ -1335,7 +1341,19 @@ export function AssessmentDialog({
             
             {photoPreviews.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Drag photos to reorder them</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">Drag photos to reorder them</p>
+                  {photoGeolocation && (
+                    <div className="flex items-center gap-1 text-xs text-green-600">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>GPS: {photoGeolocation.latitude.toFixed(6)}, {photoGeolocation.longitude.toFixed(6)}</span>
+                      {photoGeolocation.altitude && <span className="ml-1">(Alt: {photoGeolocation.altitude.toFixed(1)}m)</span>}
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   {photoPreviews.map((preview, index) => (
                     <div 

@@ -196,6 +196,9 @@ importers:
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
+      exif-parser:
+        specifier: ^0.1.12
+        version: 0.1.12
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -4284,6 +4287,9 @@ packages:
   exceljs@4.4.0:
     resolution: {integrity: sha512-XctvKaEMaj1Ii9oDOqbW/6e1gXknSY4g/aLCDicOXqBE4M0nRWkUu0PTp++UPNzoFY12BNHMfs/VadKIS6llvg==}
     engines: {node: '>=8.3.0'}
+
+  exif-parser@0.1.12:
+    resolution: {integrity: sha512-c2bQfLNbMzLPmzQuOr8fy0csy84WmwnER81W88DzTp9CYNPJ6yzOj2EZAh9pywYpqHnshVLHQJ8WzldAyfY+Iw==}
 
   expect-type@1.2.2:
     resolution: {integrity: sha512-JhFGDVJ7tmDJItKhYgJCGLOWjuK9vPxiXoUFLwLDc99NlmklilbiQJwoctZtt13+xMw91MCk/REan6MWHqDjyA==}
@@ -11240,6 +11246,8 @@ snapshots:
       tmp: 0.2.5
       unzipper: 0.10.14
       uuid: 8.3.2
+
+  exif-parser@0.1.12: {}
 
   expect-type@1.2.2: {}
 

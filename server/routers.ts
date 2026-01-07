@@ -2262,6 +2262,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         altitude: z.number().optional(),
         locationAccuracy: z.number().optional(),
         performOCR: z.boolean().optional(),
+        extractGPS: z.boolean().optional().default(true), // Auto-extract GPS from EXIF by default
       }))
       .mutation(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
@@ -2272,6 +2273,25 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         const buffer = Buffer.from(input.fileData, 'base64');
         const fileKey = `projects/${input.projectId}/photos/${Date.now()}-${input.fileName}`;
         const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        // Extract GPS data from EXIF if requested and not manually provided
+        let latitude = input.latitude;
+        let longitude = input.longitude;
+        let altitude = input.altitude;
+        let takenAt: Date | undefined;
+        
+        if (input.extractGPS && input.mimeType.startsWith('image/') && !latitude && !longitude) {
+          const { extractGPSFromImage } = await import("./utils/gpsExtractor");
+          const gpsData = extractGPSFromImage(buffer);
+          
+          if (gpsData.latitude && gpsData.longitude) {
+            latitude = gpsData.latitude;
+            longitude = gpsData.longitude;
+            altitude = gpsData.altitude || altitude;
+            takenAt = gpsData.timestamp || undefined;
+            console.log('[Photo Upload] GPS data extracted from EXIF:', { latitude, longitude, altitude, takenAt });
+          }
+        }
         
         // Perform OCR if requested
         let ocrText: string | undefined;
@@ -2295,16 +2315,23 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           caption: input.caption,
           mimeType: input.mimeType,
           fileSize: buffer.length,
-          latitude: input.latitude?.toString(),
-          longitude: input.longitude?.toString(),
-          altitude: input.altitude?.toString(),
+          latitude: latitude?.toString(),
+          longitude: longitude?.toString(),
+          altitude: altitude?.toString(),
           locationAccuracy: input.locationAccuracy?.toString(),
+          takenAt: takenAt?.toISOString(),
           ocrText,
           ocrConfidence: ocrConfidence?.toString(),
           uploadedBy: ctx.user.id,
         });
         
-        return { id: photoId, url, ocrText, ocrConfidence };
+        return { 
+          id: photoId, 
+          url, 
+          ocrText, 
+          ocrConfidence,
+          gpsData: latitude && longitude ? { latitude, longitude, altitude, takenAt } : null,
+        };
       }),
 
     delete: protectedProcedure
