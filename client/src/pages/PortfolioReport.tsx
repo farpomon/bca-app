@@ -464,6 +464,7 @@ export default function PortfolioReport() {
                     <thead>
                       <tr className="border-b bg-muted/50">
                         <th className="text-left p-2">Building</th>
+                        <th className="text-right p-2">Age</th>
                         <th className="text-right p-2">FCI</th>
                         <th className="text-right p-2">Condition</th>
                         <th className="text-right p-2">CRV</th>
@@ -481,6 +482,11 @@ export default function PortfolioReport() {
                                 {building.city && building.province ? `${building.city}, ${building.province}` : building.address || ''}
                               </p>
                             </div>
+                          </td>
+                          <td className="p-2 text-right">
+                            <span className="text-sm">
+                              {building.buildingAge ? `${building.buildingAge} yrs` : 'N/A'}
+                            </span>
                           </td>
                           <td className="p-2 text-right">
                             <span style={{ color: getFCIColor(building.fci) }} className="font-semibold">

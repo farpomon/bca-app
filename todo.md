@@ -3579,3 +3579,8 @@ Testing:
 - [x] Hide "Attached Photos" section from component assessment page
 
 - [x] Fix sidebar collapsible sections to expand downward without overlapping content
+
+
+## Building Age Column Addition
+- [x] Add building age column to Buildings page in Portfolio Analytics
+- [x] Add building age column to Buildings Comparison page in Portfolio Analytics

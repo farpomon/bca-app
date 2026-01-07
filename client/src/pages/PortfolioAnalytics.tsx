@@ -495,6 +495,7 @@ export default function PortfolioAnalytics() {
                     <thead>
                       <tr className="border-b text-left">
                         <th className="p-3 font-medium">Building</th>
+                        <th className="p-3 font-medium text-right">Age</th>
                         <th className="p-3 font-medium text-right">FCI</th>
                         <th className="p-3 font-medium text-right">Condition</th>
                         <th className="p-3 font-medium text-right">CRV</th>
@@ -514,6 +515,11 @@ export default function PortfolioAnalytics() {
                                 {building.city && building.province ? `${building.city}, ${building.province}` : building.address || 'No address'}
                               </p>
                             </div>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="text-sm">
+                              {building.buildingAge ? `${building.buildingAge} yrs` : 'N/A'}
+                            </span>
                           </td>
                           <td className="p-3 text-right">
                             <span style={{ color: getFCIColor(building.fci) }} className="font-semibold">
