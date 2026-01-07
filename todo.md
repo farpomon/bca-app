@@ -3558,3 +3558,20 @@ Testing:
 - [x] Backend: Extract GPS EXIF data from uploaded photos
 - [x] Frontend: Display GPS coordinates for uploaded photos
 - [x] Store photo metadata (GPS coordinates, timestamp) in database
+
+## Photo Upload and Save Feature
+
+- [ ] Database schema for photos table with S3 references
+- [ ] Backend tRPC procedures for uploading and retrieving photos
+- [ ] Frontend photo upload UI with camera/file selection
+- [ ] S3 integration for storing photo files
+- [ ] Vitest tests for photo upload functionality
+
+## Photo Display Bug Fix
+
+- [x] Fix "Existing Photos" section not displaying photos for component assessments
+- [x] Investigate photo query logic in assessment dialog
+- [x] Verify photo filtering by assessmentId and componentCode
+- [x] Added componentCode to photo upload mutation
+- [x] Improved photo query logic to fetch both assessment and asset photos
+- [x] Added debug logging to diagnose photo display issues

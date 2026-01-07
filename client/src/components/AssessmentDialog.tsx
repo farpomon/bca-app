@@ -34,7 +34,9 @@ function ExistingPhotosDisplay({ assessmentId, assetId, projectId, componentCode
     }
   );
   
-  // Query photos by asset (photos without assessment ID)
+  // Query photos by asset and componentCode
+  // This will catch photos that were uploaded before the assessment was created
+  // or photos that are linked to the component but not to a specific assessment
   const { data: assetPhotos, isLoading: isLoadingAsset, isError: isErrorAsset, error: errorAsset, refetch: refetchAsset } = trpc.photos.byAsset.useQuery(
     { assetId, projectId, componentCode },
     {
@@ -42,19 +44,27 @@ function ExistingPhotosDisplay({ assessmentId, assetId, projectId, componentCode
       retryDelay: 1000,
       staleTime: 30000,
       refetchOnWindowFocus: false,
+      // Query asset photos when we have assetId - componentCode is optional for filtering
       enabled: !!assetId && !!projectId,
     }
   );
   
   // Combine and deduplicate photos
   const photos = React.useMemo(() => {
+    console.log('[ExistingPhotosDisplay] Query results:', {
+      assessmentId,
+      componentCode,
+      assessmentPhotos: assessmentPhotos?.length || 0,
+      assetPhotos: assetPhotos?.length || 0,
+    });
     const allPhotos = [...(assessmentPhotos || []), ...(assetPhotos || [])];
     // Remove duplicates by ID
     const uniquePhotos = allPhotos.filter((photo, index, self) => 
       index === self.findIndex((p) => p.id === photo.id)
     );
+    console.log('[ExistingPhotosDisplay] Combined unique photos:', uniquePhotos.length);
     return uniquePhotos;
-  }, [assessmentPhotos, assetPhotos]);
+  }, [assessmentPhotos, assetPhotos, assessmentId, componentCode]);
   
   const isLoading = isLoadingAssessment || isLoadingAsset;
   const isError = isErrorAssessment && isErrorAsset;
@@ -470,6 +480,7 @@ export function AssessmentDialog({
                 projectId,
                 assetId,
                 assessmentId: assessmentId as number,
+                componentCode, // Add componentCode to link photo to component
                 fileData: base64Data,
                 fileName: file.name,
                 mimeType: file.type || 'image/jpeg',
