@@ -366,7 +366,7 @@ function DashboardLayoutContent({
     }
     
     return (
-      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible px-2 mb-2">
         <SidebarGroup className="py-0">
           <CollapsibleTrigger asChild>
             <SidebarGroupLabel 
@@ -381,10 +381,10 @@ function DashboardLayoutContent({
                   {title}
                 </span>
               </div>
-              <ChevronRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover/trigger:text-foreground transition-all duration-300 ${isOpen ? "rotate-90" : ""}`} />
+              <ChevronRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover/trigger:text-foreground transition-all duration-200 ${isOpen ? "rotate-90" : ""}`} />
             </SidebarGroupLabel>
           </CollapsibleTrigger>
-          <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
+          <CollapsibleContent className="transition-all duration-200 ease-in-out data-[state=closed]:animate-[collapsible-up_200ms_ease-out] data-[state=open]:animate-[collapsible-down_200ms_ease-out]">
             <SidebarGroupContent>
               <SidebarMenu className="px-0 py-1 space-y-1">
                 {items.map(item => renderMenuItem(item))}
@@ -498,42 +498,34 @@ function DashboardLayoutContent({
             <div className="mx-3 my-2 border-t border-sidebar-border/40" />
 
             {/* Analytics & Reports Section */}
-            <div className="px-2 pt-1">
-              {renderCollapsibleSection(
-                "Analytics & Reports",
-                BarChart3,
-                filterBySearch(filterMenuItems(analyticsItems.filter(item => {
-                  // Hide portfolio analytics if no projects have multiple assets
-                  if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
-                  return true;
-                }))),
-                analyticsOpen,
-                setAnalyticsOpen
-              )}
-            </div>
+            {renderCollapsibleSection(
+              "Analytics & Reports",
+              BarChart3,
+              filterBySearch(filterMenuItems(analyticsItems.filter(item => {
+                // Hide portfolio analytics if no projects have multiple assets
+                if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
+                return true;
+              }))),
+              analyticsOpen,
+              setAnalyticsOpen
+            )}
 
             {/* Sustainability & ESG Section */}
-            <div className="px-2 pt-1">
-              {renderCollapsibleSection(
-                "Sustainability & ESG",
-                Leaf,
-                filterBySearch(filterMenuItems(sustainabilityItems)),
-                sustainabilityOpen,
-                setSustainabilityOpen
-              )}
-            </div>
+            {renderCollapsibleSection(
+              "Sustainability & ESG",
+              Leaf,
+              filterBySearch(filterMenuItems(sustainabilityItems)),
+              sustainabilityOpen,
+              setSustainabilityOpen
+            )}
 
             {/* Admin Section (only for admins) */}
-            {isAdmin && (
-              <div className="px-2 pt-1">
-                {renderCollapsibleSection(
-                  "Administration",
-                  Shield,
-                  filterBySearch(filterMenuItems(adminItems)),
-                  adminOpen,
-                  setAdminOpen
-                )}
-              </div>
+            {isAdmin && renderCollapsibleSection(
+              "Administration",
+              Shield,
+              filterBySearch(filterMenuItems(adminItems)),
+              adminOpen,
+              setAdminOpen
             )}
 
             {/* Offline Status Section */}

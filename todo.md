@@ -3577,3 +3577,5 @@ Testing:
 - [x] Added debug logging to diagnose photo display issues
 
 - [x] Hide "Attached Photos" section from component assessment page
+
+- [x] Fix sidebar collapsible sections to expand downward without overlapping content
