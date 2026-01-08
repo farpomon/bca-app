@@ -252,7 +252,7 @@ export default function PortfolioAnalytics() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Portfolio Analytics</h1>
+              <h1 className="text-3xl font-bold">Portfolio Analytics and BI</h1>
               <p className="text-muted-foreground">
                 Comprehensive analysis across {overview.totalBuildings} buildings in your portfolio
               </p>

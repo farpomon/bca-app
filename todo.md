@@ -3616,3 +3616,6 @@ Testing:
 - [ ] Add Map View tab to display all assets on Google Map with markers
 
 - [x] Add map tab after distribution tab in portfolio analytics to visualize property locations
+
+- [x] Rename 'Portfolio Analytics' to 'Portfolio Analytics and BI' in navigation
+- [x] Hide 'Portfolio BI' menu item from dashboard navigation

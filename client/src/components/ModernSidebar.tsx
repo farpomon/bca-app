@@ -62,7 +62,7 @@ export function ModernSidebar() {
       title: "Analytics & Reports",
       icon: BarChart3,
       items: [
-        { icon: BarChart3, label: "Portfolio Analytics", path: "/portfolio-analytics" },
+        { icon: BarChart3, label: "Portfolio Analytics and BI", path: "/portfolio-analytics" },
         { icon: TrendingUp, label: "RSMeans Cost Data", path: "/rsmeans" },
         { icon: LineChart, label: "Predictions", path: "/predictions" },
         { icon: Target, label: "Prioritization", path: "/prioritization" },

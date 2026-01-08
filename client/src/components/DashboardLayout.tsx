@@ -92,8 +92,8 @@ const sustainabilityItems = [
 
 // Analytics & Reports section
 const analyticsItems = [
-  { icon: BarChart3, label: "Portfolio Analytics", path: "/portfolio-analytics" },
-  { icon: TrendingUp, label: "Portfolio BI", path: "/portfolio-bi" },
+  { icon: BarChart3, label: "Portfolio Analytics and BI", path: "/portfolio-analytics" },
+  // { icon: TrendingUp, label: "Portfolio BI", path: "/portfolio-bi" }, // Hidden - merged into Portfolio Analytics
   { icon: LineChart, label: "Predictions", path: "/predictions" },
   { icon: Target, label: "Prioritization", path: "/prioritization" },
   { icon: Calculator, label: "Capital Budget", path: "/capital-budget" },
