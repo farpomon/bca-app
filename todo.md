@@ -147,6 +147,7 @@
 - [ ] Test building code dropdown with expanded database
 
 ## Current Bug Fixes
+- [x] Fix AI Insights deficiency data fetching - currently showing 0 deficiencies when there are actually 12 for Commonwealth Recreation Centre
 - [x] Fix portfolio map - building markers not displaying on map view (fixed field name mismatch lat/lng vs latitude/longitude)
 - [ ] Fix map markers not showing - lat/lng returned as strings need to be converted to numbers
 - [x] Create standalone Portfolio Map page (remove from tabs to fix Google Maps initialization)

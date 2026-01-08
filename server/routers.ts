@@ -1393,8 +1393,8 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
         // Get asset data for context
         const assessments = await db.getAssessmentsByProject(input.projectId);
         const assetAssessments = assessments?.filter((a: any) => a.assetId === input.assetId) || [];
-        const deficiencies = await db.getProjectDeficiencies(input.projectId);
-        const assetDeficiencies = deficiencies?.filter((d: any) => d.assetId === input.assetId) || [];
+        // Use getAssetDeficiencies which properly handles the assessment->deficiency relationship
+        const assetDeficiencies = await db.getAssetDeficiencies(input.assetId);
         
         // Build context
         const systemMessage = {
@@ -1500,8 +1500,8 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         // Get asset data for context
         const assessments = await db.getAssessmentsByProject(input.projectId);
         const assetAssessments = assessments?.filter((a: any) => a.assetId === input.assetId) || [];
-        const deficiencies = await db.getProjectDeficiencies(input.projectId);
-        const assetDeficiencies = deficiencies?.filter((d: any) => d.assetId === input.assetId) || [];
+        // Use getAssetDeficiencies which properly handles the assessment->deficiency relationship
+        const assetDeficiencies = await db.getAssetDeficiencies(input.assetId);
         
         const questions: string[] = [];
         
