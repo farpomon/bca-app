@@ -39,13 +39,16 @@ export default function PortfolioMap() {
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null));
 
-    // Filter projects with valid coordinates
+    // Filter projects with valid coordinates - check for lat/lng fields
     const validProjects = projects.filter(
-      (p): p is BuildingMarker => 
-        p.latitude !== null && 
-        p.longitude !== null &&
-        !isNaN(p.latitude) &&
-        !isNaN(p.longitude)
+      (p): p is BuildingMarker => {
+        if (p.lat === null || p.lng === null) return false;
+        if (isNaN(p.lat) || isNaN(p.lng)) return false;
+        // Validate coordinate ranges
+        if (p.lat < -90 || p.lat > 90) return false;
+        if (p.lng < -180 || p.lng > 180) return false;
+        return true;
+      }
     );
 
     if (validProjects.length === 0) return;
@@ -54,7 +57,10 @@ export default function PortfolioMap() {
     const bounds = new google.maps.LatLngBounds();
 
     // Create markers for each project
-    const newMarkers = validProjects.map(project => {
+    const newMarkers: google.maps.Marker[] = [];
+    
+    validProjects.forEach(project => {
+      try {
       const position = { lat: project.lat, lng: project.lng };
       
       // Determine marker color based on FCI
@@ -63,18 +69,22 @@ export default function PortfolioMap() {
       else if (project.fci > 10) markerColor = '#f97316'; // orange (poor)
       else if (project.fci > 5) markerColor = '#f59e0b'; // yellow (fair)
 
+      // Create a simple colored marker using a data URL
+      const svgMarker = {
+        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="${markerColor}" stroke="white" stroke-width="2"/>
+          </svg>
+        `)}`,
+        scaledSize: new google.maps.Size(24, 24),
+        anchor: new google.maps.Point(12, 12),
+      };
+
       const marker = new google.maps.Marker({
         position,
         map,
         title: project.name,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: markerColor,
-          fillOpacity: 0.8,
-          strokeColor: '#ffffff',
-          strokeWeight: 2,
-        },
+        icon: svgMarker,
       });
 
       // Add click listener to show info window
@@ -104,8 +114,11 @@ export default function PortfolioMap() {
         infoWindow.open(map, marker);
       });
 
-      bounds.extend(position);
-      return marker;
+        bounds.extend(position);
+        newMarkers.push(marker);
+      } catch (error) {
+        console.error(`Failed to create marker for project ${project.name}:`, error, project);
+      }
     });
 
     setMarkers(newMarkers);
@@ -138,7 +151,7 @@ export default function PortfolioMap() {
   }
 
   const validProjectsCount = projects?.filter(
-    p => p.latitude !== null && p.longitude !== null
+    p => p.lat !== null && p.lng !== null
   ).length || 0;
 
   if (validProjectsCount === 0) {
@@ -175,12 +188,10 @@ export default function PortfolioMap() {
         </div>
       </div>
       
-      <div className="rounded-lg overflow-hidden border">
-        <MapView
-          onMapReady={handleMapReady}
-          style={{ height: '600px', width: '100%' }}
-        />
-      </div>
+      <MapView
+        className="h-[600px] w-full rounded-lg border"
+        onMapReady={handleMapReady}
+      />
     </div>
   );
 }

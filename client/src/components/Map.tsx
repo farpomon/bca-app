@@ -127,6 +127,7 @@ function loadMapScript() {
 
 interface MapViewProps {
   className?: string;
+  style?: React.CSSProperties;
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
@@ -134,6 +135,7 @@ interface MapViewProps {
 
 export function MapView({
   className,
+  style,
   initialCenter = { lat: 37.7749, lng: -122.4194 },
   initialZoom = 12,
   onMapReady,
@@ -147,16 +149,41 @@ export function MapView({
       console.error("Map container not found");
       return;
     }
-    map.current = new window.google.maps.Map(mapContainer.current, {
-      zoom: initialZoom,
-      center: initialCenter,
-      mapTypeControl: true,
-      fullscreenControl: true,
-      zoomControl: true,
-      streetViewControl: true,
-    });
-    if (onMapReady) {
-      onMapReady(map.current);
+    
+    // Wait for container to have dimensions
+    const checkDimensions = () => {
+      const rect = mapContainer.current?.getBoundingClientRect();
+      return rect && rect.width > 0 && rect.height > 0;
+    };
+    
+    // Retry up to 10 times with 100ms delay
+    for (let i = 0; i < 10; i++) {
+      if (checkDimensions()) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    if (!checkDimensions()) {
+      console.error("Map container has zero dimensions");
+      return;
+    }
+    
+    try {
+      map.current = new window.google.maps.Map(mapContainer.current, {
+        zoom: initialZoom,
+        center: initialCenter,
+        mapTypeControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+        streetViewControl: true,
+      });
+      if (onMapReady) {
+        onMapReady(map.current);
+      }
+    } catch (error) {
+      console.error("Failed to initialize Google Maps:", error);
+      throw error;
     }
   });
 
@@ -165,6 +192,6 @@ export function MapView({
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} style={style} />
   );
 }

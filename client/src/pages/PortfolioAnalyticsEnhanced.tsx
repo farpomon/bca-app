@@ -38,8 +38,10 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
+
 
 // Color palette
 const COLORS = {
@@ -293,6 +295,7 @@ export default function PortfolioAnalyticsEnhanced() {
             <TabsTrigger value="targets">Targets & KPIs</TabsTrigger>
             <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
             <TabsTrigger value="investments">Investments</TabsTrigger>
+
           </TabsList>
 
           {/* Overview Tab */}
@@ -603,6 +606,8 @@ export default function PortfolioAnalyticsEnhanced() {
               </CardContent>
             </Card>
           </TabsContent>
+
+
         </Tabs>
       </div>
     </div>

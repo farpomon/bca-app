@@ -26,6 +26,7 @@ import Model3DViewer from "./pages/Model3DViewer";
 import PortfolioBIDashboard from "./pages/PortfolioBIDashboard";
 import PortfolioAnalytics from "./pages/PortfolioAnalytics";
 import PortfolioAnalyticsEnhanced from "./pages/PortfolioAnalyticsEnhanced";
+import PortfolioMapPage from "./pages/PortfolioMapPage";
 import PortfolioReport from "./pages/PortfolioReport";
 import Admin from "./pages/Admin";
 import EconomicIndicators from "./pages/EconomicIndicators";
@@ -105,6 +106,7 @@ function Router() {
       <Route path={"/portfolio-bi"} component={PortfolioBIDashboard} />
       <Route path={"/portfolio-analytics"} component={PortfolioAnalytics} />
       <Route path={"/portfolio-analytics-enhanced"} component={PortfolioAnalyticsEnhanced} />
+      <Route path={"/portfolio-map"} component={PortfolioMapPage} />
       <Route path={"/portfolio-report"} component={PortfolioReport} />
       <Route path={"/admin/compliance"} component={ComplianceDashboard} />
       <Route path={"/admin/data-security"} component={DataSecurity} />
