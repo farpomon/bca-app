@@ -3631,3 +3631,5 @@ Testing:
   - [x] Add export predictions to Excel/CSV functionality for capital planning
   - [x] Add estimated replacement costs per component
   - [x] Add annual budget calculations based on planning horizon
+
+- [x] Fix sidebar navigation collapsible menu overlap issue - menu items are overlapping when expanded

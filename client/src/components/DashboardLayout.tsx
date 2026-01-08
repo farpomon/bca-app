@@ -24,7 +24,11 @@ import {
   SidebarGroupContent,
   useSidebar,
 } from "@/components/ui/sidebar";
-// Collapsible sections are now handled with simple state
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import { APP_LOGO, APP_TAGLINE, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -334,7 +338,7 @@ function DashboardLayoutContent({
     );
   };
 
-  // Render a collapsible section with proper spacing
+  // Render a collapsible section with proper spacing using Collapsible component
   const renderCollapsibleSection = (
     sectionKey: SectionKey,
     title: string,
@@ -348,49 +352,52 @@ function DashboardLayoutContent({
     if (items.length === 0) return null;
     
     return (
-      <div className="flex flex-col">
+      <Collapsible
+        open={isExpanded}
+        onOpenChange={() => toggleSection(sectionKey)}
+        className="flex flex-col"
+      >
         {!isCollapsed && (
-          <button 
-            onClick={() => toggleSection(sectionKey)}
-            className="flex items-center gap-2 w-full px-4 py-2.5 cursor-pointer hover:bg-sidebar-accent/50 transition-colors mx-2 select-none text-left"
-            style={{ width: 'calc(100% - 16px)' }}
-          >
-            <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors flex-1 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
-              {title}
-            </span>
-            {isExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
-            )}
-          </button>
+          <CollapsibleTrigger asChild>
+            <button 
+              className="flex items-center gap-2 w-full px-4 py-2.5 cursor-pointer hover:bg-sidebar-accent/50 transition-colors mx-2 select-none text-left"
+              style={{ width: 'calc(100% - 16px)' }}
+            >
+              <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
+              <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors flex-1 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
+                {title}
+              </span>
+              {isExpanded ? (
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
+              )}
+            </button>
+          </CollapsibleTrigger>
         )}
-        {isExpanded && (
-          <div className="flex flex-col gap-0.5 px-2 pb-1">
-            {items.map(item => {
-              const isActive = location === item.path;
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => {
-                    setLocation(item.path);
-                    if (isMobile) toggleSidebar();
-                  }}
-                  className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-all text-left ${
-                    isActive 
-                      ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
-                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
-                  }`}
-                >
-                  <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+        <CollapsibleContent className="flex flex-col gap-0.5 px-2 pb-1">
+          {items.map(item => {
+            const isActive = location === item.path;
+            return (
+              <button
+                key={item.path}
+                onClick={() => {
+                  setLocation(item.path);
+                  if (isMobile) toggleSidebar();
+                }}
+                className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-all text-left ${
+                  isActive 
+                    ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
+                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                }`}
+              >
+                <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                <span className="truncate">{item.label}</span>
+              </button>
+            );
+          })}
+        </CollapsibleContent>
+      </Collapsible>
     );
   };
 
