@@ -249,6 +249,22 @@ export const chatbotRouter = router({
           if (assetData) {
             context.assetId = assetId;
             context.assetData = assetData;
+            
+            // Get asset-specific deficiencies and assessments
+            const assetDeficiencies = await db.getAssetDeficiencies(assetId);
+            context.deficiencies = assetDeficiencies; // Override project deficiencies with asset-specific ones
+            
+            const assetAssessments = await db.getAssetAssessments(assetId);
+            context.assessments = assetAssessments; // Override project assessments with asset-specific ones
+            
+            // Calculate asset-specific stats
+            const assetStats = {
+              assessments: assetAssessments.length,
+              completedAssessments: assetAssessments.filter((a: any) => a.condition !== 'not_assessed').length,
+              deficiencies: assetDeficiencies.length,
+              totalEstimatedCost: assetDeficiencies.reduce((sum: number, d: any) => sum + (d.estimatedCost || 0), 0),
+            };
+            context.stats = assetStats; // Override project stats with asset-specific ones
           }
         } catch (error) {
           console.error("[Chatbot] Error fetching asset context:", error);

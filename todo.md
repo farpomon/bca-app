@@ -3661,3 +3661,4 @@ Testing:
 
 - [x] Fix City of Edmonton project showing 0 values across all KPIs on predictions page
 - [x] Fix Photo Map View under assets - Google Maps not loading correctly
+- [x] Fix AI Insights showing 0 deficiencies when Dashboard shows 12 deficiencies
