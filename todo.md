@@ -3654,3 +3654,7 @@ Testing:
 - [x] Position user profile at bottom with clear separator
 - [x] Optimize for BCA workflow (easy access to Capital Budget and RSMeans)
 - [x] Ensure high contrast and tablet-friendly layout for field use
+
+## UI/UX Improvements
+
+- [x] Convert left sidebar navigation to horizontal top navigation bar with dropdowns
