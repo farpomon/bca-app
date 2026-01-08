@@ -333,7 +333,8 @@ export function AssetLocation({
               className="h-full w-full" 
               initialCenter={coordinates || undefined}
               initialZoom={coordinates ? 15 : 12}
-              onMapReady={handleMapReady} 
+              onMapReady={handleMapReady}
+              delayInit={true}
             />
             {isGeocoding && (
               <div className="absolute inset-0 bg-background/50 flex items-center justify-center">

@@ -162,6 +162,8 @@ interface MapViewProps {
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
+  /** Delay initialization to wait for container to be visible (useful in tabs) */
+  delayInit?: boolean;
 }
 
 export function MapView({
@@ -170,13 +172,21 @@ export function MapView({
   initialCenter = { lat: 37.7749, lng: -122.4194 },
   initialZoom = 12,
   onMapReady,
+  delayInit = false,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(!delayInit);
+  const initAttempted = useRef(false);
 
   const init = usePersistFn(async () => {
+    // Prevent multiple init attempts
+    if (initAttempted.current && map.current) {
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
@@ -187,14 +197,14 @@ export function MapView({
         throw new Error("Map container not found");
       }
       
-      // Wait for container to have dimensions
+      // Wait for container to have dimensions - extended retry for tab visibility
       const checkDimensions = () => {
         const rect = mapContainer.current?.getBoundingClientRect();
         return rect && rect.width > 0 && rect.height > 0;
       };
       
-      // Retry up to 10 times with 100ms delay
-      for (let i = 0; i < 10; i++) {
+      // Retry up to 30 times with 100ms delay (3 seconds total)
+      for (let i = 0; i < 30; i++) {
         if (checkDimensions()) {
           break;
         }
@@ -204,6 +214,8 @@ export function MapView({
       if (!checkDimensions()) {
         throw new Error("Map container has zero dimensions");
       }
+      
+      initAttempted.current = true;
       
       map.current = new window.google.maps.Map(mapContainer.current, {
         zoom: initialZoom,
@@ -227,41 +239,73 @@ export function MapView({
     }
   });
 
+  // Use IntersectionObserver to detect when container becomes visible
   useEffect(() => {
-    init();
-  }, [init]);
-
-  if (error) {
-    return (
-      <div className={cn("w-full h-[500px] flex items-center justify-center bg-muted/20 border border-destructive/20 rounded-lg", className)} style={style}>
-        <div className="text-center p-6 max-w-md">
-          <div className="text-destructive mb-2 font-semibold">Failed to Load Map</div>
-          <div className="text-sm text-muted-foreground mb-4">{error}</div>
-          <button
-            onClick={() => {
-              setError(null);
-              init();
-            }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+    if (!mapContainer.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isVisible) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
     );
-  }
-  
+    
+    observer.observe(mapContainer.current);
+    
+    return () => observer.disconnect();
+  }, [isVisible]);
+
+  // Initialize map when visible
+  useEffect(() => {
+    if (isVisible && !initAttempted.current) {
+      init();
+    }
+  }, [init, isVisible]);
+
   return (
-    <div className="relative">
-      {loading && (
-        <div className={cn("absolute inset-0 flex items-center justify-center bg-muted/50 z-10 rounded-lg", className)} style={style}>
+    <div className="relative" style={{ minHeight: '500px' }}>
+      {/* Map container - always rendered to ensure IntersectionObserver works */}
+      <div 
+        ref={mapContainer} 
+        className={cn("w-full", className)} 
+        style={{ ...style, minHeight: '500px', height: style?.height || '500px' }} 
+      />
+      
+      {/* Loading overlay */}
+      {loading && !error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10 rounded-lg">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
             <div className="text-sm text-muted-foreground">Loading map...</div>
           </div>
         </div>
       )}
-      <div ref={mapContainer} className={cn("w-full h-[500px]", className)} style={style} />
+      
+      {/* Error overlay */}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/20 border border-destructive/20 rounded-lg z-10">
+          <div className="text-center p-6 max-w-md">
+            <div className="text-destructive mb-2 font-semibold">Failed to Load Map</div>
+            <div className="text-sm text-muted-foreground mb-4">{error}</div>
+            <button
+              onClick={() => {
+                setError(null);
+                initAttempted.current = false;
+                setIsVisible(true);
+                // Small delay to ensure state is updated
+                setTimeout(() => init(), 100);
+              }}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

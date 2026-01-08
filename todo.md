@@ -3671,3 +3671,4 @@ Testing:
 
 - [x] Restore map functionality - assets not showing properly on map
 - [x] Fix Google Maps data fetching - location autocomplete not working
+- [x] Fix Google Maps "zero dimensions" error in Location tab - map container not getting proper height
