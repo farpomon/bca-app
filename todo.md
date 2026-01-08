@@ -3658,3 +3658,6 @@ Testing:
 ## UI/UX Improvements
 
 - [x] Convert left sidebar navigation to horizontal top navigation bar with dropdowns
+
+- [x] Fix City of Edmonton project showing 0 values across all KPIs on predictions page
+- [x] Fix Photo Map View under assets - Google Maps not loading correctly

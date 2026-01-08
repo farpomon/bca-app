@@ -76,7 +76,7 @@
 
 /// <reference types="@types/google.maps" />
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
 
@@ -107,18 +107,49 @@ function loadMapScript() {
   
   // Start loading
   mapScriptPromise = new Promise((resolve, reject) => {
+    // Validate required environment variables
+    if (!API_KEY) {
+      console.error("[Maps] VITE_FRONTEND_FORGE_API_KEY is not configured");
+      mapScriptPromise = null;
+      reject(new Error("Maps API key not configured"));
+      return;
+    }
+    
+    if (!FORGE_BASE_URL) {
+      console.error("[Maps] VITE_FRONTEND_FORGE_API_URL is not configured");
+      mapScriptPromise = null;
+      reject(new Error("Maps proxy URL not configured"));
+      return;
+    }
+    
+    const scriptUrl = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry,visualization`;
+    console.log("[Maps] Loading Google Maps script from:", MAPS_PROXY_URL);
+    
     const script = document.createElement("script");
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry,visualization`;
+    script.src = scriptUrl;
     script.async = true;
     script.crossOrigin = "anonymous";
+    
     script.onload = () => {
-      resolve(null);
+      console.log("[Maps] Google Maps script loaded successfully");
+      if (window.google?.maps) {
+        console.log("[Maps] Google Maps API is available");
+        resolve(null);
+      } else {
+        console.error("[Maps] Script loaded but google.maps is not available");
+        mapScriptPromise = null;
+        reject(new Error("Google Maps API not available after script load"));
+      }
     };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps script");
+    
+    script.onerror = (error) => {
+      console.error("[Maps] Failed to load Google Maps script:", error);
+      console.error("[Maps] Script URL:", scriptUrl);
+      console.error("[Maps] Check if the proxy URL is accessible and API key is valid");
       mapScriptPromise = null; // Reset on error so it can be retried
       reject(new Error("Failed to load Google Maps script"));
     };
+    
     document.head.appendChild(script);
   });
   
@@ -142,34 +173,38 @@ export function MapView({
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const init = usePersistFn(async () => {
-    await loadMapScript();
-    if (!mapContainer.current) {
-      console.error("Map container not found");
-      return;
-    }
-    
-    // Wait for container to have dimensions
-    const checkDimensions = () => {
-      const rect = mapContainer.current?.getBoundingClientRect();
-      return rect && rect.width > 0 && rect.height > 0;
-    };
-    
-    // Retry up to 10 times with 100ms delay
-    for (let i = 0; i < 10; i++) {
-      if (checkDimensions()) {
-        break;
-      }
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    
-    if (!checkDimensions()) {
-      console.error("Map container has zero dimensions");
-      return;
-    }
-    
     try {
+      setLoading(true);
+      setError(null);
+      
+      await loadMapScript();
+      
+      if (!mapContainer.current) {
+        throw new Error("Map container not found");
+      }
+      
+      // Wait for container to have dimensions
+      const checkDimensions = () => {
+        const rect = mapContainer.current?.getBoundingClientRect();
+        return rect && rect.width > 0 && rect.height > 0;
+      };
+      
+      // Retry up to 10 times with 100ms delay
+      for (let i = 0; i < 10; i++) {
+        if (checkDimensions()) {
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      if (!checkDimensions()) {
+        throw new Error("Map container has zero dimensions");
+      }
+      
       map.current = new window.google.maps.Map(mapContainer.current, {
         zoom: initialZoom,
         center: initialCenter,
@@ -178,12 +213,17 @@ export function MapView({
         zoomControl: true,
         streetViewControl: true,
       });
+      
+      setLoading(false);
+      
       if (onMapReady) {
         onMapReady(map.current);
       }
-    } catch (error) {
-      console.error("Failed to initialize Google Maps:", error);
-      throw error;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load map";
+      console.error("[Maps] Initialization error:", err);
+      setError(errorMessage);
+      setLoading(false);
     }
   });
 
@@ -191,7 +231,37 @@ export function MapView({
     init();
   }, [init]);
 
+  if (error) {
+    return (
+      <div className={cn("w-full h-[500px] flex items-center justify-center bg-muted/20 border border-destructive/20 rounded-lg", className)} style={style}>
+        <div className="text-center p-6 max-w-md">
+          <div className="text-destructive mb-2 font-semibold">Failed to Load Map</div>
+          <div className="text-sm text-muted-foreground mb-4">{error}</div>
+          <button
+            onClick={() => {
+              setError(null);
+              init();
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} style={style} />
+    <div className="relative">
+      {loading && (
+        <div className={cn("absolute inset-0 flex items-center justify-center bg-muted/50 z-10 rounded-lg", className)} style={style}>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+            <div className="text-sm text-muted-foreground">Loading map...</div>
+          </div>
+        </div>
+      )}
+      <div ref={mapContainer} className={cn("w-full h-[500px]", className)} style={style} />
+    </div>
   );
 }

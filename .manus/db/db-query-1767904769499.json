@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as assessment_count FROM assessments WHERE projectId IN (SELECT id FROM projects WHERE name LIKE '%Edmonton%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as assessment_count FROM assessments WHERE projectId IN (SELECT id FROM projects WHERE name LIKE '%Edmonton%');",
+  "rows": [
+    {
+      "assessment_count": "479"
+    }
+  ],
+  "messages": [],
+  "stdout": "assessment_count\n479\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

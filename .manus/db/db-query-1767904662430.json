@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, name, uniqueId, createdAt FROM projects WHERE name LIKE '%Edmonton%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, uniqueId, createdAt FROM projects WHERE name LIKE '%Edmonton%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "13",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "uniqueId": "COE-BCA-1767477918186",
+      "createdAt": "2026-01-03 22:05:18"
+    },
+    {
+      "id": "14",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "uniqueId": "COE-BCA-1767478045812",
+      "createdAt": "2026-01-03 22:07:25"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tuniqueId\tcreatedAt\n13\tCity of Edmonton - Municipal Building Portfolio\tCOE-BCA-1767477918186\t2026-01-03 22:05:18\n14\tCity of Edmonton - Municipal Building Portfolio\tCOE-BCA-1767478045812\t2026-01-03 22:07:25\n",
+  "stderr": "",
+  "execution_time_ms": 113
+}

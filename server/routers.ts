@@ -4123,7 +4123,11 @@ Provide helpful insights, recommendations, and analysis based on this asset data
 
         for (const component of components) {
           const assessments = await db.getAssessmentsByComponent(input.projectId, component.componentCode);
+          
+          const installYear = project.yearBuilt || new Date().getFullYear() - 20;
+          
           if (assessments.length > 0) {
+            // Use ML prediction with historical assessment data
             const historicalData = assessments.map((a: any) => ({
               assessmentDate: a.assessedAt,
               condition: a.conditionPercentage ? parseInt(a.conditionPercentage) : 70,
@@ -4131,7 +4135,6 @@ Provide helpful insights, recommendations, and analysis based on this asset data
               observations: a.observations || undefined,
             }));
 
-            const installYear = project.yearBuilt || new Date().getFullYear() - 20;
             const mlPrediction = await predictDeteriorationML(
               component.componentCode,
               installYear,
@@ -4153,6 +4156,35 @@ Provide helpful insights, recommendations, and analysis based on this asset data
               confidenceScore: mlPrediction.confidenceScore,
               riskLevel,
               aiInsights: mlPrediction.insights,
+            });
+          } else {
+            // Generate baseline prediction for components without assessments
+            // Use typical deterioration curves based on component age
+            const currentYear = new Date().getFullYear();
+            const componentAge = currentYear - installYear;
+            
+            // Estimate current condition based on age (assuming linear deterioration)
+            // Most building components have 20-50 year lifespans
+            const estimatedLifespan = 30; // Conservative average
+            const estimatedCondition = Math.max(0, Math.min(100, 100 - (componentAge / estimatedLifespan) * 100));
+            
+            // Calculate remaining life
+            const remainingLife = Math.max(0, estimatedLifespan - componentAge);
+            const predictedFailureYear = installYear + estimatedLifespan;
+            
+            // Determine risk level based on age and condition
+            const riskLevel = determineRiskLevel(remainingLife, estimatedCondition);
+            
+            predictions.push({
+              componentCode: component.componentCode,
+              componentName: component.name,
+              lastAssessment: null,
+              condition: Math.round(estimatedCondition),
+              predictedFailureYear,
+              remainingLife,
+              confidenceScore: 0.3, // Low confidence without assessment data
+              riskLevel,
+              aiInsights: ["Baseline prediction - no assessment data available. Recommendation: Conduct detailed assessment."],
             });
           }
         }
