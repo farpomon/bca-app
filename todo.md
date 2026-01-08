@@ -3644,3 +3644,13 @@ Testing:
 - [x] Implement proper ellipsis or wrapping for long menu items
 - [x] Standardize icon alignment to consistent grid
 - [x] Refactor sidebar CSS for clean Enterprise SaaS aesthetic
+
+## 🔥 CURRENT PRIORITY: Sidebar UI Improvements
+- [x] Fix text overlap bug in sidebar (DELETED PROJECT, LAND ADMINISTRATION bleeding into other sections)
+- [x] Reorganize menu items into functional groups (Core Operations, Reporting, Sustainability/ESG)
+- [x] Implement proper collapsible sections with state management
+- [x] Add visual separators between functional groups
+- [x] Make search bar sticky at top
+- [x] Position user profile at bottom with clear separator
+- [x] Optimize for BCA workflow (easy access to Capital Budget and RSMeans)
+- [x] Ensure high contrast and tablet-friendly layout for field use

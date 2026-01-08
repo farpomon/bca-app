@@ -78,14 +78,22 @@ import { Input } from '@/components/ui/input';
 import { Search, X, HelpCircle } from 'lucide-react';
 import { FloatingChatbot } from './FloatingChatbot';
 
-// Main navigation items (always visible)
-const mainMenuItems = [
+// Core Operations - Primary workflow items
+const coreOperationsItems = [
   { icon: LayoutDashboard, label: "Projects", path: "/" },
   { icon: DollarSign, label: "RSMeans Cost Data", path: "/rsmeans" },
-  { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 
-// Sustainability & ESG section
+// Reporting & Analytics - Data analysis and insights
+const reportingItems = [
+  { icon: BarChart3, label: "Portfolio Analytics and BI", path: "/portfolio-analytics" },
+  { icon: LineChart, label: "Predictions", path: "/predictions" },
+  { icon: Target, label: "Prioritization", path: "/prioritization" },
+  { icon: Calculator, label: "Capital Budget", path: "/capital-budget" },
+  { icon: FileCheck, label: "Portfolio Report", path: "/portfolio-report" },
+];
+
+// Sustainability & ESG - Environmental and compliance
 const sustainabilityItems = [
   { icon: Leaf, label: "ESG Dashboard", path: "/esg-dashboard" },
   { icon: Award, label: "ESG & LEED", path: "/esg-leed" },
@@ -95,14 +103,9 @@ const sustainabilityItems = [
   { icon: Factory, label: "Carbon Footprint", path: "/carbon-footprint" },
 ];
 
-// Analytics & Reports section
-const analyticsItems = [
-  { icon: BarChart3, label: "Portfolio Analytics and BI", path: "/portfolio-analytics" },
-  // { icon: TrendingUp, label: "Portfolio BI", path: "/portfolio-bi" }, // Hidden - merged into Portfolio Analytics
-  { icon: LineChart, label: "Predictions", path: "/predictions" },
-  { icon: Target, label: "Prioritization", path: "/prioritization" },
-  { icon: Calculator, label: "Capital Budget", path: "/capital-budget" },
-  { icon: FileCheck, label: "Portfolio Report", path: "/portfolio-report" },
+// System Management - Trash and archives
+const systemItems = [
+  { icon: Trash2, label: "Deleted Projects", path: "/deleted-projects" },
 ];
 
 // Admin section items
@@ -126,7 +129,7 @@ const MAX_WIDTH = 360;
 // Key for storing collapsed sections state
 const SIDEBAR_SECTIONS_KEY = "sidebar-sections-state";
 
-type SectionKey = 'analytics' | 'sustainability' | 'admin';
+type SectionKey = 'reporting' | 'sustainability' | 'admin';
 
 export default function DashboardLayout({
   children,
@@ -234,7 +237,7 @@ function DashboardLayoutContent({
       // Ignore parse errors
     }
     // Default: all sections collapsed for cleaner initial view
-    return { analytics: false, sustainability: false, admin: false };
+    return { reporting: false, sustainability: false, admin: false };
   });
 
   // Save expanded sections to localStorage
@@ -257,9 +260,10 @@ function DashboardLayoutContent({
 
   // Get active menu item label for mobile header
   const allMenuItems = [
-    ...mainMenuItems,
+    ...coreOperationsItems,
+    ...reportingItems,
     ...sustainabilityItems,
-    ...analyticsItems,
+    ...systemItems,
     ...adminItems,
   ];
   const activeMenuItem = allMenuItems.find(item => item.path === location);
@@ -339,7 +343,7 @@ function DashboardLayoutContent({
     );
   };
 
-  // Render a collapsible section with proper spacing using Collapsible component
+  // Render a collapsible section with proper spacing and isolation
   const renderCollapsibleSection = (
     sectionKey: SectionKey,
     title: string,
@@ -353,16 +357,15 @@ function DashboardLayoutContent({
     if (items.length === 0) return null;
     
     return (
-      <div className="relative z-0">
+      <div className="w-full">
         <Collapsible
           open={isExpanded}
           onOpenChange={() => toggleSection(sectionKey)}
-          className="flex flex-col"
         >
           {!isCollapsed && (
             <CollapsibleTrigger asChild>
               <button 
-                className="relative z-10 flex items-center gap-2.5 w-full px-4 py-3 cursor-pointer hover:bg-sidebar-accent/50 transition-colors rounded-md mx-2 select-none text-left bg-background/50"
+                className="flex items-center gap-2.5 w-full px-4 py-2.5 cursor-pointer hover:bg-sidebar-accent/50 transition-colors rounded-md mx-2 select-none text-left"
                 style={{ width: 'calc(100% - 16px)' }}
               >
                 <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
@@ -377,27 +380,29 @@ function DashboardLayoutContent({
               </button>
             </CollapsibleTrigger>
           )}
-          <CollapsibleContent className="relative z-0 flex flex-col gap-1 px-2 py-1">
-            {items.map(item => {
-              const isActive = location === item.path;
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => {
-                    setLocation(item.path);
-                    if (isMobile) toggleSidebar();
-                  }}
-                  className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm rounded-lg transition-all text-left min-h-[40px] ${
-                    isActive 
-                      ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
-                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
-                  }`}
-                >
-                  <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
-                  <span className="truncate flex-1">{item.label}</span>
-                </button>
-              );
-            })}
+          <CollapsibleContent>
+            <div className="flex flex-col gap-1 px-2 py-1 mt-1">
+              {items.map(item => {
+                const isActive = location === item.path;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => {
+                      setLocation(item.path);
+                      if (isMobile) toggleSidebar();
+                    }}
+                    className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm rounded-lg transition-all text-left min-h-[40px] ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
+                        : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                    }`}
+                  >
+                    <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                    <span className="truncate flex-1">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </div>
@@ -405,13 +410,14 @@ function DashboardLayoutContent({
   };
 
   // Get filtered items for each section
-  const filteredMainItems = filterBySearch(filterMenuItems(mainMenuItems));
-  const filteredAnalyticsItems = filterBySearch(filterMenuItems(analyticsItems.filter(item => {
+  const filteredCoreItems = filterBySearch(filterMenuItems(coreOperationsItems));
+  const filteredReportingItems = filterBySearch(filterMenuItems(reportingItems.filter(item => {
     // Hide portfolio analytics if no projects have multiple assets
     if (item.path === '/portfolio-analytics' && !hasMultiAssetProjects) return false;
     return true;
   })));
   const filteredSustainabilityItems = filterBySearch(filterMenuItems(sustainabilityItems));
+  const filteredSystemItems = filterBySearch(filterMenuItems(systemItems));
   const filteredAdminItems = filterBySearch(filterMenuItems(adminItems));
 
   return (
@@ -514,31 +520,31 @@ function DashboardLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0 overflow-y-auto overflow-x-hidden">
-            {/* Main Navigation */}
+            {/* Core Operations Section */}
             <SidebarGroup className="py-3">
               <SidebarGroupContent>
                 <SidebarMenu className="px-2 space-y-1">
-                  {filteredMainItems.map(item => renderMenuItem(item))}
+                  {filteredCoreItems.map(item => renderMenuItem(item))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Divider */}
-            {filteredAnalyticsItems.length > 0 && (
-              <div className="mx-4 my-2 border-t border-sidebar-border/40" />
+            {/* Visual Separator */}
+            {filteredReportingItems.length > 0 && (
+              <div className="mx-4 my-2 border-t border-sidebar-border/50" />
             )}
 
-            {/* Analytics & Reports Section - Collapsible */}
+            {/* Reporting & Analytics Section - Collapsible */}
             {renderCollapsibleSection(
-              'analytics',
-              "Analytics & Reports",
+              'reporting',
+              "Reporting & Analytics",
               BarChart3,
-              filteredAnalyticsItems
+              filteredReportingItems
             )}
 
-            {/* Divider */}
+            {/* Visual Separator */}
             {filteredSustainabilityItems.length > 0 && (
-              <div className="mx-4 my-2 border-t border-sidebar-border/40" />
+              <div className="mx-4 my-2 border-t border-sidebar-border/50" />
             )}
 
             {/* Sustainability & ESG Section - Collapsible */}
@@ -549,12 +555,12 @@ function DashboardLayoutContent({
               filteredSustainabilityItems
             )}
 
-            {/* Divider */}
+            {/* Visual Separator */}
             {isAdmin && filteredAdminItems.length > 0 && (
-              <div className="mx-4 my-2 border-t border-sidebar-border/40" />
+              <div className="mx-4 my-2 border-t border-sidebar-border/50" />
             )}
 
-            {/* Admin Section (only for admins) - Collapsible */}
+            {/* Administration Section - Collapsible (Admin Only) */}
             {isAdmin && renderCollapsibleSection(
               'admin',
               "Administration",
@@ -562,8 +568,22 @@ function DashboardLayoutContent({
               filteredAdminItems
             )}
 
-            {/* Offline Status Section */}
-            <div className="mt-auto px-2 py-2 border-t border-sidebar-border/40">
+            {/* Visual Separator */}
+            {filteredSystemItems.length > 0 && (
+              <div className="mx-4 my-2 border-t border-sidebar-border/50" />
+            )}
+
+            {/* System Management Section */}
+            <SidebarGroup className="py-2">
+              <SidebarGroupContent>
+                <SidebarMenu className="px-2 space-y-1">
+                  {filteredSystemItems.map(item => renderMenuItem(item))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            {/* Offline Status Section - Sticky at bottom */}
+            <div className="mt-auto px-2 py-2 border-t border-sidebar-border/50 bg-background/50">
               <SidebarOfflineStatus isCollapsed={isCollapsed} />
             </div>
           </SidebarContent>
