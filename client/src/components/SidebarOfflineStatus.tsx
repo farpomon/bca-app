@@ -75,53 +75,54 @@ export function SidebarOfflineStatus({ isCollapsed = false }: SidebarOfflineStat
   }
 
   return (
-    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-accent/50 rounded-lg transition-colors text-sm">
-          <div className="flex items-center gap-2">
-            {isOnline ? (
-              <div className="relative">
-                {isSyncing ? (
-                  <Cloud className="h-4 w-4 text-blue-500" />
-                ) : (
-                  <Cloud className="h-4 w-4 text-green-500" />
-                )}
-                {isSyncing && (
-                  <Loader2 className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 animate-spin text-blue-500" />
-                )}
-              </div>
-            ) : (
-              <CloudOff className="h-4 w-4 text-yellow-500" />
-            )}
-            <span className={cn(
-              "font-medium",
-              !isOnline && "text-yellow-600 dark:text-yellow-400"
-            )}>
-              {isSyncing ? "Syncing..." : isOnline ? "Online" : "Offline"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {pendingCount > 0 && (
-              <Badge 
-                variant="secondary" 
-                className={cn(
-                  "h-5 px-1.5 text-xs",
-                  !isOnline && "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                )}
-              >
-                {pendingCount} pending
-              </Badge>
-            )}
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </div>
-        </button>
-      </CollapsibleTrigger>
+    <div className="relative z-0">
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-accent/50 rounded-lg transition-colors text-sm min-h-[44px]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {isOnline ? (
+                <div className="relative shrink-0">
+                  {isSyncing ? (
+                    <Cloud className="h-4 w-4 text-blue-500" />
+                  ) : (
+                    <Cloud className="h-4 w-4 text-green-500" />
+                  )}
+                  {isSyncing && (
+                    <Loader2 className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 animate-spin text-blue-500" />
+                  )}
+                </div>
+              ) : (
+                <CloudOff className="h-4 w-4 text-yellow-500 shrink-0" />
+              )}
+              <span className={cn(
+                "font-medium truncate",
+                !isOnline && "text-yellow-600 dark:text-yellow-400"
+              )}>
+                {isSyncing ? "Syncing..." : isOnline ? "Online" : "Offline"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {pendingCount > 0 && (
+                <Badge 
+                  variant="secondary" 
+                  className={cn(
+                    "h-5 px-1.5 text-xs",
+                    !isOnline && "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                  )}
+                >
+                  {pendingCount} pending
+                </Badge>
+              )}
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+              )}
+            </div>
+          </button>
+        </CollapsibleTrigger>
 
-      <CollapsibleContent>
+        <CollapsibleContent>
         <div className="px-3 pb-3 space-y-3">
           {/* Sync Progress */}
           {isSyncing && progress && (
@@ -198,7 +199,8 @@ export function SidebarOfflineStatus({ isCollapsed = false }: SidebarOfflineStat
             </div>
           )}
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }

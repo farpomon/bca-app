@@ -3635,3 +3635,12 @@ Testing:
 - [x] Fix sidebar navigation collapsible menu overlap issue - menu items are overlapping when expanded
 
 - [x] Remove floating action buttons and make them static in the page layout
+
+## Sidebar Navigation UI Bug Fixes (Critical)
+- [x] Fix z-index and layout issues causing text overlap (Deleted Projects over ANALYTICS & REPORTS)
+- [x] Fix text overlap between Online status and Sustainability menu item
+- [x] Adjust padding/margin for better vertical spacing between menu items
+- [x] Handle text overflow for header "Building Condition Assessment" (truncation)
+- [x] Implement proper ellipsis or wrapping for long menu items
+- [x] Standardize icon alignment to consistent grid
+- [x] Refactor sidebar CSS for clean Enterprise SaaS aesthetic

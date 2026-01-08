@@ -324,11 +324,11 @@ function DashboardLayoutContent({
             }
           }}
           tooltip={item.label}
-          className="h-9 transition-all font-normal text-sm hover:scale-[1.02] group/item"
+          className="h-10 min-h-[40px] transition-all font-normal text-sm hover:scale-[1.01] group/item"
           aria-label={item.label}
         >
           <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-foreground"}`} />
-          <span className="truncate">{item.label}</span>
+          <span className="truncate flex-1">{item.label}</span>
           {badge && badge > 0 && (
             <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
               {badge > 9 ? '9+' : badge}
@@ -353,52 +353,54 @@ function DashboardLayoutContent({
     if (items.length === 0) return null;
     
     return (
-      <Collapsible
-        open={isExpanded}
-        onOpenChange={() => toggleSection(sectionKey)}
-        className="flex flex-col"
-      >
-        {!isCollapsed && (
-          <CollapsibleTrigger asChild>
-            <button 
-              className="flex items-center gap-2 w-full px-4 py-2.5 cursor-pointer hover:bg-sidebar-accent/50 transition-colors mx-2 select-none text-left"
-              style={{ width: 'calc(100% - 16px)' }}
-            >
-              <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
-              <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors flex-1 ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
-                {title}
-              </span>
-              {isExpanded ? (
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
-              ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
-              )}
-            </button>
-          </CollapsibleTrigger>
-        )}
-        <CollapsibleContent className="flex flex-col gap-0.5 px-2 pb-1">
-          {items.map(item => {
-            const isActive = location === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => {
-                  setLocation(item.path);
-                  if (isMobile) toggleSidebar();
-                }}
-                className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-all text-left ${
-                  isActive 
-                    ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
-                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
-                }`}
+      <div className="relative z-0">
+        <Collapsible
+          open={isExpanded}
+          onOpenChange={() => toggleSection(sectionKey)}
+          className="flex flex-col"
+        >
+          {!isCollapsed && (
+            <CollapsibleTrigger asChild>
+              <button 
+                className="relative z-10 flex items-center gap-2.5 w-full px-4 py-3 cursor-pointer hover:bg-sidebar-accent/50 transition-colors rounded-md mx-2 select-none text-left bg-background/50"
+                style={{ width: 'calc(100% - 16px)' }}
               >
-                <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
-                <span className="truncate">{item.label}</span>
+                <Icon className={`h-4 w-4 shrink-0 transition-colors ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors flex-1 truncate ${hasActiveItem ? "text-primary" : "text-muted-foreground"}`}>
+                  {title}
+                </span>
+                {isExpanded ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0" />
+                )}
               </button>
-            );
-          })}
-        </CollapsibleContent>
-      </Collapsible>
+            </CollapsibleTrigger>
+          )}
+          <CollapsibleContent className="relative z-0 flex flex-col gap-1 px-2 py-1">
+            {items.map(item => {
+              const isActive = location === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => {
+                    setLocation(item.path);
+                    if (isMobile) toggleSidebar();
+                  }}
+                  className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm rounded-lg transition-all text-left min-h-[40px] ${
+                    isActive 
+                      ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary' 
+                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                  }`}
+                >
+                  <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                  <span className="truncate flex-1">{item.label}</span>
+                </button>
+              );
+            })}
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
     );
   };
 
@@ -440,13 +442,24 @@ function DashboardLayoutContent({
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                       <img
                         src={APP_LOGO}
                         className="h-7 w-7 rounded-md object-cover ring-1 ring-border shrink-0"
                         alt="Logo"
                       />
-                      <span className="font-bold tracking-tight truncate text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      <span 
+                        className="font-bold tracking-tight text-sm leading-tight" 
+                        style={{ 
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          wordBreak: 'break-word'
+                        }}
+                        title={APP_TITLE}
+                      >
                         {APP_TITLE}
                       </span>
                     </div>
@@ -500,11 +513,11 @@ function DashboardLayoutContent({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0 overflow-y-auto">
+          <SidebarContent className="gap-0 overflow-y-auto overflow-x-hidden">
             {/* Main Navigation */}
-            <SidebarGroup className="py-2">
+            <SidebarGroup className="py-3">
               <SidebarGroupContent>
-                <SidebarMenu className="px-2 space-y-0.5">
+                <SidebarMenu className="px-2 space-y-1">
                   {filteredMainItems.map(item => renderMenuItem(item))}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -512,7 +525,7 @@ function DashboardLayoutContent({
 
             {/* Divider */}
             {filteredAnalyticsItems.length > 0 && (
-              <div className="mx-3 my-1 border-t border-sidebar-border/40" />
+              <div className="mx-4 my-2 border-t border-sidebar-border/40" />
             )}
 
             {/* Analytics & Reports Section - Collapsible */}
@@ -525,7 +538,7 @@ function DashboardLayoutContent({
 
             {/* Divider */}
             {filteredSustainabilityItems.length > 0 && (
-              <div className="mx-3 my-1 border-t border-sidebar-border/40" />
+              <div className="mx-4 my-2 border-t border-sidebar-border/40" />
             )}
 
             {/* Sustainability & ESG Section - Collapsible */}
@@ -538,7 +551,7 @@ function DashboardLayoutContent({
 
             {/* Divider */}
             {isAdmin && filteredAdminItems.length > 0 && (
-              <div className="mx-3 my-1 border-t border-sidebar-border/40" />
+              <div className="mx-4 my-2 border-t border-sidebar-border/40" />
             )}
 
             {/* Admin Section (only for admins) - Collapsible */}
@@ -550,7 +563,7 @@ function DashboardLayoutContent({
             )}
 
             {/* Offline Status Section */}
-            <div className="mt-auto px-2 py-1.5 border-t">
+            <div className="mt-auto px-2 py-2 border-t border-sidebar-border/40">
               <SidebarOfflineStatus isCollapsed={isCollapsed} />
             </div>
           </SidebarContent>
