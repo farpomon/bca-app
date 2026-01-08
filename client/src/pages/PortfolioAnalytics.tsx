@@ -45,6 +45,7 @@ import { Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import PortfolioMap from "@/components/PortfolioMap";
 
 // Color palette for charts
 const COLORS = {
@@ -374,12 +375,13 @@ export default function PortfolioAnalytics() {
 
         {/* Tabs for different views */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="buildings">Buildings</TabsTrigger>
             <TabsTrigger value="costs">Costs</TabsTrigger>
             <TabsTrigger value="trends">Trends</TabsTrigger>
             <TabsTrigger value="distribution">Distribution</TabsTrigger>
+            <TabsTrigger value="map">Map</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -988,6 +990,21 @@ export default function PortfolioAnalytics() {
                     </tbody>
                   </table>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Map Tab */}
+          <TabsContent value="map" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Portfolio Map</CardTitle>
+                <CardDescription>
+                  Interactive map showing all {overview.totalBuildings} buildings in your portfolio
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PortfolioMap />
               </CardContent>
             </Card>
           </TabsContent>

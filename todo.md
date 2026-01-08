@@ -3612,3 +3612,7 @@ Testing:
 - [x] Add interactive tooltips with detailed information
 - [x] Improve color palette with gradients for better readability
 - [ ] Test with real data to ensure performance
+
+- [ ] Add Map View tab to display all assets on Google Map with markers
+
+- [x] Add map tab after distribution tab in portfolio analytics to visualize property locations

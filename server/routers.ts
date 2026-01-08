@@ -592,6 +592,42 @@ export const appRouter = router({
         return await db.hasMultiAssetProjects(ctx.user.id, ctx.user.company, isAdmin);
       }),
 
+    getAllWithCoordinates: protectedProcedure
+      .query(async ({ ctx }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+        
+        // Filter projects with valid coordinates and calculate FCI for each
+        const projectsWithCoords = await Promise.all(
+          projects
+            .filter(p => p.latitude !== null && p.longitude !== null)
+            .map(async (p) => {
+              // Get FCI for the project
+              let fci = 0;
+              try {
+                const fciData = await db.getProjectFCI(p.id);
+                fci = fciData?.fci || 0;
+              } catch (error) {
+                console.error(`Failed to get FCI for project ${p.id}:`, error);
+              }
+              
+              return {
+                id: p.id,
+                name: p.name,
+                address: p.address || '',
+                lat: p.latitude!,
+                lng: p.longitude!,
+                propertyType: p.propertyType || 'Unknown',
+                fci,
+                crv: p.currentReplacementValue || 0,
+              };
+            })
+        );
+        
+        return projectsWithCoords;
+      }),
+
     fci: protectedProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ ctx, input }) => {
