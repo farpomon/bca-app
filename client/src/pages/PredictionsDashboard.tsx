@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, AlertTriangle, TrendingDown, TrendingUp, Activity } from "lucide-react";
+import { Loader2, AlertTriangle, TrendingDown, TrendingUp, Activity, ArrowLeft, Download, Calendar, DollarSign, Clock, Target } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { DeteriorationCurveEditor } from "@/components/DeteriorationCurveEditor";
 import { ScenarioComparison } from "@/components/ScenarioComparison";
@@ -19,6 +19,7 @@ export default function PredictionsDashboard() {
   const [sortBy, setSortBy] = useState<"risk" | "confidence" | "failureYear">("risk");
   const [selectedComponent, setSelectedComponent] = useState<{ projectId: number; componentCode: string } | null>(null);
   const [scenarioComponent, setScenarioComponent] = useState<{ componentCode: string; failureYear: number; remainingLife: number; replacementCost: number } | null>(null);
+  const [timeHorizon, setTimeHorizon] = useState<number>(10); // Planning horizon in years
 
   const projectsQuery = trpc.projects.list.useQuery(undefined, { enabled: !!user });
   const predictionsQuery = trpc.predictions.project.useQuery(
@@ -67,6 +68,14 @@ export default function PredictionsDashboard() {
   });
 
   // Calculate portfolio stats
+  const currentYear = new Date().getFullYear();
+  const horizonYear = currentYear + timeHorizon;
+  
+  // Filter predictions within time horizon
+  const predictionsInHorizon = predictions.filter(
+    (p) => (p.predictedFailureYear || 9999) <= horizonYear
+  );
+  
   const stats = {
     total: predictions.length,
     critical: predictions.filter((p) => p.riskLevel === "critical").length,
@@ -76,6 +85,14 @@ export default function PredictionsDashboard() {
     avgConfidence: predictions.length > 0
       ? predictions.reduce((sum, p) => sum + (p.confidenceScore || 0), 0) / predictions.length
       : 0,
+    inHorizon: predictionsInHorizon.length,
+    // Estimate replacement costs (using industry averages)
+    estimatedCost: predictionsInHorizon.reduce((sum, p) => {
+      // Rough cost estimation based on component type
+      const baseCost = 50000; // Base replacement cost
+      const riskMultiplier = p.riskLevel === 'critical' ? 1.5 : p.riskLevel === 'high' ? 1.2 : 1.0;
+      return sum + (baseCost * riskMultiplier);
+    }, 0),
   };
 
   const getRiskBadgeVariant = (risk: string) => {
@@ -104,12 +121,73 @@ export default function PredictionsDashboard() {
     }
   };
 
+  // Export predictions to CSV for capital planning
+  const exportToCSV = (data: typeof predictions) => {
+    const headers = [
+      'Component Code',
+      'Risk Level',
+      'Predicted Failure Year',
+      'Remaining Life (Years)',
+      'Confidence Score',
+      'Estimated Cost',
+      'Intervention Timing',
+      'Priority',
+      'AI Insights'
+    ];
+
+    const rows = data.map((pred) => {
+      const yearsToFailure = (pred.predictedFailureYear || currentYear) - currentYear;
+      const urgency = yearsToFailure <= 2 ? 'Immediate' : yearsToFailure <= 5 ? 'Short-term' : 'Mid-term';
+      const baseCost = 50000;
+      const riskMultiplier = pred.riskLevel === 'critical' ? 1.5 : pred.riskLevel === 'high' ? 1.2 : 1.0;
+      const estimatedCost = baseCost * riskMultiplier;
+      const insights = Array.isArray(pred.aiInsights) ? pred.aiInsights.join('; ') : (pred.aiInsights || 'N/A');
+
+      return [
+        pred.componentCode,
+        pred.riskLevel,
+        pred.predictedFailureYear || 'N/A',
+        pred.remainingLife || 'N/A',
+        pred.confidenceScore ? `${(pred.confidenceScore * 100).toFixed(0)}%` : 'N/A',
+        `$${estimatedCost.toLocaleString()}`,
+        urgency,
+        pred.riskLevel === 'critical' ? 'High' : pred.riskLevel === 'high' ? 'Medium' : 'Low',
+        insights.replace(/"/g, '""') // Escape quotes
+      ];
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `capital_plan_${timeHorizon}yr_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Predictive Analytics Dashboard</h1>
-          <p className="text-muted-foreground">AI-powered deterioration modeling and risk analysis</p>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.location.href = '/'}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Predictive Analytics Dashboard</h1>
+            <p className="text-muted-foreground">AI-powered deterioration modeling and risk analysis</p>
+          </div>
         </div>
       </div>
 
@@ -196,6 +274,126 @@ export default function PredictionsDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Time Horizon Selector & Financial Impact */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Planning Horizon
+                </CardTitle>
+                <CardDescription>Select your capital planning timeframe</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Select value={timeHorizon.toString()} onValueChange={(v) => setTimeHorizon(parseInt(v))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Year (Immediate)</SelectItem>
+                      <SelectItem value="5">5 Years (Short-term)</SelectItem>
+                      <SelectItem value="10">10 Years (Mid-term)</SelectItem>
+                      <SelectItem value="20">20 Years (Long-term)</SelectItem>
+                      <SelectItem value="30">30 Years (Full Lifecycle)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Planning Period:</span>
+                      <span className="font-medium">{currentYear} - {horizonYear}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Components Due:</span>
+                      <span className="font-medium text-orange-600">{stats.inHorizon} of {stats.total}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Financial Impact Summary
+                </CardTitle>
+                <CardDescription>Estimated capital requirements within horizon</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-3xl font-bold text-primary">
+                      ${(stats.estimatedCost / 1000000).toFixed(2)}M
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Total estimated replacement cost
+                    </p>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Annual Budget:</span>
+                      <span className="font-medium">${((stats.estimatedCost / timeHorizon) / 1000000).toFixed(2)}M/year</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Avg per Component:</span>
+                      <span className="font-medium">${stats.inHorizon > 0 ? ((stats.estimatedCost / stats.inHorizon) / 1000).toFixed(0) : 0}K</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" className="w-full" onClick={() => exportToCSV(predictionsInHorizon)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Capital Plan
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Intervention Timing Recommendations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Intervention Timing Recommendations
+              </CardTitle>
+              <CardDescription>Optimal replacement windows based on risk and lifecycle analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {predictionsInHorizon.slice(0, 5).map((pred) => {
+                  const yearsToFailure = (pred.predictedFailureYear || currentYear) - currentYear;
+                  const urgency = yearsToFailure <= 2 ? 'Immediate' : yearsToFailure <= 5 ? 'Short-term' : 'Mid-term';
+                  const urgencyColor = yearsToFailure <= 2 ? 'text-red-600' : yearsToFailure <= 5 ? 'text-orange-600' : 'text-blue-600';
+                  
+                  return (
+                    <div key={pred.componentCode} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Clock className={`h-4 w-4 ${urgencyColor}`} />
+                        <div>
+                          <p className="font-medium">{pred.componentCode}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {pred.predictedFailureYear ? `Year ${pred.predictedFailureYear}` : 'TBD'} • {yearsToFailure} years remaining
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={urgency === 'Immediate' ? 'destructive' : 'secondary'} className="mb-1">
+                          {urgency}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground">~${(50000 * (pred.riskLevel === 'critical' ? 1.5 : 1.2) / 1000).toFixed(0)}K</p>
+                      </div>
+                    </div>
+                  );
+                })}
+                {predictionsInHorizon.length > 5 && (
+                  <p className="text-sm text-muted-foreground text-center pt-2">
+                    +{predictionsInHorizon.length - 5} more components requiring intervention
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Filters and Sort */}
           <Card>

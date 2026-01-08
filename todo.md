@@ -3619,3 +3619,12 @@ Testing:
 
 - [x] Rename 'Portfolio Analytics' to 'Portfolio Analytics and BI' in navigation
 - [x] Hide 'Portfolio BI' menu item from dashboard navigation
+
+- [x] Add back to dashboard button on Predictions page
+- [x] Improve Predictions dashboard with asset management best practices:
+  - [x] Add time horizon selector (1-year, 5-year, 10-year, 20-year, 30-year)
+  - [x] Add financial impact summary with budget allocation recommendations
+  - [x] Add intervention timing recommendations with urgency indicators
+  - [x] Add export predictions to Excel/CSV functionality for capital planning
+  - [x] Add estimated replacement costs per component
+  - [x] Add annual budget calculations based on planning horizon
