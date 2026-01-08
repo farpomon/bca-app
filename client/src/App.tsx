@@ -62,7 +62,6 @@ import OfflineMode from "./pages/features/OfflineMode";
 import AnalyticsInsights from "./pages/features/AnalyticsInsights";
 import SidebarDemo from "./pages/SidebarDemo";
 import { NotificationPermissionDialog } from "./components/NotificationPermissionDialog";
-import { FloatingChatbot } from "./components/FloatingChatbot";
 import { UnitProvider } from "./contexts/UnitContext";
 
 function Router() {
@@ -140,7 +139,6 @@ function App() {
               <Toaster />
               <NotificationPermissionDialog />
               <Router />
-              <FloatingChatbot />
             </TooltipProvider>
           </CompanyProvider>
         </UnitProvider>

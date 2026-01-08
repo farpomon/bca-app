@@ -184,40 +184,36 @@ export function FloatingChatbot() {
 
   return (
     <>
-      {/* Floating Button */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className={cn(
-            "fixed bottom-6 right-6 z-50",
-            "flex items-center justify-center",
-            "w-14 h-14 rounded-full",
-            "bg-primary text-primary-foreground",
-            "shadow-lg hover:shadow-xl",
-            "transition-all duration-200",
-            "hover:scale-105 active:scale-95",
-            "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          )}
-          aria-label="Open help chat"
-        >
-          <HelpCircle className="w-6 h-6" />
-        </button>
-      )}
+      {/* Help Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className={cn(
+          "flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-accent/60 transition-all w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-sm"
+        )}
+        aria-label="Open help chat"
+      >
+        <HelpCircle className="w-5 h-5" />
+        <span className="text-sm font-medium">Help & Support</span>
+      </button>
 
-      {/* Chat Window */}
+      {/* Chat Dialog */}
       {isOpen && (
         <div
-          className={cn(
-            "fixed z-50 bg-card border border-border rounded-lg shadow-2xl",
-            "flex flex-col",
-            "transition-all duration-200",
-            isMinimized
-              ? "bottom-6 right-6 w-72 h-14"
-              : "bottom-6 right-6 w-96 h-[32rem] max-h-[calc(100vh-3rem)]",
-            "sm:w-96",
-            "max-w-[calc(100vw-2rem)]"
-          )}
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setIsOpen(false)}
         >
+          <div
+            className={cn(
+              "bg-card border border-border rounded-lg shadow-2xl",
+              "flex flex-col",
+              "transition-all duration-200",
+              isMinimized
+                ? "w-72 h-14"
+                : "w-full max-w-2xl h-[32rem] max-h-[calc(100vh-3rem)]"
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+        
           {/* Header */}
           <div
             className={cn(
@@ -415,6 +411,7 @@ export function FloatingChatbot() {
               </form>
             </>
           )}
+          </div>
         </div>
       )}
     </>

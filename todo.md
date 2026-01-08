@@ -3633,3 +3633,5 @@ Testing:
   - [x] Add annual budget calculations based on planning horizon
 
 - [x] Fix sidebar navigation collapsible menu overlap issue - menu items are overlapping when expanded
+
+- [x] Remove floating action buttons and make them static in the page layout

@@ -75,7 +75,8 @@ import { CreateCompanyDialog } from './CreateCompanyDialog';
 import { useCompany } from '@/contexts/CompanyContext';
 import { usePageVisibility } from '@/hooks/usePageVisibility';
 import { Input } from '@/components/ui/input';
-import { Search, X } from 'lucide-react';
+import { Search, X, HelpCircle } from 'lucide-react';
+import { FloatingChatbot } from './FloatingChatbot';
 
 // Main navigation items (always visible)
 const mainMenuItems = [
@@ -554,7 +555,11 @@ function DashboardLayoutContent({
             </div>
           </SidebarContent>
 
-          <SidebarFooter className="p-2">
+          <SidebarFooter className="p-2 space-y-2">
+            {/* Help Chat Button */}
+            <div className="px-2">
+              <FloatingChatbot />
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
