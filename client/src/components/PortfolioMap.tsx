@@ -39,17 +39,34 @@ export default function PortfolioMap() {
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null));
 
-    // Filter projects with valid coordinates - check for lat/lng fields
-    const validProjects = projects.filter(
-      (p): p is BuildingMarker => {
-        if (p.lat === null || p.lng === null) return false;
-        if (isNaN(p.lat) || isNaN(p.lng)) return false;
-        // Validate coordinate ranges
-        if (p.lat < -90 || p.lat > 90) return false;
-        if (p.lng < -180 || p.lng > 180) return false;
-        return true;
-      }
-    );
+    // Filter projects with valid coordinates and convert string coordinates to numbers
+    const validProjects: BuildingMarker[] = [];
+    
+    for (const p of projects) {
+      // Convert lat/lng to numbers (they come as strings from decimal columns)
+      const lat = typeof p.lat === 'string' ? parseFloat(p.lat) : p.lat;
+      const lng = typeof p.lng === 'string' ? parseFloat(p.lng) : p.lng;
+      const fci = typeof p.fci === 'string' ? parseFloat(p.fci) : p.fci;
+      const crv = typeof p.crv === 'string' ? parseFloat(p.crv) : p.crv;
+      
+      // Skip if coordinates are null or invalid
+      if (lat === null || lat === undefined || lng === null || lng === undefined) continue;
+      if (isNaN(lat) || isNaN(lng)) continue;
+      // Validate coordinate ranges
+      if (lat < -90 || lat > 90) continue;
+      if (lng < -180 || lng > 180) continue;
+      
+      validProjects.push({
+        id: p.id,
+        name: p.name,
+        address: p.address,
+        lat,
+        lng,
+        propertyType: p.propertyType,
+        fci: fci || 0,
+        crv: crv || 0,
+      });
+    }
 
     if (validProjects.length === 0) return;
 
@@ -61,58 +78,59 @@ export default function PortfolioMap() {
     
     validProjects.forEach(project => {
       try {
-      const position = { lat: project.lat, lng: project.lng };
-      
-      // Determine marker color based on FCI
-      let markerColor = '#22c55e'; // green (good)
-      if (project.fci > 30) markerColor = '#ef4444'; // red (critical)
-      else if (project.fci > 10) markerColor = '#f97316'; // orange (poor)
-      else if (project.fci > 5) markerColor = '#f59e0b'; // yellow (fair)
+        const position = { lat: project.lat, lng: project.lng };
+        
+        // Determine marker color based on FCI (FCI is a decimal like 0.0252 = 2.52%)
+        const fciPercent = project.fci * 100;
+        let markerColor = '#22c55e'; // green (good)
+        if (fciPercent > 30) markerColor = '#ef4444'; // red (critical)
+        else if (fciPercent > 10) markerColor = '#f97316'; // orange (poor)
+        else if (fciPercent > 5) markerColor = '#f59e0b'; // yellow (fair)
 
-      // Create a simple colored marker using a data URL
-      const svgMarker = {
-        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" fill="${markerColor}" stroke="white" stroke-width="2"/>
-          </svg>
-        `)}`,
-        scaledSize: new google.maps.Size(24, 24),
-        anchor: new google.maps.Point(12, 12),
-      };
+        // Create a simple colored marker using a data URL
+        const svgMarker = {
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" fill="${markerColor}" stroke="white" stroke-width="2"/>
+            </svg>
+          `)}`,
+          scaledSize: new google.maps.Size(24, 24),
+          anchor: new google.maps.Point(12, 12),
+        };
 
-      const marker = new google.maps.Marker({
-        position,
-        map,
-        title: project.name,
-        icon: svgMarker,
-      });
+        const marker = new google.maps.Marker({
+          position,
+          map,
+          title: project.name,
+          icon: svgMarker,
+        });
 
-      // Add click listener to show info window
-      marker.addListener('click', () => {
-        const content = `
-          <div style="padding: 8px; min-width: 200px;">
-            <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${project.name}</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 4px;">${project.address}</p>
-            <p style="font-size: 14px; margin-bottom: 4px;">
-              <strong>Type:</strong> ${project.propertyType || 'N/A'}
-            </p>
-            <p style="font-size: 14px; margin-bottom: 4px;">
-              <strong>CRV:</strong> $${project.crv.toLocaleString()}
-            </p>
-            <p style="font-size: 14px; margin-bottom: 8px;">
-              <strong>FCI:</strong> <span style="color: ${markerColor}; font-weight: 600;">${project.fci.toFixed(1)}%</span>
-            </p>
-            <a 
-              href="/projects/${project.id}" 
-              style="color: #3b82f6; text-decoration: underline; font-size: 14px;"
-            >
-              View Details →
-            </a>
-          </div>
-        `;
-        infoWindow.setContent(content);
-        infoWindow.open(map, marker);
-      });
+        // Add click listener to show info window
+        marker.addListener('click', () => {
+          const content = `
+            <div style="padding: 8px; min-width: 200px;">
+              <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${project.name}</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 4px;">${project.address}</p>
+              <p style="font-size: 14px; margin-bottom: 4px;">
+                <strong>Type:</strong> ${project.propertyType || 'N/A'}
+              </p>
+              <p style="font-size: 14px; margin-bottom: 4px;">
+                <strong>CRV:</strong> $${project.crv.toLocaleString()}
+              </p>
+              <p style="font-size: 14px; margin-bottom: 8px;">
+                <strong>FCI:</strong> <span style="color: ${markerColor}; font-weight: 600;">${fciPercent.toFixed(1)}%</span>
+              </p>
+              <a 
+                href="/projects/${project.id}" 
+                style="color: #3b82f6; text-decoration: underline; font-size: 14px;"
+              >
+                View Details →
+              </a>
+            </div>
+          `;
+          infoWindow.setContent(content);
+          infoWindow.open(map, marker);
+        });
 
         bounds.extend(position);
         newMarkers.push(marker);

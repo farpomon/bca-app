@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, CAST(latitude AS CHAR) as lat, CAST(longitude AS CHAR) as lng FROM projects WHERE latitude IS NOT NULL AND longitude IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, CAST(latitude AS CHAR) as lat, CAST(longitude AS CHAR) as lng FROM projects WHERE latitude IS NOT NULL AND longitude IS NOT NULL;",
+  "rows": [
+    {
+      "id": "10",
+      "name": "Financial Metrics Demo Portfolio",
+      "lat": "43.6485000",
+      "lng": "-79.3812000"
+    },
+    {
+      "id": "11",
+      "name": "Financial Metrics Demo Portfolio",
+      "lat": "43.6485000",
+      "lng": "-79.3812000"
+    },
+    {
+      "id": "12",
+      "name": "Financial Metrics Demo Portfolio",
+      "lat": "43.6485000",
+      "lng": "-79.3812000"
+    },
+    {
+      "id": "13",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "lat": "53.5461000",
+      "lng": "-113.4938000"
+    },
+    {
+      "id": "14",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "lat": "53.5461000",
+      "lng": "-113.4938000"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tlat\tlng\n10\tFinancial Metrics Demo Portfolio\t43.6485000\t-79.3812000\n11\tFinancial Metrics Demo Portfolio\t43.6485000\t-79.3812000\n12\tFinancial Metrics Demo Portfolio\t43.6485000\t-79.3812000\n13\tCity of Edmonton - Municipal Building Portfolio\t53.5461000\t-113.4938000\n14\tCity of Edmonton - Municipal Building Portfolio\t53.5461000\t-113.4938000\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

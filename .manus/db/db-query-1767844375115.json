@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, address, latitude, longitude FROM projects WHERE latitude IS NOT NULL AND longitude IS NOT NULL LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, address, latitude, longitude FROM projects WHERE latitude IS NOT NULL AND longitude IS NOT NULL LIMIT 20;",
+  "rows": [
+    {
+      "id": "10",
+      "name": "Financial Metrics Demo Portfolio",
+      "address": "100 Financial District Way, Toronto, ON M5X 1A1",
+      "latitude": "43.6485000",
+      "longitude": "-79.3812000"
+    },
+    {
+      "id": "11",
+      "name": "Financial Metrics Demo Portfolio",
+      "address": "100 Financial District Way, Toronto, ON M5X 1A1",
+      "latitude": "43.6485000",
+      "longitude": "-79.3812000"
+    },
+    {
+      "id": "12",
+      "name": "Financial Metrics Demo Portfolio",
+      "address": "100 Financial District Way, Toronto, ON M5X 1A1",
+      "latitude": "43.6485000",
+      "longitude": "-79.3812000"
+    },
+    {
+      "id": "13",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "address": "Edmonton, Alberta, Canada",
+      "latitude": "53.5461000",
+      "longitude": "-113.4938000"
+    },
+    {
+      "id": "14",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "address": "Edmonton, Alberta, Canada",
+      "latitude": "53.5461000",
+      "longitude": "-113.4938000"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\taddress\tlatitude\tlongitude\n10\tFinancial Metrics Demo Portfolio\t100 Financial District Way, Toronto, ON M5X 1A1\t43.6485000\t-79.3812000\n11\tFinancial Metrics Demo Portfolio\t100 Financial District Way, Toronto, ON M5X 1A1\t43.6485000\t-79.3812000\n12\tFinancial Metrics Demo Portfolio\t100 Financial District Way, Toronto, ON M5X 1A1\t43.6485000\t-79.3812000\n13\tCity of Edmonton - Municipal Building Portfolio\tEdmonton, Alberta, Canada\t53.5461000\t-113.4938000\n14\tCity of Edmonton - Municipal Building Portfolio\tEdmonton, Alberta, Canada\t53.5461000\t-113.4938000\n",
+  "stderr": "",
+  "execution_time_ms": 138
+}
