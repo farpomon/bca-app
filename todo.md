@@ -3672,3 +3672,29 @@ Testing:
 - [x] Restore map functionality - assets not showing properly on map
 - [x] Fix Google Maps data fetching - location autocomplete not working
 - [x] Fix Google Maps "zero dimensions" error in Location tab - map container not getting proper height
+
+
+## 🗺️ Map Enhancements
+
+### Asset-Specific Addresses
+- [x] Add address field to assets table schema
+- [x] Add latitude/longitude fields for asset-specific geocoding
+- [x] Update asset creation/edit forms with address input
+- [x] Implement geocoding for asset addresses
+- [x] Update map markers to use asset-specific coordinates when available
+- [x] Fall back to project address when asset address is not set
+
+### Route Planning Between Assets
+- [x] Create route planning UI component
+- [x] Allow selection of multiple assets for route
+- [x] Integrate Google Directions API for route calculation
+- [x] Display optimized route on map
+- [x] Show route summary (distance, estimated time)
+- [x] Allow drag-to-reorder stops in route
+
+### Map Clustering
+- [x] Implement marker clustering for projects with many assets
+- [x] Configure cluster appearance and breakpoints
+- [x] Add cluster click to zoom functionality
+- [x] Show cluster count badges
+- [x] Smooth zoom transitions when expanding clusters

@@ -950,6 +950,14 @@ Provide helpful insights, recommendations, and analysis based on this project da
         description: z.string().optional(),
         assetType: z.string().optional(),
         address: z.string().optional(),
+        streetNumber: z.string().optional(),
+        streetAddress: z.string().optional(),
+        unitNumber: z.string().optional(),
+        city: z.string().optional(),
+        postalCode: z.string().optional(),
+        province: z.string().optional(),
+        latitude: z.string().optional(),
+        longitude: z.string().optional(),
         yearBuilt: z.number().optional(),
         grossFloorArea: z.number().optional(),
         numberOfStories: z.number().optional(),
@@ -989,6 +997,14 @@ Provide helpful insights, recommendations, and analysis based on this project da
         if (inputData.description) assetData.description = inputData.description;
         if (inputData.assetType) assetData.primaryUse = inputData.assetType;
         if (inputData.address) assetData.address = inputData.address;
+        if (inputData.streetNumber) assetData.streetNumber = inputData.streetNumber;
+        if (inputData.streetAddress) assetData.streetAddress = inputData.streetAddress;
+        if (inputData.unitNumber) assetData.unitNumber = inputData.unitNumber;
+        if (inputData.city) assetData.city = inputData.city;
+        if (inputData.postalCode) assetData.postalCode = inputData.postalCode;
+        if (inputData.province) assetData.province = inputData.province;
+        if (inputData.latitude) assetData.latitude = inputData.latitude;
+        if (inputData.longitude) assetData.longitude = inputData.longitude;
         if (inputData.yearBuilt) assetData.yearBuilt = inputData.yearBuilt;
         if (inputData.grossFloorArea) assetData.squareFootage = inputData.grossFloorArea;
         if (inputData.numberOfStories) assetData.numberOfFloors = inputData.numberOfStories;
@@ -1040,6 +1056,7 @@ Provide helpful insights, recommendations, and analysis based on this project da
         streetNumber: z.string().optional(),
         streetAddress: z.string().optional(),
         unitNumber: z.string().optional(),
+        city: z.string().optional(),
         postalCode: z.string().optional(),
         province: z.string().optional(),
         latitude: z.string().optional(),

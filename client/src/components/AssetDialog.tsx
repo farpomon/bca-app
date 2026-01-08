@@ -8,7 +8,8 @@ import { trpc } from "@/lib/trpc";
 import { FieldTooltip } from "@/components/FieldTooltip";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { MapPin, Loader2, CheckCircle2 } from "lucide-react";
 import type { Asset } from "../../../drizzle/schema";
 
 interface AssetDialogProps {
@@ -30,12 +31,18 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [province, setProvince] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [yearBuilt, setYearBuilt] = useState("");
   const [grossFloorArea, setGrossFloorArea] = useState("");
   const [numberOfStories, setNumberOfStories] = useState("");
   const [constructionType, setConstructionType] = useState("");
-  const [currentReplacementValue, setCurrentReplacementValue] = useState("");  const [status, setStatus] = useState<"active" | "inactive" | "demolished">("active");
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [currentReplacementValue, setCurrentReplacementValue] = useState("");
+  const [status, setStatus] = useState<"active" | "inactive" | "demolished">("active");
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeStatus, setGeocodeStatus] = useState<"idle" | "success" | "error">("idle");
+  
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -77,12 +84,15 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
       setCity(asset.city || "");
       setPostalCode(asset.postalCode || "");
       setProvince(asset.province || "");
+      setLatitude(asset.latitude || "");
+      setLongitude(asset.longitude || "");
       setYearBuilt(asset.yearBuilt?.toString() || "");
       setGrossFloorArea(asset.grossFloorArea?.toString() || "");
       setNumberOfStories(asset.numberOfStories?.toString() || "");
       setConstructionType(asset.constructionType || "");
       setCurrentReplacementValue(asset.currentReplacementValue || "");
       setStatus(asset.status);
+      setGeocodeStatus(asset.latitude && asset.longitude ? "success" : "idle");
     } else {
       resetForm();
     }
@@ -96,14 +106,83 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
     setStreetNumber("");
     setStreetAddress("");
     setUnitNumber("");
+    setCity("");
     setPostalCode("");
     setProvince("");
+    setLatitude("");
+    setLongitude("");
     setYearBuilt("");
     setGrossFloorArea("");
     setNumberOfStories("");
     setConstructionType("");
     setCurrentReplacementValue("");
     setStatus("active");
+    setGeocodeStatus("idle");
+  };
+
+  // Build full address from components
+  const buildFullAddress = (): string => {
+    const parts: string[] = [];
+    
+    if (streetNumber || streetAddress) {
+      const street = [streetNumber, streetAddress].filter(Boolean).join(" ");
+      if (street) parts.push(street);
+    }
+    if (unitNumber) parts.push(unitNumber);
+    if (city) parts.push(city);
+    if (province) parts.push(province);
+    if (postalCode) parts.push(postalCode);
+    parts.push("Canada");
+    
+    return parts.join(", ");
+  };
+
+  // Geocode the current address
+  const geocodeAddress = async () => {
+    const fullAddress = buildFullAddress();
+    if (!fullAddress || fullAddress === "Canada") {
+      toast.error("Please enter an address to geocode");
+      return;
+    }
+
+    // Initialize geocoder if needed
+    if (!geocoderRef.current && window.google?.maps) {
+      geocoderRef.current = new google.maps.Geocoder();
+    }
+
+    if (!geocoderRef.current) {
+      toast.error("Geocoder not available. Please wait for map to load.");
+      return;
+    }
+
+    setIsGeocoding(true);
+    setGeocodeStatus("idle");
+
+    try {
+      const result = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+        geocoderRef.current!.geocode({ address: fullAddress }, (results, status) => {
+          if (status === "OK" && results && results.length > 0) {
+            resolve(results);
+          } else if (status === "ZERO_RESULTS") {
+            reject(new Error("No results found for this address"));
+          } else {
+            reject(new Error(`Geocoding failed: ${status}`));
+          }
+        });
+      });
+
+      const location = result[0].geometry.location;
+      setLatitude(location.lat().toString());
+      setLongitude(location.lng().toString());
+      setGeocodeStatus("success");
+      toast.success("Address geocoded successfully");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Geocoding failed";
+      toast.error(errorMessage);
+      setGeocodeStatus("error");
+    } finally {
+      setIsGeocoding(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -124,6 +203,8 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
       city: city.trim() || undefined,
       postalCode: postalCode.trim() || undefined,
       province: province.trim() || undefined,
+      latitude: latitude.trim() || undefined,
+      longitude: longitude.trim() || undefined,
       yearBuilt: yearBuilt ? parseInt(yearBuilt) : undefined,
       grossFloorArea: grossFloorArea ? parseInt(grossFloorArea) : undefined,
       numberOfStories: numberOfStories ? parseInt(numberOfStories) : undefined,
@@ -159,7 +240,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-
             />
           </div>
 
@@ -172,7 +252,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="assetType"
               value={assetType}
               onChange={(e) => setAssetType(e.target.value)}
-
             />
           </div>
 
@@ -182,7 +261,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-
               rows={3}
             />
           </div>
@@ -201,6 +279,12 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 setCity(components.city);
                 setProvince(components.province);
                 setPostalCode(components.postalCode);
+                // Auto-geocode when place is selected
+                if (components.lat && components.lng) {
+                  setLatitude(components.lat.toString());
+                  setLongitude(components.lng.toString());
+                  setGeocodeStatus("success");
+                }
               }}
               label="Search Address"
               placeholder="Start typing to search for an address..."
@@ -212,7 +296,10 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 <Input
                   id="streetNumber"
                   value={streetNumber}
-                  onChange={(e) => setStreetNumber(e.target.value)}
+                  onChange={(e) => {
+                    setStreetNumber(e.target.value);
+                    setGeocodeStatus("idle");
+                  }}
                   placeholder="123"
                 />
               </div>
@@ -221,7 +308,10 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 <Input
                   id="streetAddress"
                   value={streetAddress}
-                  onChange={(e) => setStreetAddress(e.target.value)}
+                  onChange={(e) => {
+                    setStreetAddress(e.target.value);
+                    setGeocodeStatus("idle");
+                  }}
                   placeholder="Main Street"
                 />
               </div>
@@ -241,7 +331,10 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 <Input
                   id="city"
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    setGeocodeStatus("idle");
+                  }}
                   placeholder="Toronto"
                 />
               </div>
@@ -250,7 +343,10 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 <Input
                   id="postalCode"
                   value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
+                  onChange={(e) => {
+                    setPostalCode(e.target.value);
+                    setGeocodeStatus("idle");
+                  }}
                   placeholder="A1A 1A1"
                 />
               </div>
@@ -259,8 +355,69 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 <Input
                   id="province"
                   value={province}
-                  onChange={(e) => setProvince(e.target.value)}
+                  onChange={(e) => {
+                    setProvince(e.target.value);
+                    setGeocodeStatus("idle");
+                  }}
                   placeholder="Ontario"
+                />
+              </div>
+            </div>
+
+            {/* Geocoding Section */}
+            <div className="flex items-center gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={geocodeAddress}
+                disabled={isGeocoding}
+                className="flex items-center gap-2"
+              >
+                {isGeocoding ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4" />
+                )}
+                {isGeocoding ? "Geocoding..." : "Get Coordinates"}
+              </Button>
+              
+              {geocodeStatus === "success" && latitude && longitude && (
+                <div className="flex items-center gap-1 text-sm text-green-600">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>
+                    {parseFloat(latitude).toFixed(6)}, {parseFloat(longitude).toFixed(6)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Manual Coordinates */}
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="latitude" className="flex items-center text-xs text-muted-foreground">
+                  Latitude
+                  <FieldTooltip content="Latitude coordinate for map display. Auto-filled when geocoding." />
+                </Label>
+                <Input
+                  id="latitude"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  placeholder="43.6532"
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude" className="flex items-center text-xs text-muted-foreground">
+                  Longitude
+                  <FieldTooltip content="Longitude coordinate for map display. Auto-filled when geocoding." />
+                </Label>
+                <Input
+                  id="longitude"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  placeholder="-79.3832"
+                  className="text-sm"
                 />
               </div>
             </div>
@@ -277,7 +434,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 type="number"
                 value={yearBuilt}
                 onChange={(e) => setYearBuilt(e.target.value)}
-
               />
             </div>
 
@@ -291,7 +447,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 type="number"
                 value={grossFloorArea}
                 onChange={(e) => setGrossFloorArea(e.target.value)}
-
               />
             </div>
           </div>
@@ -304,7 +459,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 type="number"
                 value={numberOfStories}
                 onChange={(e) => setNumberOfStories(e.target.value)}
-
               />
             </div>
 
@@ -314,7 +468,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
                 id="constructionType"
                 value={constructionType}
                 onChange={(e) => setConstructionType(e.target.value)}
-
               />
             </div>
           </div>
@@ -325,7 +478,6 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
               id="currentReplacementValue"
               value={currentReplacementValue}
               onChange={(e) => setCurrentReplacementValue(e.target.value)}
-
             />
           </div>
 
