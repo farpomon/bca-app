@@ -3662,3 +3662,12 @@ Testing:
 - [x] Fix City of Edmonton project showing 0 values across all KPIs on predictions page
 - [x] Fix Photo Map View under assets - Google Maps not loading correctly
 - [x] Fix AI Insights showing 0 deficiencies when Dashboard shows 12 deficiencies
+
+
+## Prioritization Page Improvements
+- [ ] Reorder tabs on prioritization page: "Score Projects" should be first (leftmost)
+- [ ] Improve scoring display clarity on prioritization page
+- [ ] Remove or clarify "temporary criteria" terminology if present
+
+- [x] Restore map functionality - assets not showing properly on map
+- [x] Fix Google Maps data fetching - location autocomplete not working
