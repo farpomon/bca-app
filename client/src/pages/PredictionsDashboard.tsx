@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Loader2, AlertTriangle, TrendingDown, TrendingUp, Activity, ArrowLeft, 
 import { trpc } from "@/lib/trpc";
 import { DeteriorationCurveEditor } from "@/components/DeteriorationCurveEditor";
 import { ScenarioComparison } from "@/components/ScenarioComparison";
+import { PredictionsSkeleton } from "@/components/PredictionsSkeleton";
 import { APP_TITLE, getLoginUrl } from "@/const";
 
 export default function PredictionsDashboard() {
@@ -50,50 +51,61 @@ export default function PredictionsDashboard() {
   const projects = projectsQuery.data || [];
   const predictions = predictionsQuery.data || [];
 
-  // Filter and sort predictions
-  let filteredPredictions = predictions;
-  if (riskFilter !== "all") {
-    filteredPredictions = predictions.filter((p) => p.riskLevel === riskFilter);
-  }
+  // Memoize expensive calculations to avoid recalculating on every render
+  const { filteredPredictions, stats, predictionsInHorizon } = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const horizonYear = currentYear + timeHorizon;
+    
+    // Filter predictions within time horizon
+    const inHorizon = predictions.filter(
+      (p) => (p.predictedFailureYear || 9999) <= horizonYear
+    );
+    
+    // Calculate portfolio stats
+    const calculatedStats = {
+      total: predictions.length,
+      critical: predictions.filter((p) => p.riskLevel === "critical").length,
+      high: predictions.filter((p) => p.riskLevel === "high").length,
+      medium: predictions.filter((p) => p.riskLevel === "medium").length,
+      low: predictions.filter((p) => p.riskLevel === "low").length,
+      avgConfidence: predictions.length > 0
+        ? predictions.reduce((sum, p) => sum + (p.confidenceScore || 0), 0) / predictions.length
+        : 0,
+      inHorizon: inHorizon.length,
+      // Estimate replacement costs (using industry averages)
+      estimatedCost: inHorizon.reduce((sum, p) => {
+        const baseCost = 50000;
+        const riskMultiplier = p.riskLevel === 'critical' ? 1.5 : p.riskLevel === 'high' ? 1.2 : 1.0;
+        return sum + (baseCost * riskMultiplier);
+      }, 0),
+    };
 
-  filteredPredictions = [...filteredPredictions].sort((a, b) => {
-    if (sortBy === "risk") {
-      const riskOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-      return (riskOrder[b.riskLevel as keyof typeof riskOrder] || 0) - (riskOrder[a.riskLevel as keyof typeof riskOrder] || 0);
-    } else if (sortBy === "confidence") {
-      return (b.confidenceScore || 0) - (a.confidenceScore || 0);
-    } else {
-      return (a.predictedFailureYear || 9999) - (b.predictedFailureYear || 9999);
+    // Filter and sort predictions
+    let filtered = predictions;
+    if (riskFilter !== "all") {
+      filtered = predictions.filter((p) => p.riskLevel === riskFilter);
     }
-  });
 
-  // Calculate portfolio stats
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === "risk") {
+        const riskOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+        return (riskOrder[b.riskLevel as keyof typeof riskOrder] || 0) - (riskOrder[a.riskLevel as keyof typeof riskOrder] || 0);
+      } else if (sortBy === "confidence") {
+        return (b.confidenceScore || 0) - (a.confidenceScore || 0);
+      } else {
+        return (a.predictedFailureYear || 9999) - (b.predictedFailureYear || 9999);
+      }
+    });
+
+    return {
+      filteredPredictions: sorted,
+      stats: calculatedStats,
+      predictionsInHorizon: inHorizon,
+    };
+  }, [predictions, riskFilter, sortBy, timeHorizon]);
+
   const currentYear = new Date().getFullYear();
   const horizonYear = currentYear + timeHorizon;
-  
-  // Filter predictions within time horizon
-  const predictionsInHorizon = predictions.filter(
-    (p) => (p.predictedFailureYear || 9999) <= horizonYear
-  );
-  
-  const stats = {
-    total: predictions.length,
-    critical: predictions.filter((p) => p.riskLevel === "critical").length,
-    high: predictions.filter((p) => p.riskLevel === "high").length,
-    medium: predictions.filter((p) => p.riskLevel === "medium").length,
-    low: predictions.filter((p) => p.riskLevel === "low").length,
-    avgConfidence: predictions.length > 0
-      ? predictions.reduce((sum, p) => sum + (p.confidenceScore || 0), 0) / predictions.length
-      : 0,
-    inHorizon: predictionsInHorizon.length,
-    // Estimate replacement costs (using industry averages)
-    estimatedCost: predictionsInHorizon.reduce((sum, p) => {
-      // Rough cost estimation based on component type
-      const baseCost = 50000; // Base replacement cost
-      const riskMultiplier = p.riskLevel === 'critical' ? 1.5 : p.riskLevel === 'high' ? 1.2 : 1.0;
-      return sum + (baseCost * riskMultiplier);
-    }, 0),
-  };
 
   const getRiskBadgeVariant = (risk: string) => {
     switch (risk) {
@@ -218,6 +230,10 @@ export default function PredictionsDashboard() {
 
       {selectedProjectId && (
         <>
+          {predictionsQuery.isLoading ? (
+            <PredictionsSkeleton />
+          ) : (
+            <>
           {/* Portfolio Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card>
@@ -434,11 +450,7 @@ export default function PredictionsDashboard() {
                 </div>
               </div>
 
-              {predictionsQuery.isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-              ) : filteredPredictions.length === 0 ? (
+              {filteredPredictions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No predictions available for this project.
                 </div>
@@ -526,6 +538,8 @@ export default function PredictionsDashboard() {
               )}
             </CardContent>
           </Card>
+            </>
+          )}
         </>
       )}
 

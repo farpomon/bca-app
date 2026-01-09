@@ -544,34 +544,46 @@ export async function getProjectAssessments(projectId: number) {
   if (!db) return [];
   
   // Use raw SQL to join through assets table since actual DB doesn't have projectId in assessments
+  // Include ALL fields needed for predictions: conditionPercentage, reviewYear, observations, etc.
   const results = await db.execute(sql`
     SELECT 
       a.id,
       a.assetId,
       a.componentId,
       bc.code as componentCode,
+      COALESCE(a.componentCode, bc.code) as componentCode,
       COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
       CASE 
         WHEN a.conditionRating IN ('1', '2') THEN 'good'
         WHEN a.conditionRating = '3' THEN 'fair'
         WHEN a.conditionRating IN ('4', '5') THEN 'poor'
-        ELSE 'not_assessed'
+        ELSE COALESCE(a.condition, 'not_assessed')
       END as condition,
       a.conditionNotes,
+      a.conditionPercentage,
+      a.observations,
+      a.recommendations,
+      a.reviewYear,
+      a.lastTimeAction,
+      a.expectedUsefulLife,
+      a.remainingUsefulLife,
       CAST(a.estimatedRepairCost AS SIGNED) as estimatedRepairCost,
+      a.replacementValue,
+      a.actionYear,
       a.priorityLevel,
       a.remainingLifeYears,
       a.location,
       a.status,
-      a.assessmentDate as assessedAt,
+      COALESCE(a.assessedAt, a.assessmentDate) as assessedAt,
       a.createdAt,
       a.updatedAt
     FROM assessments a
     INNER JOIN assets ast ON a.assetId = ast.id
     LEFT JOIN building_components bc ON a.componentId = bc.id
     WHERE ast.projectId = ${projectId}
-    ORDER BY a.assessmentDate DESC
+      AND a.deletedAt IS NULL
+    ORDER BY COALESCE(a.assessedAt, a.assessmentDate) DESC
   `);
   
   return (results as any)[0] || [];

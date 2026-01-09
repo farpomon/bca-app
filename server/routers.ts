@@ -4172,23 +4172,46 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         }
       }),
 
-    // Get all project predictions
+    // Get all project predictions (OPTIMIZED with batching, parallelization, and caching)
     project: protectedProcedure
       .input(z.object({
         projectId: z.number(),
         method: z.enum(["curve", "ml", "hybrid"]).default("hybrid"),
+        skipCache: z.boolean().optional().default(false),
       }))
       .query(async ({ ctx, input }) => {
+        // OPTIMIZATION 3: Check cache first (unless skipCache is true)
+        if (!input.skipCache) {
+          const { predictionCache } = await import("./predictionCache");
+          const cached = predictionCache.get(input.projectId, input.method);
+          if (cached) {
+            return cached;
+          }
+        }
+
         const isAdmin = ctx.user.role === 'admin';
         const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
         if (!project) throw new Error("Project not found");
 
         const { predictDeteriorationML, determineRiskLevel } = await import("./mlPredictionService");
         const components = await db.getProjectComponents(input.projectId);
-        const predictions = [];
+        
+        // OPTIMIZATION 1: Batch fetch ALL assessments in one query instead of N queries
+        const allAssessments = await db.getProjectAssessments(input.projectId);
+        
+        // Group assessments by component code for fast lookup
+        const assessmentsByComponent = new Map<string, any[]>();
+        for (const assessment of allAssessments) {
+          const code = assessment.componentCode;
+          if (!assessmentsByComponent.has(code)) {
+            assessmentsByComponent.set(code, []);
+          }
+          assessmentsByComponent.get(code)!.push(assessment);
+        }
 
-        for (const component of components) {
-          const assessments = await db.getAssessmentsByComponent(input.projectId, component.componentCode);
+        // OPTIMIZATION 2: Parallelize ML predictions using Promise.all
+        const predictionPromises = components.map(async (component) => {
+          const assessments = assessmentsByComponent.get(component.componentCode) || [];
           
           const installYear = project.yearBuilt || new Date().getFullYear() - 20;
           
@@ -4212,7 +4235,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
               mlPrediction.currentConditionEstimate
             );
 
-            predictions.push({
+            return {
               componentCode: component.componentCode,
               componentName: component.name,
               lastAssessment: assessments[0].assessedAt,
@@ -4222,7 +4245,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
               confidenceScore: mlPrediction.confidenceScore,
               riskLevel,
               aiInsights: mlPrediction.insights,
-            });
+            };
           } else {
             // Generate baseline prediction for components without assessments
             // Use typical deterioration curves based on component age
@@ -4241,7 +4264,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
             // Determine risk level based on age and condition
             const riskLevel = determineRiskLevel(remainingLife, estimatedCondition);
             
-            predictions.push({
+            return {
               componentCode: component.componentCode,
               componentName: component.name,
               lastAssessment: null,
@@ -4251,8 +4274,17 @@ Provide helpful insights, recommendations, and analysis based on this asset data
               confidenceScore: 0.3, // Low confidence without assessment data
               riskLevel,
               aiInsights: ["Baseline prediction - no assessment data available. Recommendation: Conduct detailed assessment."],
-            });
+            };
           }
+        });
+
+        // Wait for all predictions to complete in parallel
+        const predictions = await Promise.all(predictionPromises);
+
+        // OPTIMIZATION 3: Store results in cache for 5 minutes
+        if (!input.skipCache) {
+          const { predictionCache } = await import("./predictionCache");
+          predictionCache.set(input.projectId, input.method, predictions);
         }
 
         return predictions;

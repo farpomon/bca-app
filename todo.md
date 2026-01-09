@@ -3702,3 +3702,12 @@ Testing:
 - [x] Smooth zoom transitions when expanding clusters
 
 - [x] Fix non-functional refresh button in Portfolio Analytics page
+
+## Confidence Score Calculation Optimization
+
+- [x] Implement batched database queries for assessments (fetch all assessments in one query)
+- [x] Parallelize ML predictions (run predictions concurrently instead of sequentially)
+- [x] Add caching layer for prediction results (cache for short period to avoid recalculation)
+- [x] Fix database query to include all necessary fields (conditionPercentage, reviewYear, observations)
+- [x] Add loading skeleton for better UX
+- [x] Optimize frontend rendering with useMemo
