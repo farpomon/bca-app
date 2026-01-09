@@ -58,39 +58,15 @@ export default function ProjectScoringForm({
     { enabled: !!projectId }
   );
 
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [localCompositeScore, setLocalCompositeScore] = useState<number | null>(null);
-
-  // Update local composite score when query data changes
+  // Auto-calculate composite score whenever scores or weights change
   useEffect(() => {
-    if (compositeScore?.compositeScore !== undefined) {
-      setLocalCompositeScore(compositeScore.compositeScore);
+    if (projectId && Object.keys(scores).length > 0) {
+      refetchCompositeScore();
     }
-  }, [compositeScore]);
-
-  const handleCalculateScore = async () => {
-    setIsCalculating(true);
-    try {
-      const result = await refetchCompositeScore();
-      if (result.data?.compositeScore !== undefined) {
-        setLocalCompositeScore(result.data.compositeScore);
-        toast.success("Score calculated successfully");
-      } else {
-        toast.error("Unable to calculate score. Please save scores first.");
-      }
-    } catch (error) {
-      toast.error("Failed to calculate score");
-    } finally {
-      setIsCalculating(false);
-    }
-  };
+  }, [scores, projectId, refetchCompositeScore]);
 
   const scoreProjectMutation = trpc.prioritization.scoreProject.useMutation({
     onSuccess: (data) => {
-      // Update local composite score from the mutation response
-      if (data.compositeScore?.compositeScore !== undefined) {
-        setLocalCompositeScore(data.compositeScore.compositeScore);
-      }
       utils.prioritization.getRankedProjects.invalidate();
       utils.prioritization.getProjectScores.invalidate();
       utils.prioritization.getCompositeScore.invalidate();
@@ -298,47 +274,26 @@ export default function ProjectScoringForm({
             </Button>
           </div>
 
-          {/* Divider */}
-          <div className="border-t pt-6 mt-6">
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              After saving scores, calculate the composite priority score below
-            </p>
-          </div>
-
-          {/* Calculate Score Button - Moved to bottom */}
-          <div className="flex justify-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCalculateScore}
-              disabled={isCalculating}
-              className="w-full max-w-md"
-            >
-              {isCalculating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Calculate Composite Score
-            </Button>
-          </div>
-
-          {/* Current Composite Score - Moved to very bottom */}
+          {/* Current Composite Score - Auto-calculated */}
           <Card className="bg-muted/50">
             <CardHeader>
               <CardTitle className="text-lg">Composite Priority Score</CardTitle>
               <CardDescription>Weighted average of all criteria scores</CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingComposite || isCalculating ? (
+              {isLoadingComposite ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : localCompositeScore !== null ? (
+              ) : compositeScore?.compositeScore !== undefined ? (
                 <>
-                  <div className="text-4xl font-bold">{localCompositeScore.toFixed(1)}</div>
+                  <div className="text-4xl font-bold">{compositeScore.compositeScore.toFixed(1)}</div>
                   <p className="text-sm text-muted-foreground mt-1">Out of 100</p>
                 </>
               ) : (
                 <div className="text-center py-4">
-                  <div className="text-4xl font-bold text-muted-foreground">--</div>
-                  <p className="text-sm text-muted-foreground mt-1">Click "Calculate Composite Score" to compute</p>
+                  <div className="text-4xl font-bold text-muted-foreground">0.0</div>
+                  <p className="text-sm text-muted-foreground mt-1">Out of 100</p>
                 </div>
               )}
             </CardContent>

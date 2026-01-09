@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingUp, DollarSign, AlertTriangle, Target, ArrowLeft, AlertCircle } from "lucide-react";
+import { Loader2, TrendingUp, DollarSign, AlertTriangle, Target, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import CriteriaManager from "@/components/CriteriaManager";
@@ -87,8 +87,6 @@ export default function PrioritizationDashboard() {
 
   // Validation warnings
   const hasNoCriteria = activeCriteria === 0;
-  const hasNoScores = scoredProjects === 0;
-  const showValidationWarning = hasNoCriteria || hasNoScores;
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -110,23 +108,6 @@ export default function PrioritizationDashboard() {
         </div>
       </div>
 
-      {/* Validation Warning Banner */}
-      {showValidationWarning && (
-        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-              <div className="space-y-1">
-                <p className="font-medium text-amber-900 dark:text-amber-100">Setup Required</p>
-                <ul className="text-sm text-amber-800 dark:text-amber-200 space-y-1">
-                  {hasNoCriteria && <li>• No active criteria defined. Add criteria in the "Manage Criteria" section below.</li>}
-                  {hasNoScores && !hasNoCriteria && <li>• No projects have been scored yet. Use the "Score Projects" section to begin prioritization.</li>}
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Overview / KPIs Section */}
       <section id="overview">

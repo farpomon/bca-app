@@ -1,5 +1,9 @@
 # BCA App TODO
 
+## Priority Scoring UI Improvements
+- [x] Remove "Calculate Composite Score" button - make composite score auto-calculate on score/weight changes
+- [x] Remove "Setup Required" banner from priority scoring page
+
 ## Mock Data Generation
 - [x] Create mock project 1: Small Portfolio (10 assets) - ID: 3720172
 - [x] Create mock project 2: Large Portfolio (30 assets) - ID: 3720173
