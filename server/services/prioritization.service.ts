@@ -110,16 +110,24 @@ export async function calculateCompositeScore(
 /**
  * Calculate and cache composite scores for all projects
  * Returns ranked list of projects
+ * 
+ * This function ensures data consistency by:
+ * 1. Only calculating scores for projects that have been scored
+ * 2. Using the same composite score calculation logic for all projects
+ * 3. Caching results in project_priority_scores table
+ * 4. Assigning ranks based on composite scores
  */
 export async function calculateAllProjectScores(): Promise<RankedProject[]> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
   // Get all projects with at least one score
+  // This ensures we only rank projects that have been evaluated
   const projectsResult = await db.execute(sql`
     SELECT DISTINCT p.id, p.name, p.deferredMaintenanceCost
     FROM projects p
     JOIN project_scores ps ON p.id = ps.projectId
+    WHERE ps.score IS NOT NULL
     ORDER BY p.name
   `);
 
@@ -245,6 +253,10 @@ export async function normalizeCriteriaWeights(): Promise<void> {
 
 /**
  * Get ranked projects with optional filtering
+ * 
+ * This function retrieves cached rankings from project_priority_scores table
+ * to ensure consistent data across all queries. The cache is updated by
+ * calculateAllProjectScores() mutation.
  */
 export async function getRankedProjects(options?: {
   minScore?: number;
@@ -254,6 +266,7 @@ export async function getRankedProjects(options?: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  // Query from cached scores table for consistency
   let query = sql`
     SELECT 
       pps.projectId,
@@ -268,7 +281,7 @@ export async function getRankedProjects(options?: {
       p.deferredMaintenanceCost as totalCost
     FROM project_priority_scores pps
     JOIN projects p ON pps.projectId = p.id
-    WHERE 1=1
+    WHERE pps.compositeScore IS NOT NULL
   `;
 
   if (options?.minScore !== undefined) {

@@ -1,33 +1,68 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingUp, DollarSign, AlertTriangle, Target } from "lucide-react";
+import { Loader2, TrendingUp, DollarSign, AlertTriangle, Target, ArrowLeft, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 import CriteriaManager from "@/components/CriteriaManager";
 import ProjectScoringForm from "@/components/ProjectScoringForm";
 import RankedProjectsList from "@/components/RankedProjectsList";
 
 /**
  * Multi-Criteria Prioritization Dashboard
- * Main hub for scoring projects and managing capital budget priorities
+ * Unified dashboard for scoring projects and managing capital budget priorities
  */
 export default function PrioritizationDashboard() {
   const [, setLocation] = useLocation();
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
-  const { data: criteria, isLoading: criteriaLoading } = trpc.prioritization.getCriteria.useQuery();
+  const { data: criteria, isLoading: criteriaLoading, refetch: refetchCriteria } = trpc.prioritization.getCriteria.useQuery();
   const { data: rankedProjects, isLoading: projectsLoading, refetch: refetchRanked } =
     trpc.prioritization.getRankedProjects.useQuery();
-  const { data: projects } = trpc.projects.list.useQuery();
+  const { data: projects, refetch: refetchProjects } = trpc.projects.list.useQuery();
+  const { data: budgetCycles, refetch: refetchBudgetCycles } = trpc.prioritization.getBudgetCycles.useQuery();
 
   const calculateAllScoresMutation = trpc.prioritization.calculateAllScores.useMutation({
-    onSuccess: () => {
-      refetchRanked();
+    onMutate: () => {
+      setIsRecalculating(true);
+    },
+    onSuccess: (data) => {
+      // Refresh all data after recalculation
+      Promise.all([
+        refetchRanked(),
+        refetchProjects(),
+        refetchCriteria(),
+        refetchBudgetCycles(),
+      ]).then(() => {
+        setIsRecalculating(false);
+        toast.success(`Successfully recalculated scores for ${data.projectCount} projects`);
+      });
+    },
+    onError: (error) => {
+      setIsRecalculating(false);
+      toast.error(`Failed to recalculate scores: ${error.message}`);
     },
   });
+
+  const handleRecalculateAll = () => {
+    if (isRecalculating) return; // Prevent double-click
+    calculateAllScoresMutation.mutate();
+  };
+
+  const handleScoreSubmitted = () => {
+    // Refresh all data after scoring
+    Promise.all([
+      refetchRanked(),
+      refetchProjects(),
+      refetchCriteria(),
+    ]).then(() => {
+      setSelectedProjectId(null);
+      toast.success("Project scored successfully");
+    });
+  };
 
   if (criteriaLoading || projectsLoading) {
     return (
@@ -37,162 +72,198 @@ export default function PrioritizationDashboard() {
     );
   }
 
+  // Calculate KPIs from consistent data sources
   const totalProjects = projects?.length || 0;
   const scoredProjects = rankedProjects?.length || 0;
   const unscoredProjects = totalProjects - scoredProjects;
-  const avgScore = rankedProjects?.length
+  const avgScore = rankedProjects && rankedProjects.length > 0
     ? rankedProjects.reduce((sum, p) => sum + p.compositeScore, 0) / rankedProjects.length
     : 0;
+  const activeCriteria = criteria?.filter(c => c.isActive === 1).length || 0;
+  const totalBudgetCycles = budgetCycles?.length || 0;
+
+  // Validation warnings
+  const hasNoCriteria = activeCriteria === 0;
+  const hasNoScores = scoredProjects === 0;
+  const showValidationWarning = hasNoCriteria || hasNoScores;
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Multi-Criteria Prioritization</h1>
-        <p className="text-muted-foreground mt-2">
-          Score projects across multiple strategic factors to build defensible capital budgets
-        </p>
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => window.history.length > 1 ? window.history.back() : setLocation("/projects")}
+          className="shrink-0"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold tracking-tight">Multi-Criteria Prioritization</h1>
+          <p className="text-muted-foreground mt-2">
+            Score projects across multiple strategic factors to build defensible capital budgets
+          </p>
+        </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalProjects}</div>
-            <p className="text-xs text-muted-foreground">
-              {scoredProjects} scored, {unscoredProjects} pending
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgScore.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">Out of 100</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Criteria</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{criteria?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">Scoring factors</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Budget Cycles</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              <Button
-                variant="link"
-                className="h-auto p-0 text-xs"
-                onClick={() => setLocation("/capital-budget")}
-              >
-                Create 4-year plan →
-              </Button>
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="ranking" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="ranking">Project Rankings</TabsTrigger>
-          <TabsTrigger value="scoring">Score Projects</TabsTrigger>
-          <TabsTrigger value="criteria">Manage Criteria</TabsTrigger>
-        </TabsList>
-
-        {/* Project Rankings Tab */}
-        <TabsContent value="ranking" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Ranked Projects</CardTitle>
-                  <CardDescription>
-                    Projects prioritized by weighted composite scores
-                  </CardDescription>
-                </div>
-                <Button
-                  onClick={() => calculateAllScoresMutation.mutate()}
-                  disabled={calculateAllScoresMutation.isPending}
-                >
-                  {calculateAllScoresMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Recalculate All
-                </Button>
+      {/* Validation Warning Banner */}
+      {showValidationWarning && (
+        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-medium text-amber-900 dark:text-amber-100">Setup Required</p>
+                <ul className="text-sm text-amber-800 dark:text-amber-200 space-y-1">
+                  {hasNoCriteria && <li>• No active criteria defined. Add criteria in the "Manage Criteria" section below.</li>}
+                  {hasNoScores && !hasNoCriteria && <li>• No projects have been scored yet. Use the "Score Projects" section to begin prioritization.</li>}
+                </ul>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Overview / KPIs Section */}
+      <section id="overview">
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
+              <div className="text-2xl font-bold">{totalProjects}</div>
+              <p className="text-xs text-muted-foreground">
+                {scoredProjects} scored, {unscoredProjects} pending
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{avgScore.toFixed(1)}</div>
+              <p className="text-xs text-muted-foreground">Out of 100</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Criteria</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeCriteria}</div>
+              <p className="text-xs text-muted-foreground">Scoring factors</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Budget Cycles</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalBudgetCycles}</div>
+              <p className="text-xs text-muted-foreground">
+                {totalBudgetCycles === 0 ? (
+                  <Button
+                    variant="link"
+                    className="h-auto p-0 text-xs"
+                    onClick={() => setLocation("/capital-budget")}
+                  >
+                    Create 4-year plan →
+                  </Button>
+                ) : (
+                  "Active planning cycles"
+                )}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Score Projects Section */}
+      <section id="score-projects">
+        <Card>
+          <CardHeader>
+            <CardTitle>Score Projects</CardTitle>
+            <CardDescription>
+              Evaluate projects across all criteria to calculate composite priority scores
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProjectScoringForm
+              projects={projects || []}
+              criteria={criteria || []}
+              selectedProjectId={selectedProjectId}
+              onScoreSubmitted={handleScoreSubmitted}
+            />
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Manage Criteria Section */}
+      <section id="manage-criteria">
+        <Card>
+          <CardHeader>
+            <CardTitle>Prioritization Criteria</CardTitle>
+            <CardDescription>
+              Define and weight the factors used to prioritize projects
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CriteriaManager criteria={criteria || []} />
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Ranked Projects Section */}
+      <section id="ranked-projects">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Ranked Projects</CardTitle>
+                <CardDescription>
+                  Projects prioritized by weighted composite scores
+                </CardDescription>
+              </div>
+              <Button
+                onClick={handleRecalculateAll}
+                disabled={isRecalculating || hasNoCriteria}
+              >
+                {isRecalculating && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Recalculate All
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {rankedProjects && rankedProjects.length > 0 ? (
               <RankedProjectsList
-                rankedProjects={rankedProjects || []}
+                rankedProjects={rankedProjects}
                 onSelectProject={(projectId) => {
                   setSelectedProjectId(projectId);
-                  // Switch to scoring tab
-                  const scoringTab = document.querySelector('[value="scoring"]') as HTMLElement;
-                  scoringTab?.click();
+                  // Scroll to score projects section
+                  document.getElementById("score-projects")?.scrollIntoView({ behavior: "smooth" });
                 }}
               />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Score Projects Tab */}
-        <TabsContent value="scoring" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Score Projects</CardTitle>
-              <CardDescription>
-                Evaluate projects across all criteria to calculate composite priority scores
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProjectScoringForm
-                projects={projects || []}
-                criteria={criteria || []}
-                selectedProjectId={selectedProjectId}
-                onScoreSubmitted={() => {
-                  refetchRanked();
-                  setSelectedProjectId(null);
-                }}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Manage Criteria Tab */}
-        <TabsContent value="criteria" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Prioritization Criteria</CardTitle>
-              <CardDescription>
-                Define and weight the factors used to prioritize projects
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CriteriaManager criteria={criteria || []} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-lg font-medium">No projects have been scored yet.</p>
+                <p className="text-sm mt-2">Use the "Score Projects" section to begin prioritization.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }

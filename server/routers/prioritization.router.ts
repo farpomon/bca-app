@@ -115,16 +115,18 @@ export const prioritizationRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      // Save individual project scores
       await prioritizationDb.saveMultipleProjectScores(
         input.projectId,
         input.scores,
         ctx.user.id
       );
 
-      // Recalculate composite score
+      // Recalculate composite score for this project
       const compositeScore = await prioritizationService.calculateCompositeScore(input.projectId);
 
-      // Recalculate all rankings
+      // Recalculate all rankings to ensure consistent ordering
+      // This updates the project_priority_scores cache table
       await prioritizationService.calculateAllProjectScores();
 
       return { success: true, compositeScore };

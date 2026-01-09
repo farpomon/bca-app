@@ -3731,3 +3731,47 @@ Testing:
 - [x] Cap confidence percentage at 100% in Component Predictions Dashboard
 - [x] Rewrite AI Insights to be clear, concise, and actionable
 - [x] Adjust AI Insights column layout to prevent full-width stretching with multi-line stacked format
+
+## Multi-Criteria Prioritization Page Improvements
+
+- [ ] Add "Back" button navigation to page header
+- [ ] Remove three-tab layout (Project Rankings, Score Projects, Manage Criteria)
+- [ ] Create single unified dashboard with sections:
+  - [ ] Overview / KPIs section (existing cards)
+  - [ ] Score Projects section
+  - [ ] Manage Criteria section
+  - [ ] Ranked Projects section
+- [ ] Add in-page navigation/anchors for sections
+- [ ] Audit and fix backend calculation consistency:
+  - [ ] Total Projects / Average Score / Active Criteria / Budget Cycles KPIs
+  - [ ] Ranked project composite scores and ordering
+  - [ ] Ensure single source of truth for all calculations
+- [ ] Fix data consistency between KPIs and underlying data
+- [ ] Ensure rankings reflect latest scores and criteria weights
+- [ ] Fix "Recalculate All" to compute and persist correct values
+- [ ] Add loading states during recalculation
+- [ ] Prevent double-click / duplicate recalculations
+- [ ] Refresh entire dashboard after recalculation
+- [ ] Add validation warnings for missing data (no criteria, no scores)
+
+## Multi-Criteria Prioritization - Implementation Status
+
+- [x] Add "Back" button navigation to page header
+- [x] Remove three-tab layout (Project Rankings, Score Projects, Manage Criteria)
+- [x] Create single unified dashboard with sections:
+  - [x] Overview / KPIs section (existing cards)
+  - [x] Score Projects section
+  - [x] Manage Criteria section
+  - [x] Ranked Projects section
+- [x] Add smooth scroll navigation for sections
+- [x] Audit and fix backend calculation consistency:
+  - [x] Total Projects / Average Score / Active Criteria / Budget Cycles KPIs
+  - [x] Ranked project composite scores and ordering
+  - [x] Ensure single source of truth for all calculations
+- [x] Fix data consistency between KPIs and underlying data
+- [x] Ensure rankings reflect latest scores and criteria weights
+- [x] Fix "Recalculate All" to compute and persist correct values
+- [x] Add loading states during recalculation
+- [x] Prevent double-click / duplicate recalculations
+- [x] Refresh entire dashboard after recalculation
+- [x] Add validation warnings for missing data (no criteria, no scores)
