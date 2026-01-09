@@ -3699,3 +3699,5 @@ Testing:
 - [x] Add cluster click to zoom functionality
 - [x] Show cluster count badges
 - [x] Smooth zoom transitions when expanding clusters
+
+- [x] Fix non-functional refresh button in Portfolio Analytics page

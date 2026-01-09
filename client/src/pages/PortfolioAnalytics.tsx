@@ -124,6 +124,9 @@ export default function PortfolioAnalytics() {
   // Deficiency trends controls
   const [trendsPeriod, setTrendsPeriod] = useState<number>(12);
   const [trendsGranularity, setTrendsGranularity] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
+  
+  // Get trpc utils for manual invalidation
+  const utils = trpc.useUtils();
 
   // Fetch all analytics data
   const { data: dashboardData, isLoading, refetch, isRefetching } = trpc.portfolioAnalytics.getDashboardData.useQuery(
@@ -259,7 +262,18 @@ export default function PortfolioAnalytics() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                // Invalidate all portfolio analytics queries to trigger refetch
+                await utils.portfolioAnalytics.invalidate();
+                // Also invalidate deficiencies if priority is selected
+                if (selectedPriority) {
+                  await utils.deficiencies.getByPriority.invalidate();
+                }
+              }} 
+              disabled={isRefetching}
+            >
               <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
