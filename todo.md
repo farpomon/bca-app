@@ -3775,3 +3775,8 @@ Testing:
 - [x] Prevent double-click / duplicate recalculations
 - [x] Refresh entire dashboard after recalculation
 - [x] Add validation warnings for missing data (no criteria, no scores)
+
+## Bug Fixes - Prioritization Page
+- [x] Fix composite priority score calculation not working properly
+- [x] Add "Calculate Score" button to force composite priority calculation
+- [x] Reorganize prioritization page: move priority scales up and composite priority box to bottom

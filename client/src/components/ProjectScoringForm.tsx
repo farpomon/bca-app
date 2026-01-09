@@ -53,10 +53,24 @@ export default function ProjectScoringForm({
     { enabled: !!projectId }
   );
 
-  const { data: compositeScore } = trpc.prioritization.getCompositeScore.useQuery(
+  const { data: compositeScore, refetch: refetchCompositeScore } = trpc.prioritization.getCompositeScore.useQuery(
     { projectId: projectId! },
     { enabled: !!projectId }
   );
+
+  const [isCalculating, setIsCalculating] = useState(false);
+
+  const handleCalculateScore = async () => {
+    setIsCalculating(true);
+    try {
+      await refetchCompositeScore();
+      toast.success("Score calculated successfully");
+    } catch (error) {
+      toast.error("Failed to calculate score");
+    } finally {
+      setIsCalculating(false);
+    }
+  };
 
   const scoreProjectMutation = trpc.prioritization.scoreProject.useMutation({
     onSuccess: () => {
@@ -180,20 +194,6 @@ export default function ProjectScoringForm({
 
       {projectId && !scoresLoading && (
         <>
-          {/* Current Composite Score */}
-          {compositeScore && (
-            <Card className="bg-muted/50">
-              <CardHeader>
-                <CardTitle className="text-lg">Composite Priority Score</CardTitle>
-                <CardDescription>Weighted average of all criteria scores</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold">{compositeScore.compositeScore.toFixed(1)}</div>
-                <p className="text-sm text-muted-foreground mt-1">Out of 100</p>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Scoring Criteria */}
           <div className="space-y-6">
             {criteria.map((criterion) => {
@@ -261,6 +261,34 @@ export default function ProjectScoringForm({
               );
             })}
           </div>
+
+          {/* Calculate Score Button */}
+          <div className="flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCalculateScore}
+              disabled={isCalculating}
+              className="w-full max-w-md"
+            >
+              {isCalculating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Calculate Composite Score
+            </Button>
+          </div>
+
+          {/* Current Composite Score */}
+          {compositeScore && (
+            <Card className="bg-muted/50">
+              <CardHeader>
+                <CardTitle className="text-lg">Composite Priority Score</CardTitle>
+                <CardDescription>Weighted average of all criteria scores</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold">{compositeScore.compositeScore.toFixed(1)}</div>
+                <p className="text-sm text-muted-foreground mt-1">Out of 100</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Submit Button */}
           <div className="flex justify-end gap-4">
