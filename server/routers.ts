@@ -943,6 +943,55 @@ Provide helpful insights, recommendations, and analysis based on this project da
         return asset;
       }),
 
+    getAllAssetsWithCoordinates: protectedProcedure
+      .query(async ({ ctx }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const isSuperAdmin = ctx.user.isSuperAdmin === 1;
+        
+        // Get all projects user has access to
+        const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, isAdmin, ctx.user.companyId, isSuperAdmin);
+        
+        // Get all assets from these projects with valid coordinates
+        const assetsWithCoords = [];
+        
+        for (const project of projects) {
+          const assets = await assetsDb.getProjectAssets(project.id);
+          
+          for (const asset of assets) {
+            // Only include assets with valid coordinates
+            if (asset.latitude && asset.longitude) {
+              // Calculate FCI for this asset
+              let fci = 0;
+              try {
+                const assessments = await db.getAssetAssessments(asset.id);
+                const totalRepairCost = assessments.reduce((sum, a) => sum + (a.estimatedRepairCost || 0), 0);
+                const replacementValue = asset.replacementValue || 0;
+                if (replacementValue > 0) {
+                  fci = totalRepairCost / replacementValue;
+                }
+              } catch (error) {
+                console.error(`Failed to calculate FCI for asset ${asset.id}:`, error);
+              }
+              
+              assetsWithCoords.push({
+                id: asset.id,
+                name: asset.name,
+                address: asset.address || asset.streetAddress || '',
+                lat: parseFloat(asset.latitude),
+                lng: parseFloat(asset.longitude),
+                propertyType: asset.primaryUse || 'Unknown',
+                fci,
+                crv: asset.replacementValue || 0,
+                projectId: project.id,
+                projectName: project.name,
+              });
+            }
+          }
+        }
+        
+        return assetsWithCoords;
+      }),
+
     create: protectedProcedure
       .input(z.object({
         projectId: z.number(),

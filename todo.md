@@ -150,6 +150,7 @@
 - [x] Fix AI Insights deficiency data fetching - currently showing 0 deficiencies when there are actually 12 for Commonwealth Recreation Centre
 - [x] Fix portfolio map - building markers not displaying on map view (fixed field name mismatch lat/lng vs latitude/longitude)
 - [ ] Fix map markers not showing - lat/lng returned as strings need to be converted to numbers
+- [x] Fix Portfolio Map to show individual asset locations instead of project location
 - [x] Create standalone Portfolio Map page (remove from tabs to fix Google Maps initialization)
 - [x] Fix photo filtering - photos showing in all components instead of only the component where they were taken
 - [x] Fix assessment deletion functionality - delete button not working for component assessments

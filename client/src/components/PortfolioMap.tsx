@@ -15,6 +15,8 @@ interface BuildingMarker {
   propertyType: string;
   fci: number;
   crv: number;
+  projectId: number;
+  projectName: string;
 }
 
 // Cluster interface
@@ -31,10 +33,10 @@ export default function PortfolioMap() {
   const [clusterMarkers, setClusterMarkers] = useState<google.maps.Marker[]>([]);
   const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
   const [clusteringEnabled, setClusteringEnabled] = useState(true);
-  const [validProjects, setValidProjects] = useState<BuildingMarker[]>([]);
+  const [validAssets, setValidAssets] = useState<BuildingMarker[]>([]);
 
-  // Fetch all projects with coordinates
-  const { data: projects, isLoading, error } = trpc.projects.getAllWithCoordinates.useQuery();
+  // Fetch all assets with coordinates
+  const { data: assets, isLoading, error } = trpc.assets.getAllAssetsWithCoordinates.useQuery();
 
   // Initialize map
   const handleMapReady = (mapInstance: google.maps.Map) => {
@@ -114,11 +116,11 @@ export default function PortfolioMap() {
 
   // Create clusters from markers
   const createClusters = useCallback(
-    (projectMarkers: BuildingMarker[], mapInstance: google.maps.Map, gridSize: number = 60): Cluster[] => {
+    (assetMarkers: BuildingMarker[], mapInstance: google.maps.Map, gridSize: number = 60): Cluster[] => {
       const clusters: Cluster[] = [];
       const processed = new Set<number>();
 
-      projectMarkers.forEach((marker) => {
+      assetMarkers.forEach((marker) => {
         if (processed.has(marker.id)) return;
 
         const markerLatLng = new google.maps.LatLng(marker.lat, marker.lng);
@@ -155,7 +157,7 @@ export default function PortfolioMap() {
 
   // Render markers (with or without clustering)
   const renderMarkers = useCallback(() => {
-    if (!map || !infoWindow || validProjects.length === 0) return;
+    if (!map || !infoWindow || validAssets.length === 0) return;
 
     // Clear existing markers
     markers.forEach((m) => m.setMap(null));
@@ -170,9 +172,9 @@ export default function PortfolioMap() {
 
     // If clustering disabled or zoomed in past maxZoom, show all individual markers
     if (!clusteringEnabled || zoom >= maxZoom) {
-      validProjects.forEach((project) => {
-        const position = { lat: project.lat, lng: project.lng };
-        const markerColor = getFciColor(project.fci);
+      validAssets.forEach((asset) => {
+        const position = { lat: asset.lat, lng: asset.lng };
+        const markerColor = getFciColor(asset.fci);
 
         const svgMarker = {
           url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
@@ -187,27 +189,30 @@ export default function PortfolioMap() {
         const marker = new google.maps.Marker({
           position,
           map,
-          title: project.name,
+          title: asset.name,
           icon: svgMarker,
         });
 
         marker.addListener("click", () => {
-          const fciPercent = project.fci * 100;
+          const fciPercent = asset.fci * 100;
           const content = `
             <div style="padding: 8px; min-width: 200px;">
-              <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${project.name}</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 4px;">${project.address}</p>
+              <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${asset.name}</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 4px;">${asset.address}</p>
               <p style="font-size: 14px; margin-bottom: 4px;">
-                <strong>Type:</strong> ${project.propertyType || "N/A"}
+                <strong>Project:</strong> ${asset.projectName}
               </p>
               <p style="font-size: 14px; margin-bottom: 4px;">
-                <strong>CRV:</strong> $${project.crv.toLocaleString()}
+                <strong>Type:</strong> ${asset.propertyType || "N/A"}
+              </p>
+              <p style="font-size: 14px; margin-bottom: 4px;">
+                <strong>CRV:</strong> $${asset.crv.toLocaleString()}
               </p>
               <p style="font-size: 14px; margin-bottom: 8px;">
                 <strong>FCI:</strong> <span style="color: ${markerColor}; font-weight: 600;">${fciPercent.toFixed(1)}%</span>
               </p>
               <a 
-                href="/projects/${project.id}" 
+                href="/projects/${asset.projectId}/assets/${asset.id}" 
                 style="color: #3b82f6; text-decoration: underline; font-size: 14px;"
               >
                 View Details →
@@ -227,7 +232,7 @@ export default function PortfolioMap() {
     }
 
     // Create clusters
-    const clusters = createClusters(validProjects, map);
+    const clusters = createClusters(validAssets, map);
 
     clusters.forEach((cluster) => {
       if (cluster.markers.length >= minClusterSize) {
@@ -254,9 +259,9 @@ export default function PortfolioMap() {
         newClusterMarkers.push(clusterMarker);
       } else {
         // Show individual markers for small clusters
-        cluster.markers.forEach((project) => {
-          const position = { lat: project.lat, lng: project.lng };
-          const markerColor = getFciColor(project.fci);
+        cluster.markers.forEach((asset) => {
+          const position = { lat: asset.lat, lng: asset.lng };
+          const markerColor = getFciColor(asset.fci);
 
           const svgMarker = {
             url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
@@ -271,27 +276,30 @@ export default function PortfolioMap() {
           const marker = new google.maps.Marker({
             position,
             map,
-            title: project.name,
+            title: asset.name,
             icon: svgMarker,
           });
 
           marker.addListener("click", () => {
-            const fciPercent = project.fci * 100;
+            const fciPercent = asset.fci * 100;
             const content = `
               <div style="padding: 8px; min-width: 200px;">
-                <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${project.name}</h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 4px;">${project.address}</p>
+                <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${asset.name}</h3>
+                <p style="color: #666; font-size: 14px; margin-bottom: 4px;">${asset.address}</p>
                 <p style="font-size: 14px; margin-bottom: 4px;">
-                  <strong>Type:</strong> ${project.propertyType || "N/A"}
+                  <strong>Project:</strong> ${asset.projectName}
                 </p>
                 <p style="font-size: 14px; margin-bottom: 4px;">
-                  <strong>CRV:</strong> $${project.crv.toLocaleString()}
+                  <strong>Type:</strong> ${asset.propertyType || "N/A"}
+                </p>
+                <p style="font-size: 14px; margin-bottom: 4px;">
+                  <strong>CRV:</strong> $${asset.crv.toLocaleString()}
                 </p>
                 <p style="font-size: 14px; margin-bottom: 8px;">
                   <strong>FCI:</strong> <span style="color: ${markerColor}; font-weight: 600;">${fciPercent.toFixed(1)}%</span>
                 </p>
                 <a 
-                  href="/projects/${project.id}" 
+                  href="/projects/${asset.projectId}/assets/${asset.id}" 
                   style="color: #3b82f6; text-decoration: underline; font-size: 14px;"
                 >
                   View Details →
@@ -309,19 +317,19 @@ export default function PortfolioMap() {
 
     setMarkers(newMarkers);
     setClusterMarkers(newClusterMarkers);
-  }, [map, infoWindow, validProjects, clusteringEnabled, createClusters, createClusterIcon]);
+  }, [map, infoWindow, validAssets, clusteringEnabled, createClusters, createClusterIcon, getFciColor]);
 
-  // Process projects data
+  // Process assets data
   useEffect(() => {
-    if (!projects) return;
+    if (!assets) return;
 
     const processed: BuildingMarker[] = [];
 
-    for (const p of projects) {
-      const lat = typeof p.lat === "string" ? parseFloat(p.lat) : p.lat;
-      const lng = typeof p.lng === "string" ? parseFloat(p.lng) : p.lng;
-      const fci = typeof p.fci === "string" ? parseFloat(p.fci) : p.fci;
-      const crv = typeof p.crv === "string" ? parseFloat(p.crv) : p.crv;
+    for (const a of assets) {
+      const lat = typeof a.lat === "string" ? parseFloat(a.lat) : a.lat;
+      const lng = typeof a.lng === "string" ? parseFloat(a.lng) : a.lng;
+      const fci = typeof a.fci === "string" ? parseFloat(a.fci) : a.fci;
+      const crv = typeof a.crv === "string" ? parseFloat(a.crv) : a.crv;
 
       if (lat === null || lat === undefined || lng === null || lng === undefined) continue;
       if (isNaN(lat) || isNaN(lng)) continue;
@@ -329,54 +337,46 @@ export default function PortfolioMap() {
       if (lng < -180 || lng > 180) continue;
 
       processed.push({
-        id: p.id,
-        name: p.name,
-        address: p.address,
+        id: a.id,
+        name: a.name,
+        address: a.address,
         lat,
         lng,
-        propertyType: p.propertyType,
+        propertyType: a.propertyType,
         fci: fci || 0,
         crv: crv || 0,
+        projectId: a.projectId,
+        projectName: a.projectName,
       });
     }
 
-    setValidProjects(processed);
-  }, [projects]);
+    setValidAssets(processed);
+  }, [assets]);
 
   // Render markers when data or settings change
   useEffect(() => {
     renderMarkers();
   }, [renderMarkers]);
 
-  // Re-render on zoom change
+  // Fit bounds to show all assets
+  useEffect(() => {
+    if (map && validAssets.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      validAssets.forEach((asset) => {
+        bounds.extend({ lat: asset.lat, lng: asset.lng });
+      });
+      map.fitBounds(bounds);
+    }
+  }, [map, validAssets]);
+
+  // Re-render markers on zoom change
   useEffect(() => {
     if (!map) return;
-
     const listener = map.addListener("zoom_changed", () => {
       renderMarkers();
     });
-
-    return () => {
-      google.maps.event.removeListener(listener);
-    };
+    return () => google.maps.event.removeListener(listener);
   }, [map, renderMarkers]);
-
-  // Fit bounds when projects load
-  useEffect(() => {
-    if (!map || validProjects.length === 0) return;
-
-    const bounds = new google.maps.LatLngBounds();
-    validProjects.forEach((p) => {
-      bounds.extend({ lat: p.lat, lng: p.lng });
-    });
-
-    if (validProjects.length === 1) {
-      map.setCenter(bounds.getCenter());
-      map.setZoom(15);
-    } else {
-      map.fitBounds(bounds);
-    }
-  }, [map, validProjects]);
 
   if (isLoading) {
     return (
@@ -390,17 +390,17 @@ export default function PortfolioMap() {
     return (
       <Alert variant="destructive">
         <AlertDescription>
-          Failed to load portfolio map data. Please try again later.
+          Failed to load building locations. Please try again later.
         </AlertDescription>
       </Alert>
     );
   }
 
-  if (validProjects.length === 0) {
+  if (!assets || assets.length === 0) {
     return (
       <Alert>
         <AlertDescription>
-          No buildings with location data available. Add addresses to your projects to see them on the map.
+          No buildings with location data found in your portfolio.
         </AlertDescription>
       </Alert>
     );
@@ -408,42 +408,53 @@ export default function PortfolioMap() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <p>
-          Showing {validProjects.length} building{validProjects.length !== 1 ? "s" : ""} with location data
-        </p>
-        <div className="flex items-center gap-4">
-          <Button
-            variant={clusteringEnabled ? "default" : "outline"}
-            size="sm"
-            onClick={() => setClusteringEnabled(!clusteringEnabled)}
-            className="flex items-center gap-2"
-          >
-            <Layers className="h-4 w-4" />
-            {clusteringEnabled ? "Clustering On" : "Clustering Off"}
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span>FCI ≤ 5%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span>FCI 5-10%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-500" />
-              <span>FCI 10-30%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span>FCI &gt; 30%</span>
-            </div>
-          </div>
+      {/* Map Controls */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Portfolio Map</h2>
+          <p className="text-muted-foreground text-sm">
+            Showing {validAssets.length} building{validAssets.length !== 1 ? 's' : ''} with location data
+          </p>
         </div>
+        <Button
+          variant={clusteringEnabled ? "default" : "outline"}
+          size="sm"
+          onClick={() => setClusteringEnabled(!clusteringEnabled)}
+        >
+          <Layers className="h-4 w-4 mr-2" />
+          {clusteringEnabled ? "Clustering On" : "Clustering Off"}
+        </Button>
       </div>
 
-      <MapView className="h-[600px] w-full rounded-lg border" onMapReady={handleMapReady} />
+      {/* Map */}
+      <div className="border rounded-lg overflow-hidden">
+        <MapView
+          onMapReady={handleMapReady}
+          initialCenter={{ lat: 43.65, lng: -79.38 }}
+          initialZoom={10}
+          style={{ height: "600px", width: "100%" }}
+        />
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-[#22c55e] border-2 border-white" />
+          <span>FCI ≤ 5%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-[#f59e0b] border-2 border-white" />
+          <span>FCI 5-10%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-[#f97316] border-2 border-white" />
+          <span>FCI 10-30%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-[#ef4444] border-2 border-white" />
+          <span>FCI &gt; 30%</span>
+        </div>
+      </div>
     </div>
   );
 }
