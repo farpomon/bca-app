@@ -67,6 +67,7 @@ import { generateBCAReport } from "./reportGenerator";
 import { generateAssetReport } from "./assetReportGenerator";
 import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
 import { assessPhotoWithAI } from "./photoAssessment";
+import { performanceRouter } from "./routers/performance.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -100,6 +101,7 @@ export const appRouter = router({
   economicIndicators: economicIndicatorsRouter,
   rsmeans: rsmeansRouter,
   portfolioTargets: portfolioTargetsRouter,
+  performance: performanceRouter,
   companyRoles: companyRolesRouter,
   pageVisibility: pageVisibilityRouter,
   analytics: analyticsRouter,
@@ -1677,13 +1679,25 @@ Provide helpful insights, recommendations, and analysis based on this asset data
     list: protectedProcedure
       .input(z.object({ 
         projectId: z.number(),
-        status: z.enum(["initial", "active", "completed"]).optional()
+        status: z.enum(["initial", "active", "completed"]).optional(),
+        page: z.number().optional(),
+        pageSize: z.number().optional(),
       }))
       .query(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
         const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
         if (!project) throw new Error("Project not found");
-        return await db.getProjectAssessmentsByStatus(input.projectId, input.status);
+        
+        const allAssessments = await db.getProjectAssessmentsByStatus(input.projectId, input.status);
+        
+        // Apply pagination if requested
+        if (input.page !== undefined || input.pageSize !== undefined) {
+          const { paginate } = await import("./utils/pagination");
+          return paginate(allAssessments, input.page, input.pageSize);
+        }
+        
+        // Return all items for backward compatibility
+        return allAssessments;
       }),
 
     listByAsset: protectedProcedure
@@ -1828,6 +1842,10 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           });
         }
         
+        // Invalidate prediction cache when assessment changes
+        const { invalidateCacheOnAssessmentChange } = await import("./services/cacheInvalidation.service");
+        await invalidateCacheOnAssessmentChange(input.projectId, input.componentCode);
+        
         // Trigger CI/FCI recalculation
         const { calculateBuildingCI } = await import("./ciCalculationService");
         const { calculateFCI } = await import("./fciCalculationService");
@@ -1928,6 +1946,10 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           })
         });
 
+        // Invalidate prediction cache when assessment is deleted
+        const { invalidateCacheOnAssessmentChange } = await import("./services/cacheInvalidation.service");
+        await invalidateCacheOnAssessmentChange(input.projectId, assessment.componentCode);
+        
         // Recalculate CI/FCI after deletion
         const { calculateBuildingCI } = await import("./ciCalculationService");
         const { calculateFCI } = await import("./fciCalculationService");

@@ -69,7 +69,7 @@ export default function PredictionsDashboard() {
       medium: predictions.filter((p) => p.riskLevel === "medium").length,
       low: predictions.filter((p) => p.riskLevel === "low").length,
       avgConfidence: predictions.length > 0
-        ? predictions.reduce((sum, p) => sum + (p.confidenceScore || 0), 0) / predictions.length
+        ? Math.min(1.0, predictions.reduce((sum, p) => sum + (p.confidenceScore || 0), 0) / predictions.length)
         : 0,
       inHorizon: inHorizon.length,
       // Estimate replacement costs (using industry averages)
@@ -286,7 +286,11 @@ export default function PredictionsDashboard() {
                 <CardTitle className="text-sm font-medium">Avg Confidence</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{(stats.avgConfidence * 100).toFixed(0)}%</div>
+                <div className="text-2xl font-bold">{Math.min(100, (stats.avgConfidence * 100)).toFixed(0)}%</div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Confidence is calculated using a hybrid model combining historical assessment data, 
+                  component age, condition ratings, and machine learning predictions.
+                </p>
               </CardContent>
             </Card>
           </div>

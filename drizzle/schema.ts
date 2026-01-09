@@ -3162,4 +3162,27 @@ export const companyPageVisibility = mysqlTable("company_page_visibility", {
 export type CompanyPageVisibility = typeof companyPageVisibility.$inferSelect;
 export type InsertCompanyPageVisibility = typeof companyPageVisibility.$inferInsert;
 
+/**
+ * Performance Metrics Table
+ * Tracks load times, cache hit rates, and other performance metrics
+ */
+export const performanceMetrics = mysqlTable("performance_metrics", {
+	id: int().autoincrement().notNull().primaryKey(),
+	metricType: mysqlEnum(['page_load', 'api_call', 'cache_hit', 'cache_miss', 'db_query']).notNull(),
+	metricName: varchar({ length: 255 }).notNull(),
+	duration: int(), // Duration in milliseconds
+	metadata: text(), // JSON string for additional data
+	userId: int(),
+	projectId: int(),
+	recordedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_metric_type_date").on(table.metricType, table.recordedAt),
+	index("idx_project_metrics").on(table.projectId, table.recordedAt),
+	index("idx_user_metrics").on(table.userId, table.recordedAt),
+]);
+
+export type PerformanceMetric = typeof performanceMetrics.$inferSelect;
+export type InsertPerformanceMetric = typeof performanceMetrics.$inferInsert;
+
 
