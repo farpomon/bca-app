@@ -28,26 +28,6 @@ export default function PredictionsDashboard() {
     { enabled: !!selectedProjectId }
   );
 
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <h1 className="text-2xl font-bold">Authentication Required</h1>
-        <p className="text-muted-foreground">Please log in to access the predictions dashboard.</p>
-        <Button asChild>
-          <a href={getLoginUrl()}>Log In</a>
-        </Button>
-      </div>
-    );
-  }
-
   const projects = projectsQuery.data || [];
   const predictions = predictionsQuery.data || [];
 
@@ -104,6 +84,26 @@ export default function PredictionsDashboard() {
     };
   }, [predictions, riskFilter, sortBy, timeHorizon]);
 
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <h1 className="text-2xl font-bold">Authentication Required</h1>
+        <p className="text-muted-foreground">Please log in to access the predictions dashboard.</p>
+        <Button asChild>
+          <a href={getLoginUrl()}>Log In</a>
+        </Button>
+      </div>
+    );
+  }
+
   const currentYear = new Date().getFullYear();
   const horizonYear = currentYear + timeHorizon;
 
@@ -159,7 +159,7 @@ export default function PredictionsDashboard() {
         pred.componentCode,
         pred.riskLevel,
         pred.predictedFailureYear || 'N/A',
-        pred.remainingLife || 'N/A',
+        pred.remainingLife !== null && pred.remainingLife !== undefined ? pred.remainingLife : 'N/A',
         pred.confidenceScore ? `${Math.min(100, (pred.confidenceScore * 100)).toFixed(0)}%` : 'N/A',
         `$${estimatedCost.toLocaleString()}`,
         urgency,
@@ -483,7 +483,7 @@ export default function PredictionsDashboard() {
                             </Badge>
                           </TableCell>
                           <TableCell>{prediction.predictedFailureYear || "N/A"}</TableCell>
-                          <TableCell>{prediction.remainingLife ? `${prediction.remainingLife} years` : "N/A"}</TableCell>
+                          <TableCell>{prediction.remainingLife !== null && prediction.remainingLife !== undefined ? `${prediction.remainingLife} years` : "N/A"}</TableCell>
                           <TableCell>
                             <span
                               className={
