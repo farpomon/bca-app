@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name, weight, isActive FROM prioritization_criteria WHERE isActive = 1 ORDER BY displayOrder LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, weight, isActive FROM prioritization_criteria WHERE isActive = 1 ORDER BY displayOrder LIMIT 10;",
+  "rows": [
+    {
+      "id": "1170003",
+      "name": "Test Urgency",
+      "weight": "25.56",
+      "isActive": "1"
+    },
+    {
+      "id": "2",
+      "name": "Mission Criticality",
+      "weight": "18.05",
+      "isActive": "1"
+    },
+    {
+      "id": "3",
+      "name": "Safety",
+      "weight": "9.40",
+      "isActive": "1"
+    },
+    {
+      "id": "4",
+      "name": "Code Compliance",
+      "weight": "9.40",
+      "isActive": "1"
+    },
+    {
+      "id": "5",
+      "name": "Energy Savings",
+      "weight": "9.40",
+      "isActive": "1"
+    },
+    {
+      "id": "6",
+      "name": "Accessibility",
+      "weight": "9.40",
+      "isActive": "1"
+    },
+    {
+      "id": "7",
+      "name": "Environmental Impact",
+      "weight": "9.40",
+      "isActive": "1"
+    },
+    {
+      "id": "8",
+      "name": "Operational Efficiency",
+      "weight": "9.40",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tweight\tisActive\n1170003\tTest Urgency\t25.56\t1\n2\tMission Criticality\t18.05\t1\n3\tSafety\t9.40\t1\n4\tCode Compliance\t9.40\t1\n5\tEnergy Savings\t9.40\t1\n6\tAccessibility\t9.40\t1\n7\tEnvironmental Impact\t9.40\t1\n8\tOperational Efficiency\t9.40\t1\n",
+  "stderr": "",
+  "execution_time_ms": 389
+}

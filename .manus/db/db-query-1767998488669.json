@@ -1,0 +1,80 @@
+{
+  "query": "SELECT ps.projectId, ps.criteriaId, ps.score, pc.name, pc.weight \nFROM project_scores ps \nJOIN prioritization_criteria pc ON ps.criteriaId = pc.id \nWHERE pc.isActive = 1 \nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT ps.projectId, ps.criteriaId, ps.score, pc.name, pc.weight \nFROM project_scores ps \nJOIN prioritization_criteria pc ON ps.criteriaId = pc.id \nWHERE pc.isActive = 1 \nLIMIT 10;",
+  "rows": [
+    {
+      "projectId": "900004",
+      "criteriaId": "2",
+      "score": "9.00",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "900004",
+      "criteriaId": "8",
+      "score": "5.00",
+      "name": "Operational Efficiency",
+      "weight": "9.40"
+    },
+    {
+      "projectId": "900004",
+      "criteriaId": "8",
+      "score": "9.00",
+      "name": "Operational Efficiency",
+      "weight": "9.40"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "2",
+      "score": "7.50",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "2",
+      "score": "3.00",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "2",
+      "score": "9.00",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "2",
+      "score": "5.00",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "2",
+      "score": "7.50",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "2",
+      "score": "3.00",
+      "name": "Mission Criticality",
+      "weight": "18.05"
+    },
+    {
+      "projectId": "3720172",
+      "criteriaId": "3",
+      "score": "3.00",
+      "name": "Safety",
+      "weight": "9.40"
+    }
+  ],
+  "messages": [],
+  "stdout": "projectId\tcriteriaId\tscore\tname\tweight\n900004\t2\t9.00\tMission Criticality\t18.05\n900004\t8\t5.00\tOperational Efficiency\t9.40\n900004\t8\t9.00\tOperational Efficiency\t9.40\n3720172\t2\t7.50\tMission Criticality\t18.05\n3720172\t2\t3.00\tMission Criticality\t18.05\n3720172\t2\t9.00\tMission Criticality\t18.05\n3720172\t2\t5.00\tMission Criticality\t18.05\n3720172\t2\t7.50\tMission Criticality\t18.05\n3720172\t2\t3.00\tMission Criticality\t18.05\n3720172\t3\t3.00\tSafety\t9.40\n",
+  "stderr": "",
+  "execution_time_ms": 382
+}

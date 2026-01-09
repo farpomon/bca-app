@@ -81,8 +81,7 @@ export async function calculateCompositeScore(
     const projectScore = scores.find((s: any) => s.criteriaId === criterion.id);
     const score = projectScore ? parseFloat(projectScore.score) : 0;
     const weight = parseFloat(criterion.weight);
-    const normalizedWeight = weight / totalWeight; // Normalize to 0-1
-    const weightedScore = score * normalizedWeight;
+    const weightedScore = weight * score; // weight × score
 
     criteriaScores.push({
       criteriaId: criterion.id,
@@ -96,8 +95,9 @@ export async function calculateCompositeScore(
     compositeScore += weightedScore;
   }
 
-  // Scale composite score to 0-100 (since individual scores are 0-10)
-  compositeScore = compositeScore * 10;
+  // Divide by 100 to get final composite score
+  // Formula: sum(weight × score) / 100
+  compositeScore = compositeScore / 100;
 
   return {
     projectId,
@@ -346,13 +346,11 @@ export async function compareWeightingScenarios(
   for (const scenario of scenarios) {
     const criteriaScores: CriteriaScore[] = [];
     let compositeScore = 0;
-    const totalWeight = Object.values(scenario.weights).reduce((sum, w) => sum + w, 0);
 
     for (const [criteriaName, weight] of Object.entries(scenario.weights)) {
       const projectScore = scores.find((s: any) => s.criteriaName === criteriaName);
       const score = projectScore ? parseFloat(projectScore.score) : 0;
-      const normalizedWeight = weight / totalWeight;
-      const weightedScore = score * normalizedWeight;
+      const weightedScore = weight * score; // weight × score
 
       criteriaScores.push({
         criteriaId: projectScore?.criteriaId || 0,
@@ -366,8 +364,9 @@ export async function compareWeightingScenarios(
       compositeScore += weightedScore;
     }
 
-    // Scale to 0-100
-    compositeScore = compositeScore * 10;
+    // Divide by 100 to get final composite score
+    // Formula: sum(weight × score) / 100
+    compositeScore = compositeScore / 100;
 
     results.push({
       scenarioName: scenario.name,

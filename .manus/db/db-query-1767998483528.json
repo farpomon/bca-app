@@ -1,0 +1,14 @@
+{
+  "query": "SELECT SUM(weight) as totalWeight, COUNT(*) as criteriaCount FROM prioritization_criteria WHERE isActive = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT SUM(weight) as totalWeight, COUNT(*) as criteriaCount FROM prioritization_criteria WHERE isActive = 1;",
+  "rows": [
+    {
+      "totalWeight": "100.01",
+      "criteriaCount": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "totalWeight\tcriteriaCount\n100.01\t8\n",
+  "stderr": "",
+  "execution_time_ms": 394
+}
