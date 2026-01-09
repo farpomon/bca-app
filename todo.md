@@ -3792,3 +3792,68 @@ Testing:
 - [x] Fix composite priority score calculation - scores not calculating or displaying after save
 
 - [x] Add success notification popup when scores are saved
+
+## Capital Budget Planning Improvements
+
+### Navigation & Page Context
+- [x] Add visible "Back" button in top-left of page header
+- [x] Implement primary behavior: return to previous page (browser history)
+- [x] Implement fallback: return to Capital Planning / Portfolio overview
+- [x] Ensure Back button remains visible when scrolling (sticky header)
+
+### Cycle Structure & Selection
+- [x] Replace horizontal scrolling list with Cycle Selector panel
+- [x] Support short-term plans (1-3 years)
+- [x] Support medium-term plans (4-10 years)
+- [x] Support long-term plans (11-30 years)
+- [x] Display cycle duration (e.g., "10-Year Capital Plan")
+- [x] Display start and end years
+- [x] Display status (Draft / Planning / Approved / Archived)
+- [x] Display total budget and number of projects per cycle
+- [ ] Prevent duplicate or ambiguous cycle names (backend validation needed)
+
+### KPI Cards - Capital-Intelligent Metrics
+- [x] Enhance "Active Cycle" card: cycle length, status, % assets assessed, data confidence
+- [x] Enhance "Total Budget" card: allocated budget, % of capital need funded, deferred backlog
+- [x] Enhance "Allocated Projects" card: funded vs proposed, % high-risk assets addressed
+- [x] Enhance "Budget Cycles" card: active vs approved cycles, exclude test/draft by default
+- [ ] Connect backend data for assessment coverage, capital need, deferred backlog metrics
+
+### Capital Results Visualization
+- [x] Add annual cash-flow curve for 10-30 year plans
+- [x] Add backlog reduction over time visualization
+- [x] Add risk reduction before vs after funding
+- [x] Highlight unfunded critical risks
+- [ ] Connect backend data for backlog, risk, and unfunded critical risks
+
+### Allocation Logic & Result Quality
+- [ ] Allocate based on condition and remaining useful life
+- [ ] Allocate based on risk and consequence of failure
+- [ ] Allocate based on priority score and budget constraints
+- [ ] Phase projects logically over time for long-term cycles
+- [ ] Avoid unrealistic front-loading
+- [ ] Allow scenario testing: budget increases/decreases
+- [ ] Allow scenario testing: cycle length changes
+- [ ] Lock safety/compliance projects as non-deferrable
+
+### UI Scalability for 1-30 Year Cycles
+- [x] Collapse years into ranges for long cycles (e.g., Years 11-20)
+- [x] Allow zooming into individual years (expand/collapse ranges)
+- [x] Enable filtering by asset type (UI ready, needs backend data)
+- [x] Enable filtering by condition/risk level (UI ready, needs backend data)
+- [x] Enable filtering by funding status
+
+### Transparency, Auditability & Trust
+- [x] Explain why projects are funded
+- [x] Explain why projects are deferred
+- [x] Explain why projects are excluded (via rationale tooltips)
+- [x] Use BCA-aligned terminology in tooltips (ASTM E2018 / ISO 55000)
+- [ ] Track cycle changes (backend audit log needed)
+- [ ] Track budget adjustments (backend audit log needed)
+- [ ] Track allocation assumptions (backend audit log needed)
+
+### Backend Integrity & Consistency
+- [ ] Ensure KPI values reference active cycle
+- [ ] Ensure allocations reference same assessment vintage
+- [ ] Ensure visualizations use same cost escalation assumptions
+- [ ] Prevent mixing cached and recalculated values

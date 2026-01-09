@@ -9,9 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Calendar, DollarSign, TrendingUp, FileText } from "lucide-react";
+import { CycleSelector } from "@/components/CycleSelector";
+import { CapitalBudgetKPIs } from "@/components/CapitalBudgetKPIs";
+import { CapitalResultsCharts } from "@/components/CapitalResultsCharts";
+import { YearRangeSummary } from "@/components/YearRangeSummary";
+import { ProjectFilterBar, ProjectFilters } from "@/components/ProjectFilterBar";
+import { Loader2, Plus, Calendar, DollarSign, TrendingUp, FileText, ArrowLeft, Info, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 
 /**
  * Capital Budget Planner
@@ -20,6 +30,22 @@ import { toast } from "sonner";
 export default function CapitalBudgetPlanner() {
   const [isCreateCycleOpen, setIsCreateCycleOpen] = useState(false);
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
+  const [, setLocation] = useLocation();
+  const [projectFilters, setProjectFilters] = useState<ProjectFilters>({
+    assetType: "all",
+    conditionLevel: "all",
+    fundingStatus: "all",
+  });
+
+  const handleBack = () => {
+    // Try browser history first
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback to capital planning overview
+      setLocation("/");
+    }
+  };
 
   const { data: cycles, isLoading: cyclesLoading } = trpc.prioritization.getBudgetCycles.useQuery();
   const { data: cycleDetails, isLoading: detailsLoading } = trpc.prioritization.getBudgetCycle.useQuery(
@@ -49,13 +75,33 @@ export default function CapitalBudgetPlanner() {
   const totalBudget = activeCycle ? parseFloat(activeCycle.totalBudget || "0") : 0;
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      {/* Header */}
+    <div className="min-h-screen">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-background border-b">
+        <div className="container mx-auto py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold tracking-tight">Capital Budget Planning</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto py-8 space-y-8">
+      {/* Page Description and Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Capital Budget Planning</h1>
-          <p className="text-muted-foreground mt-2">
-            4-year capital renewal budget aligned with strategic priorities
+          <p className="text-muted-foreground">
+            Multi-year capital renewal budget aligned with strategic priorities (1-30 year planning cycles)
           </p>
         </div>
         <Dialog open={isCreateCycleOpen} onOpenChange={setIsCreateCycleOpen}>
@@ -74,83 +120,31 @@ export default function CapitalBudgetPlanner() {
         </Dialog>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Cycle</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {activeCycle ? `${activeCycle.startYear}-${activeCycle.endYear}` : "None"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {activeCycle ? activeCycle.name : "Create a budget cycle"}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Enhanced KPI Cards */}
+      <CapitalBudgetKPIs
+        cycles={cycles || []}
+        activeCycle={activeCycle}
+        allocatedProjectsCount={cycleDetails?.allocations.length || 0}
+        // Future: Add these metrics when backend data is available
+        // assessmentCoverage={85}
+        // dataConfidence="high"
+        // capitalNeedFunded={67}
+        // deferredBacklog={2500000}
+        // highRiskAddressed={78}
+        // fundedVsProposed={{ funded: 12, proposed: 18 }}
+      />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalBudget > 0
-                ? new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                    minimumFractionDigits: 0,
-                  }).format(totalBudget)
-                : "—"}
-            </div>
-            <p className="text-xs text-muted-foreground">4-year allocation</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Allocated Projects</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {cycleDetails?.allocations.length || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">Projects funded</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Budget Cycles</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cycles?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">Total cycles</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Budget Cycles List */}
+      {/* Budget Cycles Selector */}
       {cycles && cycles.length > 0 ? (
-        <Tabs value={selectedCycleId?.toString() || cycles[0]?.id.toString()} onValueChange={(val) => setSelectedCycleId(parseInt(val))}>
-          <TabsList>
-            {cycles.map((cycle: any) => (
-              <TabsTrigger key={cycle.id} value={cycle.id.toString()}>
-                {cycle.name}
-                <Badge variant="outline" className="ml-2">
-                  {cycle.status}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <>
+          <CycleSelector
+            cycles={cycles}
+            selectedCycleId={selectedCycleId || cycles[0]?.id}
+            onSelectCycle={setSelectedCycleId}
+          />
 
-          {cycles.map((cycle: any) => (
-            <TabsContent key={cycle.id} value={cycle.id.toString()} className="space-y-4">
+          {selectedCycleId && (
+            <div className="space-y-4">
               {detailsLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -189,39 +183,24 @@ export default function CapitalBudgetPlanner() {
                     </CardContent>
                   </Card>
 
-                  {/* Year-by-Year Summary */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Budget Summary by Year</CardTitle>
-                      <CardDescription>Annual allocation breakdown</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Year</TableHead>
-                            <TableHead className="text-right">Allocated Amount</TableHead>
-                            <TableHead className="text-center">Project Count</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {cycleDetails.summary.map((yearSummary: any) => (
-                            <TableRow key={yearSummary.year}>
-                              <TableCell className="font-medium">{yearSummary.year}</TableCell>
-                              <TableCell className="text-right">
-                                {new Intl.NumberFormat("en-US", {
-                                  style: "currency",
-                                  currency: "USD",
-                                  minimumFractionDigits: 0,
-                                }).format(yearSummary.totalAllocated)}
-                              </TableCell>
-                              <TableCell className="text-center">{yearSummary.projectCount}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
+                  {/* Capital Results Visualizations */}
+                  <CapitalResultsCharts
+                    startYear={cycleDetails.cycle.startYear}
+                    endYear={cycleDetails.cycle.endYear}
+                    yearlyData={cycleDetails.summary}
+                    totalBudget={parseFloat(cycleDetails.cycle.totalBudget || "0")}
+                    // Future: Add these when backend data is available
+                    // backlogData={[...]}
+                    // riskData={[...]}
+                    // unfundedCriticalRisks={[...]}
+                  />
+
+                  {/* Year-by-Year Summary with Scalability */}
+                  <YearRangeSummary
+                    startYear={cycleDetails.cycle.startYear}
+                    endYear={cycleDetails.cycle.endYear}
+                    yearlyData={cycleDetails.summary}
+                  />
 
                   {/* Project Allocations */}
                   <Card>
@@ -229,17 +208,106 @@ export default function CapitalBudgetPlanner() {
                       <CardTitle>Project Allocations</CardTitle>
                       <CardDescription>Projects funded in this cycle</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      {cycleDetails.allocations.length > 0 ? (
+                    <CardContent className="space-y-4">
+                      {/* Filter Bar */}
+                      <ProjectFilterBar
+                        filters={projectFilters}
+                        onFiltersChange={setProjectFilters}
+                        // Future: Pass available asset types from backend
+                        // availableAssetTypes={["Building", "Infrastructure", "Equipment"]}
+                      />
+
+                      {/* Allocations Table */}
+                      <div>
+                      {(() => {
+                        // Apply filters
+                        let filteredAllocations = cycleDetails.allocations;
+                        
+                        if (projectFilters.fundingStatus && projectFilters.fundingStatus !== "all") {
+                          filteredAllocations = filteredAllocations.filter(
+                            (a: any) => a.status?.toLowerCase() === projectFilters.fundingStatus
+                          );
+                        }
+                        
+                        // Future: Add asset type and condition filtering when data is available
+                        
+                        return filteredAllocations.length > 0 ? (
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Priority</TableHead>
+                              <TableHead>
+                                <div className="flex items-center gap-1">
+                                  Priority
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Priority ranking based on multi-criteria</p>
+                                      <p>scoring (ASTM E2018 methodology)</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableHead>
                               <TableHead>Project</TableHead>
-                              <TableHead className="text-center">Year</TableHead>
+                              <TableHead className="text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  Year
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Planned execution year based on</p>
+                                      <p>remaining useful life (RUL) and risk</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableHead>
                               <TableHead className="text-right">Allocated Amount</TableHead>
-                              <TableHead className="text-center">Status</TableHead>
-                              <TableHead>Strategic Alignment</TableHead>
+                              <TableHead className="text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  Status
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Funded: Budget allocated</p>
+                                      <p>Proposed: Awaiting approval</p>
+                                      <p>Deferred: Postponed to future cycle</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableHead>
+                              <TableHead>
+                                <div className="flex items-center gap-1">
+                                  Strategic Alignment
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Alignment with organizational strategic</p>
+                                      <p>priorities and asset management plan (ISO 55000)</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableHead>
+                              <TableHead className="text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  Rationale
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Explanation of funding decision</p>
+                                      <p>based on condition, risk, and priority</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -265,25 +333,47 @@ export default function CapitalBudgetPlanner() {
                                     {allocation.strategicAlignment || "—"}
                                   </p>
                                 </TableCell>
+                                <TableCell className="text-center">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                        <Info className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-sm">
+                                      <p className="font-semibold mb-1">Funding Decision</p>
+                                      <p className="text-xs">
+                                        {allocation.status === "funded"
+                                          ? `Funded due to priority rank #${allocation.priority} and alignment with strategic objectives. Project addresses critical facility needs within available budget constraints.`
+                                          : allocation.status === "proposed"
+                                          ? `Proposed for funding pending budget approval. Priority rank #${allocation.priority} indicates importance but requires additional authorization.`
+                                          : `Deferred to future cycle due to budget constraints. Priority rank #${allocation.priority} will be re-evaluated in next planning cycle.`}
+                                      </p>
+                                      {/* Future: Add condition, RUL, risk data when available */}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
                         </Table>
-                      ) : (
+                        ) : (
                         <div className="text-center py-12 text-muted-foreground">
                           <p>No projects allocated yet.</p>
                           <p className="text-sm mt-2">
                             Use the Prioritization Dashboard to score projects and allocate budget.
                           </p>
-                        </div>
-                      )}
+                          </div>
+                        );
+                      })()}
+                      </div>
                     </CardContent>
                   </Card>
                 </>
               ) : null}
-            </TabsContent>
-          ))}
-        </Tabs>
+            </div>
+          )}
+        </>
       ) : (
         <Card>
           <CardContent className="text-center py-12">
@@ -299,6 +389,7 @@ export default function CapitalBudgetPlanner() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }
@@ -310,11 +401,26 @@ interface CreateCycleFormProps {
 
 function CreateCycleForm({ onSubmit, isLoading }: CreateCycleFormProps) {
   const currentYear = new Date().getFullYear();
-  const [name, setName] = useState(`${currentYear}-${currentYear + 3} Capital Plan`);
+  const [name, setName] = useState(`${currentYear}-${currentYear + 4} Capital Plan`);
   const [description, setDescription] = useState("");
   const [startYear, setStartYear] = useState(currentYear);
-  const [endYear, setEndYear] = useState(currentYear + 3);
+  const [endYear, setEndYear] = useState(currentYear + 4);
   const [totalBudget, setTotalBudget] = useState("");
+  const [cycleDuration, setCycleDuration] = useState(5);
+
+  const handleDurationChange = (duration: number) => {
+    setCycleDuration(duration);
+    const newEndYear = startYear + duration - 1;
+    setEndYear(newEndYear);
+    setName(`${startYear}-${newEndYear} Capital Plan`);
+  };
+
+  const handleStartYearChange = (year: number) => {
+    setStartYear(year);
+    const newEndYear = year + cycleDuration - 1;
+    setEndYear(newEndYear);
+    setName(`${year}-${newEndYear} Capital Plan`);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -332,18 +438,44 @@ function CreateCycleForm({ onSubmit, isLoading }: CreateCycleFormProps) {
       <DialogHeader>
         <DialogTitle>Create Budget Cycle</DialogTitle>
         <DialogDescription>
-          Define a 4-year capital renewal budget planning cycle
+          Define a capital renewal budget planning cycle (1-30 years)
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="cycleDuration">Planning Horizon</Label>
+          <Select
+            value={cycleDuration.toString()}
+            onValueChange={(val) => handleDurationChange(parseInt(val))}
+          >
+            <SelectTrigger id="cycleDuration">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 Year (Emergency Plan)</SelectItem>
+              <SelectItem value="2">2 Years (Short-term)</SelectItem>
+              <SelectItem value="3">3 Years (Short-term)</SelectItem>
+              <SelectItem value="5">5 Years (Medium-term)</SelectItem>
+              <SelectItem value="10">10 Years (Medium-term)</SelectItem>
+              <SelectItem value="15">15 Years (Long-term)</SelectItem>
+              <SelectItem value="20">20 Years (Long-term)</SelectItem>
+              <SelectItem value="25">25 Years (Long-term)</SelectItem>
+              <SelectItem value="30">30 Years (Strategic)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Short-term: 1-3 years | Medium-term: 4-10 years | Long-term: 11-30 years
+          </p>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="name">Cycle Name</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., 2025-2028 Capital Plan"
+            placeholder="e.g., 2025-2029 Capital Plan"
             required
           />
         </div>
@@ -366,8 +498,9 @@ function CreateCycleForm({ onSubmit, isLoading }: CreateCycleFormProps) {
               id="startYear"
               type="number"
               value={startYear}
-              onChange={(e) => setStartYear(parseInt(e.target.value))}
+              onChange={(e) => handleStartYearChange(parseInt(e.target.value))}
               min={currentYear}
+              max={currentYear + 10}
               required
             />
           </div>
@@ -378,10 +511,12 @@ function CreateCycleForm({ onSubmit, isLoading }: CreateCycleFormProps) {
               id="endYear"
               type="number"
               value={endYear}
-              onChange={(e) => setEndYear(parseInt(e.target.value))}
-              min={startYear}
-              required
+              disabled
+              className="bg-muted"
             />
+            <p className="text-xs text-muted-foreground">
+              Auto-calculated from start year + duration
+            </p>
           </div>
         </div>
 

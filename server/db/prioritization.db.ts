@@ -180,13 +180,18 @@ export async function deleteProjectScore(projectId: number, criteriaId: number):
 // CAPITAL BUDGET CYCLES
 // ============================================================================
 
-export async function getAllBudgetCycles(): Promise<CapitalBudgetCycle[]> {
+export async function getAllBudgetCycles(): Promise<(CapitalBudgetCycle & { projectCount?: number })[]> {
   const db = await getDb();
   if (!db) return [];
 
   const result = await db.execute(sql`
-    SELECT * FROM capital_budget_cycles
-    ORDER BY startYear DESC
+    SELECT 
+      cbc.*,
+      COUNT(DISTINCT ba.id) as projectCount
+    FROM capital_budget_cycles cbc
+    LEFT JOIN budget_allocations ba ON ba.cycleId = cbc.id
+    GROUP BY cbc.id
+    ORDER BY cbc.startYear DESC
   `);
 
   return Array.isArray(result[0]) ? result[0] : [];
