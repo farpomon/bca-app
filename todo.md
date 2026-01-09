@@ -3725,3 +3725,8 @@ Testing:
 
 - [x] Fix average confidence display to max out at 100%
 - [x] Add disclaimer explaining how confidence is calculated
+
+## Component Predictions Dashboard Improvements
+- [x] Cap confidence percentage at 100% in Component Predictions Dashboard
+- [x] Rewrite AI Insights to be clear, concise, and actionable
+- [x] Adjust AI Insights column layout to prevent full-width stretching with multi-line stacked format

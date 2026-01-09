@@ -4295,7 +4295,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
               remainingLife,
               confidenceScore: 0.3, // Low confidence without assessment data
               riskLevel,
-              aiInsights: ["Baseline prediction - no assessment data available. Recommendation: Conduct detailed assessment."],
+              aiInsights: ["No assessment data available for this component", "Conduct detailed assessment to establish baseline condition"],
             };
           }
         });

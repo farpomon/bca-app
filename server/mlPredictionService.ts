@@ -219,13 +219,13 @@ ${dataSummary}
 Current Deterioration Rate: ${deteriorationRate.toFixed(2)}% per year
 Predicted Remaining Life: ${remainingLife} years
 
-Provide 3-5 concise, actionable insights about this component's condition trend and maintenance recommendations. Focus on:
-1. Deterioration pattern analysis
-2. Risk factors
-3. Maintenance timing recommendations
-4. Cost-saving opportunities
+Provide 2-3 clear, concise, actionable insights about this component. Each insight should:
+- Be one short sentence (max 15 words)
+- Explain WHY the prediction exists in plain language
+- Focus on practical implications or recommended actions
+- Avoid technical jargon and repetitive phrasing
 
-Format as a JSON array of strings, each insight being one sentence.`;
+Format as a JSON array of strings.`;
 
     const response = await invokeLLM({
       messages: [
@@ -268,11 +268,11 @@ Format as a JSON array of strings, each insight being one sentence.`;
 
   // Fallback insights
   return [
-    `Component deteriorating at ${deteriorationRate.toFixed(1)}% per year`,
-    `Estimated ${remainingLife} years of remaining service life`,
+    `Deteriorating at ${deteriorationRate.toFixed(1)}% annually based on historical data`,
+    `Approximately ${remainingLife} years before replacement needed`,
     remainingLife <= 5
-      ? "Consider planning replacement or major rehabilitation soon"
-      : "Monitor condition annually to track deterioration trend",
+      ? "Plan replacement within 5 years to avoid failure"
+      : "Schedule annual inspections to track condition",
   ];
 }
 

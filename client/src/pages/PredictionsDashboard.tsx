@@ -69,7 +69,7 @@ export default function PredictionsDashboard() {
       medium: predictions.filter((p) => p.riskLevel === "medium").length,
       low: predictions.filter((p) => p.riskLevel === "low").length,
       avgConfidence: predictions.length > 0
-        ? Math.min(1.0, predictions.reduce((sum, p) => sum + (p.confidenceScore || 0), 0) / predictions.length)
+        ? Math.min(1.0, predictions.reduce((sum, p) => sum + Math.min(1.0, p.confidenceScore || 0), 0) / predictions.length)
         : 0,
       inHorizon: inHorizon.length,
       // Estimate replacement costs (using industry averages)
@@ -160,7 +160,7 @@ export default function PredictionsDashboard() {
         pred.riskLevel,
         pred.predictedFailureYear || 'N/A',
         pred.remainingLife || 'N/A',
-        pred.confidenceScore ? `${(pred.confidenceScore * 100).toFixed(0)}%` : 'N/A',
+        pred.confidenceScore ? `${Math.min(100, (pred.confidenceScore * 100)).toFixed(0)}%` : 'N/A',
         `$${estimatedCost.toLocaleString()}`,
         urgency,
         pred.riskLevel === 'critical' ? 'High' : pred.riskLevel === 'high' ? 'Medium' : 'Low',
@@ -494,12 +494,20 @@ export default function PredictionsDashboard() {
                                     : "text-red-600 font-medium"
                               }
                             >
-                              {prediction.confidenceScore ? `${(prediction.confidenceScore * 100).toFixed(0)}%` : "N/A"}
+                              {prediction.confidenceScore ? `${Math.min(100, (prediction.confidenceScore * 100)).toFixed(0)}%` : "N/A"}
                             </span>
                           </TableCell>
-                          <TableCell className="max-w-xs">
+                          <TableCell className="max-w-md">
                             {prediction.aiInsights && prediction.aiInsights.length > 0 ? (
-                              <p className="text-sm text-muted-foreground truncate">{Array.isArray(prediction.aiInsights) ? prediction.aiInsights[0] : prediction.aiInsights}</p>
+                              <div className="text-sm text-muted-foreground space-y-1">
+                                {Array.isArray(prediction.aiInsights) ? (
+                                  prediction.aiInsights.slice(0, 3).map((insight, idx) => (
+                                    <p key={idx} className="leading-snug">{insight}</p>
+                                  ))
+                                ) : (
+                                  <p className="leading-snug">{prediction.aiInsights}</p>
+                                )}
+                              </div>
                             ) : (
                               <span className="text-muted-foreground">No insights</span>
                             )}
