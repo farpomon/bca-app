@@ -3780,3 +3780,6 @@ Testing:
 - [x] Fix composite priority score calculation not working properly
 - [x] Add "Calculate Score" button to force composite priority calculation
 - [x] Reorganize prioritization page: move priority scales up and composite priority box to bottom
+
+## Current Bug - Composite Score Display
+- [x] Fix composite score calculation not displaying calculated value (showing 0.0 instead of actual score)

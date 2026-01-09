@@ -53,18 +53,31 @@ export default function ProjectScoringForm({
     { enabled: !!projectId }
   );
 
-  const { data: compositeScore, refetch: refetchCompositeScore } = trpc.prioritization.getCompositeScore.useQuery(
+  const { data: compositeScore, refetch: refetchCompositeScore, isLoading: isLoadingComposite } = trpc.prioritization.getCompositeScore.useQuery(
     { projectId: projectId! },
     { enabled: !!projectId }
   );
 
   const [isCalculating, setIsCalculating] = useState(false);
+  const [localCompositeScore, setLocalCompositeScore] = useState<number | null>(null);
+
+  // Update local composite score when query data changes
+  useEffect(() => {
+    if (compositeScore?.compositeScore !== undefined) {
+      setLocalCompositeScore(compositeScore.compositeScore);
+    }
+  }, [compositeScore]);
 
   const handleCalculateScore = async () => {
     setIsCalculating(true);
     try {
-      await refetchCompositeScore();
-      toast.success("Score calculated successfully");
+      const result = await refetchCompositeScore();
+      if (result.data?.compositeScore !== undefined) {
+        setLocalCompositeScore(result.data.compositeScore);
+        toast.success("Score calculated successfully");
+      } else {
+        toast.error("Unable to calculate score. Please save scores first.");
+      }
     } catch (error) {
       toast.error("Failed to calculate score");
     } finally {
@@ -277,18 +290,29 @@ export default function ProjectScoringForm({
           </div>
 
           {/* Current Composite Score */}
-          {compositeScore && (
-            <Card className="bg-muted/50">
-              <CardHeader>
-                <CardTitle className="text-lg">Composite Priority Score</CardTitle>
-                <CardDescription>Weighted average of all criteria scores</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold">{compositeScore.compositeScore.toFixed(1)}</div>
-                <p className="text-sm text-muted-foreground mt-1">Out of 100</p>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="bg-muted/50">
+            <CardHeader>
+              <CardTitle className="text-lg">Composite Priority Score</CardTitle>
+              <CardDescription>Weighted average of all criteria scores</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingComposite || isCalculating ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : localCompositeScore !== null ? (
+                <>
+                  <div className="text-4xl font-bold">{localCompositeScore.toFixed(1)}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Out of 100</p>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-4xl font-bold text-muted-foreground">--</div>
+                  <p className="text-sm text-muted-foreground mt-1">Click "Calculate Composite Score" to compute</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Submit Button */}
           <div className="flex justify-end gap-4">
