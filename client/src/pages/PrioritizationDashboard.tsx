@@ -60,7 +60,10 @@ export default function PrioritizationDashboard() {
       refetchCriteria(),
     ]).then(() => {
       setSelectedProjectId(null);
-      toast.success("Project scored successfully");
+      // Don't show duplicate toast - already shown in ProjectScoringForm
+    }).catch((error) => {
+      console.error("Failed to refresh data after scoring:", error);
+      toast.error("Failed to refresh project rankings");
     });
   };
 

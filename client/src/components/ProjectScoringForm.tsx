@@ -86,7 +86,11 @@ export default function ProjectScoringForm({
   };
 
   const scoreProjectMutation = trpc.prioritization.scoreProject.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Update local composite score from the mutation response
+      if (data.compositeScore?.compositeScore !== undefined) {
+        setLocalCompositeScore(data.compositeScore.compositeScore);
+      }
       utils.prioritization.getRankedProjects.invalidate();
       utils.prioritization.getProjectScores.invalidate();
       utils.prioritization.getCompositeScore.invalidate();

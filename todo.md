@@ -3784,3 +3784,4 @@ Testing:
 ## Current Bug - Composite Score Display
 - [x] Fix composite score calculation not displaying calculated value (showing 0.0 instead of actual score)
 - [x] Move Calculate Composite Score button and Composite Priority Score display to very bottom of prioritization page
+- [x] Fix composite priority score calculation - scores not calculating or displaying after save
