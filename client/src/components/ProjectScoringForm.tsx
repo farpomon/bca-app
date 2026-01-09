@@ -275,7 +275,33 @@ export default function ProjectScoringForm({
             })}
           </div>
 
-          {/* Calculate Score Button */}
+          {/* Submit Button - Save Scores First */}
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setProjectId(null);
+                setScores({});
+                setLocalCompositeScore(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={scoreProjectMutation.isPending}>
+              {scoreProjectMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Scores
+            </Button>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t pt-6 mt-6">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              After saving scores, calculate the composite priority score below
+            </p>
+          </div>
+
+          {/* Calculate Score Button - Moved to bottom */}
           <div className="flex justify-center">
             <Button
               type="button"
@@ -289,7 +315,7 @@ export default function ProjectScoringForm({
             </Button>
           </div>
 
-          {/* Current Composite Score */}
+          {/* Current Composite Score - Moved to very bottom */}
           <Card className="bg-muted/50">
             <CardHeader>
               <CardTitle className="text-lg">Composite Priority Score</CardTitle>
@@ -313,24 +339,6 @@ export default function ProjectScoringForm({
               )}
             </CardContent>
           </Card>
-
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setProjectId(null);
-                setScores({});
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={scoreProjectMutation.isPending}>
-              {scoreProjectMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Scores
-            </Button>
-          </div>
         </>
       )}
     </form>
