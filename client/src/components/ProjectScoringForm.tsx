@@ -94,7 +94,7 @@ export default function ProjectScoringForm({
       utils.prioritization.getRankedProjects.invalidate();
       utils.prioritization.getProjectScores.invalidate();
       utils.prioritization.getCompositeScore.invalidate();
-      toast.success("Project scored successfully");
+      toast.success("Scores successfully saved! All criteria scores have been recorded.");
       onScoreSubmitted();
     },
   });
