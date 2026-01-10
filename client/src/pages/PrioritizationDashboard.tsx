@@ -24,6 +24,7 @@ export default function PrioritizationDashboard() {
     trpc.prioritization.getRankedProjects.useQuery();
   const { data: projects, refetch: refetchProjects } = trpc.projects.list.useQuery();
   const { data: budgetCycles, refetch: refetchBudgetCycles } = trpc.prioritization.getBudgetCycles.useQuery();
+  const { data: scoringStatus, refetch: refetchScoringStatus } = trpc.prioritization.getScoringStatus.useQuery();
 
   const calculateAllScoresMutation = trpc.prioritization.calculateAllScores.useMutation({
     onMutate: () => {
@@ -34,8 +35,8 @@ export default function PrioritizationDashboard() {
       Promise.all([
         refetchRanked(),
         refetchProjects(),
-        refetchCriteria(),
         refetchBudgetCycles(),
+        refetchScoringStatus(),
       ]).then(() => {
         setIsRecalculating(false);
         toast.success(`Successfully recalculated scores for ${data.projectCount} projects`);
@@ -76,9 +77,9 @@ export default function PrioritizationDashboard() {
   }
 
   // Calculate KPIs from consistent data sources
-  const totalProjects = projects?.length || 0;
-  const scoredProjects = rankedProjects?.length || 0;
-  const unscoredProjects = totalProjects - scoredProjects;
+  const totalProjects = scoringStatus?.totalProjects || 0;
+  const scoredProjects = scoringStatus?.scoredProjects || 0;
+  const unscoredProjects = scoringStatus?.unscoredProjects || 0;
   const avgScore = rankedProjects && rankedProjects.length > 0
     ? rankedProjects.reduce((sum, p) => sum + p.compositeScore, 0) / rankedProjects.length
     : 0;

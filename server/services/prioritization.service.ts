@@ -377,3 +377,37 @@ export async function compareWeightingScenarios(
 
   return results;
 }
+
+/**
+ * Get count of projects with any scoring data vs unscored projects
+ * A project is considered "scored" if it has at least one criterion score entered
+ */
+export async function getScoringStatus(): Promise<{
+  totalProjects: number;
+  scoredProjects: number;
+  unscoredProjects: number;
+}> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get total projects count
+  const totalResult = await db.execute(sql`
+    SELECT COUNT(*) as count FROM projects WHERE deletedAt IS NULL
+  `);
+  const totalProjects = (totalResult[0] as any)[0]?.count || 0;
+
+  // Get count of projects with at least one criterion score
+  const scoredResult = await db.execute(sql`
+    SELECT COUNT(DISTINCT projectId) as count 
+    FROM project_scores
+  `);
+  const scoredProjects = (scoredResult[0] as any)[0]?.count || 0;
+
+  const unscoredProjects = totalProjects - scoredProjects;
+
+  return {
+    totalProjects,
+    scoredProjects,
+    unscoredProjects,
+  };
+}

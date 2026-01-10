@@ -3972,3 +3972,5 @@ Testing:
 - [x] Write vitest tests for data integrity rules
 
 - [x] Replace "Type DELETE to confirm" text input with checkbox in cycle deletion dialog
+
+- [x] Fix prioritization dashboard showing "0 scored, 1 pending" when projects have scoring data

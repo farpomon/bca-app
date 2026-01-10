@@ -154,6 +154,10 @@ export const prioritizationRouter = router({
       return await prioritizationService.getRankedProjects(input);
     }),
 
+  getScoringStatus: protectedProcedure.query(async () => {
+    return await prioritizationService.getScoringStatus();
+  }),
+
   calculateAllScores: protectedProcedure.mutation(async () => {
     const rankedProjects = await prioritizationService.calculateAllProjectScores();
     return { success: true, projectCount: rankedProjects.length };
