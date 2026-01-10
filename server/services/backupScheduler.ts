@@ -353,25 +353,36 @@ export async function executeScheduledBackup(scheduleId: number): Promise<{
  * Check and execute due scheduled backups
  */
 export async function checkAndExecuteDueBackups(): Promise<void> {
-  const db = await getDb();
-  if (!db) return;
+  try {
+    const db = await getDb();
+    if (!db) return;
 
-  const now = new Date();
+    const now = new Date();
 
-  // Find all enabled schedules that are due
-  const dueSchedules = await db
-    .select()
-    .from(backupSchedules)
-    .where(
-      and(
-        eq(backupSchedules.isEnabled, 1),
-        lte(backupSchedules.nextRunAt, now.toISOString())
-      )
-    );
+    // Find all enabled schedules that are due
+    const dueSchedules = await db
+      .select()
+      .from(backupSchedules)
+      .where(
+        and(
+          eq(backupSchedules.isEnabled, 1),
+          lte(backupSchedules.nextRunAt, now.toISOString())
+        )
+      );
 
-  for (const schedule of dueSchedules) {
-    console.log(`[BackupScheduler] Executing due backup: ${schedule.name}`);
-    await executeScheduledBackup(schedule.id);
+    for (const schedule of dueSchedules) {
+      console.log(`[BackupScheduler] Executing due backup: ${schedule.name}`);
+      await executeScheduledBackup(schedule.id);
+    }
+  } catch (error) {
+    // Silently handle connection errors to prevent scheduler from crashing
+    // These are typically transient issues that will resolve on next check
+    if (error instanceof Error && (error.message.includes('ECONNRESET') || error.message.includes('connection'))) {
+      // Connection error - will retry on next interval
+      return;
+    }
+    // Log other errors but don't crash
+    console.error('[BackupScheduler] Error in checkAndExecuteDueBackups:', error);
   }
 }
 
