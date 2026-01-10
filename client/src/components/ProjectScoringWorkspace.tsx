@@ -85,8 +85,21 @@ export default function ProjectScoringWorkspace({
 
   // Initialize scores from existing data
   useEffect(() => {
-    if (existingScores) {
-      const scoreMap: Record<number, ScoreInput> = {};
+    if (!projectId || criteria.length === 0) return;
+
+    // Always initialize with all criteria first
+    const scoreMap: Record<number, ScoreInput> = {};
+    criteria.forEach((c) => {
+      scoreMap[c.id] = {
+        criteriaId: c.id,
+        score: null,
+        justification: "",
+        status: 'draft',
+      };
+    });
+
+    // Then overlay existing scores if any
+    if (existingScores && existingScores.length > 0) {
       existingScores.forEach((s: any) => {
         scoreMap[s.criteriaId] = {
           criteriaId: s.criteriaId,
@@ -95,20 +108,9 @@ export default function ProjectScoringWorkspace({
           status: s.status || 'draft',
         };
       });
-      setScores(scoreMap);
-    } else if (projectId && criteria.length > 0) {
-      // Initialize empty scores for all criteria
-      const scoreMap: Record<number, ScoreInput> = {};
-      criteria.forEach((c) => {
-        scoreMap[c.id] = {
-          criteriaId: c.id,
-          score: null,
-          justification: "",
-          status: 'draft',
-        };
-      });
-      setScores(scoreMap);
     }
+
+    setScores(scoreMap);
   }, [existingScores, projectId, criteria]);
 
   // Auto-save on score change (debounced)

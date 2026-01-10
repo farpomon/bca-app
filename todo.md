@@ -4194,3 +4194,5 @@ Testing:
 - [x] Show score labels (Very Low, Low, Medium, High, Critical)
 - [x] Add justification textarea with required indicator
 - [x] Highlight required justifications based on rules
+
+- [x] Fix TypeError when clicking City of Edmonton project - cannot read properties of undefined (reading 'score')
