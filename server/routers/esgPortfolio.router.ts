@@ -585,5 +585,67 @@ export const esgPortfolioRouter = router({
       zones: DEFAULT_ZONES,
       gradeDescriptors: GRADE_DESCRIPTORS
     };
-  })
+  }),
+
+  // Get portfolio ESG trends over time
+  getPortfolioESGTrends: protectedProcedure
+    .input(z.object({
+      portfolioId: z.number().optional(),
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let query;
+      if (input.portfolioId) {
+        query = sql`
+          SELECT 
+            calculationDate as scoreDate,
+            portfolioScore as compositeScore,
+            portfolioGrade,
+            portfolioZone,
+            projectsRated,
+            greenZoneCount,
+            needsAttentionCount
+          FROM portfolio_esg_ratings 
+          WHERE portfolioId = ${input.portfolioId}
+          ${input.startDate ? sql`AND calculationDate >= ${input.startDate.toISOString()}` : sql``}
+          ${input.endDate ? sql`AND calculationDate <= ${input.endDate.toISOString()}` : sql``}
+          ORDER BY calculationDate ASC
+        `;
+      } else {
+        // Get aggregate trends from project ratings
+        query = sql`
+          SELECT 
+            DATE(calculationDate) as scoreDate,
+            AVG(esgScore) as compositeScore,
+            AVG(energyScore) as energyScore,
+            AVG(waterScore) as waterScore,
+            AVG(wasteScore) as wasteScore,
+            AVG(emissionsScore) as emissionsScore,
+            COUNT(*) as projectCount
+          FROM project_esg_ratings
+          WHERE 1=1
+          ${input.startDate ? sql`AND calculationDate >= ${input.startDate.toISOString()}` : sql``}
+          ${input.endDate ? sql`AND calculationDate <= ${input.endDate.toISOString()}` : sql``}
+          GROUP BY DATE(calculationDate)
+          ORDER BY scoreDate ASC
+        `;
+      }
+
+      const result = await db.execute(query);
+      const trends = Array.isArray(result[0]) ? result[0] : [];
+
+      return trends.map((t: any) => ({
+        scoreDate: t.scoreDate,
+        compositeScore: t.compositeScore?.toString() || "0",
+        energyScore: t.energyScore?.toString() || null,
+        waterScore: t.waterScore?.toString() || null,
+        wasteScore: t.wasteScore?.toString() || null,
+        emissionsScore: t.emissionsScore?.toString() || null,
+        projectCount: t.projectCount || t.projectsRated || 0,
+      }));
+    }),
 });

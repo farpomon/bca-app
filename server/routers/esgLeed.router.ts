@@ -4,6 +4,7 @@ import * as esgDb from "../db/esg.db";
 import * as leedCalc from "../services/leedEsgCalculator.service";
 import { getDb } from "../db";
 import { sql } from "drizzle-orm";
+import { analyzeLeedCredits, saveLeedSuggestions } from "../services/leedCreditSuggestions.service";
 
 /**
  * LEED-Based ESG Router
@@ -1528,5 +1529,49 @@ export const esgLeedRouter = router({
         actionItems,
         generatedAt: new Date().toISOString(),
       };
+    }),
+
+  // ============================================================================
+  // AI-POWERED LEED CREDIT AUTO-SUGGESTIONS
+  // ============================================================================
+
+  /**
+   * Get AI-powered LEED credit suggestions based on building performance
+   */
+  getLeedCreditSuggestions: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const result = await analyzeLeedCredits(input.projectId);
+      return result;
+    }),
+
+  /**
+   * Save LEED credit suggestions to tracking
+   */
+  saveLeedCreditSuggestions: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      suggestions: z.array(z.object({
+        creditCode: z.string(),
+        creditName: z.string(),
+        category: z.string(),
+        categoryName: z.string(),
+        maxPoints: z.number(),
+        suggestedPoints: z.number(),
+        confidence: z.enum(["high", "medium", "low"]),
+        confidenceScore: z.number(),
+        rationale: z.string(),
+        requiredActions: z.array(z.string()),
+        estimatedEffort: z.enum(["low", "medium", "high"]),
+        estimatedCost: z.string().optional(),
+        currentStatus: z.enum(["achievable", "partially_achievable", "needs_work"]),
+        relevantMetrics: z.record(z.any()),
+      })),
+    }))
+    .mutation(async ({ input }) => {
+      await saveLeedSuggestions(input.projectId, input.suggestions);
+      return { success: true };
     }),
 });

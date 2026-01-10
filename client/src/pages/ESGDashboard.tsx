@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import ESGTrendsChart from "@/components/ESGTrendsChart";
+import ESGReportExport from "@/components/ESGReportExport";
+import LEEDCreditSuggestions from "@/components/LEEDCreditSuggestions";
 import { trpc } from "@/lib/trpc";
 import { 
   LetterGradeBadge, 
@@ -488,12 +491,22 @@ export default function ESGDashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="trends">Trends</TabsTrigger>
             <TabsTrigger value="metrics">ESG Metrics</TabsTrigger>
+            <TabsTrigger value="leed">LEED Credits</TabsTrigger>
             <TabsTrigger value="ratings">Ratings</TabsTrigger>
             <TabsTrigger value="scales">Rating Scales</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
+            {/* Export Button */}
+            <div className="flex justify-end">
+              <ESGReportExport 
+                projectId={selectedProject || undefined}
+                projectName={selectedProject ? projects?.find(p => p.id === selectedProject)?.name : undefined}
+              />
+            </div>
+            
             {selectedProject ? (
               <>
                 {/* Project Rating Card */}
@@ -598,6 +611,14 @@ export default function ESGDashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="trends" className="space-y-6 mt-6">
+            {/* ESG Score Trends Chart */}
+            <ESGTrendsChart 
+              projectId={selectedProject || undefined}
+              className="w-full"
+            />
           </TabsContent>
 
           <TabsContent value="metrics" className="space-y-6 mt-6">
@@ -710,6 +731,25 @@ export default function ESGDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="leed" className="space-y-6 mt-6">
+            {selectedProject ? (
+              <LEEDCreditSuggestions 
+                projectId={selectedProject}
+                projectName={projects?.find(p => p.id === selectedProject)?.name}
+              />
+            ) : (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Building2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Select a Project</h3>
+                  <p className="text-muted-foreground">
+                    Choose a project to view AI-powered LEED credit suggestions
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="ratings" className="space-y-6 mt-6">

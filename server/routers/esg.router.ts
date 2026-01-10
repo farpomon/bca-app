@@ -3,6 +3,7 @@ import { protectedProcedure, router } from "../_core/trpc";
 import * as esgDb from "../db/esg.db";
 import * as emissionsCalc from "../services/emissionsCalculator.service";
 import * as esgScoring from "../services/esgScoring.service";
+import { generateESGReportPDF, getESGReports } from "../services/esgReportGenerator.service";
 
 export const esgRouter = router({
   // Utility consumption tracking
@@ -204,6 +205,17 @@ export const esgRouter = router({
       return esgDb.getESGScores(input.projectId);
     }),
 
+  // Get ESG score history with date filtering for trends chart
+  getESGScoreHistory: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }))
+    .query(async ({ input }) => {
+      return esgDb.getESGScoreHistory(input.projectId, input.startDate, input.endDate);
+    }),
+
   // Sustainability goals
   createGoal: protectedProcedure
     .input(z.object({
@@ -298,5 +310,42 @@ export const esgRouter = router({
       const { upgradeId, ...data } = input;
       await esgDb.updateGreenUpgrade(upgradeId, data);
       return { success: true };
+    }),
+
+  // ESG Report Generation
+  generateESGReport: protectedProcedure
+    .input(z.object({
+      projectId: z.number().optional(),
+      includePortfolioSummary: z.boolean().default(true),
+      includeAssetBreakdown: z.boolean().default(true),
+      includeMetrics: z.boolean().default(true),
+      includeCertifications: z.boolean().default(true),
+      includeImprovementActions: z.boolean().default(true),
+      includeGoals: z.boolean().default(true),
+      reportPeriodStart: z.date().optional(),
+      reportPeriodEnd: z.date().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const result = await generateESGReportPDF(input.projectId, {
+        includePortfolioSummary: input.includePortfolioSummary,
+        includeAssetBreakdown: input.includeAssetBreakdown,
+        includeMetrics: input.includeMetrics,
+        includeCertifications: input.includeCertifications,
+        includeImprovementActions: input.includeImprovementActions,
+        includeGoals: input.includeGoals,
+        reportPeriodStart: input.reportPeriodStart,
+        reportPeriodEnd: input.reportPeriodEnd,
+      });
+      return result;
+    }),
+
+  // Get ESG Reports list
+  getESGReports: protectedProcedure
+    .input(z.object({
+      projectId: z.number().optional(),
+      limit: z.number().default(20),
+    }))
+    .query(async ({ input }) => {
+      return getESGReports(input.projectId, input.limit);
     }),
 });

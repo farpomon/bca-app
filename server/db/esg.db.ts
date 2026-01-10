@@ -168,3 +168,20 @@ export async function getLatestESGScore(projectId: number) {
   
   return result.length > 0 ? result[0] : null;
 }
+
+export async function getESGScoreHistory(
+  projectId: number,
+  startDate?: Date,
+  endDate?: Date
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(esgScores.projectId, projectId)];
+  if (startDate) conditions.push(gte(esgScores.scoreDate, startDate.toISOString()));
+  if (endDate) conditions.push(lte(esgScores.scoreDate, endDate.toISOString()));
+  
+  return db.select().from(esgScores)
+    .where(and(...conditions))
+    .orderBy(desc(esgScores.scoreDate));
+}

@@ -4403,3 +4403,29 @@ Testing:
 - [x] project_esg_ratings table
 - [x] esg_metrics_history table
 - [x] canadian_grid_carbon_data table
+
+## ESG Dashboard Enhancements (Completed Jan 2026)
+
+### ESG Score Trends Chart
+- [x] Add historical ESG score tracking to database schema
+- [x] Create tRPC endpoint to fetch ESG score history
+- [x] Implement ESG Score Trends line chart component using Chart.js
+- [x] Add date range selector for trend visualization
+- [x] Display portfolio-level and project-level trend options
+
+### Export ESG Report to PDF
+- [x] Create PDF generation endpoint for ESG reports
+- [x] Include all ESG metrics, ratings, and compliance status
+- [x] Add portfolio summary section with key indicators
+- [x] Include project-by-project ESG breakdown
+- [x] Add export button to ESG Dashboard UI
+- [x] Generate downloadable PDF with professional formatting
+
+### LEED Credit Auto-Suggestions
+- [x] Create AI-powered LEED credit analysis endpoint
+- [x] Analyze building performance data against LEED criteria
+- [x] Generate achievable credit recommendations
+- [x] Show confidence scores for each suggestion
+- [x] Display required actions to achieve suggested credits
+- [x] Add LEED suggestions panel to ESG Dashboard
+
