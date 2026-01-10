@@ -4527,3 +4527,9 @@ Deployment is allowed only when:
 - [x] Add error handling and retry logic
 - [x] Test backup scheduler functionality
 - [x] Verify no more connection errors in logs
+
+## Bug Fixes - QA Report Issues (Jan 10, 2026)
+
+- [x] Fix negative pending count (-142 pending projects) in Priority Scoring KPIs
+- [x] Fix duplicate criteria names (multiple "Test Urgency" entries) in Priority Scoring
+- [x] Investigate and fix budget planning issues (no issues found - system working as expected)

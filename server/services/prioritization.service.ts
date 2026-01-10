@@ -396,10 +396,12 @@ export async function getScoringStatus(): Promise<{
   `);
   const totalProjects = (totalResult[0] as any)[0]?.count || 0;
 
-  // Get count of projects with at least one criterion score
+  // Get count of projects with at least one criterion score (only active projects)
   const scoredResult = await db.execute(sql`
-    SELECT COUNT(DISTINCT projectId) as count 
-    FROM project_scores
+    SELECT COUNT(DISTINCT ps.projectId) as count 
+    FROM project_scores ps
+    INNER JOIN projects p ON ps.projectId = p.id
+    WHERE p.deletedAt IS NULL
   `);
   const scoredProjects = (scoredResult[0] as any)[0]?.count || 0;
 
