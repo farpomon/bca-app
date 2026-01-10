@@ -14,6 +14,8 @@ import { CapitalBudgetKPIs } from "@/components/CapitalBudgetKPIs";
 import { CapitalResultsCharts } from "@/components/CapitalResultsCharts";
 import { YearRangeSummary } from "@/components/YearRangeSummary";
 import { ProjectFilterBar, ProjectFilters } from "@/components/ProjectFilterBar";
+import { CycleManagement } from "@/components/CycleManagement";
+import { AssessmentAnalytics } from "@/components/AssessmentAnalytics";
 import { Loader2, Plus, Calendar, DollarSign, TrendingUp, FileText, ArrowLeft, Info, HelpCircle } from "lucide-react";
 import {
   Tooltip,
@@ -369,6 +371,22 @@ export default function CapitalBudgetPlanner() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Cycle Management */}
+                  <CycleManagement
+                    cycles={cycles || []}
+                    onCycleChange={() => {
+                      utils.prioritization.getBudgetCycles.invalidate();
+                      if (selectedCycleId) {
+                        utils.prioritization.getBudgetCycle.invalidate({ cycleId: selectedCycleId });
+                      }
+                    }}
+                  />
+
+                  {/* Assessment Analytics */}
+                  {selectedCycleId && (
+                    <AssessmentAnalytics cycleId={selectedCycleId} />
+                  )}
                 </>
               ) : null}
             </div>

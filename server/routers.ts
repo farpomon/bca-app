@@ -54,6 +54,7 @@ import { companyRolesRouter } from "./companyRolesRouter";
 import { pageVisibilityRouter } from "./pageVisibilityRouter";
 import { buildingTemplatesRouter } from "./routers/buildingTemplates.router";
 import { customReportsRouter } from "./routers/customReports.router";
+import { capitalPlanningRouter } from "./routers/capitalPlanning.router";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import * as db from "./db";
@@ -112,6 +113,7 @@ export const appRouter = router({
   esgLeed: esgLeedRouter,
   buildingTemplates: buildingTemplatesRouter,
   customReports: customReportsRouter,
+  capitalPlanning: capitalPlanningRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

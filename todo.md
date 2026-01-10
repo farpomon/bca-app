@@ -3857,3 +3857,116 @@ Testing:
 - [ ] Ensure allocations reference same assessment vintage
 - [ ] Ensure visualizations use same cost escalation assumptions
 - [ ] Prevent mixing cached and recalculated values
+
+
+## 🔥 NEW PRIORITY: Capital Planning & Cycle Management Integration
+
+### 1) Delete Cycle Analyses (Single + Bulk)
+
+#### 1.1 Cycle Management UI
+- [x] Add Manage mode to cycle selector/list
+- [x] Add checkbox per cycle row for single selection
+- [x] Add bulk selection capability
+- [x] Add "Select All" functionality (respects filters)
+- [x] Add "Delete Selected" action button
+- [x] Add "Archive Selected" action button (optional safer alternative)
+
+#### 1.2 Delete Behavior & Safety
+- [x] Add delete icon/action on each cycle row for single deletion
+- [x] Implement bulk deletion with single confirmation flow
+- [x] Create confirmation modal showing:
+  - [x] Number of cycles being deleted
+  - [x] Names and years affected
+  - [x] Warning about associated data removal (cashflow, backlog/risk outputs)
+- [x] Require "type DELETE" confirmation for bulk or approved cycles
+- [x] Prevent deletion of active cycle without replacement selection
+- [ ] Implement replacement cycle selector for active cycle deletion
+
+#### 1.3 Data Integrity Rules
+- [x] Cascade delete cycle configuration (years, assumptions)
+- [x] Cascade delete funding allocations
+- [x] Cascade delete scenario results
+- [x] Cascade delete analytics outputs (backlog/risk/unfunded critical)
+- [x] Update KPI counters instantly after deletion
+- [x] Exclude deleted items from cycle counts
+- [x] Optionally exclude archived items by default
+
+### 2) Integrate Assessment Data with Capital Planning
+
+#### 2.1 Data Model & Linking
+- [x] Link assessment records to facilities/buildings
+- [x] Link assessment records to asset systems/components (taxonomy)
+- [x] Add condition rating field (Good/Fair/Poor/Critical or numeric index)
+- [x] Add remaining useful life (RUL) field
+- [x] Add expected replacement year field
+- [x] Add consequence of failure / criticality field
+- [x] Add deficiency cost (repair/renewal cost) field
+- [x] Add year-of-work field to deficiencies
+- [x] Link capital projects to assessment deficiencies (many-to-many)
+- [x] Enable projects to "consume" backlog when funded
+
+#### 2.2 Core Calculations (Outputs)
+
+##### A) Backlog (Starting Point)
+- [x] Calculate total backlog $ from assessment deficiencies
+- [x] Scope backlog to portfolio and assessment vintage
+- [x] Add backlog filtering by facility
+- [x] Add backlog filtering by asset category (envelope, HVAC, electrical, etc.)
+- [x] Add backlog filtering by condition/risk severity
+
+##### B) Backlog Reduction Over Time
+- [x] Calculate backlog reduced per year (sum of funded projects mapped to deficiencies)
+- [x] Calculate remaining backlog per year (prior - reduced + new)
+- [ ] Support optional condition decay / new needs modeling
+- [x] Show annual reduction metrics
+- [x] Show cumulative reduction metrics
+
+##### C) Risk Analysis
+- [x] Implement risk score calculation: likelihood (condition/RUL) × consequence (criticality/impact)
+- [x] Calculate risk profile before funding
+- [x] Calculate risk profile after funding
+- [x] Calculate risk reduction trend per year
+- [x] Calculate overall risk reduction
+
+##### D) Unfunded Critical Risks
+- [x] Define "critical" rules (condition = Critical OR risk score > threshold OR life safety flags)
+- [x] Calculate count of unfunded critical items
+- [x] Calculate $ value of unfunded critical items
+- [x] Identify top risk drivers (life safety, envelope failure, regulatory, operational)
+- [x] Generate list of top unfunded critical items with facility + asset type + consequence
+
+#### 2.3 UI Placement & Experience
+- [x] Replace "Additional Analytics Coming Soon" placeholder with live panels
+- [x] Create Backlog Summary panel
+- [x] Create Backlog Reduction Trend visualization
+- [x] Create Risk Exposure (Before/After) charts
+- [x] Create Unfunded Critical Risks panel
+- [x] Design professional empty state for missing assessment data
+- [x] Add "Connect Assessment Data" CTA
+- [x] Add "View Assessment Coverage" CTA
+- [x] Add "Map Projects to Deficiencies" CTA
+
+#### 2.4 Consistency, Refresh & Trust
+- [x] Invalidate cached analytics on cycle assumption changes
+- [x] Invalidate cached analytics on project allocation changes
+- [x] Invalidate cached analytics on project-to-deficiency mapping changes
+- [x] Invalidate cached analytics on assessment data imports/updates
+- [x] Ensure all KPI cards reflect selected active cycle
+- [x] Ensure all analytics use same assessment vintage
+- [x] Add analytics recalculation trigger system
+
+### Testing & Validation
+- [x] Test single cycle deletion with confirmation
+- [x] Test bulk cycle deletion with "type DELETE" confirmation
+- [x] Test active cycle deletion prevention
+- [x] Test KPI counter updates after deletion
+- [x] Test backlog calculation accuracy
+- [x] Test backlog reduction over time
+- [x] Test risk analysis calculations
+- [x] Test unfunded critical risks identification
+- [x] Test analytics refresh on data changes
+- [x] Test empty state display when assessment data missing
+- [x] Write vitest tests for cycle deletion
+- [x] Write vitest tests for backlog calculations
+- [x] Write vitest tests for risk analysis
+- [x] Write vitest tests for data integrity rules

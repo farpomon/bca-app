@@ -3185,4 +3185,43 @@ export const performanceMetrics = mysqlTable("performance_metrics", {
 export type PerformanceMetric = typeof performanceMetrics.$inferSelect;
 export type InsertPerformanceMetric = typeof performanceMetrics.$inferInsert;
 
+/**
+ * Project Deficiencies Mapping
+ * Links capital projects to assessment deficiencies they address
+ */
+export const projectDeficiencies = mysqlTable("project_deficiencies", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	deficiencyId: int().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_project_deficiency").on(table.projectId, table.deficiencyId),
+	index("idx_deficiency_project").on(table.deficiencyId, table.projectId),
+]);
+
+export type ProjectDeficiency = typeof projectDeficiencies.$inferSelect;
+export type InsertProjectDeficiency = typeof projectDeficiencies.$inferInsert;
+
+/**
+ * Cycle Analytics Cache
+ * Stores pre-calculated analytics for capital budget cycles
+ */
+export const cycleAnalyticsCache = mysqlTable("cycle_analytics_cache", {
+	id: int().autoincrement().notNull().primaryKey(),
+	cycleId: int().notNull(),
+	analyticsType: mysqlEnum(['backlog', 'risk', 'trend', 'unfunded_critical']).notNull(),
+	data: text().notNull(), // JSON string of calculated data
+	calculatedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+},
+(table) => [
+	index("idx_cycle_analytics").on(table.cycleId, table.analyticsType),
+	index("idx_analytics_expiry").on(table.expiresAt),
+]);
+
+export type CycleAnalyticsCache = typeof cycleAnalyticsCache.$inferSelect;
+export type InsertCycleAnalyticsCache = typeof cycleAnalyticsCache.$inferInsert;
+
 
