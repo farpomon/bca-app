@@ -4196,3 +4196,4 @@ Testing:
 - [x] Highlight required justifications based on rules
 
 - [x] Fix TypeError when clicking City of Edmonton project - cannot read properties of undefined (reading 'score')
+- [x] Remove mandatory justification requirement for all score criteria (Test Urgency, Safety, Code Compliance, Accessibility)

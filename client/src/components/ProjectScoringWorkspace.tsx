@@ -166,22 +166,7 @@ export default function ProjectScoringWorkspace({
       return;
     }
 
-    // Validate justifications for high scores or safety/compliance
-    const needsJustification = criteria.filter(c => {
-      const score = scores[c.id];
-      if (!score || score.score === null) return false;
-      
-      const isSafetyOrCompliance = c.category === 'compliance' || c.name.toLowerCase().includes('safety');
-      const isHighScore = score.score >= 7;
-      
-      return (isSafetyOrCompliance || isHighScore) && !score.justification.trim();
-    });
-
-    if (needsJustification.length > 0) {
-      toast.error(`Justification required for: ${needsJustification.map(c => c.name).join(", ")}`);
-      return;
-    }
-
+    // Justifications are optional - no validation required
     submitAllMutation.mutate({ projectId });
   };
 
@@ -242,17 +227,8 @@ export default function ProjectScoringWorkspace({
     }
   };
 
-  const requiresJustification = (criteriaId: number) => {
-    const criterion = criteria.find(c => c.id === criteriaId);
-    const score = scores[criteriaId];
-    
-    if (!criterion || !score || score.score === null) return false;
-    
-    const isSafetyOrCompliance = criterion.category === 'compliance' || criterion.name.toLowerCase().includes('safety');
-    const isHighScore = score.score >= 7;
-    
-    return isSafetyOrCompliance || isHighScore;
-  };
+  // Justification is now optional for all criteria
+  const requiresJustification = (_criteriaId: number) => false;
 
   if (scoresLoading) {
     return (
