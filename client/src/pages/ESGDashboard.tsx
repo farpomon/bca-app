@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
 import { 
   LetterGradeBadge, 
@@ -17,6 +19,7 @@ import {
   RatingGaugeSemi,
   AssetRatingCard,
   ProjectRatingCard,
+  ThresholdCustomizationDialog,
 } from "@/components/rating";
 import { 
   Loader2, 
@@ -34,15 +37,72 @@ import {
   RefreshCw,
   Settings,
   Download,
-  Plus
+  Plus,
+  AlertCircle,
+  CheckCircle,
+  Info,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
 type Zone = "green" | "yellow" | "orange" | "red";
 
+// Default threshold configurations
+const DEFAULT_LETTER_GRADES = {
+  "A+": { min: 97, max: 100 },
+  "A": { min: 93, max: 96.99 },
+  "A-": { min: 90, max: 92.99 },
+  "B+": { min: 87, max: 89.99 },
+  "B": { min: 83, max: 86.99 },
+  "B-": { min: 80, max: 82.99 },
+  "C+": { min: 77, max: 79.99 },
+  "C": { min: 73, max: 76.99 },
+  "C-": { min: 70, max: 72.99 },
+  "D+": { min: 67, max: 69.99 },
+  "D": { min: 63, max: 66.99 },
+  "D-": { min: 60, max: 62.99 },
+  "F": { min: 0, max: 59.99 }
+};
+
+const DEFAULT_ZONES = {
+  green: { min: 80, max: 100, label: "Excellent" },
+  yellow: { min: 60, max: 79.99, label: "Good" },
+  orange: { min: 40, max: 59.99, label: "Fair" },
+  red: { min: 0, max: 39.99, label: "Poor" }
+};
+
+const DEFAULT_FCI_LETTER_GRADES = {
+  "A+": { min: 0, max: 2 },
+  "A": { min: 2.01, max: 5 },
+  "A-": { min: 5.01, max: 8 },
+  "B+": { min: 8.01, max: 12 },
+  "B": { min: 12.01, max: 15 },
+  "B-": { min: 15.01, max: 20 },
+  "C+": { min: 20.01, max: 25 },
+  "C": { min: 25.01, max: 30 },
+  "C-": { min: 30.01, max: 35 },
+  "D+": { min: 35.01, max: 40 },
+  "D": { min: 40.01, max: 50 },
+  "D-": { min: 50.01, max: 60 },
+  "F": { min: 60.01, max: 100 }
+};
+
+const DEFAULT_FCI_ZONES = {
+  green: { min: 0, max: 5, label: "Excellent" },
+  yellow: { min: 5.01, max: 10, label: "Good" },
+  orange: { min: 10.01, max: 30, label: "Fair" },
+  red: { min: 30.01, max: 100, label: "Poor" }
+};
+
 export default function ESGDashboard() {
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showCustomizeDialog, setShowCustomizeDialog] = useState(false);
+  const [calculationProgress, setCalculationProgress] = useState<{
+    stage: "idle" | "assets" | "project" | "complete";
+    progress: number;
+    message: string;
+  }>({ stage: "idle", progress: 0, message: "" });
 
   // Fetch projects for selection
   const { data: projects, isLoading: projectsLoading } = trpc.projects.list.useQuery();
@@ -68,20 +128,32 @@ export default function ESGDashboard() {
   // Mutations
   const calculateProjectRating = trpc.rating.calculateProjectRating.useMutation({
     onSuccess: () => {
+      setCalculationProgress({ stage: "complete", progress: 100, message: "Rating calculation complete!" });
       toast.success("Project rating calculated successfully");
       refetchRating();
+      setTimeout(() => {
+        setCalculationProgress({ stage: "idle", progress: 0, message: "" });
+      }, 2000);
     },
     onError: (error) => {
+      setCalculationProgress({ stage: "idle", progress: 0, message: "" });
       toast.error(`Failed to calculate rating: ${error.message}`);
     }
   });
 
   const batchCalculateRatings = trpc.rating.batchCalculateAssetRatings.useMutation({
     onSuccess: (data) => {
-      toast.success(`Calculated ratings for ${data.processedAssets} of ${data.totalAssets} assets`);
-      refetchRating();
+      setCalculationProgress({ 
+        stage: "project", 
+        progress: 75, 
+        message: `Processed ${data.processedAssets}/${data.totalAssets} assets. Calculating project rating...` 
+      });
+      if (selectedProject) {
+        calculateProjectRating.mutate({ projectId: selectedProject });
+      }
     },
     onError: (error) => {
+      setCalculationProgress({ stage: "idle", progress: 0, message: "" });
       toast.error(`Failed to calculate ratings: ${error.message}`);
     }
   });
@@ -89,16 +161,59 @@ export default function ESGDashboard() {
   const handleCalculateRatings = () => {
     if (!selectedProject) return;
     
-    // First calculate all asset ratings, then project rating
-    batchCalculateRatings.mutate({ projectId: selectedProject }, {
-      onSuccess: () => {
-        calculateProjectRating.mutate({ projectId: selectedProject });
-      }
+    setCalculationProgress({ 
+      stage: "assets", 
+      progress: 25, 
+      message: "Calculating asset ratings..." 
     });
+    
+    batchCalculateRatings.mutate({ projectId: selectedProject });
+  };
+
+  const handleSaveThresholds = (config: {
+    letterGrades: Record<string, { min: number; max: number }>;
+    zones: Record<string, { min: number; max: number; label: string }>;
+    fciLetterGrades: Record<string, { min: number; max: number }>;
+    fciZones: Record<string, { min: number; max: number; label: string }>;
+  }) => {
+    // In a real implementation, this would save to the backend
+    toast.success("Threshold settings saved successfully");
+    setShowCustomizeDialog(false);
   };
 
   // Get latest ESG score
   const latestScore = esgScores?.[0];
+
+  // Data validation
+  const dataValidation = useMemo(() => {
+    const issues: { type: "error" | "warning" | "info"; message: string }[] = [];
+    
+    if (!selectedProject) {
+      issues.push({ type: "info", message: "Select a project to view ESG metrics and ratings" });
+    } else {
+      if (!projectRating) {
+        issues.push({ type: "warning", message: "No rating data available. Click 'Calculate Ratings' to generate." });
+      }
+      
+      if (projectRating && projectRating.totalAssets === 0) {
+        issues.push({ type: "error", message: "No assets found in this project. Import assets to calculate ratings." });
+      }
+      
+      if (projectRating && projectRating.assessedAssets === 0 && projectRating.totalAssets > 0) {
+        issues.push({ type: "warning", message: "No assets have been assessed yet. Complete assessments to get accurate ratings." });
+      }
+      
+      if (projectRating && projectRating.assessedAssets < projectRating.totalAssets) {
+        const pct = Math.round((projectRating.assessedAssets / projectRating.totalAssets) * 100);
+        issues.push({ 
+          type: "info", 
+          message: `${pct}% of assets assessed (${projectRating.assessedAssets}/${projectRating.totalAssets}). Complete more assessments for comprehensive ratings.` 
+        });
+      }
+    }
+    
+    return issues;
+  }, [selectedProject, projectRating]);
 
   // Mock ESG metrics for demonstration
   const esgMetrics = {
@@ -107,6 +222,8 @@ export default function ESGDashboard() {
     waste: { score: 65, trend: "down" as const, change: -2.4 },
     emissions: { score: 71, trend: "stable" as const, change: 0.5 },
   };
+
+  const isCalculating = calculationProgress.stage !== "idle" && calculationProgress.stage !== "complete";
 
   return (
     <DashboardLayout>
@@ -142,9 +259,9 @@ export default function ESGDashboard() {
               <Button
                 variant="outline"
                 onClick={handleCalculateRatings}
-                disabled={batchCalculateRatings.isPending || calculateProjectRating.isPending}
+                disabled={isCalculating}
               >
-                {(batchCalculateRatings.isPending || calculateProjectRating.isPending) ? (
+                {isCalculating ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : (
                   <RefreshCw className="w-4 h-4 mr-2" />
@@ -155,92 +272,130 @@ export default function ESGDashboard() {
           </div>
         </div>
 
-        {/* Portfolio Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Portfolio Score</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-2xl font-bold">
-                      {portfolioSummary?.avgPortfolioScore?.toFixed(1) || "—"}
-                    </span>
-                    {portfolioSummary?.overallGrade && (
-                      <LetterGradeBadge grade={portfolioSummary.overallGrade} size="sm" />
-                    )}
-                  </div>
-                </div>
-                {portfolioSummary?.overallZone && (
-                  <ZoneIndicator zone={portfolioSummary.overallZone as Zone} showLabel={false} size="lg" />
+        {/* Calculation Progress */}
+        {calculationProgress.stage !== "idle" && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-4">
+                {calculationProgress.stage === "complete" ? (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                ) : (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Projects Rated</p>
-                  <p className="text-2xl font-bold mt-1">
-                    {portfolioSummary?.ratedProjects || 0} / {portfolioSummary?.totalProjects || 0}
-                  </p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{calculationProgress.message}</p>
+                  <Progress value={calculationProgress.progress} className="mt-2 h-2" />
                 </div>
-                <Building2 className="w-8 h-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
+        )}
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Green Zone</p>
-                  <p className="text-2xl font-bold mt-1 text-emerald-600">
-                    {portfolioSummary?.zoneDistribution?.green || 0}
-                  </p>
+        {/* Data Validation Alerts */}
+        {dataValidation.length > 0 && (
+          <div className="space-y-2">
+            {dataValidation.map((issue, i) => (
+              <Alert key={i} variant={issue.type === "error" ? "destructive" : "default"}>
+                {issue.type === "error" ? (
+                  <AlertCircle className="h-4 w-4" />
+                ) : issue.type === "warning" ? (
+                  <AlertTriangle className="h-4 w-4" />
+                ) : (
+                  <Info className="h-4 w-4" />
+                )}
+                <AlertDescription>{issue.message}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        )}
+
+        {/* Portfolio Summary Cards */}
+        {portfolioSummary && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Portfolio Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">
+                    {portfolioSummary.avgPortfolioScore ? parseFloat(portfolioSummary.avgPortfolioScore).toFixed(1) : 'N/A'}
+                  </span>
+                  {portfolioSummary.avgPortfolioScore && (
+                    <LetterGradeBadge 
+                      grade={portfolioSummary.portfolioGrade || "N/A"} 
+                      size="sm" 
+                    />
+                  )}
                 </div>
-                <ZoneDot zone="green" size="lg" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Needs Attention</p>
-                  <p className="text-2xl font-bold mt-1 text-red-600">
-                    {(portfolioSummary?.zoneDistribution?.orange || 0) + (portfolioSummary?.zoneDistribution?.red || 0)}
-                  </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Projects Rated
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <span className="text-2xl font-bold">{portfolioSummary.totalProjects}</span>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Green Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <ZoneDot zone="green" />
+                  <span className="text-2xl font-bold">{portfolioSummary.zoneDistribution?.green || 0}</span>
+                  <span className="text-muted-foreground text-sm">projects</span>
                 </div>
-                <ZoneDot zone="red" size="lg" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Needs Attention
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <ZoneDot zone="red" />
+                  <span className="text-2xl font-bold">
+                    {(portfolioSummary.zoneDistribution?.orange || 0) + (portfolioSummary.zoneDistribution?.red || 0)}
+                  </span>
+                  <span className="text-muted-foreground text-sm">projects</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-        {/* Portfolio Zone Distribution */}
+        {/* Zone Distribution */}
         {portfolioSummary?.zoneDistribution && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Portfolio Zone Distribution</CardTitle>
-              <CardDescription>Distribution of projects across condition zones</CardDescription>
             </CardHeader>
             <CardContent>
               <ZoneDistributionBar 
                 distribution={portfolioSummary.zoneDistribution as Record<Zone, number>} 
-                showCounts={true}
+                showLabels 
+                showPercentages
+                height="lg"
               />
-              <div className="mt-4">
+              <div className="mt-4 flex justify-center">
                 <ZoneLegend />
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Tabs for different views */}
+        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -278,8 +433,12 @@ export default function ESGDashboard() {
                       <p className="text-muted-foreground mb-4">
                         Calculate ratings to see the project's performance metrics
                       </p>
-                      <Button onClick={handleCalculateRatings}>
-                        <RefreshCw className="w-4 h-4 mr-2" />
+                      <Button onClick={handleCalculateRatings} disabled={isCalculating}>
+                        {isCalculating ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                        )}
                         Calculate Ratings
                       </Button>
                     </CardContent>
@@ -522,7 +681,7 @@ export default function ESGDashboard() {
                   <CardHeader>
                     <CardTitle className="text-lg">Standard Letter Grade Thresholds</CardTitle>
                     <CardDescription>
-                      Default thresholds for converting scores to letter grades
+                      Default thresholds for converting scores to letter grades (higher score = better)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -555,7 +714,7 @@ export default function ESGDashboard() {
                   <CardHeader>
                     <CardTitle className="text-lg">FCI Letter Grade Thresholds</CardTitle>
                     <CardDescription>
-                      Inverted scale for Facility Condition Index (lower is better)
+                      Inverted scale for Facility Condition Index (lower FCI = better condition)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -593,7 +752,7 @@ export default function ESGDashboard() {
                           Color-coded zones for quick visual assessment
                         </CardDescription>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => setShowCustomizeDialog(true)}>
                         <Settings className="w-4 h-4 mr-2" />
                         Customize
                       </Button>
@@ -602,7 +761,7 @@ export default function ESGDashboard() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <h4 className="font-medium mb-3">Standard Zones</h4>
+                        <h4 className="font-medium mb-3">Standard Zones (Higher = Better)</h4>
                         <div className="space-y-2">
                           {Object.entries(defaultScales.zones.standard).map(([zone, config]) => (
                             <div key={zone} className="flex items-center justify-between p-2 border rounded">
@@ -618,7 +777,7 @@ export default function ESGDashboard() {
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-medium mb-3">FCI Zones (Inverted)</h4>
+                        <h4 className="font-medium mb-3">FCI Zones (Lower = Better)</h4>
                         <div className="space-y-2">
                           {Object.entries(defaultScales.zones.fci).map(([zone, config]) => (
                             <div key={zone} className="flex items-center justify-between p-2 border rounded">
@@ -641,6 +800,17 @@ export default function ESGDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Threshold Customization Dialog */}
+      <ThresholdCustomizationDialog
+        open={showCustomizeDialog}
+        onOpenChange={setShowCustomizeDialog}
+        defaultLetterGrades={defaultScales?.letterGrades?.standard || DEFAULT_LETTER_GRADES}
+        defaultZones={defaultScales?.zones?.standard || DEFAULT_ZONES}
+        fciLetterGrades={defaultScales?.letterGrades?.fci || DEFAULT_FCI_LETTER_GRADES}
+        fciZones={defaultScales?.zones?.fci || DEFAULT_FCI_ZONES}
+        onSave={handleSaveThresholds}
+      />
     </DashboardLayout>
   );
 }

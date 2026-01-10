@@ -4197,3 +4197,106 @@ Testing:
 
 - [x] Fix TypeError when clicking City of Edmonton project - cannot read properties of undefined (reading 'score')
 - [x] Remove mandatory justification requirement for all score criteria (Test Urgency, Safety, Code Compliance, Accessibility)
+
+## ESG Dashboard Revamp
+
+### Dashboard Layout & Navigation
+- [ ] Create ESG Dashboard with header (portfolio selector, Calculate Ratings button)
+- [ ] Implement tabs: Overview, ESG Metrics, Ratings, Rating Scales
+
+### Overview Tab (Portfolio Summary)
+- [ ] Display KPI cards: Portfolio Score (0-100) with letter grade
+- [ ] Display Projects Rated (X/Y) count
+- [ ] Display Green Zone count and Needs Attention count
+- [ ] Add Portfolio Zone Distribution visualization
+
+### ESG Metrics Tab
+- [ ] Implement metric cards: Energy Efficiency, Water Conservation, Waste Management, Carbon Emissions
+- [ ] Each card shows: score/100, letter grade + descriptor, trend indicator
+
+### Ratings Tab
+- [ ] Show rating outputs per project and portfolio when ratings exist
+- [ ] Show clean empty state with guidance when no ratings
+
+### Rating Scales Tab
+- [ ] Implement Standard Letter Grade Thresholds (A+ to F)
+- [ ] Implement Zone Rating System (Excellent/Good/Fair/Poor)
+- [ ] Implement FCI Letter Grades (inverted scale)
+- [ ] Add Customize button for admin threshold editing
+
+### Calculation Logic
+- [ ] Implement Calculate Ratings functionality
+- [ ] Compute per-project ESG scores and portfolio aggregation
+- [ ] Assign letter grades and zone classifications
+- [ ] Persist results with timestamp and threshold version
+
+### Data Integrity
+- [ ] Disable Calculate Ratings while running with progress indicator
+- [ ] Validate all scores bounded 0-100
+- [ ] Handle projects lacking ESG inputs gracefully
+
+## Portfolio Report Revamp
+
+### UX Improvements
+- [ ] Update page header with sticky back button and subtitle
+- [ ] Convert section selection into grouped categories
+- [ ] Add Select all/Clear all controls
+- [ ] Add presets: Recommended, Minimal executive, Full technical
+- [ ] Show estimated report size
+
+### Report Details Panel
+- [ ] Add required fields: Report Title, Prepared By, Prepared For, Date
+- [ ] Add optional branding: Company logo, Client logo, Footer text
+- [ ] Add Data snapshot indicator
+
+### Preview + Generate Workflow
+- [ ] Implement 2-step flow: Generate Preview (watermarked) → Export PDF
+- [ ] Show progress states and disable button while generating
+- [ ] Lock data timestamp when preview generated
+- [ ] Warn if data changed since preview
+
+### Content Standards
+- [ ] Implement Executive Summary section template
+- [ ] Implement Portfolio Metrics & KPIs section
+- [ ] Implement Building-by-Building Breakdown
+- [ ] Implement UNIFORMAT Category Analysis
+- [ ] Implement Capital Planning Forecast
+- [ ] Implement Priority Recommendations
+- [ ] Implement Geographic Distribution (optional)
+- [ ] Implement Appendices (optional)
+
+### Data Integrity & Validation
+- [ ] Validate portfolio has at least one asset
+- [ ] Validate condition data exists for dependent sections
+- [ ] Validate capital planning cycle exists for forecast section
+- [ ] Show warnings and disable affected sections for missing data
+
+### PDF Output Quality
+- [ ] Generate table of contents
+- [ ] Add page numbers
+- [ ] Ensure consistent typography and spacing
+- [ ] Size charts for print readability
+
+## ESG Dashboard Revamp (Jan 2026)
+- [x] Add threshold customization dialog for letter grades and zones
+- [x] Improve calculation workflow with progress states and feedback
+- [x] Add data validation and empty state handling
+- [x] Add validation alerts for missing data conditions
+
+## Portfolio Report Revamp (Jan 2026)
+- [x] Add section presets (Recommended, Minimal, Full Technical)
+- [x] Add Select all/Clear all controls for sections
+- [x] Add required field validation (title, prepared by, prepared for)
+- [x] Implement 2-step preview workflow with data snapshot
+- [x] Add collapsible section categories with counts
+- [x] Add estimated page count indicator
+- [x] Add data validation alerts for missing sections
+- [x] Add Table of Contents to report
+- [x] Add Assumptions & Methodology section
+- [x] Add Glossary section
+- [x] Add DRAFT watermark in preview mode
+- [x] Add data changed since preview warning
+- [x] Improve print/PDF export styles
+
+## Bug Fixes (Jan 2026)
+- [x] Fix cascade deletion bug when deleting planning cycles - DELETE query on cash_flow_projections fails with subquery
