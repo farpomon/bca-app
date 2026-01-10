@@ -1,0 +1,34 @@
+{
+  "query": "SELECT name, startYear, endYear, COUNT(*) as duplicate_count \nFROM capital_budget_cycles \nGROUP BY name, startYear, endYear \nHAVING COUNT(*) > 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT name, startYear, endYear, COUNT(*) as duplicate_count \nFROM capital_budget_cycles \nGROUP BY name, startYear, endYear \nHAVING COUNT(*) > 1;",
+  "rows": [
+    {
+      "name": "2026-2029 Capital Plan",
+      "startYear": "2026",
+      "endYear": "2029",
+      "duplicate_count": "2"
+    },
+    {
+      "name": "2025-2029 Capital Plan",
+      "startYear": "2025",
+      "endYear": "2029",
+      "duplicate_count": "2"
+    },
+    {
+      "name": "Test Cycle 2026-2029",
+      "startYear": "2026",
+      "endYear": "2029",
+      "duplicate_count": "17"
+    },
+    {
+      "name": "Test Cycle 2025-2028",
+      "startYear": "2025",
+      "endYear": "2028",
+      "duplicate_count": "79"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tstartYear\tendYear\tduplicate_count\n2026-2029 Capital Plan\t2026\t2029\t2\n2025-2029 Capital Plan\t2025\t2029\t2\nTest Cycle 2026-2029\t2026\t2029\t17\nTest Cycle 2025-2028\t2025\t2028\t79\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

@@ -1,0 +1,46 @@
+{
+  "query": "SELECT COUNT(*) as total_cycles FROM capital_budget_cycles;\nSELECT id, name, startYear, endYear, status FROM capital_budget_cycles ORDER BY id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as total_cycles FROM capital_budget_cycles;\nSELECT id, name, startYear, endYear, status FROM capital_budget_cycles ORDER BY id LIMIT 10;",
+  "rows": [
+    {
+      "total_cycles": "100"
+    },
+    {
+      "total_cycles": "id\tname\tstartYear\tendYear\tstatus"
+    },
+    {
+      "total_cycles": "1\tTest Cycle 2025-2028\t2025\t2028\tapproved"
+    },
+    {
+      "total_cycles": "3\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "5\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "7\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "9\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "11\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "13\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "15\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "30001\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    },
+    {
+      "total_cycles": "30003\tTest Cycle 2025-2028\t2025\t2028\tplanning"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_cycles\n100\nid\tname\tstartYear\tendYear\tstatus\n1\tTest Cycle 2025-2028\t2025\t2028\tapproved\n3\tTest Cycle 2025-2028\t2025\t2028\tplanning\n5\tTest Cycle 2025-2028\t2025\t2028\tplanning\n7\tTest Cycle 2025-2028\t2025\t2028\tplanning\n9\tTest Cycle 2025-2028\t2025\t2028\tplanning\n11\tTest Cycle 2025-2028\t2025\t2028\tplanning\n13\tTest Cycle 2025-2028\t2025\t2028\tplanning\n15\tTest Cycle 2025-2028\t2025\t2028\tplanning\n30001\tTest Cycle 2025-2028\t2025\t2028\tplanning\n30003\tTest Cycle 2025-2028\t2025\t2028\tplanning\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

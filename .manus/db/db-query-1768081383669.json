@@ -1,0 +1,28 @@
+{
+  "query": "SELECT COUNT(*) as total_cycles FROM capital_budget_cycles;\n\nSELECT name, startYear, endYear, COUNT(*) as count \nFROM capital_budget_cycles \nGROUP BY name, startYear, endYear \nHAVING COUNT(*) > 1;\n\nSELECT id, name, startYear, endYear, totalBudget, status \nFROM capital_budget_cycles \nORDER BY startYear DESC, name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as total_cycles FROM capital_budget_cycles;\n\nSELECT name, startYear, endYear, COUNT(*) as count \nFROM capital_budget_cycles \nGROUP BY name, startYear, endYear \nHAVING COUNT(*) > 1;\n\nSELECT id, name, startYear, endYear, totalBudget, status \nFROM capital_budget_cycles \nORDER BY startYear DESC, name;",
+  "rows": [
+    {
+      "total_cycles": "4"
+    },
+    {
+      "total_cycles": "id\tname\tstartYear\tendYear\ttotalBudget\tstatus"
+    },
+    {
+      "total_cycles": "1020021\t2026-2029 Capital Plan\t2026\t2029\t100000.00\tplanning"
+    },
+    {
+      "total_cycles": "990001\tTest Cycle 2026-2029\t2026\t2029\t6000000.00\tapproved"
+    },
+    {
+      "total_cycles": "960003\t2025-2029 Capital Plan\t2025\t2029\t25000000.00\tactive"
+    },
+    {
+      "total_cycles": "1\tTest Cycle 2025-2028\t2025\t2028\t6000000.00\tapproved"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_cycles\n4\nid\tname\tstartYear\tendYear\ttotalBudget\tstatus\n1020021\t2026-2029 Capital Plan\t2026\t2029\t100000.00\tplanning\n990001\tTest Cycle 2026-2029\t2026\t2029\t6000000.00\tapproved\n960003\t2025-2029 Capital Plan\t2025\t2029\t25000000.00\tactive\n1\tTest Cycle 2025-2028\t2025\t2028\t6000000.00\tapproved\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM capital_budget_cycles\nWHERE id IN (\n  SELECT id FROM (\n    SELECT c1.id\n    FROM capital_budget_cycles c1\n    WHERE EXISTS (\n      SELECT 1 FROM capital_budget_cycles c2\n      WHERE c2.name = c1.name \n      AND c2.startYear = c1.startYear \n      AND c2.endYear = c1.endYear\n      AND c2.id < c1.id\n    )\n  ) AS duplicates\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute DELETE FROM capital_budget_cycles\nWHERE id IN (\n  SELECT id FROM (\n    SELECT c1.id\n    FROM capital_budget_cycles c1\n    WHERE EXISTS (\n      SELECT 1 FROM capital_budget_cycles c2\n      WHERE c2.name = c1.name \n      AND c2.startYear = c1.startYear \n      AND c2.endYear = c1.endYear\n      AND c2.id < c1.id\n    )\n  ) AS duplicates\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 61
+}

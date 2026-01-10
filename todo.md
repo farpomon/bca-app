@@ -4429,3 +4429,94 @@ Testing:
 - [x] Display required actions to achieve suggested credits
 - [x] Add LEED suggestions panel to ESG Dashboard
 
+
+
+## 🚀 Pre-Deployment Testing Checklist (Release Candidate)
+
+### 1) Smoke Test (All Core Modules)
+- [ ] Login/logout + session persistence
+- [ ] Main navigation routes render successfully (no blank screens)
+- [ ] Back buttons work with browser history + fallback routes
+- [ ] No console errors or failed network calls on initial load
+
+### 2.1 Multi-Criteria Prioritization
+- [ ] Create criteria template → edit weights → ensure weights normalize to 100%
+- [ ] Score projects (draft + submit final)
+- [ ] Confirm KPIs (Total Projects, Average Score, Active Criteria) match actual records
+- [ ] Run "Recalculate All" and verify rankings update and persist
+
+### 2.2 Capital Budget Planning (1–30 Year Cycles)
+- [ ] Create cycles of varying lengths (1-year, 4-year, 10-year, 30-year)
+- [ ] Confirm cycle selector works and avoids duplicate naming confusion
+- [ ] Verify allocation and KPIs are scoped to the active cycle only
+- [ ] Delete a single cycle and bulk delete multiple cycles
+- [ ] Confirm "Additional Analytics" shows actionable empty state when no assessment data exists
+- [ ] Confirm backlog/risk/unfunded critical outputs once integrated
+
+### 2.3 ESG Dashboard + ESG & LEED
+- [ ] Run "Calculate Ratings" → verify all tabs (Overview/Metrics/Ratings) update consistently from same snapshot
+- [ ] Confirm rating scales (grades/zones/FCI inverted) match defaults and customization persists
+- [ ] Validate empty states appear when no project selected / no data exists
+- [ ] Grid carbon map and province table match selected province behavior
+
+### 2.4 Portfolio Report Generation
+- [ ] Select sections + enter report details
+- [ ] Generate preview then export PDF
+- [ ] Confirm data snapshot consistency between preview and final export
+- [ ] Confirm missing-data sections are handled gracefully (warnings, not blank/incorrect content)
+
+### 3) Data Integrity & Calculation Validation (Must Pass)
+- [ ] Confirm all percentage fields are bounded and valid (confidence 0–100, criteria weights sum to 100%)
+- [ ] Confirm all KPIs match persisted data and are not mixing cached vs recalculated values
+- [ ] Confirm recalculation pipelines are deterministic (repeated runs produce identical results)
+- [ ] Confirm deleting cycles removes/archives dependent outputs and does not leave orphan records
+- [ ] Verify "rated projects" counts match underlying eligibility rules
+
+### 4) UI/UX Regression Check
+- [ ] Confirm no layout breakpoints (desktop/tablet/mobile)
+- [ ] Confirm long text wraps correctly (AI insights, descriptions)
+- [ ] Confirm empty states are present and professional
+- [ ] Confirm loading states and disabled states prevent duplicate actions (Calculate Ratings, Recalculate All, Generate Report)
+
+### 5) Performance & Reliability
+- [ ] Run Lighthouse / performance checks on key pages
+- [ ] Confirm no slow queries on rankings and recalculation
+- [ ] Confirm no slow queries on cycle deletion (bulk)
+- [ ] Confirm no slow queries on ESG rating calculation
+- [ ] Add timeouts + error messaging for long-running actions
+- [ ] Confirm background jobs (if used) surface progress and completion states
+
+### 6) Security & Permissions
+- [ ] Verify role-based access for customizing rating scales
+- [ ] Verify role-based access for deleting cycles (single/bulk)
+- [ ] Verify role-based access for editing criteria templates
+- [ ] Validate API endpoints reject unauthorized requests
+- [ ] Protect against IDOR (user cannot access another org's portfolio/cycles/projects)
+
+### 7) Logging, Monitoring, and Rollback Readiness
+- [ ] Ensure key actions are logged (calculate ratings, recalculate, delete cycles, generate reports)
+- [ ] Confirm error reporting/monitoring is enabled
+- [ ] Verify rollback plan exists (release can be reverted if needed)
+
+### Release Gate (Definition of Done)
+Deployment is allowed only when:
+- [ ] All smoke tests pass
+- [ ] All functional flows pass
+- [ ] Calculation consistency checks pass
+- [ ] No critical security findings
+- [ ] No P0/P1 bugs open
+
+
+## 🔥 CRITICAL: Fix Duplicate Budget Cycles (P0 Blocker)
+- [x] Investigate database query returning duplicate cycles
+- [x] Check budgetCycles table for duplicate records
+- [x] Review getAllBudgetCycles query logic
+- [x] Fix duplicate data in database (deleted 96 duplicate records)
+- [x] Verify cycle selector shows unique cycles only (now shows 4 unique cycles)
+- [x] Test cycle deletion after fix
+- [x] Verify performance improvement after deduplication (significant improvement)
+
+## CSP Policy Fix
+- [x] Update Content Security Policy to allow analytics domain
+- [x] Test analytics integration after CSP update
+- [x] Verify no CSP violations in browser console
