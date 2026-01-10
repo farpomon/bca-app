@@ -119,13 +119,54 @@ export default function ESGDashboard() {
     { enabled: !!selectedProject }
   );
 
-  // Fetch portfolio summary
-  const { data: portfolioSummary, isLoading: portfolioLoading } = trpc.rating.getPortfolioSummary.useQuery({});
+  // Fetch portfolio summary from new ESG Portfolio router
+  const { data: portfolioSummary, isLoading: portfolioLoading, refetch: refetchPortfolio } = trpc.esgPortfolio.getPortfolioESGSummary.useQuery({});
+
+  // Fetch project ESG ratings list
+  const { data: projectESGRatings, isLoading: projectRatingsLoading, refetch: refetchProjectRatings } = trpc.esgPortfolio.getProjectESGRatings.useQuery({
+    sortBy: 'score',
+    sortOrder: 'desc',
+    limit: 50
+  });
+
+  // Fetch threshold configurations
+  const { data: thresholdConfigs, refetch: refetchThresholds } = trpc.esgPortfolio.getThresholds.useQuery({});
+
+  // Fetch grade descriptors
+  const { data: gradeDescriptors } = trpc.esgPortfolio.getGradeDescriptors.useQuery();
 
   // Fetch default scales
   const { data: defaultScales } = trpc.rating.getDefaultScales.useQuery();
 
   // Mutations
+  // Calculate portfolio ESG ratings mutation
+  const calculatePortfolioRatings = trpc.esgPortfolio.calculatePortfolioRatings.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Portfolio ratings calculated: ${data.portfolio.projectsRated} projects rated`);
+      refetchPortfolio();
+      refetchProjectRatings();
+      setCalculationProgress({ stage: "complete", progress: 100, message: "Portfolio rating calculation complete!" });
+      setTimeout(() => {
+        setCalculationProgress({ stage: "idle", progress: 0, message: "" });
+      }, 2000);
+    },
+    onError: (error) => {
+      setCalculationProgress({ stage: "idle", progress: 0, message: "" });
+      toast.error(`Failed to calculate portfolio ratings: ${error.message}`);
+    }
+  });
+
+  // Create new threshold version mutation
+  const createThresholdVersion = trpc.esgPortfolio.createThresholdVersion.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Threshold version ${data.version} created successfully`);
+      refetchThresholds();
+    },
+    onError: (error) => {
+      toast.error(`Failed to create threshold version: ${error.message}`);
+    }
+  });
+
   const calculateProjectRating = trpc.rating.calculateProjectRating.useMutation({
     onSuccess: () => {
       setCalculationProgress({ stage: "complete", progress: 100, message: "Rating calculation complete!" });
@@ -168,6 +209,16 @@ export default function ESGDashboard() {
     });
     
     batchCalculateRatings.mutate({ projectId: selectedProject });
+  };
+
+  const handleCalculatePortfolioRatings = () => {
+    setCalculationProgress({ 
+      stage: "assets", 
+      progress: 25, 
+      message: "Calculating portfolio ESG ratings..." 
+    });
+    
+    calculatePortfolioRatings.mutate({});
   };
 
   const handleSaveThresholds = (config: {
@@ -310,7 +361,23 @@ export default function ESGDashboard() {
         )}
 
         {/* Portfolio Summary Cards */}
-        {portfolioSummary && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Portfolio ESG Summary</h2>
+          <Button
+            variant="outline"
+            onClick={handleCalculatePortfolioRatings}
+            disabled={isCalculating || calculatePortfolioRatings.isPending}
+          >
+            {(isCalculating || calculatePortfolioRatings.isPending) ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Calculate Portfolio Ratings
+          </Button>
+        </div>
+        
+        {portfolioSummary ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
@@ -321,15 +388,20 @@ export default function ESGDashboard() {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold">
-                    {portfolioSummary.avgPortfolioScore ? parseFloat(portfolioSummary.avgPortfolioScore).toFixed(1) : 'N/A'}
+                    {portfolioSummary.portfolioScore ? parseFloat(portfolioSummary.portfolioScore).toFixed(1) : 'N/A'}
                   </span>
-                  {portfolioSummary.avgPortfolioScore && (
+                  {portfolioSummary.portfolioGrade && (
                     <LetterGradeBadge 
-                      grade={portfolioSummary.portfolioGrade || "N/A"} 
+                      grade={portfolioSummary.portfolioGrade} 
                       size="sm" 
                     />
                   )}
                 </div>
+                {portfolioSummary.calculationDate && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Last calculated: {new Date(portfolioSummary.calculationDate).toLocaleDateString()}
+                  </p>
+                )}
               </CardContent>
             </Card>
             <Card>
@@ -339,19 +411,20 @@ export default function ESGDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <span className="text-2xl font-bold">{portfolioSummary.totalProjects}</span>
+                <span className="text-2xl font-bold">{portfolioSummary.projectsRated || 0}</span>
+                <span className="text-muted-foreground text-sm"> / {portfolioSummary.projectsTotal || 0}</span>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Green Zone
+                  Excellent Zone
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
                   <ZoneDot zone="green" />
-                  <span className="text-2xl font-bold">{portfolioSummary.zoneDistribution?.green || 0}</span>
+                  <span className="text-2xl font-bold">{portfolioSummary.greenZoneCount || portfolioSummary.zoneDistribution?.excellent || 0}</span>
                   <span className="text-muted-foreground text-sm">projects</span>
                 </div>
               </CardContent>
@@ -366,13 +439,23 @@ export default function ESGDashboard() {
                 <div className="flex items-center gap-2">
                   <ZoneDot zone="red" />
                   <span className="text-2xl font-bold">
-                    {(portfolioSummary.zoneDistribution?.orange || 0) + (portfolioSummary.zoneDistribution?.red || 0)}
+                    {portfolioSummary.needsAttentionCount || ((portfolioSummary.zoneDistribution?.fair || 0) + (portfolioSummary.zoneDistribution?.poor || 0))}
                   </span>
                   <span className="text-muted-foreground text-sm">projects</span>
                 </div>
               </CardContent>
             </Card>
           </div>
+        ) : (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <BarChart3 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Portfolio Data</h3>
+              <p className="text-muted-foreground mb-4">
+                Click "Calculate Portfolio Ratings" to generate ESG scores for all projects
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         {/* Zone Distribution */}
@@ -382,8 +465,14 @@ export default function ESGDashboard() {
               <CardTitle className="text-lg">Portfolio Zone Distribution</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Map new zone names to old zone names for compatibility */}
               <ZoneDistributionBar 
-                distribution={portfolioSummary.zoneDistribution as Record<Zone, number>} 
+                distribution={{
+                  green: portfolioSummary.zoneDistribution.excellent || 0,
+                  yellow: portfolioSummary.zoneDistribution.good || 0,
+                  orange: portfolioSummary.zoneDistribution.fair || 0,
+                  red: portfolioSummary.zoneDistribution.poor || 0
+                } as Record<Zone, number>} 
                 showLabels 
                 showPercentages
                 height="lg"
@@ -674,6 +763,71 @@ export default function ESGDashboard() {
           </TabsContent>
 
           <TabsContent value="scales" className="space-y-6 mt-6">
+            {/* Threshold Versions */}
+            {thresholdConfigs && thresholdConfigs.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Settings className="w-5 h-5" />
+                        Threshold Configurations
+                      </CardTitle>
+                      <CardDescription>
+                        Versioned threshold configurations for rating calculations
+                      </CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setShowCustomizeDialog(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create New Version
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 px-3">Version</th>
+                          <th className="text-left py-2 px-3">Name</th>
+                          <th className="text-left py-2 px-3">Type</th>
+                          <th className="text-left py-2 px-3">Status</th>
+                          <th className="text-left py-2 px-3">Created</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {thresholdConfigs.map((config: any) => (
+                          <tr key={config.id} className="border-b">
+                            <td className="py-2 px-3">
+                              <Badge variant="outline">v{config.version}</Badge>
+                            </td>
+                            <td className="py-2 px-3 font-medium">{config.name}</td>
+                            <td className="py-2 px-3">
+                              <Badge variant="secondary" className="capitalize">
+                                {config.thresholdType.replace('_', ' ')}
+                              </Badge>
+                            </td>
+                            <td className="py-2 px-3">
+                              {config.isDefault === 1 ? (
+                                <Badge className="bg-emerald-500">Default</Badge>
+                              ) : config.isActive === 1 ? (
+                                <Badge variant="outline">Active</Badge>
+                              ) : (
+                                <Badge variant="secondary">Inactive</Badge>
+                              )}
+                            </td>
+                            <td className="py-2 px-3 text-muted-foreground">
+                              {new Date(config.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Default Scales */}
             {defaultScales && (
               <>

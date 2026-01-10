@@ -13,6 +13,7 @@ import { modelsRouter } from "./routers/models.router";
 import { dashboardsRouter } from "./routers/dashboards.router";
 import { esgRouter } from "./routers/esg.router";
 import { esgLeedRouter } from "./routers/esgLeed.router";
+import { esgPortfolioRouter } from "./routers/esgPortfolio.router";
 import { mediaRouter } from "./routers/media.router";
 import { audioRouter } from "./routers/audio.router";
 import { adminRouter } from "./routers/admin.router";
@@ -111,6 +112,7 @@ export const appRouter = router({
   projectPermissions: projectPermissionsRouter,
   rating: ratingRouter,
   esgLeed: esgLeedRouter,
+  esgPortfolio: esgPortfolioRouter,
   buildingTemplates: buildingTemplatesRouter,
   customReports: customReportsRouter,
   capitalPlanning: capitalPlanningRouter,

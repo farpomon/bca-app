@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS project_esg_ratings (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    projectId INT NOT NULL,\n    calculationDate TIMESTAMP NOT NULL,\n    esgScore DECIMAL(5,2) NOT NULL,\n    esgGrade VARCHAR(5) NOT NULL,\n    esgZone ENUM('excellent', 'good', 'fair', 'poor') NOT NULL,\n    energyScore DECIMAL(5,2),\n    waterScore DECIMAL(5,2),\n    wasteScore DECIMAL(5,2),\n    emissionsScore DECIMAL(5,2),\n    needsAttention INT DEFAULT 0 NOT NULL,\n    attentionReasons TEXT,\n    thresholdsVersionId INT,\n    inputSnapshotId VARCHAR(64),\n    calculatedBy INT,\n    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n    INDEX idx_project_esg_date (projectId, calculationDate),\n    INDEX idx_esg_zone (esgZone),\n    INDEX idx_needs_attention (needsAttention)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS project_esg_ratings (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    projectId INT NOT NULL,\n    calculationDate TIMESTAMP NOT NULL,\n    esgScore DECIMAL(5,2) NOT NULL,\n    esgGrade VARCHAR(5) NOT NULL,\n    esgZone ENUM('excellent', 'good', 'fair', 'poor') NOT NULL,\n    energyScore DECIMAL(5,2),\n    waterScore DECIMAL(5,2),\n    wasteScore DECIMAL(5,2),\n    emissionsScore DECIMAL(5,2),\n    needsAttention INT DEFAULT 0 NOT NULL,\n    attentionReasons TEXT,\n    thresholdsVersionId INT,\n    inputSnapshotId VARCHAR(64),\n    calculatedBy INT,\n    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n    INDEX idx_project_esg_date (projectId, calculationDate),\n    INDEX idx_esg_zone (esgZone),\n    INDEX idx_needs_attention (needsAttention)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 192
+}

@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS portfolio_esg_ratings (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    portfolioId INT,\n    portfolioName VARCHAR(255),\n    calculationDate TIMESTAMP NOT NULL,\n    portfolioScore DECIMAL(5,2) NOT NULL,\n    portfolioGrade VARCHAR(5) NOT NULL,\n    portfolioZone ENUM('excellent', 'good', 'fair', 'poor') NOT NULL,\n    projectsRated INT NOT NULL,\n    projectsTotal INT NOT NULL,\n    greenZoneCount INT NOT NULL,\n    needsAttentionCount INT NOT NULL,\n    zoneDistribution TEXT NOT NULL,\n    thresholdsVersionId INT,\n    inputSnapshotId VARCHAR(64),\n    calculatedBy INT,\n    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n    INDEX idx_portfolio_date (portfolioId, calculationDate),\n    INDEX idx_calculation_date (calculationDate)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS portfolio_esg_ratings (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    portfolioId INT,\n    portfolioName VARCHAR(255),\n    calculationDate TIMESTAMP NOT NULL,\n    portfolioScore DECIMAL(5,2) NOT NULL,\n    portfolioGrade VARCHAR(5) NOT NULL,\n    portfolioZone ENUM('excellent', 'good', 'fair', 'poor') NOT NULL,\n    projectsRated INT NOT NULL,\n    projectsTotal INT NOT NULL,\n    greenZoneCount INT NOT NULL,\n    needsAttentionCount INT NOT NULL,\n    zoneDistribution TEXT NOT NULL,\n    thresholdsVersionId INT,\n    inputSnapshotId VARCHAR(64),\n    calculatedBy INT,\n    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n    INDEX idx_portfolio_date (portfolioId, calculationDate),\n    INDEX idx_calculation_date (calculationDate)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 187
+}

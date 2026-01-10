@@ -102,18 +102,62 @@ function getIntensityColor(factor: number): string {
   return "text-red-600 bg-red-50";
 }
 
-// Simple Canada Map Component
+// Simple Canada Map Component with database-backed data
 function CanadaGridMap({ 
   selectedProvince, 
-  onProvinceSelect 
+  onProvinceSelect,
+  gridData,
+  selectedYear,
+  onYearChange,
+  availableYears
 }: { 
   selectedProvince: string | null;
   onProvinceSelect: (code: string) => void;
+  gridData?: Array<{ provinceCode: string; emissionFactor: string; renewablePercent: number }>;
+  selectedYear?: number;
+  onYearChange?: (year: number) => void;
+  availableYears?: number[];
 }) {
+  // Merge database data with static fallback
+  const provinceData = CANADIAN_PROVINCES.map(province => {
+    const dbData = gridData?.find(d => d.provinceCode === province.code);
+    const factor = dbData ? parseFloat(dbData.emissionFactor) : province.factor;
+    const renewable = dbData?.renewablePercent ?? province.renewable;
+    
+    // Determine color based on emission factor
+    let color = "#22c55e"; // green
+    if (factor > 0.4) color = "#ef4444"; // red
+    else if (factor > 0.1) color = "#f59e0b"; // amber
+    
+    return { ...province, factor, renewable, color };
+  });
+
   return (
     <div className="relative w-full">
+      {/* Year Selector */}
+      {availableYears && availableYears.length > 0 && onYearChange && (
+        <div className="flex items-center justify-end gap-2 mb-4">
+          <span className="text-sm text-muted-foreground">Data Year:</span>
+          <Select
+            value={selectedYear?.toString() || ""}
+            onValueChange={(value) => onYearChange(parseInt(value))}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
       <div className="grid grid-cols-5 gap-2 p-4">
-        {CANADIAN_PROVINCES.map((province) => (
+        {provinceData.map((province) => (
           <button
             key={province.code}
             onClick={() => onProvinceSelect(province.code)}
@@ -131,7 +175,10 @@ function CanadaGridMap({
                 className="text-xs font-medium mt-1 px-2 py-0.5 rounded"
                 style={{ backgroundColor: province.color, color: 'white' }}
               >
-                {province.factor} kg
+                {province.factor.toFixed(3)} kg
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {province.renewable}% renewable
               </div>
             </div>
           </button>
@@ -151,6 +198,11 @@ function CanadaGridMap({
           <span>High (&gt;0.4 kg)</span>
         </div>
       </div>
+      {gridData && (
+        <p className="text-xs text-center text-muted-foreground mt-2">
+          Source: Environment and Climate Change Canada, National Inventory Report {selectedYear || 2024}
+        </p>
+      )}
     </div>
   );
 }
@@ -301,6 +353,7 @@ export default function ESGLeedDashboard() {
   const [selectedProvince, setSelectedProvince] = useState<string | null>("AB");
   const [activeTab, setActiveTab] = useState("overview");
   const [showRecommendationsDialog, setShowRecommendationsDialog] = useState(false);
+  const [selectedGridYear, setSelectedGridYear] = useState<number>(2024);
 
   // Fetch projects
   const { data: projects, isLoading: projectsLoading } = trpc.projects.list.useQuery();
@@ -328,6 +381,17 @@ export default function ESGLeedDashboard() {
     { region: selectedProvince || undefined },
     { enabled: !!selectedProvince }
   ) as any;
+
+  // Fetch all grid carbon data for the map from esgPortfolio router
+  const { data: allGridCarbonData } = trpc.esgPortfolio.getGridCarbonData.useQuery(
+    { year: selectedGridYear }
+  );
+
+  // Get available years for grid carbon data
+  const availableGridYears = useMemo(() => {
+    // Default years available in the database
+    return [2022, 2023, 2024];
+  }, []);
 
   // Fetch AI recommendations
   const { data: aiRecommendations, isLoading: recommendationsLoading } = trpc.esgLeed.getAICarbonRecommendations.useQuery(
@@ -704,6 +768,10 @@ export default function ESGLeedDashboard() {
                 <CanadaGridMap
                   selectedProvince={selectedProvince}
                   onProvinceSelect={setSelectedProvince}
+                  gridData={allGridCarbonData}
+                  selectedYear={selectedGridYear}
+                  onYearChange={setSelectedGridYear}
+                  availableYears={availableGridYears}
                 />
               </CardContent>
             </Card>

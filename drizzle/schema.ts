@@ -3272,3 +3272,141 @@ export type CycleAnalyticsCache = typeof cycleAnalyticsCache.$inferSelect;
 export type InsertCycleAnalyticsCache = typeof cycleAnalyticsCache.$inferInsert;
 
 
+
+/**
+ * ESG Rating Thresholds Table
+ * Stores customizable threshold configurations with versioning
+ */
+export const esgRatingThresholds = mysqlTable("esg_rating_thresholds", {
+	id: int().autoincrement().notNull().primaryKey(),
+	version: int().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	thresholdType: mysqlEnum(['letter_grade', 'zone', 'fci_letter_grade', 'fci_zone']).notNull(),
+	thresholds: text().notNull(), // JSON string of threshold configuration
+	isDefault: int().default(0).notNull(),
+	isActive: int().default(1).notNull(),
+	createdBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_threshold_type_version").on(table.thresholdType, table.version),
+	index("idx_threshold_active").on(table.isActive),
+]);
+
+export type EsgRatingThreshold = typeof esgRatingThresholds.$inferSelect;
+export type InsertEsgRatingThreshold = typeof esgRatingThresholds.$inferInsert;
+
+/**
+ * Portfolio ESG Ratings Table
+ * Stores calculated portfolio-level ESG ratings with audit trail
+ */
+export const portfolioEsgRatings = mysqlTable("portfolio_esg_ratings", {
+	id: int().autoincrement().notNull().primaryKey(),
+	portfolioId: int(), // Optional - null means all projects
+	portfolioName: varchar({ length: 255 }),
+	calculationDate: timestamp({ mode: 'string' }).notNull(),
+	portfolioScore: decimal({ precision: 5, scale: 2 }).notNull(),
+	portfolioGrade: varchar({ length: 5 }).notNull(),
+	portfolioZone: mysqlEnum(['excellent', 'good', 'fair', 'poor']).notNull(),
+	projectsRated: int().notNull(),
+	projectsTotal: int().notNull(),
+	greenZoneCount: int().notNull(),
+	needsAttentionCount: int().notNull(),
+	zoneDistribution: text().notNull(), // JSON: { excellent: n, good: n, fair: n, poor: n }
+	thresholdsVersionId: int(),
+	inputSnapshotId: varchar({ length: 64 }), // Hash of input data for reproducibility
+	calculatedBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_portfolio_date").on(table.portfolioId, table.calculationDate),
+	index("idx_calculation_date").on(table.calculationDate),
+]);
+
+export type PortfolioEsgRating = typeof portfolioEsgRatings.$inferSelect;
+export type InsertPortfolioEsgRating = typeof portfolioEsgRatings.$inferInsert;
+
+/**
+ * Project ESG Ratings Table
+ * Stores calculated project-level ESG ratings with audit trail
+ */
+export const projectEsgRatings = mysqlTable("project_esg_ratings", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	calculationDate: timestamp({ mode: 'string' }).notNull(),
+	esgScore: decimal({ precision: 5, scale: 2 }).notNull(),
+	esgGrade: varchar({ length: 5 }).notNull(),
+	esgZone: mysqlEnum(['excellent', 'good', 'fair', 'poor']).notNull(),
+	energyScore: decimal({ precision: 5, scale: 2 }),
+	waterScore: decimal({ precision: 5, scale: 2 }),
+	wasteScore: decimal({ precision: 5, scale: 2 }),
+	emissionsScore: decimal({ precision: 5, scale: 2 }),
+	needsAttention: int().default(0).notNull(),
+	attentionReasons: text(), // JSON array of reasons
+	thresholdsVersionId: int(),
+	inputSnapshotId: varchar({ length: 64 }),
+	calculatedBy: int(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_project_esg_date").on(table.projectId, table.calculationDate),
+	index("idx_esg_zone").on(table.esgZone),
+	index("idx_needs_attention").on(table.needsAttention),
+]);
+
+export type ProjectEsgRating = typeof projectEsgRatings.$inferSelect;
+export type InsertProjectEsgRating = typeof projectEsgRatings.$inferInsert;
+
+/**
+ * ESG Metrics History Table
+ * Stores individual metric values with trends
+ */
+export const esgMetricsHistory = mysqlTable("esg_metrics_history", {
+	id: int().autoincrement().notNull().primaryKey(),
+	projectId: int().notNull(),
+	metricType: mysqlEnum(['energy_efficiency', 'water_conservation', 'waste_management', 'carbon_emissions']).notNull(),
+	metricDate: timestamp({ mode: 'string' }).notNull(),
+	score: decimal({ precision: 5, scale: 2 }).notNull(),
+	grade: varchar({ length: 5 }).notNull(),
+	gradeDescriptor: varchar({ length: 50 }), // e.g., "Above Average", "Fair"
+	rawValue: decimal({ precision: 15, scale: 4 }),
+	unit: varchar({ length: 50 }),
+	previousScore: decimal({ precision: 5, scale: 2 }),
+	trendPercent: decimal({ precision: 5, scale: 2 }),
+	trendDirection: mysqlEnum(['up', 'down', 'stable']),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_project_metric_date").on(table.projectId, table.metricType, table.metricDate),
+]);
+
+export type EsgMetricsHistory = typeof esgMetricsHistory.$inferSelect;
+export type InsertEsgMetricsHistory = typeof esgMetricsHistory.$inferInsert;
+
+/**
+ * Canadian Grid Carbon Data Table
+ * Stores province-level emission factors and renewable percentages
+ */
+export const canadianGridCarbonData = mysqlTable("canadian_grid_carbon_data", {
+	id: int().autoincrement().notNull().primaryKey(),
+	provinceCode: varchar({ length: 5 }).notNull(),
+	provinceName: varchar({ length: 100 }).notNull(),
+	emissionFactor: decimal({ precision: 6, scale: 4 }).notNull(), // kg CO₂e/kWh
+	renewablePercent: decimal({ precision: 5, scale: 2 }).notNull(),
+	carbonRating: mysqlEnum(['low', 'medium', 'high']).notNull(),
+	dataYear: int().notNull(),
+	dataSource: varchar({ length: 255 }),
+	isActive: int().default(1).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_province_year").on(table.provinceCode, table.dataYear),
+	index("idx_active_data").on(table.isActive),
+]);
+
+export type CanadianGridCarbonData = typeof canadianGridCarbonData.$inferSelect;
+export type InsertCanadianGridCarbonData = typeof canadianGridCarbonData.$inferInsert;
+

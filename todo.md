@@ -4300,3 +4300,106 @@ Testing:
 
 ## Bug Fixes (Jan 2026)
 - [x] Fix cascade deletion bug when deleting planning cycles - DELETE query on cash_flow_projections fails with subquery
+
+## 🌱 ESG + LEED Dashboard Implementation
+
+### ESG Dashboard (Portfolio-Level)
+- [ ] Create ESG Dashboard page with tabs: Overview, ESG Metrics, Ratings, Rating Scales
+- [ ] Add portfolio selector dropdown
+- [ ] Implement "Calculate Ratings" button with loading state
+- [ ] Build Overview tab with KPI cards (Portfolio Score, Projects Rated, Green Zone count, Needs Attention)
+- [ ] Build Portfolio Zone Distribution chart
+- [ ] Build ESG Metrics tab with metric cards (Energy Efficiency, Water Conservation, Waste Management, Carbon Emissions)
+- [ ] Build Ratings tab with sortable project list/table
+- [ ] Implement empty states for Ratings tab
+- [ ] Build Rating Scales tab with threshold configuration
+
+### Rating Scales System
+- [ ] Create database schema for rating thresholds (grades A+ through F)
+- [ ] Implement standard letter grade thresholds (0-100 → A+ through F)
+- [ ] Implement letter grade descriptors (Exceptional, Excellent, Very Good, etc.)
+- [ ] Implement FCI letter grade thresholds (inverted - lower is better)
+- [ ] Implement zone thresholds (Excellent 80-100, Good 60-79.99, Fair 40-59.99, Poor 0-39.99)
+- [ ] Implement FCI zones (inverted)
+- [ ] Add Customize button for threshold editing
+- [ ] Implement threshold versioning system
+
+### ESG & LEED Dashboard (Project-Level)
+- [ ] Create ESG & LEED Dashboard page with tabs: Overview, Grid Carbon Map, Embodied Carbon, LEED Credits
+- [ ] Add project selector dropdown
+- [ ] Build Overview cards (LEED Points, Grid Carbon Intensity, Embodied Carbon, Operational Carbon)
+- [ ] Build Grid Carbon Map tab with Canadian province tiles
+- [ ] Implement province emission factors (kg CO₂e/kWh)
+- [ ] Add province comparison table
+- [ ] Build Embodied Carbon tab with lifecycle stage breakdown
+- [ ] Implement empty state for Embodied Carbon
+- [ ] Build LEED Credits tab with category tracking
+- [ ] Implement empty state for LEED Credits
+
+### Calculate Ratings Logic
+- [ ] Create ESG calculation pipeline (inputs → outputs)
+- [ ] Implement score clamping (0-100)
+- [ ] Calculate project ESG scores, grades, zones
+- [ ] Calculate portfolio aggregated score
+- [ ] Implement "Needs Attention" flag logic
+- [ ] Track audit fields (calculated_at, calculated_by, thresholds_version_id)
+
+### Database Schema for ESG
+- [ ] Create esg_thresholds table with versioning
+- [ ] Create esg_ratings table for project ratings
+- [ ] Create esg_metrics table for metric values
+- [ ] Create grid_carbon_data table for province emission factors
+- [ ] Create leed_credits table for LEED tracking
+- [ ] Create embodied_carbon table for carbon assessments
+
+### Backend tRPC Procedures
+- [ ] Create esg.getThresholds procedure
+- [ ] Create esg.updateThresholds procedure
+- [ ] Create esg.calculateRatings procedure
+- [ ] Create esg.getPortfolioSummary procedure
+- [ ] Create esg.getProjectRatings procedure
+- [ ] Create leed.getCredits procedure
+- [ ] Create leed.updateCredits procedure
+- [ ] Create carbon.getGridIntensity procedure
+- [ ] Create carbon.getEmbodiedCarbon procedure
+
+
+
+## 🌱 ESG + LEED Dashboard Implementation (Completed)
+
+### ESG Dashboard (Portfolio-Level)
+- [x] Portfolio Selector dropdown
+- [x] Portfolio Summary KPI Cards (Portfolio Score, Projects Rated, Green Zone, Needs Attention)
+- [x] Zone Distribution visualization
+- [x] Overview tab with project ratings list
+- [x] ESG Metrics tab with category breakdowns
+- [x] Ratings tab with project-level details
+- [x] Rating Scales tab with threshold configurations
+
+### Rating Scales System
+- [x] Threshold versioning with version numbers
+- [x] Create New Version button and dialog
+- [x] Default threshold indicator
+- [x] Active/Inactive status toggle
+- [x] Threshold type support (letter_grade, zone, fci_letter_grade, fci_zone)
+
+### Calculate Ratings Pipeline
+- [x] Calculate Portfolio Ratings button
+- [x] Deterministic scoring algorithm
+- [x] Input snapshot ID for reproducibility
+- [x] Threshold version tracking
+- [x] Audit fields (calculatedBy, calculationDate)
+
+### ESG & LEED Dashboard (Project-Level)
+- [x] Grid Carbon Map tab with Canadian provinces
+- [x] Year selector for grid carbon data (2022-2024)
+- [x] Province detail cards with emission factors
+- [x] Embodied Carbon tab with GWP tracking
+- [x] LEED Credits tab with v5 certification tracking
+
+### Database Schema
+- [x] esg_rating_thresholds table with versioning
+- [x] portfolio_esg_ratings table
+- [x] project_esg_ratings table
+- [x] esg_metrics_history table
+- [x] canadian_grid_carbon_data table
