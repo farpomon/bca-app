@@ -3970,3 +3970,5 @@ Testing:
 - [x] Write vitest tests for backlog calculations
 - [x] Write vitest tests for risk analysis
 - [x] Write vitest tests for data integrity rules
+
+- [x] Replace "Type DELETE to confirm" text input with checkbox in cycle deletion dialog

@@ -33,7 +33,7 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
   const [manageMode, setManageMode] = useState(false);
   const [selectedCycles, setSelectedCycles] = useState<number[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
+  const [confirmChecked, setConfirmChecked] = useState(false);
   const [deleteType, setDeleteType] = useState<"single" | "bulk">("single");
   const [cycleToDelete, setCycleToDelete] = useState<number | null>(null);
 
@@ -43,7 +43,7 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
     onSuccess: () => {
       utils.prioritization.getBudgetCycles.invalidate();
       setDeleteDialogOpen(false);
-      setConfirmText("");
+      setConfirmChecked(false);
       setCycleToDelete(null);
       toast.success("Cycle deleted successfully");
       onCycleChange?.();
@@ -57,7 +57,7 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
     onSuccess: (data) => {
       utils.prioritization.getBudgetCycles.invalidate();
       setDeleteDialogOpen(false);
-      setConfirmText("");
+      setConfirmChecked(false);
       setSelectedCycles([]);
       setManageMode(false);
       toast.success(`${data.deletedCount} cycles deleted successfully`);
@@ -126,20 +126,20 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
   };
 
   const handleConfirmDelete = () => {
-    if (confirmText !== "DELETE") {
-      toast.error('Please type "DELETE" to confirm');
+    if (!confirmChecked) {
+      toast.error('Please check the confirmation box to proceed');
       return;
     }
 
     if (deleteType === "single" && cycleToDelete) {
       deleteCycleMutation.mutate({
         cycleId: cycleToDelete,
-        confirmText,
+        confirmText: "DELETE",
       });
     } else if (deleteType === "bulk") {
       deleteCyclesBulkMutation.mutate({
         cycleIds: selectedCycles,
-        confirmText,
+        confirmText: "DELETE",
       });
     }
   };
@@ -345,16 +345,18 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="confirmText">
-                Type <span className="font-bold">DELETE</span> to confirm
-              </Label>
-              <Input
-                id="confirmText"
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="DELETE"
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="confirmDelete"
+                checked={confirmChecked}
+                onCheckedChange={(checked) => setConfirmChecked(checked === true)}
               />
+              <Label
+                htmlFor="confirmDelete"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                I understand this action cannot be undone
+              </Label>
             </div>
           </div>
           <DialogFooter>
@@ -362,7 +364,7 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
               variant="outline"
               onClick={() => {
                 setDeleteDialogOpen(false);
-                setConfirmText("");
+                setConfirmChecked(false);
               }}
             >
               Cancel
@@ -371,7 +373,7 @@ export function CycleManagement({ cycles, onCycleChange }: CycleManagementProps)
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={
-                confirmText !== "DELETE" ||
+                !confirmChecked ||
                 deleteCycleMutation.isPending ||
                 deleteCyclesBulkMutation.isPending ||
                 hasActiveCycle
