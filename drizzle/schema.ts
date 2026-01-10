@@ -1331,15 +1331,53 @@ export const predictionHistory = mysqlTable("prediction_history", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 });
 
+// Criteria Model Versions - track changes to criteria and weights over time
+export const criteriaModelVersions = mysqlTable("criteria_model_versions", {
+	id: int().autoincrement().notNull(),
+	name: varchar({ length: 255 }).notNull(), // e.g., "2024 Q1 Standard Model"
+	description: text(),
+	isActive: int().default(1).notNull(), // Only one active version at a time
+	createdBy: int().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_active").on(table.isActive),
+]);
+
+// Scoring Audit Log - track all changes to project scores
+export const scoringAuditLog = mysqlTable("scoring_audit_log", {
+	id: int().autoincrement().notNull(),
+	projectScoreId: int().notNull(), // Link to projectScores
+	projectId: int().notNull(),
+	criteriaId: int().notNull(),
+	action: mysqlEnum(['created','updated','submitted','locked','reopened']).notNull(),
+	oldScore: decimal({ precision: 4, scale: 2 }),
+	newScore: decimal({ precision: 4, scale: 2 }),
+	oldJustification: text(),
+	newJustification: text(),
+	oldStatus: mysqlEnum(['draft','submitted','locked']),
+	newStatus: mysqlEnum(['draft','submitted','locked']),
+	changedBy: int().notNull(),
+	changedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	reason: text(), // Optional reason for the change
+},
+(table) => [
+	index("idx_project_score").on(table.projectScoreId),
+	index("idx_project").on(table.projectId),
+	index("idx_changed_by").on(table.changedBy),
+	index("idx_changed_at").on(table.changedAt),
+]);
+
 export const prioritizationCriteria = mysqlTable("prioritization_criteria", {
 	id: int().autoincrement().notNull(),
 	name: varchar({ length: 100 }).notNull(),
 	description: text(),
-	category: mysqlEnum(['risk','strategic','compliance','financial','operational','environmental']).notNull(),
-	weight: decimal({ precision: 5, scale: 2 }).default('10.00').notNull(),
+	category: mysqlEnum(['risk','strategic','compliance','financial','operational','environmental','custom']).notNull(),
+	weight: decimal({ precision: 10, scale: 6 }).default('10.000000').notNull(), // High precision for exact 100% normalization
 	scoringGuideline: text(),
 	isActive: int().default(1).notNull(),
 	displayOrder: int().default(0).notNull(),
+	modelVersionId: int(), // Link to criteria_model_versions
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
@@ -1379,17 +1417,15 @@ export const projectHierarchyConfig = mysqlTable("project_hierarchy_config", {
 export const projectPriorityScores = mysqlTable("project_priority_scores", {
 	id: int().autoincrement().notNull(),
 	projectId: int().notNull(),
-	compositeScore: decimal({ precision: 6, scale: 2 }).notNull(),
+	compositeScore: decimal({ precision: 6, scale: 2 }).notNull(), // 0-100 composite score
 	rank: int(),
-	urgencyScore: decimal({ precision: 4, scale: 2 }),
-	missionCriticalityScore: decimal({ precision: 4, scale: 2 }),
-	safetyScore: decimal({ precision: 4, scale: 2 }),
-	complianceScore: decimal({ precision: 4, scale: 2 }),
-	energySavingsScore: decimal({ precision: 4, scale: 2 }),
+	modelVersionId: int(), // Which criteria model version was used
 	calculatedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
 	index("project_priority_scores_projectId_unique").on(table.projectId),
+	index("idx_model_version").on(table.modelVersionId),
 ]);
 
 export const projectRatingConfig = mysqlTable("project_rating_config", {
@@ -1410,12 +1446,19 @@ export const projectScores = mysqlTable("project_scores", {
 	id: int().autoincrement().notNull(),
 	projectId: int().notNull(),
 	criteriaId: int().notNull(),
-	score: decimal({ precision: 4, scale: 2 }).notNull(),
+	score: decimal({ precision: 4, scale: 2 }), // 0-10 score, nullable for "not applicable"
 	justification: text(),
+	status: mysqlEnum(['draft','submitted','locked']).default('draft').notNull(),
 	scoredBy: int().notNull(),
 	scoredAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-});
+	modelVersionId: int(), // Which criteria model version was used
+},
+(table) => [
+	index("idx_project_criteria").on(table.projectId, table.criteriaId),
+	index("idx_status").on(table.status),
+	index("idx_scored_by").on(table.scoredBy),
+]);
 
 export const projectVersions = mysqlTable("project_versions", {
 	id: int().autoincrement().notNull(),
@@ -2502,6 +2545,10 @@ export type PofFactor = typeof pofFactors.$inferSelect;
 export type InsertPofFactor = typeof pofFactors.$inferInsert;
 export type PredictionHistory = typeof predictionHistory.$inferSelect;
 export type InsertPredictionHistory = typeof predictionHistory.$inferInsert;
+export type CriteriaModelVersion = typeof criteriaModelVersions.$inferSelect;
+export type InsertCriteriaModelVersion = typeof criteriaModelVersions.$inferInsert;
+export type ScoringAuditLog = typeof scoringAuditLog.$inferSelect;
+export type InsertScoringAuditLog = typeof scoringAuditLog.$inferInsert;
 export type PrioritizationCriteria = typeof prioritizationCriteria.$inferSelect;
 export type InsertPrioritizationCriteria = typeof prioritizationCriteria.$inferInsert;
 export type ProjectDocument = typeof projectDocuments.$inferSelect;

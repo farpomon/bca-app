@@ -20,6 +20,7 @@ import ReviewDashboard from "./pages/ReviewDashboard";
 import PredictionsDashboard from "./pages/PredictionsDashboard";
 import OptimizationDashboard from "./pages/OptimizationDashboard";
 import PrioritizationDashboard from "./pages/PrioritizationDashboard";
+import PrioritizationDashboardNew from "./pages/PrioritizationDashboardNew";
 import CapitalBudgetPlanner from "./pages/CapitalBudgetPlanner";
 import LPOptimizationDashboard from "./pages/LPOptimizationDashboard";
 import Model3DViewer from "./pages/Model3DViewer";
@@ -98,7 +99,8 @@ function Router() {
       <Route path={"/admin/review"} component={ReviewDashboard} />
       <Route path={"/predictions"} component={PredictionsDashboard} />
       <Route path={"/projects/:id/optimization"} component={OptimizationDashboard} />
-      <Route path={"/prioritization"} component={PrioritizationDashboard} />
+      <Route path={"/prioritization"} component={PrioritizationDashboardNew} />
+      <Route path={"/prioritization-old"} component={PrioritizationDashboard} />
       <Route path={"/capital-budget"} component={CapitalBudgetPlanner} />
       <Route path={"/lp-optimization"} component={LPOptimizationDashboard} />
       <Route path={"/projects/:id/3d-model"} component={Model3DViewer} />

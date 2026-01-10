@@ -3974,3 +3974,223 @@ Testing:
 - [x] Replace "Type DELETE to confirm" text input with checkbox in cycle deletion dialog
 
 - [x] Fix prioritization dashboard showing "0 scored, 1 pending" when projects have scoring data
+
+
+## 🔥 NEW PRIORITY: Replace Existing Priority Scoring with New Multi-Criteria Prioritization System
+
+### Database Schema Updates
+- [ ] Create new criteria_templates table (standard criteria definitions)
+- [ ] Create new criteria_model_versions table (version tracking for criteria/weight changes)
+- [ ] Create new project_scoring_records table (project, criterion, score 0-10, justification, scorer, timestamp, status)
+- [ ] Create new scoring_audit_log table (change history, scorer, timestamps, edit history)
+- [ ] Add status field to project_scoring_records (draft, submitted, locked)
+- [ ] Add model_version_id to project_scoring_records
+- [ ] Update existing priority scoring schema to support new workflow
+
+### Backend - Criteria Management
+- [ ] Implement criteria.getStandardTemplate procedure (returns default criteria set)
+- [ ] Implement criteria.list procedure (get active criteria for portfolio)
+- [ ] Implement criteria.create procedure with category tags (risk/strategic/compliance/financial/environmental/operational/custom)
+- [ ] Implement criteria.update procedure with description and scoring guidance
+- [ ] Implement criteria.delete procedure with Safety/Compliance warnings
+- [ ] Implement criteria.normalizeWeights procedure (ensure weights always equal 100.00%)
+- [ ] Implement criteria.validateWeights procedure (warn if single weight >40%)
+- [ ] Implement criteria.createModelVersion procedure (version criteria/weight changes)
+- [ ] Store weights as decimals with high precision, display rounded to 1 decimal
+
+### Backend - Scoring Workflow
+- [ ] Implement scoring.getDraftByProject procedure (get draft scores for a project)
+- [ ] Implement scoring.saveDraft procedure with autosave (no validation, just save)
+- [ ] Implement scoring.submitFinal procedure (validate completeness, lock record, trigger ranking refresh)
+- [ ] Implement scoring.reopenSubmitted procedure (if permitted by admin rules)
+- [ ] Implement scoring.copyFromSimilar procedure (copy scores from similar project)
+- [ ] Implement scoring.applyDefaults procedure (apply baseline scores, editable)
+- [ ] Implement scoring.getByProject procedure (get all scores for a project)
+- [ ] Implement scoring.validateCompleteness procedure (check missing criteria, missing justification)
+- [ ] Add justification requirement rules (required when score ≥7 OR category is Safety/Compliance)
+- [ ] Handle "Not applicable" scores (only if allowed by admin rules)
+
+### Backend - Ranking & Calculations
+- [ ] Implement ranking.calculateComposite procedure: Σ(criterion_weight × (criterion_score/10)) × 100
+- [ ] Implement ranking.getList procedure (ranked projects with explainability)
+- [ ] Implement ranking.recalculateAll procedure (deterministic, with lock to prevent duplicates)
+- [ ] Implement ranking.recalculateSelected procedure (recalculate specific projects)
+- [ ] Implement ranking.getExplanation procedure (weighted contributions per criterion)
+- [ ] Add explicit sorting/tie-break rules (Safety > Compliance > composite score)
+- [ ] Implement cache invalidation on criteria/weight/score changes
+- [ ] Ensure all displayed values reflect same computation run and timestamp
+- [ ] Add computation pipeline for ranking refresh
+- [ ] Handle missing criteria scores (block final submit OR apply defined fallback rules)
+
+### Backend - Dashboard KPIs
+- [ ] Implement dashboard.getTotalProjects procedure (scoped to selected portfolio)
+- [ ] Implement dashboard.getScoredPending procedure (derived from scoring records, no negatives)
+- [ ] Implement dashboard.getAverageScore procedure (scored projects only)
+- [ ] Implement dashboard.getActiveCriteria procedure (count of enabled criteria)
+- [ ] Implement dashboard.getBudgetCycles procedure (active/approved cycles only, clarify definition)
+- [ ] Ensure KPI calculations are consistent with ranking calculations
+
+### Backend - Auditability & Export
+- [ ] Implement audit.logScoringChange procedure (scorer, date/time, justification, edits history)
+- [ ] Implement audit.logCriteriaChange procedure (criteria model version changes)
+- [ ] Implement audit.getHistory procedure (get change logs for a project)
+- [ ] Implement export.generateCSV procedure (ranked list + score breakdown + justifications)
+- [ ] Implement export.generatePDF procedure (ranked list + score breakdown + justifications)
+- [ ] Store scorer, date/time, justification text, edits history for all changes
+- [ ] Store criteria model version used for each scoring
+
+### Frontend - Three-Panel Dashboard Layout
+- [ ] Design and implement three-panel layout for priority scoring page
+- [ ] Left panel: Project list with search + filters (facility, category, status, risk level, funding cycle)
+- [ ] Left panel: Add status chips (Not started / In progress / Scored / Needs review)
+- [ ] Left panel: Add progress indicator (X scored / Y pending, never negative)
+- [ ] Center panel: Scoring workspace showing only selected project's criteria cards
+- [ ] Center panel: Make cards collapsible, expand one at a time for speed
+- [ ] Center panel: Add autosave draft functionality
+- [ ] Center panel: Add explicit "Submit final score" action
+- [ ] Right panel: Live summary with composite score (0-100)
+- [ ] Right panel: Criteria breakdown showing weighted contribution
+- [ ] Right panel: Validation checklist (missing criteria, missing justification, weights not 100%)
+- [ ] Right panel: "Recalculate" status + last updated timestamp
+
+### Frontend - KPI Cards (Top of Dashboard)
+- [ ] Replace existing KPI cards with new accurate calculations
+- [ ] Total Projects KPI (scoped to selected portfolio)
+- [ ] Scored / Pending KPI (derived from scoring records, no negatives, no placeholders)
+- [ ] Average Score KPI (average composite score of scored projects only)
+- [ ] Active Criteria KPI (count of enabled criteria for this portfolio/template version)
+- [ ] Budget Cycles KPI (show only relevant cycles: active/approved, clarify definition)
+- [ ] Ensure KPIs are trustworthy, consistent, and scoped correctly
+
+### Frontend - Scoring UX Improvements
+- [ ] Implement 0-10 scoring scale with clear labels at key points (0 / 5 / 10)
+- [ ] Add optional "Not applicable" (only if allowed by admin rules, define how it affects weighting)
+- [ ] Add justification requirement rules (required when score ≥7 OR criterion category is Safety/Compliance)
+- [ ] Add suggested prompts per criterion ("What evidence supports this score?")
+- [ ] Implement "Copy scores from similar project" bulk helper
+- [ ] Implement "Apply default baseline scores" bulk helper (editable)
+- [ ] Implement autosave drafts (save every 30 seconds or on field blur)
+- [ ] Add unsaved changes warning on navigation
+- [ ] Implement "Submit final" action (locks record, triggers ranking refresh)
+- [ ] Add ability to reopen submitted scores (if permitted by admin)
+
+### Frontend - Criteria & Weights Management
+- [ ] Create criteria management page/dialog (add/edit/delete criteria)
+- [ ] Add category tag selection (risk/strategic/compliance/financial/environmental/operational/custom)
+- [ ] Add description field and scoring guidance text field
+- [ ] Implement weight input with live normalization (always equals 100.00%)
+- [ ] Store weights as decimals (high precision), display rounded (1 decimal)
+- [ ] Ensure computed sum is exactly 100% after normalization (replace "99.98%" edge case)
+- [ ] Add guardrails: warn if removing Safety/Compliance criteria
+- [ ] Add guardrails: warn if any single criterion weight exceeds threshold (e.g., >40%)
+- [ ] Implement criteria model versioning (create new version when criteria/weights change)
+- [ ] Show which model version was used in rankings
+
+### Frontend - Rankings Page Revamp
+- [ ] Replace "Ranked Projects" with new transparent decision tool
+- [ ] Table columns: Rank, Project, Composite Score (0-100), Risk flag, Condition/priority tags, Last scored date, Model version
+- [ ] Add expandable row "Why this rank?" showing weighted contributions per criterion
+- [ ] Show missing data warnings in expandable row
+- [ ] Add "Recalculate All" action with loading state + lock to prevent double runs
+- [ ] Add "Recalculate selected projects" action
+- [ ] Implement explicit sorting/tie-break rules display (Safety > Compliance > composite)
+- [ ] Ensure rankings are deterministic and explainable
+
+### Testing - New Prioritization System
+- [ ] Write vitest tests for criteria management (CRUD, weight normalization)
+- [ ] Write vitest tests for scoring workflow (draft, submit, lock, reopen)
+- [ ] Write vitest tests for composite score calculation: Σ(criterion_weight × (criterion_score/10)) × 100
+- [ ] Write vitest tests for ranking calculations (deterministic, tie-breaks)
+- [ ] Write vitest tests for KPI calculations (no negatives, consistency)
+- [ ] Write vitest tests for cache invalidation on changes
+- [ ] Write vitest tests for audit logging
+- [ ] Write vitest tests for export functionality (CSV/PDF)
+
+### Acceptance Criteria Validation
+- [ ] Verify no negative counts; scored/pending always consistent with records
+- [ ] Verify weights always equal 100.00% after normalization
+- [ ] Verify scoring is fast (no long scroll), autosaves drafts, warns on unsaved exit
+- [ ] Verify rankings are explainable with criterion contributions and model versioning
+- [ ] Verify "Recalculate" is deterministic, prevents duplicate runs, refreshes all UI sections consiste## 🔥 NEW PRIORITY: Replace Existing Priority Scoring System
+
+### Database Schema Updates - COMPLETED
+- [x] Create new criteria_model_versions table (version tracking for criteria/weight changes)
+- [x] Create new scoring_audit_log table (change history, scorer, timestamps, edit history)
+- [x] Add status field to project_scores (draft, submitted, locked)
+- [x] Add model_version_id to project_scores
+- [x] Update existing priority scoring schema to support new workflow
+- [x] Add type exports for new tables Backend - Enhanced Database Helpers - COMPLETED
+- [x] Implement getActiveModelVersion helper
+- [x] Implement getAllModelVersions helper
+- [x] Implement createModelVersion helper (auto-deactivates previous version)
+- [x] Implement getCriteriaByModelVersion helper
+- [x] Implement logScoringChange helper (audit trail)
+- [x] Implement getProjectAuditHistory helper
+- [x] Implement getCriterionAuditHistory helper
+- [x] Implement getRecentAuditActivity helper
+- [x] Implement getProjectScoresWithStatus helper
+- [x] Implement updateProjectScoreStatus helper
+- [x] Implement submitAllProjectScores helper (bulk status update)
+- [x] Implement getProjectScoringProgress helper
+
+### Backend - Enhanced tRPC Procedures - COMPLETED
+- [x] Add getActiveModelVersion procedure
+- [x] Add getAllModelVersions procedure
+- [x] Add createModelVersion procedure
+- [x] Add getCriteriaByModelVersion procedure
+- [x] Add getProjectScoresWithStatus procedure
+- [x] Add updateScoreStatus procedure
+- [x] Add submitAllScores procedure (triggers ranking refresh)
+- [x] Add getScoringProgress procedure
+- [x] Add getProjectAuditHistory procedure
+- [x] Add getCriterionAuditHistory procedure
+- [x] Add getRecentAuditActivity procedure
+
+
+## 🎯 PROGRESS UPDATE - Frontend Implementation
+
+### Frontend - Three-Panel Dashboard Layout - COMPLETED
+- [x] Design and implement three-panel layout for priority scoring page
+- [x] Left panel: Project list with search + filters (facility, category, status, risk level, funding cycle)
+- [x] Left panel: Add status chips (Not started / In progress / Scored / Needs review)
+- [x] Left panel: Add progress indicator (X scored / Y pending, never negative)
+- [x] Center panel: Scoring workspace showing only selected project's criteria cards
+- [x] Center panel: Make cards collapsible, expand one at a time for speed
+- [x] Center panel: Add autosave draft functionality
+- [x] Center panel: Add explicit "Submit final score" action
+- [x] Right panel: Live summary with composite score (0-100)
+- [x] Right panel: Criteria breakdown showing weighted contribution
+- [x] Right panel: Validation checklist (missing criteria, missing justification, weights not 100%)
+- [x] Right panel: "Recalculate" status + last updated timestamp
+
+### Frontend - KPI Cards (Top of Dashboard) - COMPLETED
+- [x] Total Projects KPI (scoped to selected portfolio)
+- [x] Scored / Pending KPI (derived from scoring records, no negatives, no placeholders)
+- [x] Average Score KPI (average composite score of scored projects only)
+- [x] Active Criteria KPI (count of enabled criteria for this portfolio/template version)
+- [x] Budget Cycles KPI (show only relevant cycles: active/approved, clarify definition)
+- [x] Ensure KPIs are trustworthy, consistent, and scoped correctly
+
+### Frontend - Scoring UX Improvements - COMPLETED
+- [x] Implement 0-10 scoring scale with clear labels at key points (0 / 5 / 10)
+- [x] Add optional "Not applicable" (only if allowed by admin rules, define how it affects weighting)
+- [x] Add justification requirement rules (required when score ≥7 OR criterion category is Safety/Compliance)
+- [x] Add suggested prompts per criterion ("What evidence supports this score?")
+- [x] Implement "Copy scores from similar project" bulk helper (UI placeholder)
+- [x] Implement "Apply default baseline scores" bulk helper (editable)
+- [x] Implement autosave drafts (save every 2 seconds with debounce)
+- [x] Add unsaved changes warning on navigation (handled by autosave)
+- [x] Implement "Submit final" action (locks record, triggers ranking refresh)
+- [x] Add ability to reopen submitted scores (backend ready, UI pending)
+
+### Frontend - Collapsible Criteria Cards - COMPLETED
+- [x] Create collapsible criteria card component
+- [x] Show category badges with color coding
+- [x] Display weight percentage for each criterion
+- [x] Show completion status with checkmarks
+- [x] Expand one card at a time for focused scoring
+- [x] Display scoring guidelines in expanded view
+- [x] Implement score slider with 0-10 scale
+- [x] Show score labels (Very Low, Low, Medium, High, Critical)
+- [x] Add justification textarea with required indicator
+- [x] Highlight required justifications based on rules

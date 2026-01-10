@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as prioritizationDb from "../db/prioritization.db";
+import * as prioritizationEnhancedDb from "../db/prioritizationEnhanced.db";
 import * as prioritizationService from "../services/prioritization.service";
 
 /**
@@ -360,4 +361,108 @@ export const prioritizationRouter = router({
     const criteriaId = await prioritizationDb.ensureEnvironmentalCriteria();
     return { criteriaId };
   }),
+
+  // ============================================================================
+  // MODEL VERSIONING
+  // ============================================================================
+
+  getActiveModelVersion: protectedProcedure.query(async () => {
+    return await prioritizationEnhancedDb.getActiveModelVersion();
+  }),
+
+  getAllModelVersions: protectedProcedure.query(async () => {
+    return await prioritizationEnhancedDb.getAllModelVersions();
+  }),
+
+  createModelVersion: protectedProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const versionId = await prioritizationEnhancedDb.createModelVersion({
+        name: input.name,
+        description: input.description,
+        createdBy: ctx.user.id,
+      });
+      return { versionId };
+    }),
+
+  getCriteriaByModelVersion: protectedProcedure
+    .input(z.object({ versionId: z.number() }))
+    .query(async ({ input }) => {
+      return await prioritizationEnhancedDb.getCriteriaByModelVersion(input.versionId);
+    }),
+
+  // ============================================================================
+  // ENHANCED SCORING WITH STATUS
+  // ============================================================================
+
+  getProjectScoresWithStatus: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .query(async ({ input }) => {
+      return await prioritizationEnhancedDb.getProjectScoresWithStatus(input.projectId);
+    }),
+
+  updateScoreStatus: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        criteriaId: z.number(),
+        status: z.enum(['draft', 'submitted', 'locked']),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await prioritizationEnhancedDb.updateProjectScoreStatus(
+        input.projectId,
+        input.criteriaId,
+        input.status,
+        ctx.user.id
+      );
+      return { success: true };
+    }),
+
+  submitAllScores: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const count = await prioritizationEnhancedDb.submitAllProjectScores(
+        input.projectId,
+        ctx.user.id
+      );
+      
+      // Recalculate composite score after submission
+      await prioritizationService.calculateAllProjectScores();
+      
+      return { success: true, count };
+    }),
+
+  getScoringProgress: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .query(async ({ input }) => {
+      return await prioritizationEnhancedDb.getProjectScoringProgress(input.projectId);
+    }),
+
+  // ============================================================================
+  // AUDIT LOG
+  // ============================================================================
+
+  getProjectAuditHistory: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .query(async ({ input }) => {
+      return await prioritizationEnhancedDb.getProjectAuditHistory(input.projectId);
+    }),
+
+  getCriterionAuditHistory: protectedProcedure
+    .input(z.object({ criteriaId: z.number() }))
+    .query(async ({ input }) => {
+      return await prioritizationEnhancedDb.getCriterionAuditHistory(input.criteriaId);
+    }),
+
+  getRecentAuditActivity: protectedProcedure
+    .input(z.object({ limit: z.number().optional().default(50) }))
+    .query(async ({ input }) => {
+      return await prioritizationEnhancedDb.getRecentAuditActivity(input.limit);
+    }),
 });
