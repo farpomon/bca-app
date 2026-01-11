@@ -1,0 +1,1592 @@
+{
+  "query": "\nSELECT id, name, isActive, createdAt, updatedAt\nFROM prioritization_criteria\nWHERE name IN (\n  SELECT name\n  FROM prioritization_criteria\n  GROUP BY name\n  HAVING COUNT(*) > 1\n)\nORDER BY name, createdAt;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute \nSELECT id, name, isActive, createdAt, updatedAt\nFROM prioritization_criteria\nWHERE name IN (\n  SELECT name\n  FROM prioritization_criteria\n  GROUP BY name\n  HAVING COUNT(*) > 1\n)\nORDER BY name, createdAt;\n",
+  "rows": [
+    {
+      "id": "30002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:08:33",
+      "updatedAt": "2025-12-08 02:08:33"
+    },
+    {
+      "id": "30004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:09:24",
+      "updatedAt": "2025-12-08 02:09:24"
+    },
+    {
+      "id": "30006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:10:22",
+      "updatedAt": "2025-12-08 02:10:22"
+    },
+    {
+      "id": "30008",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:10:34",
+      "updatedAt": "2025-12-08 02:10:35"
+    },
+    {
+      "id": "30010",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:10:59",
+      "updatedAt": "2025-12-08 02:10:59"
+    },
+    {
+      "id": "30012",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:11:07",
+      "updatedAt": "2025-12-08 02:11:07"
+    },
+    {
+      "id": "30014",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:11:28",
+      "updatedAt": "2025-12-08 02:11:28"
+    },
+    {
+      "id": "30016",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:11:52",
+      "updatedAt": "2025-12-08 02:11:52"
+    },
+    {
+      "id": "90002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-10 18:09:12",
+      "updatedAt": "2025-12-10 18:09:12"
+    },
+    {
+      "id": "90004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-10 18:11:09",
+      "updatedAt": "2025-12-10 18:11:09"
+    },
+    {
+      "id": "120002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-12 13:26:51",
+      "updatedAt": "2025-12-12 13:26:51"
+    },
+    {
+      "id": "150002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-13 15:23:49",
+      "updatedAt": "2025-12-13 15:23:50"
+    },
+    {
+      "id": "180002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-15 22:25:31",
+      "updatedAt": "2025-12-15 22:25:31"
+    },
+    {
+      "id": "210002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-16 00:03:18",
+      "updatedAt": "2025-12-16 00:03:18"
+    },
+    {
+      "id": "210004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-16 00:05:10",
+      "updatedAt": "2025-12-16 00:05:10"
+    },
+    {
+      "id": "240002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-16 10:38:53",
+      "updatedAt": "2025-12-16 10:38:53"
+    },
+    {
+      "id": "240004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-16 10:39:09",
+      "updatedAt": "2025-12-16 10:39:09"
+    },
+    {
+      "id": "270002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-22 12:44:24",
+      "updatedAt": "2025-12-22 12:44:24"
+    },
+    {
+      "id": "300002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-22 18:03:54",
+      "updatedAt": "2025-12-22 18:03:55"
+    },
+    {
+      "id": "330002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-22 19:29:00",
+      "updatedAt": "2025-12-22 19:29:00"
+    },
+    {
+      "id": "330004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-22 19:30:15",
+      "updatedAt": "2025-12-22 19:30:15"
+    },
+    {
+      "id": "360002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 12:23:24",
+      "updatedAt": "2025-12-23 12:23:24"
+    },
+    {
+      "id": "360004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 12:26:00",
+      "updatedAt": "2025-12-23 12:26:00"
+    },
+    {
+      "id": "360006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 12:27:08",
+      "updatedAt": "2025-12-23 12:27:08"
+    },
+    {
+      "id": "390002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 13:40:07",
+      "updatedAt": "2025-12-23 13:40:08"
+    },
+    {
+      "id": "390004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 13:40:20",
+      "updatedAt": "2025-12-23 13:40:20"
+    },
+    {
+      "id": "420002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:01:15",
+      "updatedAt": "2025-12-23 14:01:16"
+    },
+    {
+      "id": "420004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:03:32",
+      "updatedAt": "2025-12-23 14:03:33"
+    },
+    {
+      "id": "420006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:03:54",
+      "updatedAt": "2025-12-23 14:03:55"
+    },
+    {
+      "id": "450002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:50:42",
+      "updatedAt": "2026-01-08 23:56:03"
+    },
+    {
+      "id": "450004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:50:56",
+      "updatedAt": "2025-12-23 14:50:56"
+    },
+    {
+      "id": "480002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 15:37:39",
+      "updatedAt": "2025-12-23 15:37:39"
+    },
+    {
+      "id": "480004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 15:40:45",
+      "updatedAt": "2025-12-23 15:40:46"
+    },
+    {
+      "id": "510002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 18:05:17",
+      "updatedAt": "2025-12-23 18:05:18"
+    },
+    {
+      "id": "510004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-23 18:05:30",
+      "updatedAt": "2025-12-23 18:05:31"
+    },
+    {
+      "id": "540002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-24 21:43:19",
+      "updatedAt": "2025-12-24 21:43:20"
+    },
+    {
+      "id": "570002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 02:28:45",
+      "updatedAt": "2025-12-25 02:28:45"
+    },
+    {
+      "id": "570004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 02:29:01",
+      "updatedAt": "2025-12-25 02:29:02"
+    },
+    {
+      "id": "600002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 12:44:05",
+      "updatedAt": "2025-12-25 12:44:05"
+    },
+    {
+      "id": "600004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 12:50:44",
+      "updatedAt": "2025-12-25 12:50:45"
+    },
+    {
+      "id": "630002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 13:12:52",
+      "updatedAt": "2025-12-25 13:12:53"
+    },
+    {
+      "id": "630004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 13:13:10",
+      "updatedAt": "2025-12-25 13:13:11"
+    },
+    {
+      "id": "660002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 20:36:55",
+      "updatedAt": "2025-12-25 20:36:55"
+    },
+    {
+      "id": "690002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-25 21:09:53",
+      "updatedAt": "2025-12-25 21:09:53"
+    },
+    {
+      "id": "720002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-26 04:10:20",
+      "updatedAt": "2025-12-26 04:10:21"
+    },
+    {
+      "id": "720004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-26 04:33:34",
+      "updatedAt": "2025-12-26 04:33:35"
+    },
+    {
+      "id": "750002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-26 22:34:57",
+      "updatedAt": "2025-12-26 22:34:57"
+    },
+    {
+      "id": "750004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-26 22:35:25",
+      "updatedAt": "2025-12-26 22:35:26"
+    },
+    {
+      "id": "780002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-26 23:52:23",
+      "updatedAt": "2025-12-26 23:52:24"
+    },
+    {
+      "id": "780004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-26 23:53:31",
+      "updatedAt": "2025-12-26 23:53:33"
+    },
+    {
+      "id": "810002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 11:46:56",
+      "updatedAt": "2025-12-28 11:46:56"
+    },
+    {
+      "id": "810004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 12:08:12",
+      "updatedAt": "2025-12-28 12:08:12"
+    },
+    {
+      "id": "840002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 12:54:38",
+      "updatedAt": "2025-12-28 12:54:38"
+    },
+    {
+      "id": "870002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 13:24:34",
+      "updatedAt": "2025-12-28 13:24:35"
+    },
+    {
+      "id": "870004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 13:26:44",
+      "updatedAt": "2025-12-28 13:26:45"
+    },
+    {
+      "id": "900002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 21:37:42",
+      "updatedAt": "2025-12-28 21:37:42"
+    },
+    {
+      "id": "930002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-28 22:18:27",
+      "updatedAt": "2025-12-28 22:18:27"
+    },
+    {
+      "id": "930004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 00:37:02",
+      "updatedAt": "2025-12-29 00:37:02"
+    },
+    {
+      "id": "930006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 02:48:14",
+      "updatedAt": "2025-12-29 02:48:14"
+    },
+    {
+      "id": "930008",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 03:10:16",
+      "updatedAt": "2025-12-29 03:10:17"
+    },
+    {
+      "id": "960002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 12:14:48",
+      "updatedAt": "2025-12-29 12:14:49"
+    },
+    {
+      "id": "960004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 12:15:01",
+      "updatedAt": "2025-12-29 12:15:01"
+    },
+    {
+      "id": "990002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 15:29:30",
+      "updatedAt": "2025-12-29 15:29:30"
+    },
+    {
+      "id": "990004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 15:29:46",
+      "updatedAt": "2025-12-29 15:29:46"
+    },
+    {
+      "id": "990006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 18:16:21",
+      "updatedAt": "2025-12-29 18:16:21"
+    },
+    {
+      "id": "990008",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 18:22:18",
+      "updatedAt": "2025-12-29 18:22:19"
+    },
+    {
+      "id": "990010",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:01:56",
+      "updatedAt": "2025-12-29 19:01:56"
+    },
+    {
+      "id": "990012",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:07:38",
+      "updatedAt": "2025-12-29 19:07:39"
+    },
+    {
+      "id": "990014",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:15:40",
+      "updatedAt": "2025-12-29 19:15:41"
+    },
+    {
+      "id": "990016",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:21:25",
+      "updatedAt": "2025-12-29 19:21:25"
+    },
+    {
+      "id": "990018",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:29:03",
+      "updatedAt": "2025-12-29 19:29:04"
+    },
+    {
+      "id": "990020",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:34:06",
+      "updatedAt": "2025-12-29 19:34:06"
+    },
+    {
+      "id": "990022",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:38:54",
+      "updatedAt": "2025-12-29 19:38:55"
+    },
+    {
+      "id": "990024",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:43:10",
+      "updatedAt": "2025-12-29 19:43:11"
+    },
+    {
+      "id": "990026",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:47:13",
+      "updatedAt": "2025-12-29 19:47:14"
+    },
+    {
+      "id": "990028",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:52:13",
+      "updatedAt": "2025-12-29 19:52:13"
+    },
+    {
+      "id": "990030",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:56:21",
+      "updatedAt": "2025-12-29 19:56:22"
+    },
+    {
+      "id": "990032",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 20:01:05",
+      "updatedAt": "2025-12-29 20:01:05"
+    },
+    {
+      "id": "990034",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 20:05:42",
+      "updatedAt": "2025-12-29 20:05:42"
+    },
+    {
+      "id": "990036",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 21:45:18",
+      "updatedAt": "2025-12-29 21:45:18"
+    },
+    {
+      "id": "990038",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-29 21:45:33",
+      "updatedAt": "2025-12-29 21:45:33"
+    },
+    {
+      "id": "990040",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-30 11:36:32",
+      "updatedAt": "2025-12-30 11:36:38"
+    },
+    {
+      "id": "990042",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:08:02",
+      "updatedAt": "2025-12-30 14:08:07"
+    },
+    {
+      "id": "990044",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:11:39",
+      "updatedAt": "2025-12-30 14:11:45"
+    },
+    {
+      "id": "990046",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:21:02",
+      "updatedAt": "2025-12-30 14:21:07"
+    },
+    {
+      "id": "990048",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:27:07",
+      "updatedAt": "2025-12-30 14:27:13"
+    },
+    {
+      "id": "990050",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:35:24",
+      "updatedAt": "2025-12-30 14:35:29"
+    },
+    {
+      "id": "1020002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-31 03:24:18",
+      "updatedAt": "2025-12-31 03:24:23"
+    },
+    {
+      "id": "1050002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2025-12-31 21:56:51",
+      "updatedAt": "2025-12-31 21:56:57"
+    },
+    {
+      "id": "1080004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 01:55:29",
+      "updatedAt": "2026-01-02 01:55:29"
+    },
+    {
+      "id": "1080006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 04:10:17",
+      "updatedAt": "2026-01-02 04:10:17"
+    },
+    {
+      "id": "1080008",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 04:10:28",
+      "updatedAt": "2026-01-02 04:10:28"
+    },
+    {
+      "id": "1110002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 18:53:03",
+      "updatedAt": "2026-01-02 18:53:04"
+    },
+    {
+      "id": "1110004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 19:13:12",
+      "updatedAt": "2026-01-02 19:13:13"
+    },
+    {
+      "id": "1110006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 21:33:11",
+      "updatedAt": "2026-01-02 21:33:11"
+    },
+    {
+      "id": "1110008",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:51:44",
+      "updatedAt": "2026-01-02 22:51:44"
+    },
+    {
+      "id": "1110010",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:51:57",
+      "updatedAt": "2026-01-02 22:51:57"
+    },
+    {
+      "id": "1110013",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:53:50",
+      "updatedAt": "2026-01-02 22:53:53"
+    },
+    {
+      "id": "1110015",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-02 23:25:15",
+      "updatedAt": "2026-01-02 23:25:21"
+    },
+    {
+      "id": "1110017",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-03 21:08:55",
+      "updatedAt": "2026-01-03 21:08:56"
+    },
+    {
+      "id": "1110019",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-03 21:11:38",
+      "updatedAt": "2026-01-03 21:11:38"
+    },
+    {
+      "id": "1110022",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-04 01:30:54",
+      "updatedAt": "2026-01-04 01:30:55"
+    },
+    {
+      "id": "1140002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-05 21:19:54",
+      "updatedAt": "2026-01-05 21:20:01"
+    },
+    {
+      "id": "1140006",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-06 05:46:21",
+      "updatedAt": "2026-01-08 23:56:08"
+    },
+    {
+      "id": "1140008",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-06 07:02:54",
+      "updatedAt": "2026-01-08 23:56:10"
+    },
+    {
+      "id": "1170002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-09 17:55:54",
+      "updatedAt": "2026-01-09 17:55:55"
+    },
+    {
+      "id": "1170004",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-09 22:19:15",
+      "updatedAt": "2026-01-09 22:19:16"
+    },
+    {
+      "id": "1200003",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-10 05:50:38",
+      "updatedAt": "2026-01-10 05:50:38"
+    },
+    {
+      "id": "1230002",
+      "name": "Temporary Criteria",
+      "isActive": "0",
+      "createdAt": "2026-01-10 18:41:06",
+      "updatedAt": "2026-01-10 18:41:06"
+    },
+    {
+      "id": "30001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:08:32",
+      "updatedAt": "2026-01-08 23:59:24"
+    },
+    {
+      "id": "30003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:09:23",
+      "updatedAt": "2026-01-08 23:59:26"
+    },
+    {
+      "id": "30005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:10:22",
+      "updatedAt": "2026-01-08 23:59:23"
+    },
+    {
+      "id": "30007",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:10:34",
+      "updatedAt": "2026-01-08 23:59:21"
+    },
+    {
+      "id": "30009",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:10:58",
+      "updatedAt": "2026-01-08 23:59:20"
+    },
+    {
+      "id": "30011",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:11:07",
+      "updatedAt": "2026-01-08 23:59:15"
+    },
+    {
+      "id": "30013",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:11:27",
+      "updatedAt": "2026-01-08 23:59:17"
+    },
+    {
+      "id": "30015",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-08 02:11:52",
+      "updatedAt": "2026-01-08 23:58:59"
+    },
+    {
+      "id": "60001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-10 16:16:46",
+      "updatedAt": "2026-01-08 23:59:00"
+    },
+    {
+      "id": "90001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-10 18:09:12",
+      "updatedAt": "2026-01-08 23:58:53"
+    },
+    {
+      "id": "90003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-10 18:11:09",
+      "updatedAt": "2026-01-08 23:58:55"
+    },
+    {
+      "id": "120001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-12 13:26:50",
+      "updatedAt": "2026-01-08 23:58:48"
+    },
+    {
+      "id": "150001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-13 15:23:49",
+      "updatedAt": "2026-01-08 23:58:50"
+    },
+    {
+      "id": "180001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-15 22:25:30",
+      "updatedAt": "2026-01-08 23:58:43"
+    },
+    {
+      "id": "210001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-16 00:03:17",
+      "updatedAt": "2026-01-08 23:58:44"
+    },
+    {
+      "id": "210003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-16 00:05:08",
+      "updatedAt": "2026-01-08 23:58:37"
+    },
+    {
+      "id": "240001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-16 10:38:52",
+      "updatedAt": "2026-01-08 23:58:39"
+    },
+    {
+      "id": "240003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-16 10:39:08",
+      "updatedAt": "2026-01-08 23:58:34"
+    },
+    {
+      "id": "270001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-22 12:44:23",
+      "updatedAt": "2026-01-08 23:58:36"
+    },
+    {
+      "id": "300001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-22 18:03:53",
+      "updatedAt": "2026-01-08 23:58:40"
+    },
+    {
+      "id": "330001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-22 19:28:59",
+      "updatedAt": "2026-01-08 23:58:41"
+    },
+    {
+      "id": "330003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-22 19:30:09",
+      "updatedAt": "2026-01-08 23:58:46"
+    },
+    {
+      "id": "360001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 12:23:23",
+      "updatedAt": "2026-01-08 23:58:31"
+    },
+    {
+      "id": "360003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 12:25:59",
+      "updatedAt": "2026-01-08 23:58:33"
+    },
+    {
+      "id": "360005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 12:27:07",
+      "updatedAt": "2026-01-08 23:58:25"
+    },
+    {
+      "id": "390001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 13:40:06",
+      "updatedAt": "2026-01-08 23:58:26"
+    },
+    {
+      "id": "390003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 13:40:19",
+      "updatedAt": "2026-01-08 23:58:19"
+    },
+    {
+      "id": "420001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:01:14",
+      "updatedAt": "2026-01-08 23:58:20"
+    },
+    {
+      "id": "420003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:03:31",
+      "updatedAt": "2026-01-08 23:58:13"
+    },
+    {
+      "id": "420005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:03:53",
+      "updatedAt": "2026-01-08 23:58:14"
+    },
+    {
+      "id": "450001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:50:41",
+      "updatedAt": "2026-01-08 23:58:07"
+    },
+    {
+      "id": "450003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 14:50:55",
+      "updatedAt": "2026-01-08 23:58:08"
+    },
+    {
+      "id": "480001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 15:37:38",
+      "updatedAt": "2026-01-08 23:58:00"
+    },
+    {
+      "id": "480003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 15:40:44",
+      "updatedAt": "2026-01-08 23:58:02"
+    },
+    {
+      "id": "510001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 18:05:16",
+      "updatedAt": "2026-01-08 23:57:54"
+    },
+    {
+      "id": "510003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-23 18:05:28",
+      "updatedAt": "2026-01-08 23:57:55"
+    },
+    {
+      "id": "540001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-24 21:43:18",
+      "updatedAt": "2026-01-08 23:57:47"
+    },
+    {
+      "id": "570001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 02:28:44",
+      "updatedAt": "2026-01-08 23:57:49"
+    },
+    {
+      "id": "570003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 02:29:00",
+      "updatedAt": "2026-01-08 23:57:40"
+    },
+    {
+      "id": "600001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 12:44:04",
+      "updatedAt": "2026-01-08 23:57:42"
+    },
+    {
+      "id": "600003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 12:50:43",
+      "updatedAt": "2026-01-08 23:57:33"
+    },
+    {
+      "id": "630001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 13:12:51",
+      "updatedAt": "2026-01-08 23:57:35"
+    },
+    {
+      "id": "630003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 13:13:09",
+      "updatedAt": "2026-01-08 23:57:26"
+    },
+    {
+      "id": "660001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 20:36:54",
+      "updatedAt": "2026-01-08 23:57:28"
+    },
+    {
+      "id": "690001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-25 21:09:52",
+      "updatedAt": "2026-01-08 23:57:19"
+    },
+    {
+      "id": "720001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-26 04:10:19",
+      "updatedAt": "2026-01-08 23:57:21"
+    },
+    {
+      "id": "720003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-26 04:33:32",
+      "updatedAt": "2026-01-08 23:57:12"
+    },
+    {
+      "id": "750001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-26 22:34:55",
+      "updatedAt": "2026-01-08 23:57:14"
+    },
+    {
+      "id": "750003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-26 22:35:23",
+      "updatedAt": "2026-01-08 23:57:04"
+    },
+    {
+      "id": "780001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-26 23:52:22",
+      "updatedAt": "2026-01-08 23:57:06"
+    },
+    {
+      "id": "780003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-26 23:53:28",
+      "updatedAt": "2026-01-08 23:56:57"
+    },
+    {
+      "id": "810001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 11:46:55",
+      "updatedAt": "2026-01-08 23:56:59"
+    },
+    {
+      "id": "810003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 12:08:10",
+      "updatedAt": "2026-01-08 23:56:49"
+    },
+    {
+      "id": "840001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 12:54:36",
+      "updatedAt": "2026-01-08 23:56:51"
+    },
+    {
+      "id": "870001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 13:24:33",
+      "updatedAt": "2026-01-08 23:56:41"
+    },
+    {
+      "id": "870003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 13:26:43",
+      "updatedAt": "2026-01-08 23:56:43"
+    },
+    {
+      "id": "900001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 21:37:40",
+      "updatedAt": "2026-01-08 23:56:36"
+    },
+    {
+      "id": "930001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-28 22:18:25",
+      "updatedAt": "2026-01-08 23:56:39"
+    },
+    {
+      "id": "930003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 00:37:00",
+      "updatedAt": "2026-01-08 23:56:45"
+    },
+    {
+      "id": "930005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 02:48:12",
+      "updatedAt": "2026-01-08 23:56:47"
+    },
+    {
+      "id": "930007",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 03:10:15",
+      "updatedAt": "2026-01-08 23:56:53"
+    },
+    {
+      "id": "960001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 12:14:47",
+      "updatedAt": "2026-01-08 23:56:55"
+    },
+    {
+      "id": "960003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 12:14:59",
+      "updatedAt": "2026-01-08 23:57:00"
+    },
+    {
+      "id": "990001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 15:29:28",
+      "updatedAt": "2026-01-08 23:57:02"
+    },
+    {
+      "id": "990003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 15:29:44",
+      "updatedAt": "2026-01-08 23:57:08"
+    },
+    {
+      "id": "990005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 18:16:19",
+      "updatedAt": "2026-01-08 23:57:11"
+    },
+    {
+      "id": "990007",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 18:22:17",
+      "updatedAt": "2026-01-08 23:57:16"
+    },
+    {
+      "id": "990009",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:01:54",
+      "updatedAt": "2026-01-08 23:57:18"
+    },
+    {
+      "id": "990011",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:07:37",
+      "updatedAt": "2026-01-08 23:57:23"
+    },
+    {
+      "id": "990013",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:15:39",
+      "updatedAt": "2026-01-08 23:57:25"
+    },
+    {
+      "id": "990015",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:21:23",
+      "updatedAt": "2026-01-08 23:57:30"
+    },
+    {
+      "id": "990017",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:29:01",
+      "updatedAt": "2026-01-08 23:57:32"
+    },
+    {
+      "id": "990019",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:34:04",
+      "updatedAt": "2026-01-08 23:57:37"
+    },
+    {
+      "id": "990021",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:38:52",
+      "updatedAt": "2026-01-08 23:57:38"
+    },
+    {
+      "id": "990023",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:43:08",
+      "updatedAt": "2026-01-08 23:57:43"
+    },
+    {
+      "id": "990025",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:47:11",
+      "updatedAt": "2026-01-08 23:57:45"
+    },
+    {
+      "id": "990027",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:52:11",
+      "updatedAt": "2026-01-08 23:57:50"
+    },
+    {
+      "id": "990029",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 19:56:19",
+      "updatedAt": "2026-01-08 23:57:52"
+    },
+    {
+      "id": "990031",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 20:01:03",
+      "updatedAt": "2026-01-08 23:57:57"
+    },
+    {
+      "id": "990033",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 20:05:40",
+      "updatedAt": "2026-01-08 23:57:59"
+    },
+    {
+      "id": "990035",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 21:45:16",
+      "updatedAt": "2026-01-08 23:58:03"
+    },
+    {
+      "id": "990037",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-29 21:45:31",
+      "updatedAt": "2026-01-08 23:58:05"
+    },
+    {
+      "id": "990039",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-30 11:36:17",
+      "updatedAt": "2026-01-08 23:58:10"
+    },
+    {
+      "id": "990041",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:07:47",
+      "updatedAt": "2026-01-08 23:58:11"
+    },
+    {
+      "id": "990043",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:11:24",
+      "updatedAt": "2026-01-08 23:58:16"
+    },
+    {
+      "id": "990045",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:20:47",
+      "updatedAt": "2026-01-08 23:58:17"
+    },
+    {
+      "id": "990047",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:26:52",
+      "updatedAt": "2026-01-08 23:58:22"
+    },
+    {
+      "id": "990049",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-30 14:35:09",
+      "updatedAt": "2026-01-08 23:58:23"
+    },
+    {
+      "id": "1020001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-31 03:24:03",
+      "updatedAt": "2026-01-08 23:58:28"
+    },
+    {
+      "id": "1050001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2025-12-31 21:56:36",
+      "updatedAt": "2026-01-08 23:58:30"
+    },
+    {
+      "id": "1080001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 00:58:05",
+      "updatedAt": "2026-01-08 23:58:47"
+    },
+    {
+      "id": "1080002",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 00:58:24",
+      "updatedAt": "2026-01-08 23:58:51"
+    },
+    {
+      "id": "1080003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 01:55:27",
+      "updatedAt": "2026-01-08 23:58:52"
+    },
+    {
+      "id": "1080005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 04:10:15",
+      "updatedAt": "2026-01-08 23:58:56"
+    },
+    {
+      "id": "1080007",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 04:10:26",
+      "updatedAt": "2026-01-08 23:58:58"
+    },
+    {
+      "id": "1110001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 18:53:01",
+      "updatedAt": "2026-01-08 23:59:02"
+    },
+    {
+      "id": "1110003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 19:13:10",
+      "updatedAt": "2026-01-08 23:59:03"
+    },
+    {
+      "id": "1110005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 21:33:09",
+      "updatedAt": "2026-01-08 23:59:18"
+    },
+    {
+      "id": "1110007",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:51:42",
+      "updatedAt": "2026-01-08 23:59:10"
+    },
+    {
+      "id": "1110009",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:51:55",
+      "updatedAt": "2026-01-08 23:59:12"
+    },
+    {
+      "id": "1110011",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:52:48",
+      "updatedAt": "2026-01-08 23:59:13"
+    },
+    {
+      "id": "1110012",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 22:53:44",
+      "updatedAt": "2026-01-08 23:59:04"
+    },
+    {
+      "id": "1110014",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-02 23:25:00",
+      "updatedAt": "2026-01-08 23:59:06"
+    },
+    {
+      "id": "1110016",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-03 21:08:53",
+      "updatedAt": "2026-01-08 23:59:07"
+    },
+    {
+      "id": "1110018",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-03 21:11:35",
+      "updatedAt": "2026-01-08 23:59:08"
+    },
+    {
+      "id": "1110020",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-04 01:30:27",
+      "updatedAt": "2026-01-08 23:59:14"
+    },
+    {
+      "id": "1110021",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-04 01:30:52",
+      "updatedAt": "2026-01-08 23:59:19"
+    },
+    {
+      "id": "1140001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-05 21:19:39",
+      "updatedAt": "2026-01-08 23:56:23"
+    },
+    {
+      "id": "1140003",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-06 05:16:35",
+      "updatedAt": "2026-01-08 23:56:21"
+    },
+    {
+      "id": "1140004",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-06 05:45:53",
+      "updatedAt": "2026-01-08 23:59:27"
+    },
+    {
+      "id": "1140005",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-06 05:46:02",
+      "updatedAt": "2026-01-08 23:59:28"
+    },
+    {
+      "id": "1140007",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-06 07:02:37",
+      "updatedAt": "2026-01-08 23:59:31"
+    },
+    {
+      "id": "1170001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-09 17:55:54",
+      "updatedAt": "2026-01-09 22:28:17"
+    },
+    {
+      "id": "1170003",
+      "name": "Test Urgency",
+      "isActive": "1",
+      "createdAt": "2026-01-09 22:19:13",
+      "updatedAt": "2026-01-10 18:41:06"
+    },
+    {
+      "id": "1200001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-10 05:50:28",
+      "updatedAt": "2026-01-10 23:47:45"
+    },
+    {
+      "id": "1200002",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-10 05:50:38",
+      "updatedAt": "2026-01-10 23:47:45"
+    },
+    {
+      "id": "1230001",
+      "name": "Test Urgency",
+      "isActive": "0",
+      "createdAt": "2026-01-10 18:41:05",
+      "updatedAt": "2026-01-10 23:47:45"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tisActive\tcreatedAt\tupdatedAt\n30002\tTemporary Criteria\t0\t2025-12-08 02:08:33\t2025-12-08 02:08:33\n30004\tTemporary Criteria\t0\t2025-12-08 02:09:24\t2025-12-08 02:09:24\n30006\tTemporary Criteria\t0\t2025-12-08 02:10:22\t2025-12-08 02:10:22\n30008\tTemporary Criteria\t0\t2025-12-08 02:10:34\t2025-12-08 02:10:35\n30010\tTemporary Criteria\t0\t2025-12-08 02:10:59\t2025-12-08 02:10:59\n30012\tTemporary Criteria\t0\t2025-12-08 02:11:07\t2025-12-08 02:11:07\n30014\tTemporary Criteria\t0\t2025-12-08 02:11:28\t2025-12-08 02:11:28\n30016\tTemporary Criteria\t0\t2025-12-08 02:11:52\t2025-12-08 02:11:52\n90002\tTemporary Criteria\t0\t2025-12-10 18:09:12\t2025-12-10 18:09:12\n90004\tTemporary Criteria\t0\t2025-12-10 18:11:09\t2025-12-10 18:11:09\n120002\tTemporary Criteria\t0\t2025-12-12 13:26:51\t2025-12-12 13:26:51\n150002\tTemporary Criteria\t0\t2025-12-13 15:23:49\t2025-12-13 15:23:50\n180002\tTemporary Criteria\t0\t2025-12-15 22:25:31\t2025-12-15 22:25:31\n210002\tTemporary Criteria\t0\t2025-12-16 00:03:18\t2025-12-16 00:03:18\n210004\tTemporary Criteria\t0\t2025-12-16 00:05:10\t2025-12-16 00:05:10\n240002\tTemporary Criteria\t0\t2025-12-16 10:38:53\t2025-12-16 10:38:53\n240004\tTemporary Criteria\t0\t2025-12-16 10:39:09\t2025-12-16 10:39:09\n270002\tTemporary Criteria\t0\t2025-12-22 12:44:24\t2025-12-22 12:44:24\n300002\tTemporary Criteria\t0\t2025-12-22 18:03:54\t2025-12-22 18:03:55\n330002\tTemporary Criteria\t0\t2025-12-22 19:29:00\t2025-12-22 19:29:00\n330004\tTemporary Criteria\t0\t2025-12-22 19:30:15\t2025-12-22 19:30:15\n360002\tTemporary Criteria\t0\t2025-12-23 12:23:24\t2025-12-23 12:23:24\n360004\tTemporary Criteria\t0\t2025-12-23 12:26:00\t2025-12-23 12:26:00\n360006\tTemporary Criteria\t0\t2025-12-23 12:27:08\t2025-12-23 12:27:08\n390002\tTemporary Criteria\t0\t2025-12-23 13:40:07\t2025-12-23 13:40:08\n390004\tTemporary Criteria\t0\t2025-12-23 13:40:20\t2025-12-23 13:40:20\n420002\tTemporary Criteria\t0\t2025-12-23 14:01:15\t2025-12-23 14:01:16\n420004\tTemporary Criteria\t0\t2025-12-23 14:03:32\t2025-12-23 14:03:33\n420006\tTemporary Criteria\t0\t2025-12-23 14:03:54\t2025-12-23 14:03:55\n450002\tTemporary Criteria\t0\t2025-12-23 14:50:42\t2026-01-08 23:56:03\n450004\tTemporary Criteria\t0\t2025-12-23 14:50:56\t2025-12-23 14:50:56\n480002\tTemporary Criteria\t0\t2025-12-23 15:37:39\t2025-12-23 15:37:39\n480004\tTemporary Criteria\t0\t2025-12-23 15:40:45\t2025-12-23 15:40:46\n510002\tTemporary Criteria\t0\t2025-12-23 18:05:17\t2025-12-23 18:05:18\n510004\tTemporary Criteria\t0\t2025-12-23 18:05:30\t2025-12-23 18:05:31\n540002\tTemporary Criteria\t0\t2025-12-24 21:43:19\t2025-12-24 21:43:20\n570002\tTemporary Criteria\t0\t2025-12-25 02:28:45\t2025-12-25 02:28:45\n570004\tTemporary Criteria\t0\t2025-12-25 02:29:01\t2025-12-25 02:29:02\n600002\tTemporary Criteria\t0\t2025-12-25 12:44:05\t2025-12-25 12:44:05\n600004\tTemporary Criteria\t0\t2025-12-25 12:50:44\t2025-12-25 12:50:45\n630002\tTemporary Criteria\t0\t2025-12-25 13:12:52\t2025-12-25 13:12:53\n630004\tTemporary Criteria\t0\t2025-12-25 13:13:10\t2025-12-25 13:13:11\n660002\tTemporary Criteria\t0\t2025-12-25 20:36:55\t2025-12-25 20:36:55\n690002\tTemporary Criteria\t0\t2025-12-25 21:09:53\t2025-12-25 21:09:53\n720002\tTemporary Criteria\t0\t2025-12-26 04:10:20\t2025-12-26 04:10:21\n720004\tTemporary Criteria\t0\t2025-12-26 04:33:34\t2025-12-26 04:33:35\n750002\tTemporary Criteria\t0\t2025-12-26 22:34:57\t2025-12-26 22:34:57\n750004\tTemporary Criteria\t0\t2025-12-26 22:35:25\t2025-12-26 22:35:26\n780002\tTemporary Criteria\t0\t2025-12-26 23:52:23\t2025-12-26 23:52:24\n780004\tTemporary Criteria\t0\t2025-12-26 23:53:31\t2025-12-26 23:53:33\n810002\tTemporary Criteria\t0\t2025-12-28 11:46:56\t2025-12-28 11:46:56\n810004\tTemporary Criteria\t0\t2025-12-28 12:08:12\t2025-12-28 12:08:12\n840002\tTemporary Criteria\t0\t2025-12-28 12:54:38\t2025-12-28 12:54:38\n870002\tTemporary Criteria\t0\t2025-12-28 13:24:34\t2025-12-28 13:24:35\n870004\tTemporary Criteria\t0\t2025-12-28 13:26:44\t2025-12-28 13:26:45\n900002\tTemporary Criteria\t0\t2025-12-28 21:37:42\t2025-12-28 21:37:42\n930002\tTemporary Criteria\t0\t2025-12-28 22:18:27\t2025-12-28 22:18:27\n930004\tTemporary Criteria\t0\t2025-12-29 00:37:02\t2025-12-29 00:37:02\n930006\tTemporary Criteria\t0\t2025-12-29 02:48:14\t2025-12-29 02:48:14\n930008\tTemporary Criteria\t0\t2025-12-29 03:10:16\t2025-12-29 03:10:17\n960002\tTemporary Criteria\t0\t2025-12-29 12:14:48\t2025-12-29 12:14:49\n960004\tTemporary Criteria\t0\t2025-12-29 12:15:01\t2025-12-29 12:15:01\n990002\tTemporary Criteria\t0\t2025-12-29 15:29:30\t2025-12-29 15:29:30\n990004\tTemporary Criteria\t0\t2025-12-29 15:29:46\t2025-12-29 15:29:46\n990006\tTemporary Criteria\t0\t2025-12-29 18:16:21\t2025-12-29 18:16:21\n990008\tTemporary Criteria\t0\t2025-12-29 18:22:18\t2025-12-29 18:22:19\n990010\tTemporary Criteria\t0\t2025-12-29 19:01:56\t2025-12-29 19:01:56\n990012\tTemporary Criteria\t0\t2025-12-29 19:07:38\t2025-12-29 19:07:39\n990014\tTemporary Criteria\t0\t2025-12-29 19:15:40\t2025-12-29 19:15:41\n990016\tTemporary Criteria\t0\t2025-12-29 19:21:25\t2025-12-29 19:21:25\n990018\tTemporary Criteria\t0\t2025-12-29 19:29:03\t2025-12-29 19:29:04\n990020\tTemporary Criteria\t0\t2025-12-29 19:34:06\t2025-12-29 19:34:06\n990022\tTemporary Criteria\t0\t2025-12-29 19:38:54\t2025-12-29 19:38:55\n990024\tTemporary Criteria\t0\t2025-12-29 19:43:10\t2025-12-29 19:43:11\n990026\tTemporary Criteria\t0\t2025-12-29 19:47:13\t2025-12-29 19:47:14\n990028\tTemporary Criteria\t0\t2025-12-29 19:52:13\t2025-12-29 19:52:13\n990030\tTemporary Criteria\t0\t2025-12-29 19:56:21\t2025-12-29 19:56:22\n990032\tTemporary Criteria\t0\t2025-12-29 20:01:05\t2025-12-29 20:01:05\n990034\tTemporary Criteria\t0\t2025-12-29 20:05:42\t2025-12-29 20:05:42\n990036\tTemporary Criteria\t0\t2025-12-29 21:45:18\t2025-12-29 21:45:18\n990038\tTemporary Criteria\t0\t2025-12-29 21:45:33\t2025-12-29 21:45:33\n990040\tTemporary Criteria\t0\t2025-12-30 11:36:32\t2025-12-30 11:36:38\n990042\tTemporary Criteria\t0\t2025-12-30 14:08:02\t2025-12-30 14:08:07\n990044\tTemporary Criteria\t0\t2025-12-30 14:11:39\t2025-12-30 14:11:45\n990046\tTemporary Criteria\t0\t2025-12-30 14:21:02\t2025-12-30 14:21:07\n990048\tTemporary Criteria\t0\t2025-12-30 14:27:07\t2025-12-30 14:27:13\n990050\tTemporary Criteria\t0\t2025-12-30 14:35:24\t2025-12-30 14:35:29\n1020002\tTemporary Criteria\t0\t2025-12-31 03:24:18\t2025-12-31 03:24:23\n1050002\tTemporary Criteria\t0\t2025-12-31 21:56:51\t2025-12-31 21:56:57\n1080004\tTemporary Criteria\t0\t2026-01-02 01:55:29\t2026-01-02 01:55:29\n1080006\tTemporary Criteria\t0\t2026-01-02 04:10:17\t2026-01-02 04:10:17\n1080008\tTemporary Criteria\t0\t2026-01-02 04:10:28\t2026-01-02 04:10:28\n1110002\tTemporary Criteria\t0\t2026-01-02 18:53:03\t2026-01-02 18:53:04\n1110004\tTemporary Criteria\t0\t2026-01-02 19:13:12\t2026-01-02 19:13:13\n1110006\tTemporary Criteria\t0\t2026-01-02 21:33:11\t2026-01-02 21:33:11\n1110008\tTemporary Criteria\t0\t2026-01-02 22:51:44\t2026-01-02 22:51:44\n1110010\tTemporary Criteria\t0\t2026-01-02 22:51:57\t2026-01-02 22:51:57\n1110013\tTemporary Criteria\t0\t2026-01-02 22:53:50\t2026-01-02 22:53:53\n1110015\tTemporary Criteria\t0\t2026-01-02 23:25:15\t2026-01-02 23:25:21\n1110017\tTemporary Criteria\t0\t2026-01-03 21:08:55\t2026-01-03 21:08:56\n1110019\tTemporary Criteria\t0\t2026-01-03 21:11:38\t2026-01-03 21:11:38\n1110022\tTemporary Criteria\t0\t2026-01-04 01:30:54\t2026-01-04 01:30:55\n1140002\tTemporary Criteria\t0\t2026-01-05 21:19:54\t2026-01-05 21:20:01\n1140006\tTemporary Criteria\t0\t2026-01-06 05:46:21\t2026-01-08 23:56:08\n1140008\tTemporary Criteria\t0\t2026-01-06 07:02:54\t2026-01-08 23:56:10\n1170002\tTemporary Criteria\t0\t2026-01-09 17:55:54\t2026-01-09 17:55:55\n1170004\tTemporary Criteria\t0\t2026-01-09 22:19:15\t2026-01-09 22:19:16\n1200003\tTemporary Criteria\t0\t2026-01-10 05:50:38\t2026-01-10 05:50:38\n1230002\tTemporary Criteria\t0\t2026-01-10 18:41:06\t2026-01-10 18:41:06\n30001\tTest Urgency\t0\t2025-12-08 02:08:32\t2026-01-08 23:59:24\n30003\tTest Urgency\t0\t2025-12-08 02:09:23\t2026-01-08 23:59:26\n30005\tTest Urgency\t0\t2025-12-08 02:10:22\t2026-01-08 23:59:23\n30007\tTest Urgency\t0\t2025-12-08 02:10:34\t2026-01-08 23:59:21\n30009\tTest Urgency\t0\t2025-12-08 02:10:58\t2026-01-08 23:59:20\n30011\tTest Urgency\t0\t2025-12-08 02:11:07\t2026-01-08 23:59:15\n30013\tTest Urgency\t0\t2025-12-08 02:11:27\t2026-01-08 23:59:17\n30015\tTest Urgency\t0\t2025-12-08 02:11:52\t2026-01-08 23:58:59\n60001\tTest Urgency\t0\t2025-12-10 16:16:46\t2026-01-08 23:59:00\n90001\tTest Urgency\t0\t2025-12-10 18:09:12\t2026-01-08 23:58:53\n90003\tTest Urgency\t0\t2025-12-10 18:11:09\t2026-01-08 23:58:55\n120001\tTest Urgency\t0\t2025-12-12 13:26:50\t2026-01-08 23:58:48\n150001\tTest Urgency\t0\t2025-12-13 15:23:49\t2026-01-08 23:58:50\n180001\tTest Urgency\t0\t2025-12-15 22:25:30\t2026-01-08 23:58:43\n210001\tTest Urgency\t0\t2025-12-16 00:03:17\t2026-01-08 23:58:44\n210003\tTest Urgency\t0\t2025-12-16 00:05:08\t2026-01-08 23:58:37\n240001\tTest Urgency\t0\t2025-12-16 10:38:52\t2026-01-08 23:58:39\n240003\tTest Urgency\t0\t2025-12-16 10:39:08\t2026-01-08 23:58:34\n270001\tTest Urgency\t0\t2025-12-22 12:44:23\t2026-01-08 23:58:36\n300001\tTest Urgency\t0\t2025-12-22 18:03:53\t2026-01-08 23:58:40\n330001\tTest Urgency\t0\t2025-12-22 19:28:59\t2026-01-08 23:58:41\n330003\tTest Urgency\t0\t2025-12-22 19:30:09\t2026-01-08 23:58:46\n360001\tTest Urgency\t0\t2025-12-23 12:23:23\t2026-01-08 23:58:31\n360003\tTest Urgency\t0\t2025-12-23 12:25:59\t2026-01-08 23:58:33\n360005\tTest Urgency\t0\t2025-12-23 12:27:07\t2026-01-08 23:58:25\n390001\tTest Urgency\t0\t2025-12-23 13:40:06\t2026-01-08 23:58:26\n390003\tTest Urgency\t0\t2025-12-23 13:40:19\t2026-01-08 23:58:19\n420001\tTest Urgency\t0\t2025-12-23 14:01:14\t2026-01-08 23:58:20\n420003\tTest Urgency\t0\t2025-12-23 14:03:31\t2026-01-08 23:58:13\n420005\tTest Urgency\t0\t2025-12-23 14:03:53\t2026-01-08 23:58:14\n450001\tTest Urgency\t0\t2025-12-23 14:50:41\t2026-01-08 23:58:07\n450003\tTest Urgency\t0\t2025-12-23 14:50:55\t2026-01-08 23:58:08\n480001\tTest Urgency\t0\t2025-12-23 15:37:38\t2026-01-08 23:58:00\n480003\tTest Urgency\t0\t2025-12-23 15:40:44\t2026-01-08 23:58:02\n510001\tTest Urgency\t0\t2025-12-23 18:05:16\t2026-01-08 23:57:54\n510003\tTest Urgency\t0\t2025-12-23 18:05:28\t2026-01-08 23:57:55\n540001\tTest Urgency\t0\t2025-12-24 21:43:18\t2026-01-08 23:57:47\n570001\tTest Urgency\t0\t2025-12-25 02:28:44\t2026-01-08 23:57:49\n570003\tTest Urgency\t0\t2025-12-25 02:29:00\t2026-01-08 23:57:40\n600001\tTest Urgency\t0\t2025-12-25 12:44:04\t2026-01-08 23:57:42\n600003\tTest Urgency\t0\t2025-12-25 12:50:43\t2026-01-08 23:57:33\n630001\tTest Urgency\t0\t2025-12-25 13:12:51\t2026-01-08 23:57:35\n630003\tTest Urgency\t0\t2025-12-25 13:13:09\t2026-01-08 23:57:26\n660001\tTest Urgency\t0\t2025-12-25 20:36:54\t2026-01-08 23:57:28\n690001\tTest Urgency\t0\t2025-12-25 21:09:52\t2026-01-08 23:57:19\n720001\tTest Urgency\t0\t2025-12-26 04:10:19\t2026-01-08 23:57:21\n720003\tTest Urgency\t0\t2025-12-26 04:33:32\t2026-01-08 23:57:12\n750001\tTest Urgency\t0\t2025-12-26 22:34:55\t2026-01-08 23:57:14\n750003\tTest Urgency\t0\t2025-12-26 22:35:23\t2026-01-08 23:57:04\n780001\tTest Urgency\t0\t2025-12-26 23:52:22\t2026-01-08 23:57:06\n780003\tTest Urgency\t0\t2025-12-26 23:53:28\t2026-01-08 23:56:57\n810001\tTest Urgency\t0\t2025-12-28 11:46:55\t2026-01-08 23:56:59\n810003\tTest Urgency\t0\t2025-12-28 12:08:10\t2026-01-08 23:56:49\n840001\tTest Urgency\t0\t2025-12-28 12:54:36\t2026-01-08 23:56:51\n870001\tTest Urgency\t0\t2025-12-28 13:24:33\t2026-01-08 23:56:41\n870003\tTest Urgency\t0\t2025-12-28 13:26:43\t2026-01-08 23:56:43\n900001\tTest Urgency\t0\t2025-12-28 21:37:40\t2026-01-08 23:56:36\n930001\tTest Urgency\t0\t2025-12-28 22:18:25\t2026-01-08 23:56:39\n930003\tTest Urgency\t0\t2025-12-29 00:37:00\t2026-01-08 23:56:45\n930005\tTest Urgency\t0\t2025-12-29 02:48:12\t2026-01-08 23:56:47\n930007\tTest Urgency\t0\t2025-12-29 03:10:15\t2026-01-08 23:56:53\n960001\tTest Urgency\t0\t2025-12-29 12:14:47\t2026-01-08 23:56:55\n960003\tTest Urgency\t0\t2025-12-29 12:14:59\t2026-01-08 23:57:00\n990001\tTest Urgency\t0\t2025-12-29 15:29:28\t2026-01-08 23:57:02\n990003\tTest Urgency\t0\t2025-12-29 15:29:44\t2026-01-08 23:57:08\n990005\tTest Urgency\t0\t2025-12-29 18:16:19\t2026-01-08 23:57:11\n990007\tTest Urgency\t0\t2025-12-29 18:22:17\t2026-01-08 23:57:16\n990009\tTest Urgency\t0\t2025-12-29 19:01:54\t2026-01-08 23:57:18\n990011\tTest Urgency\t0\t2025-12-29 19:07:37\t2026-01-08 23:57:23\n990013\tTest Urgency\t0\t2025-12-29 19:15:39\t2026-01-08 23:57:25\n990015\tTest Urgency\t0\t2025-12-29 19:21:23\t2026-01-08 23:57:30\n990017\tTest Urgency\t0\t2025-12-29 19:29:01\t2026-01-08 23:57:32\n990019\tTest Urgency\t0\t2025-12-29 19:34:04\t2026-01-08 23:57:37\n990021\tTest Urgency\t0\t2025-12-29 19:38:52\t2026-01-08 23:57:38\n990023\tTest Urgency\t0\t2025-12-29 19:43:08\t2026-01-08 23:57:43\n990025\tTest Urgency\t0\t2025-12-29 19:47:11\t2026-01-08 23:57:45\n990027\tTest Urgency\t0\t2025-12-29 19:52:11\t2026-01-08 23:57:50\n990029\tTest Urgency\t0\t2025-12-29 19:56:19\t2026-01-08 23:57:52\n990031\tTest Urgency\t0\t2025-12-29 20:01:03\t2026-01-08 23:57:57\n990033\tTest Urgency\t0\t2025-12-29 20:05:40\t2026-01-08 23:57:59\n990035\tTest Urgency\t0\t2025-12-29 21:45:16\t2026-01-08 23:58:03\n990037\tTest Urgency\t0\t2025-12-29 21:45:31\t2026-01-08 23:58:05\n990039\tTest Urgency\t0\t2025-12-30 11:36:17\t2026-01-08 23:58:10\n990041\tTest Urgency\t0\t2025-12-30 14:07:47\t2026-01-08 23:58:11\n990043\tTest Urgency\t0\t2025-12-30 14:11:24\t2026-01-08 23:58:16\n990045\tTest Urgency\t0\t2025-12-30 14:20:47\t2026-01-08 23:58:17\n990047\tTest Urgency\t0\t2025-12-30 14:26:52\t2026-01-08 23:58:22\n990049\tTest Urgency\t0\t2025-12-30 14:35:09\t2026-01-08 23:58:23\n1020001\tTest Urgency\t0\t2025-12-31 03:24:03\t2026-01-08 23:58:28\n1050001\tTest Urgency\t0\t2025-12-31 21:56:36\t2026-01-08 23:58:30\n1080001\tTest Urgency\t0\t2026-01-02 00:58:05\t2026-01-08 23:58:47\n1080002\tTest Urgency\t0\t2026-01-02 00:58:24\t2026-01-08 23:58:51\n1080003\tTest Urgency\t0\t2026-01-02 01:55:27\t2026-01-08 23:58:52\n1080005\tTest Urgency\t0\t2026-01-02 04:10:15\t2026-01-08 23:58:56\n1080007\tTest Urgency\t0\t2026-01-02 04:10:26\t2026-01-08 23:58:58\n1110001\tTest Urgency\t0\t2026-01-02 18:53:01\t2026-01-08 23:59:02\n1110003\tTest Urgency\t0\t2026-01-02 19:13:10\t2026-01-08 23:59:03\n1110005\tTest Urgency\t0\t2026-01-02 21:33:09\t2026-01-08 23:59:18\n1110007\tTest Urgency\t0\t2026-01-02 22:51:42\t2026-01-08 23:59:10\n1110009\tTest Urgency\t0\t2026-01-02 22:51:55\t2026-01-08 23:59:12\n1110011\tTest Urgency\t0\t2026-01-02 22:52:48\t2026-01-08 23:59:13\n1110012\tTest Urgency\t0\t2026-01-02 22:53:44\t2026-01-08 23:59:04\n1110014\tTest Urgency\t0\t2026-01-02 23:25:00\t2026-01-08 23:59:06\n1110016\tTest Urgency\t0\t2026-01-03 21:08:53\t2026-01-08 23:59:07\n1110018\tTest Urgency\t0\t2026-01-03 21:11:35\t2026-01-08 23:59:08\n1110020\tTest Urgency\t0\t2026-01-04 01:30:27\t2026-01-08 23:59:14\n1110021\tTest Urgency\t0\t2026-01-04 01:30:52\t2026-01-08 23:59:19\n1140001\tTest Urgency\t0\t2026-01-05 21:19:39\t2026-01-08 23:56:23\n1140003\tTest Urgency\t0\t2026-01-06 05:16:35\t2026-01-08 23:56:21\n1140004\tTest Urgency\t0\t2026-01-06 05:45:53\t2026-01-08 23:59:27\n1140005\tTest Urgency\t0\t2026-01-06 05:46:02\t2026-01-08 23:59:28\n1140007\tTest Urgency\t0\t2026-01-06 07:02:37\t2026-01-08 23:59:31\n1170001\tTest Urgency\t0\t2026-01-09 17:55:54\t2026-01-09 22:28:17\n1170003\tTest Urgency\t1\t2026-01-09 22:19:13\t2026-01-10 18:41:06\n1200001\tTest Urgency\t0\t2026-01-10 05:50:28\t2026-01-10 23:47:45\n1200002\tTest Urgency\t0\t2026-01-10 05:50:38\t2026-01-10 23:47:45\n1230001\tTest Urgency\t0\t2026-01-10 18:41:05\t2026-01-10 23:47:45\n",
+  "stderr": "",
+  "execution_time_ms": 174
+}

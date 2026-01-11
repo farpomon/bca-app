@@ -70,6 +70,8 @@ import { generateAssetReport } from "./assetReportGenerator";
 import { generateDeficienciesCSV, generateAssessmentsCSV, generateCostEstimatesCSV } from "./exportUtils";
 import { assessPhotoWithAI } from "./photoAssessment";
 import { performanceRouter } from "./routers/performance.router";
+import { dataCleanupRouter } from "./routers/dataCleanup.router";
+import { criteriaAuditRouter } from "./routers/criteriaAudit.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -104,6 +106,8 @@ export const appRouter = router({
   rsmeans: rsmeansRouter,
   portfolioTargets: portfolioTargetsRouter,
   performance: performanceRouter,
+  dataCleanup: dataCleanupRouter,
+  criteriaAudit: criteriaAuditRouter,
   companyRoles: companyRolesRouter,
   pageVisibility: pageVisibilityRouter,
   analytics: analyticsRouter,

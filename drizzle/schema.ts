@@ -1370,7 +1370,7 @@ export const scoringAuditLog = mysqlTable("scoring_audit_log", {
 
 export const prioritizationCriteria = mysqlTable("prioritization_criteria", {
 	id: int().autoincrement().notNull(),
-	name: varchar({ length: 100 }).notNull(),
+	name: varchar({ length: 100 }).notNull().unique(), // Unique constraint to prevent duplicate criteria names
 	description: text(),
 	category: mysqlEnum(['risk','strategic','compliance','financial','operational','environmental','custom']).notNull(),
 	weight: decimal({ precision: 10, scale: 6 }).default('10.000000').notNull(), // High precision for exact 100% normalization
@@ -1381,6 +1381,33 @@ export const prioritizationCriteria = mysqlTable("prioritization_criteria", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
+
+// Criteria Audit Log - track all changes to prioritization criteria
+export const criteriaAuditLog = mysqlTable("criteria_audit_log", {
+	id: int().autoincrement().notNull(),
+	criteriaId: int().notNull(), // Link to prioritization_criteria
+	action: mysqlEnum(['created','updated','deactivated','reactivated','deleted']).notNull(),
+	oldName: varchar({ length: 100 }),
+	newName: varchar({ length: 100 }),
+	oldDescription: text(),
+	newDescription: text(),
+	oldCategory: mysqlEnum(['risk','strategic','compliance','financial','operational','environmental','custom']),
+	newCategory: mysqlEnum(['risk','strategic','compliance','financial','operational','environmental','custom']),
+	oldWeight: decimal({ precision: 10, scale: 6 }),
+	newWeight: decimal({ precision: 10, scale: 6 }),
+	oldIsActive: int(),
+	newIsActive: int(),
+	changedBy: int().notNull(), // User ID who made the change
+	changedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	reason: text(), // Optional reason for the change
+	changeDetails: text(), // JSON string with additional change details
+},
+(table) => [
+	index("idx_criteria").on(table.criteriaId),
+	index("idx_changed_by").on(table.changedBy),
+	index("idx_changed_at").on(table.changedAt),
+	index("idx_action").on(table.action),
+]);
 
 export const projectDocuments = mysqlTable("project_documents", {
 	id: int().autoincrement().notNull(),

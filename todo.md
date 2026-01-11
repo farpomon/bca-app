@@ -4533,3 +4533,13 @@ Deployment is allowed only when:
 - [x] Fix negative pending count (-142 pending projects) in Priority Scoring KPIs
 - [x] Fix duplicate criteria names (multiple "Test Urgency" entries) in Priority Scoring
 - [x] Investigate and fix budget planning issues (no issues found - system working as expected)
+
+## Data Integrity & Maintenance Improvements
+
+- [x] Add unique constraint on criteria name to prevent duplicates
+- [x] Implement backend validation for duplicate criteria names
+- [x] Create bulk cleanup utility to remove orphaned scoring data
+- [x] Implement audit logging for criteria create/modify/deactivate operations
+- [x] Write tests for criteria name uniqueness validation
+- [x] Write tests for orphaned data cleanup utility
+- [x] Write tests for audit logging functionality

@@ -1,5 +1,6 @@
 import { getDb } from "../db";
 import { sql } from "drizzle-orm";
+import * as criteriaAuditDb from "./criteriaAudit.db";;
 import type {
   PrioritizationCriteria,
   InsertPrioritizationCriteria,
@@ -51,6 +52,18 @@ export async function createCriteria(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  // Check for duplicate name
+  const existingResult = await db.execute(sql`
+    SELECT id FROM prioritization_criteria
+    WHERE name = ${criteria.name}
+    LIMIT 1
+  `);
+  
+  const existingRows = Array.isArray(existingResult[0]) ? existingResult[0] : [];
+  if (existingRows.length > 0) {
+    throw new Error(`A criteria with the name "${criteria.name}" already exists`);
+  }
+
   const result = await db.execute(sql`
     INSERT INTO prioritization_criteria (
       name, description, category, weight, scoringGuideline, isActive, displayOrder
@@ -65,7 +78,16 @@ export async function createCriteria(
     )
   `);
 
-  return result[0].insertId;
+  const criteriaId = result[0].insertId;
+
+  // Log the creation in audit log (use system user ID 1 if no user context)
+  try {
+    await criteriaAuditDb.logCriteriaCreation(criteriaId, criteria, 1);
+  } catch (auditErr) {
+    console.error('Failed to log criteria creation:', auditErr);
+  }
+
+  return criteriaId;
 }
 
 export async function updateCriteria(
@@ -74,6 +96,32 @@ export async function updateCriteria(
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // Get the old criteria for audit logging
+  const oldCriteriaResult = await db.execute(sql`
+    SELECT * FROM prioritization_criteria WHERE id = ${id}
+  `);
+  const oldCriteria: any = Array.isArray(oldCriteriaResult[0]) && oldCriteriaResult[0].length > 0
+    ? oldCriteriaResult[0][0]
+    : null;
+
+  if (!oldCriteria) {
+    throw new Error(`Criteria with id ${id} not found`);
+  }
+
+  // Check for duplicate name if name is being updated
+  if (updates.name !== undefined) {
+    const existingResult = await db.execute(sql`
+      SELECT id FROM prioritization_criteria
+      WHERE name = ${updates.name} AND id != ${id}
+      LIMIT 1
+    `);
+    
+    const existingRows = Array.isArray(existingResult[0]) ? existingResult[0] : [];
+    if (existingRows.length > 0) {
+      throw new Error(`A criteria with the name "${updates.name}" already exists`);
+    }
+  }
 
   const setParts: any[] = [];
 
@@ -90,11 +138,27 @@ export async function updateCriteria(
   setParts.push(sql`updatedAt = NOW()`);
 
   await db.execute(sql`UPDATE prioritization_criteria SET ${sql.join(setParts, sql`, `)} WHERE id = ${id}`);
+
+  // Log the update in audit log
+  try {
+    const newCriteria = { ...oldCriteria, ...updates };
+    await criteriaAuditDb.logCriteriaUpdate(id, oldCriteria, newCriteria, 1);
+  } catch (auditErr) {
+    console.error('Failed to log criteria update:', auditErr);
+  }
 }
 
 export async function deleteCriteria(id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // Get the criteria for audit logging
+  const criteriaResult = await db.execute(sql`
+    SELECT * FROM prioritization_criteria WHERE id = ${id}
+  `);
+  const criteria: any = Array.isArray(criteriaResult[0]) && criteriaResult[0].length > 0
+    ? criteriaResult[0][0]
+    : null;
 
   // Soft delete by setting isActive = 0
   await db.execute(sql`
@@ -102,6 +166,15 @@ export async function deleteCriteria(id: number): Promise<void> {
     SET isActive = 0, updatedAt = NOW()
     WHERE id = ${id}
   `);
+
+  // Log the deactivation in audit log
+  if (criteria) {
+    try {
+      await criteriaAuditDb.logCriteriaDeactivation(id, criteria, 1);
+    } catch (auditErr) {
+      console.error('Failed to log criteria deactivation:', auditErr);
+    }
+  }
 }
 
 // ============================================================================
