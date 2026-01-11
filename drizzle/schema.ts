@@ -3437,3 +3437,214 @@ export const canadianGridCarbonData = mysqlTable("canadian_grid_carbon_data", {
 export type CanadianGridCarbonData = typeof canadianGridCarbonData.$inferSelect;
 export type InsertCanadianGridCarbonData = typeof canadianGridCarbonData.$inferInsert;
 
+
+/**
+ * Audit Logs Table
+ * Tracks all system actions with before/after states for governance and compliance
+ */
+export const auditLogs = mysqlTable("audit_logs", {
+	id: int().autoincrement().notNull().primaryKey(),
+	timestamp: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	userId: int(),
+	userName: varchar({ length: 255 }),
+	userEmail: varchar({ length: 320 }),
+	companyId: int(),
+	companyName: varchar({ length: 255 }),
+	actionType: mysqlEnum(['create', 'update', 'delete', 'recalculate', 'import', 'export', 'bulk_delete', 'bulk_update']).notNull(),
+	entityType: mysqlEnum(['project', 'asset', 'assessment', 'deficiency', 'photo', 'criteria', 'cycle', 'allocation', 'analytics', 'ranking', 'esg_rating', 'report', 'user', 'company', 'building_code', 'maintenance_schedule', 'capital_plan', 'risk_assessment', 'timeline_event']).notNull(),
+	entityId: int(),
+	entityName: varchar({ length: 500 }),
+	module: varchar({ length: 100 }), // e.g., 'assessments', 'capital_planning', 'esg', 'admin'
+	beforeState: json(), // JSON snapshot of entity before change
+	afterState: json(), // JSON snapshot of entity after change
+	changesSummary: text(), // Human-readable summary of changes
+	status: mysqlEnum(['success', 'failed', 'partial']).default('success').notNull(),
+	errorMessage: text(),
+	ipAddress: varchar({ length: 45 }), // IPv6 support
+	userAgent: text(),
+	sessionId: varchar({ length: 255 }),
+	requestId: varchar({ length: 255 }), // For tracing related operations
+	metadata: json(), // Additional context-specific data
+},
+(table) => [
+	index("idx_timestamp").on(table.timestamp),
+	index("idx_user_action").on(table.userId, table.actionType),
+	index("idx_entity").on(table.entityType, table.entityId),
+	index("idx_company_action").on(table.companyId, table.actionType),
+	index("idx_module_action").on(table.module, table.actionType),
+	index("idx_status").on(table.status),
+	index("idx_action_timestamp").on(table.actionType, table.timestamp),
+]);
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+/**
+ * Cleanup Reports Table
+ * Stores results from weekly integrity sweep jobs
+ */
+export const cleanupReports = mysqlTable("cleanup_reports", {
+	id: int().autoincrement().notNull().primaryKey(),
+	runTimestamp: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	completedAt: timestamp({ mode: 'string' }),
+	duration: int(), // Duration in seconds
+	status: mysqlEnum(['running', 'completed', 'failed', 'partial']).default('running').notNull(),
+	mode: mysqlEnum(['read_only', 'auto_fix']).default('read_only').notNull(),
+	
+	// Severity counts
+	criticalIssuesCount: int().default(0).notNull(),
+	warningIssuesCount: int().default(0).notNull(),
+	infoIssuesCount: int().default(0).notNull(),
+	
+	// Specific issue counts
+	orphanedRecordsCount: int().default(0).notNull(),
+	duplicateRecordsCount: int().default(0).notNull(),
+	staleComputationsCount: int().default(0).notNull(),
+	invalidWeightsCount: int().default(0).notNull(),
+	brokenReferencesCount: int().default(0).notNull(),
+	missingDependenciesCount: int().default(0).notNull(),
+	
+	// Actions taken (for auto_fix mode)
+	recordsArchived: int().default(0).notNull(),
+	recordsDeleted: int().default(0).notNull(),
+	recordsFixed: int().default(0).notNull(),
+	calculationsRerun: int().default(0).notNull(),
+	
+	// Detailed results
+	affectedRecords: json(), // Array of {type, id, issue, severity, action}
+	recommendations: json(), // Array of recommended actions
+	errorLog: text(), // Any errors encountered during cleanup
+	
+	// Notification tracking
+	notificationSent: int().default(0).notNull(),
+	notificationSentAt: timestamp({ mode: 'string' }),
+	notificationError: text(),
+},
+(table) => [
+	index("idx_run_timestamp").on(table.runTimestamp),
+	index("idx_status").on(table.status),
+	index("idx_mode").on(table.mode),
+	index("idx_critical_issues").on(table.criticalIssuesCount),
+]);
+
+export type CleanupReport = typeof cleanupReports.$inferSelect;
+export type InsertCleanupReport = typeof cleanupReports.$inferInsert;
+
+/**
+ * Import Validation Results Table
+ * Stores validation results from bulk import operations
+ */
+export const importValidationResults = mysqlTable("import_validation_results", {
+	id: int().autoincrement().notNull().primaryKey(),
+	sessionId: varchar({ length: 255 }).notNull(), // Unique ID for this import session
+	userId: int().notNull(),
+	userName: varchar({ length: 255 }),
+	companyId: int(),
+	importType: mysqlEnum(['criteria', 'assets', 'assessments', 'deficiencies', 'projects']).notNull(),
+	fileName: varchar({ length: 500 }),
+	fileSize: int(), // Size in bytes
+	
+	// Validation timestamp
+	validatedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	
+	// Validation results
+	totalRows: int().default(0).notNull(),
+	validRows: int().default(0).notNull(),
+	invalidRows: int().default(0).notNull(),
+	duplicatesInFile: int().default(0).notNull(),
+	duplicatesInDatabase: int().default(0).notNull(),
+	missingRequiredFields: int().default(0).notNull(),
+	invalidDataFormats: int().default(0).notNull(),
+	
+	// Validation details
+	validationErrors: json(), // Array of {row, field, error, severity}
+	duplicateDetails: json(), // Array of {row, matchType, existingId, similarity}
+	
+	// Import decision
+	importDecision: mysqlEnum(['pending', 'approved', 'rejected', 'partial']).default('pending').notNull(),
+	importBehavior: mysqlEnum(['skip_duplicates', 'update_existing', 'import_all']),
+	
+	// Import execution
+	importExecutedAt: timestamp({ mode: 'string' }),
+	importStatus: mysqlEnum(['not_started', 'in_progress', 'completed', 'failed']).default('not_started').notNull(),
+	recordsCreated: int().default(0).notNull(),
+	recordsUpdated: int().default(0).notNull(),
+	recordsSkipped: int().default(0).notNull(),
+	recordsFailed: int().default(0).notNull(),
+	
+	// Post-import actions
+	weightsNormalized: int().default(0).notNull(),
+	auditLogId: int(), // Reference to audit log entry
+	
+	importErrors: text(),
+	metadata: json(),
+},
+(table) => [
+	index("idx_session").on(table.sessionId),
+	index("idx_user_import").on(table.userId, table.importType),
+	index("idx_company_import").on(table.companyId, table.importType),
+	index("idx_validated_at").on(table.validatedAt),
+	index("idx_import_status").on(table.importStatus),
+]);
+
+export type ImportValidationResult = typeof importValidationResults.$inferSelect;
+export type InsertImportValidationResult = typeof importValidationResults.$inferInsert;
+
+/**
+ * Data Integrity Metrics Table
+ * Stores calculated health metrics for the integrity dashboard
+ */
+export const dataIntegrityMetrics = mysqlTable("data_integrity_metrics", {
+	id: int().autoincrement().notNull().primaryKey(),
+	calculatedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	metricType: mysqlEnum([
+		'orphaned_records',
+		'duplicate_records',
+		'missing_dependencies',
+		'stale_computations',
+		'invalid_weights',
+		'broken_references',
+		'esg_ratings_stale',
+		'last_cleanup_success',
+		'last_cleanup_failure',
+		'recurring_errors'
+	]).notNull(),
+	metricCategory: varchar({ length: 100 }), // e.g., 'assessments', 'capital_planning', 'esg'
+	entityType: varchar({ length: 100 }), // Specific entity type if applicable
+	
+	// Metric value
+	metricValue: int().default(0).notNull(),
+	metricValueDecimal: decimal({ precision: 15, scale: 4 }), // For percentage or decimal metrics
+	
+	// Severity assessment
+	severity: mysqlEnum(['info', 'warning', 'critical']).default('info').notNull(),
+	threshold: int(), // Threshold value that determines severity
+	
+	// Affected records
+	affectedRecordIds: json(), // Array of IDs of affected records
+	affectedRecordCount: int().default(0).notNull(),
+	
+	// Trend data
+	previousValue: int(),
+	changePercent: decimal({ precision: 5, scale: 2 }),
+	trendDirection: mysqlEnum(['up', 'down', 'stable']),
+	
+	// Additional context
+	description: text(),
+	recommendation: text(),
+	metadata: json(),
+	
+	// Expiry for cache management
+	expiresAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_calculated_at").on(table.calculatedAt),
+	index("idx_metric_type").on(table.metricType),
+	index("idx_severity").on(table.severity),
+	index("idx_category_type").on(table.metricCategory, table.metricType),
+	index("idx_expires_at").on(table.expiresAt),
+]);
+
+export type DataIntegrityMetric = typeof dataIntegrityMetrics.$inferSelect;
+export type InsertDataIntegrityMetric = typeof dataIntegrityMetrics.$inferInsert;
+

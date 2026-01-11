@@ -30,6 +30,7 @@ import PortfolioAnalyticsEnhanced from "./pages/PortfolioAnalyticsEnhanced";
 import PortfolioMapPage from "./pages/PortfolioMapPage";
 import PortfolioReport from "./pages/PortfolioReport";
 import Admin from "./pages/Admin";
+import AdminGovernance from "./pages/AdminGovernance";
 import EconomicIndicators from "./pages/EconomicIndicators";
 import PortfolioTargets from "./pages/PortfolioTargets";
 import Analytics from "./pages/Analytics";
@@ -82,6 +83,7 @@ function Router() {
       <Route path={"/contact"} component={Contact} />
       <Route path={"/pending-approval"} component={PendingApproval} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/admin/governance"} component={AdminGovernance} />
       <Route path={"/company-users"} component={CompanyUsersPage} />
       <Route path={"/deleted-projects"} component={DeletedProjects} />
       <Route path={"/archive"} component={Archive} />

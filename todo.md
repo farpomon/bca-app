@@ -4543,3 +4543,87 @@ Deployment is allowed only when:
 - [x] Write tests for criteria name uniqueness validation
 - [x] Write tests for orphaned data cleanup utility
 - [x] Write tests for audit logging functionality
+
+
+## 🔥 CURRENT PRIORITY: Admin Governance Suite
+
+### 1) Admin UI Panel (Audit Logs + Cleanup Reports + Data Integrity Dashboards)
+- [x] Create dedicated Admin section accessible only to authorized admin roles
+- [x] Add navigation for Audit Logs page
+- [x] Add navigation for Data Integrity Dashboard page
+- [x] Add navigation for Cleanup Reports page
+- [x] Add navigation for Jobs & Notifications page
+- [x] Build Audit Logs Viewer with searchable/filterable table
+- [x] Add audit log filters: date range, user, org, action type, module, entity type, status
+- [x] Implement audit log CSV export functionality
+- [x] Create Data Integrity Metrics Dashboard with visual indicators
+- [x] Add orphaned records count metrics (by type)
+- [x] Add duplicate records count metrics (by type)
+- [ ] Add cycles missing dependencies metrics
+- [ ] Add rankings out-of-sync metrics
+- [ ] Add criteria weights validation metrics (not summing to 100%)
+- [ ] Add ESG ratings staleness metrics
+- [x] Add last cleanup job status display
+- [ ] Add top recurring error types display
+- [x] Implement severity levels (Info / Warning / Critical)
+- [x] Add click-through from metric to affected records list
+- [x] Build Cleanup Reports UI with read-only preview
+- [x] Add "Run Cleanup Now" functionality with confirmation
+
+### 2) Bulk Import Validation (Duplicate Prevention)
+- [x] Implement pre-import validation step for criteria imports
+- [x] Add duplicate detection against existing criteria
+- [x] Add duplicate detection within import file itself
+- [x] Create configurable duplicate detection rules (normalized name, category, description)
+- [ ] Build validation report UI showing duplicates, conflicts, missing fields, invalid weights
+- [x] Add import behavior controls (skip duplicates, update existing, import anyway)
+- [ ] Implement auto-normalize weights to 100% after import
+- [ ] Log all import events in audit logs
+
+### 3) Database Schema for Governance
+- [x] Create auditLogs table (timestamp, user, org, action, entity, before/after, status, error)
+- [x] Create cleanupReports table (timestamp, duration, severity counts, affected records)
+- [x] Create importValidationResults table (import session, validation results, actions taken)
+- [x] Create dataIntegrityMetrics table (metric type, value, severity, timestamp)
+- [x] Add indexes for audit log queries (timestamp, user, entity type, action)
+
+### 4) Backend Audit Logging Infrastructure
+- [x] Create audit logging utility function
+- [ ] Add audit logging to all create operations
+- [ ] Add audit logging to all update operations
+- [ ] Add audit logging to all delete operations
+- [ ] Add audit logging to recalculate operations
+- [ ] Add audit logging to import/export operations
+- [x] Implement before/after diff capture for updates
+- [x] Create tRPC endpoints for audit log queries
+- [x] Create tRPC endpoint for audit log CSV export
+
+### 5) Data Integrity Monitoring
+- [x] Create integrity check for orphaned records (assessments, deficiencies, photos)
+- [x] Create integrity check for duplicate projects
+- [x] Create integrity check for duplicate assets
+- [ ] Create integrity check for invalid weight totals
+- [x] Create integrity check for broken references
+- [ ] Create integrity check for stale computed results
+- [x] Implement metrics calculation service
+- [x] Create tRPC endpoints for integrity metrics queries
+- [x] Add drill-down queries for affected records
+
+### 6) Scheduled Weekly Cleanup Jobs
+- [x] Implement weekly cleanup job scheduler
+- [x] Create cleanup job execution logic (read-only reporting mode)
+- [x] Generate cleanup report with affected records and recommendations
+- [x] Store cleanup reports in database
+- [x] Implement email notification to admins with report summary
+- [x] Add immediate failure notifications
+- [x] Create optional auto-fix mode (archive old test cycles, remove orphans, re-run calculations)
+- [ ] Log all auto-fix actions in audit logs
+
+##### 7) Testing
+- [x] Write tests for audit logging functionality
+- [x] Write tests for bulk import validation
+- [x] Write tests for data integrity checks
+- [x] Write tests for cleanup job execution
+- [ ] Write tests for email notifications
+- [ ] Verify all tests passole restrictions
+- [ ] Write tests for email notifications

@@ -72,6 +72,10 @@ import { assessPhotoWithAI } from "./photoAssessment";
 import { performanceRouter } from "./routers/performance.router";
 import { dataCleanupRouter } from "./routers/dataCleanup.router";
 import { criteriaAuditRouter } from "./routers/criteriaAudit.router";
+import { auditLogsRouter } from "./routers/auditLogs.router";
+import { dataIntegrityRouter } from "./routers/dataIntegrity.router";
+import { importValidationRouter } from "./routers/importValidation.router";
+import { cleanupJobsRouter } from "./routers/cleanupJobs.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -108,6 +112,10 @@ export const appRouter = router({
   performance: performanceRouter,
   dataCleanup: dataCleanupRouter,
   criteriaAudit: criteriaAuditRouter,
+  auditLogs: auditLogsRouter,
+  dataIntegrity: dataIntegrityRouter,
+  importValidation: importValidationRouter,
+  cleanupJobs: cleanupJobsRouter,
   companyRoles: companyRolesRouter,
   pageVisibility: pageVisibilityRouter,
   analytics: analyticsRouter,
