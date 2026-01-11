@@ -582,9 +582,6 @@ export default function ProjectScoringWorkspace({
           );
         })}
       </div>
-    </div>
-  );
-}
 
       {/* Confirmation Dialogs */}
       
@@ -709,3 +706,6 @@ export default function ProjectScoringWorkspace({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}

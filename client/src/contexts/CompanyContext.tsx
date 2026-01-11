@@ -26,7 +26,7 @@ const CompanyContext = createContext<CompanyContextValue | undefined>(undefined)
 const SELECTED_COMPANY_KEY = "bca-selected-company";
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [selectedCompanyId, setSelectedCompanyIdState] = useState<number | null>(() => {
     const saved = localStorage.getItem(SELECTED_COMPANY_KEY);
     return saved ? parseInt(saved, 10) : null;
@@ -34,7 +34,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
   const { data: companies = [], isLoading } = trpc.companyRoles.myCompanies.useQuery(
     undefined,
-    { enabled: !!user }
+    { enabled: !!user && !authLoading }
   );
 
   const isSuperAdmin = user?.isSuperAdmin === 1;
@@ -71,7 +71,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         selectedCompanyId,
         selectedCompany,
         setSelectedCompanyId,
-        isLoading,
+        isLoading: isLoading || authLoading,
         isSuperAdmin,
         hasMultipleCompanies,
       }}
