@@ -1376,10 +1376,14 @@ export const prioritizationCriteria = mysqlTable("prioritization_criteria", {
 	weight: decimal({ precision: 10, scale: 6 }).default('10.000000').notNull(), // High precision for exact 100% normalization
 	scoringGuideline: text(),
 	isActive: int().default(1).notNull(),
+	status: mysqlEnum(['active','disabled','deleted']).default('active').notNull(), // active=in use, disabled=excluded from scoring, deleted=soft delete
 	displayOrder: int().default(0).notNull(),
 	modelVersionId: int(), // Link to criteria_model_versions
+	portfolioId: int(), // Optional: for portfolio-specific criteria (null = global)
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	deletedAt: timestamp({ mode: 'string' }), // Soft delete timestamp
+	deletedBy: int(), // User who deleted the criterion
 });
 
 // Criteria Audit Log - track all changes to prioritization criteria
@@ -1397,10 +1401,13 @@ export const criteriaAuditLog = mysqlTable("criteria_audit_log", {
 	newWeight: decimal({ precision: 10, scale: 6 }),
 	oldIsActive: int(),
 	newIsActive: int(),
+	oldStatus: mysqlEnum(['active','disabled','deleted']),
+	newStatus: mysqlEnum(['active','disabled','deleted']),
 	changedBy: int().notNull(), // User ID who made the change
 	changedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	reason: text(), // Optional reason for the change
 	changeDetails: text(), // JSON string with additional change details
+	impactedProjects: int().default(0), // Number of projects affected by this change
 },
 (table) => [
 	index("idx_criteria").on(table.criteriaId),
@@ -1477,6 +1484,7 @@ export const projectScores = mysqlTable("project_scores", {
 	justification: text(),
 	status: mysqlEnum(['draft','submitted','locked']).default('draft').notNull(),
 	scoredBy: int().notNull(),
+	companyId: int(), // Company/org for multi-tenancy
 	scoredAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	modelVersionId: int(), // Which criteria model version was used
@@ -1485,6 +1493,7 @@ export const projectScores = mysqlTable("project_scores", {
 	index("idx_project_criteria").on(table.projectId, table.criteriaId),
 	index("idx_status").on(table.status),
 	index("idx_scored_by").on(table.scoredBy),
+	index("idx_company_project_status").on(table.companyId, table.projectId, table.status),
 ]);
 
 export const projectVersions = mysqlTable("project_versions", {

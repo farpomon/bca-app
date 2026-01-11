@@ -4627,3 +4627,62 @@ Deployment is allowed only when:
 - [ ] Write tests for email notifications
 - [ ] Verify all tests passole restrictions
 - [ ] Write tests for email notifications
+
+
+## 🔥 CURRENT PRIORITY: Prioritization Framework Enhancements
+
+### Phase 1: Database Schema Updates
+- [x] Add `status` field to criteria table (active/disabled/deleted)
+- [x] Add portfolioId, deletedAt, deletedBy fields to prioritization_criteria
+- [x] Add companyId field to project_scores for multi-tenancy
+- [x] Add oldStatus, newStatus, impactedProjects to criteria_audit_log
+- [ ] Create indexes for performance optimization (deferred - will add if needed)
+- [x] Audit log infrastructure already exists (criteria_audit_log, scoring_audit_log)
+
+### Phase 2: Backend - Criteria Management
+- [x] Implement `removeCriterionFromModel` procedure (portfolio-specific removal)
+- [x] Implement `disableCriterion` procedure (soft delete with audit trail)
+- [x] Implement `deleteCriterion` procedure (admin-only, hard delete with confirmation)
+- [x] Add weight normalization logic after criterion removal
+- [x] Add validation to prevent removing last criterion
+- [x] Add checks for finalized scores before deletion
+- [x] Implement `enableCriterion` procedure for reactivating disabled criteria
+
+### Phase 3: Backend - Scoring Finalization Fix
+- [x] Create atomic `finalizeScores` procedure
+- [x] Implement upsert logic for draft scores
+- [x] Add input validation (projectId, modelVersionId, criteria existence)
+- [x] Improve error handling with trace IDs
+- [x] Add server-side logging for debugging
+- [x] Implement `saveDraftScores` procedure
+- [x] Implement `getFinalizationStatus` procedure
+- [x] Add comprehensive audit logging for all operations
+
+### Phase 4: Frontend - Criteria Management UI
+- [x] Add "Manage Criteria" button in Scoring Workspace top bar
+- [x] Add contextual menu (⋯) to each criterion card with three options
+- [x] Implement "Remove from scoring model" action with weight re-normalization
+- [x] Implement "Disable criterion" action with confirmation
+- [x] Implement "Delete criterion" (admin-only) with "type DELETE" confirmation modal
+- [x] Update Live Summary validation after criterion changes (handled by invalidation)
+- [x] Add visual feedback for disabled criteria (handled by criteria refetch)
+
+### Phase 5: Frontend - Submission Flow Fix
+- [x] Add input validation before submit (projectId, modelVersionId, criteria)
+- [x] Show user-friendly inline errors instead of SQL toasts
+- [x] Use new finalizeScores endpoint with proper error handling
+- [x] Display trace ID for debugging
+- [x] Show composite score in success message
+- [ ] Disable "Submit Final" button while "Save Draft" is pending
+- [ ] Implement proper error messages with optional trace IDs
+- [ ] Add loading states during submission
+- [ ] Handle race conditions with autosave
+
+### Phase 6: Testing & Validation
+- [ ] Test criterion removal with weight re-normalization
+- [ ] Test criterion disable/enable flow
+- [ ] Test admin-only delete with confirmation
+- [ ] Test submit final with various edge cases
+- [ ] Verify no SQL errors appear in UI
+- [ ] Test audit trail and version tracking
+- [ ] Verify composite score recalculation after changes

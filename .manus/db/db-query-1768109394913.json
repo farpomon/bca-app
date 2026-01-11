@@ -1,0 +1,9 @@
+{
+  "query": "-- Add status column to project_scores if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'project_scores' AND COLUMN_NAME = 'status') = 0,\n  'ALTER TABLE project_scores ADD COLUMN status ENUM(''draft'',''submitted'',''locked'') DEFAULT ''draft''',\n  'SELECT \"status already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute -- Add status column to project_scores if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'project_scores' AND COLUMN_NAME = 'status') = 0,\n  'ALTER TABLE project_scores ADD COLUMN status ENUM(''draft'',''submitted'',''locked'') DEFAULT ''draft''',\n  'SELECT \"status already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 453
+}

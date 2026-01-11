@@ -1,0 +1,8 @@
+{
+  "query": "-- Add new fields to prioritization_criteria table\nALTER TABLE prioritization_criteria \nADD COLUMN status ENUM('active','disabled','deleted') NOT NULL DEFAULT 'active',\nADD COLUMN portfolioId INT NULL,\nADD COLUMN deletedAt TIMESTAMP NULL,\nADD COLUMN deletedBy INT NULL;\n\n-- Add new fields to project_scores table\nALTER TABLE project_scores\nADD COLUMN companyId INT NULL;\n\n-- Add new fields to criteria_audit_log table\nALTER TABLE criteria_audit_log\nADD COLUMN oldStatus ENUM('active','disabled','deleted') NULL,\nADD COLUMN newStatus ENUM('active','disabled','deleted') NULL,\nADD COLUMN impactedProjects INT DEFAULT 0;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute -- Add new fields to prioritization_criteria table\nALTER TABLE prioritization_criteria \nADD COLUMN status ENUM('active','disabled','deleted') NOT NULL DEFAULT 'active',\nADD COLUMN portfolioId INT NULL,\nADD COLUMN deletedAt TIMESTAMP NULL,\nADD COLUMN deletedBy INT NULL;\n\n-- Add new fields to project_scores table\nALTER TABLE project_scores\nADD COLUMN companyId INT NULL;\n\n-- Add new fields to criteria_audit_log table\nALTER TABLE criteria_audit_log\nADD COLUMN oldStatus ENUM('active','disabled','deleted') NULL,\nADD COLUMN newStatus ENUM('active','disabled','deleted') NULL,\nADD COLUMN impactedProjects INT DEFAULT 0;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1060 (42S21) at line 2: Duplicate column name 'status'"
+  ]
+}

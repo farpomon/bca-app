@@ -1,0 +1,31 @@
+{
+  "query": "-- Check and add missing fields to prioritization_criteria\nSELECT COUNT(*) as portfolioId_exists FROM information_schema.COLUMNS \nWHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'portfolioId';\n\n-- Add portfolioId if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'portfolioId') = 0,\n  'ALTER TABLE prioritization_criteria ADD COLUMN portfolioId INT NULL',\n  'SELECT \"portfolioId already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;\n\n-- Add deletedAt if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'deletedAt') = 0,\n  'ALTER TABLE prioritization_criteria ADD COLUMN deletedAt TIMESTAMP NULL',\n  'SELECT \"deletedAt already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;\n\n-- Add deletedBy if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'deletedBy') = 0,\n  'ALTER TABLE prioritization_criteria ADD COLUMN deletedBy INT NULL',\n  'SELECT \"deletedBy already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute -- Check and add missing fields to prioritization_criteria\nSELECT COUNT(*) as portfolioId_exists FROM information_schema.COLUMNS \nWHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'portfolioId';\n\n-- Add portfolioId if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'portfolioId') = 0,\n  'ALTER TABLE prioritization_criteria ADD COLUMN portfolioId INT NULL',\n  'SELECT \"portfolioId already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;\n\n-- Add deletedAt if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'deletedAt') = 0,\n  'ALTER TABLE prioritization_criteria ADD COLUMN deletedAt TIMESTAMP NULL',\n  'SELECT \"deletedAt already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;\n\n-- Add deletedBy if it doesn't exist\nSET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS \n  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prioritization_criteria' AND COLUMN_NAME = 'deletedBy') = 0,\n  'ALTER TABLE prioritization_criteria ADD COLUMN deletedBy INT NULL',\n  'SELECT \"deletedBy already exists\" as message');\nPREPARE stmt FROM @sql;\nEXECUTE stmt;\nDEALLOCATE PREPARE stmt;",
+  "rows": [
+    {
+      "portfolioId_exists": "1"
+    },
+    {
+      "portfolioId_exists": "message"
+    },
+    {
+      "portfolioId_exists": "portfolioId already exists"
+    },
+    {
+      "portfolioId_exists": "message"
+    },
+    {
+      "portfolioId_exists": "deletedAt already exists"
+    },
+    {
+      "portfolioId_exists": "message"
+    },
+    {
+      "portfolioId_exists": "deletedBy already exists"
+    }
+  ],
+  "messages": [],
+  "stdout": "portfolioId_exists\n1\nmessage\nportfolioId already exists\nmessage\ndeletedAt already exists\nmessage\ndeletedBy already exists\n",
+  "stderr": "",
+  "execution_time_ms": 123
+}

@@ -3,6 +3,8 @@ import { protectedProcedure, router } from "../_core/trpc";
 import * as prioritizationDb from "../db/prioritization.db";
 import * as prioritizationEnhancedDb from "../db/prioritizationEnhanced.db";
 import * as prioritizationService from "../services/prioritization.service";
+import * as criteriaManagementService from "../services/criteriaManagement.service";
+import * as scoringFinalizationService from "../services/scoringFinalization.service";
 
 /**
  * Multi-Criteria Prioritization Router
@@ -464,5 +466,139 @@ export const prioritizationRouter = router({
     .input(z.object({ limit: z.number().optional().default(50) }))
     .query(async ({ input }) => {
       return await prioritizationEnhancedDb.getRecentAuditActivity(input.limit);
+    }),
+
+  // ============================================================================
+  // CRITERIA MANAGEMENT (NEW)
+  // ============================================================================
+
+  removeCriterionFromModel: protectedProcedure
+    .input(
+      z.object({
+        criteriaId: z.number(),
+        portfolioId: z.number().optional().nullable(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await criteriaManagementService.removeCriterionFromModel(
+        input.criteriaId,
+        input.portfolioId || null,
+        ctx.user.id,
+        input.reason
+      );
+    }),
+
+  disableCriterion: protectedProcedure
+    .input(
+      z.object({
+        criteriaId: z.number(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await criteriaManagementService.disableCriterion(
+        input.criteriaId,
+        ctx.user.id,
+        input.reason
+      );
+    }),
+
+  deleteCriterionPermanent: protectedProcedure
+    .input(
+      z.object({
+        criteriaId: z.number(),
+        confirmation: z.string(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Check if user is admin
+      if (ctx.user.role !== 'admin') {
+        return {
+          success: false,
+          message: 'Only administrators can permanently delete criteria.',
+        };
+      }
+
+      return await criteriaManagementService.deleteCriterion(
+        input.criteriaId,
+        ctx.user.id,
+        input.confirmation,
+        input.reason
+      );
+    }),
+
+  enableCriterion: protectedProcedure
+    .input(
+      z.object({
+        criteriaId: z.number(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await criteriaManagementService.enableCriterion(
+        input.criteriaId,
+        ctx.user.id,
+        input.reason
+      );
+    }),
+
+  // ============================================================================
+  // SCORING FINALIZATION (NEW)
+  // ============================================================================
+
+  finalizeScores: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        modelVersionId: z.number().optional(),
+        companyId: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await scoringFinalizationService.finalizeProjectScores({
+        projectId: input.projectId,
+        modelVersionId: input.modelVersionId,
+        userId: ctx.user.id,
+        companyId: input.companyId,
+      });
+    }),
+
+  saveDraftScores: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        scores: z.array(
+          z.object({
+            criteriaId: z.number(),
+            score: z.number().min(0).max(10),
+            justification: z.string().optional(),
+          })
+        ),
+        companyId: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await scoringFinalizationService.saveDraftScores(
+        input.projectId,
+        input.scores,
+        ctx.user.id,
+        input.companyId
+      );
+    }),
+
+  getFinalizationStatus: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        companyId: z.number().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await scoringFinalizationService.getFinalizationStatus(
+        input.projectId,
+        input.companyId
+      );
     }),
 });
