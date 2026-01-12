@@ -26,7 +26,7 @@ import type { ComponentAssessmentSectionConfig } from "@shared/reportTypes";
 import { MultiSelect } from "@/components/ui/multi-select";
 
 interface ComponentAssessmentConfigPanelProps {
-  projectId: number;
+  projectId?: number;
   config: ComponentAssessmentSectionConfig;
   onChange: (config: ComponentAssessmentSectionConfig) => void;
 }
@@ -40,14 +40,16 @@ export function ComponentAssessmentConfigPanel({
   const [showWarning, setShowWarning] = useState(false);
 
   // Fetch filter options
-  const { data: filterOptions } = trpc.portfolioReport.getComponentFilterOptions.useQuery({
-    projectId,
-  });
+  const { data: filterOptions } = trpc.portfolioReport.getComponentFilterOptions.useQuery(
+    { projectId: projectId! },
+    { enabled: !!projectId }
+  );
 
   // Fetch available assets for selection
-  const { data: assetsData } = trpc.assets.list.useQuery({
-    projectId,
-  });
+  const { data: assetsData } = trpc.assets.list.useQuery(
+    { projectId: projectId! },
+    { enabled: !!projectId }
+  );
 
   // Estimate page count when config changes
   const { data: sizeEstimate } = trpc.portfolioReport.estimateComponentReportSize.useQuery(
@@ -91,6 +93,32 @@ export function ComponentAssessmentConfigPanel({
   })) || [];
 
   const selectedAssetValues = config.selectedAssetIds?.map(id => id.toString()) || [];
+
+  // Show info message for portfolio-wide reports
+  if (!projectId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Layers className="h-5 w-5" />
+            Component Assessment Configuration
+          </CardTitle>
+          <CardDescription>
+            Configure which assets and components to include in the detailed assessment section
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Component assessments will be included for all assets across your portfolio. 
+              Detailed filtering options are available when generating reports for individual projects.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

@@ -672,9 +672,8 @@ export default function PortfolioReport() {
                   />
                 )}
                 
-                {config.includeComponentAssessments && projectId && (
+                {config.includeComponentAssessments && (
                   <ComponentAssessmentConfigPanel
-                    projectId={projectId}
                     config={config.componentAssessmentSection}
                     onChange={(componentAssessmentSection) => {
                       setConfig({ ...config, componentAssessmentSection: { ...componentAssessmentSection, enabled: true } });
@@ -1101,10 +1100,10 @@ export default function PortfolioReport() {
                     </thead>
                     <tbody>
                       {buildings.map((building) => (
-                        <tr key={building.projectId} className="border-b">
+                        <tr key={building.assetId || building.projectId} className="border-b">
                           <td className="p-2">
                             <div>
-                              <p className="font-medium">{building.projectName}</p>
+                              <p className="font-medium">{building.assetName || building.projectName}</p>
                               <p className="text-xs text-muted-foreground">
                                 {building.city && building.province ? `${building.city}, ${building.province}` : building.address || ''}
                               </p>

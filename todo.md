@@ -151,6 +151,8 @@
 - [ ] Test building code dropdown with expanded database
 
 ## Current Bug Fixes
+- [x] Fix Building-by-Building Breakdown displaying project name instead of building/asset name
+- [x] Fix ReferenceError: projectId is not defined in Individual Component Assessment page
 - [x] Fix composite priority score calculation - use sum(weight × score) / 100 instead of current complex normalization
 - [x] Fix Remaining Life calculation showing N/A instead of actual years
 - [x] Fix AI Insights deficiency data fetching - currently showing 0 deficiencies when there are actually 12 for Commonwealth Recreation Centre
