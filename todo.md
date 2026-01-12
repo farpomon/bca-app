@@ -4970,3 +4970,16 @@ Deployment is allowed only when:
 - [ ] Data integrity: Score calculation reproducibility (recompute and compare)
 - [ ] Data integrity: Cycle totals reconcile (funded + unfunded = total needs)
 - [ ] Report generation validation: Generate sample PDF and run layout validation
+
+
+## Portfolio Report Component Assessment Enhancements - COMPLETED
+- [x] Update ComponentAssessmentSectionConfig type to support Building + UNIFORMAT grouping
+- [x] Add grouping options: building_uniformat, uniformat_building, building_only, uniformat_only
+- [x] Add priority filter (Critical/Necessary/Recommended/No action)
+- [x] Add action type filter (Renewal/Repair/Replace/Monitor/Immediate action)
+- [x] Add year range filter for action years
+- [x] Add includeRollups flag for cost/count rollups by building and UNIFORMAT
+- [x] Update ComponentAssessmentConfigPanel UI with new grouping dropdown
+- [x] Update ComponentAssessmentConfigPanel UI with priority filter
+- [x] Update ComponentAssessmentConfigPanel UI with action type filter
+- [x] Update ComponentAssessmentConfigPanel UI with year range filter

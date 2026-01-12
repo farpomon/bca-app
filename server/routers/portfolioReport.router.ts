@@ -272,18 +272,23 @@ export const portfolioReportRouter = router({
       projectId: z.number(),
       scope: z.enum(['all', 'selected']).default('all'),
       selectedAssetIds: z.array(z.number()).optional(),
+      grouping: z.enum(['building_uniformat', 'uniformat_building', 'building_only', 'uniformat_only']).default('building_uniformat'),
       filters: z.object({
         facilities: z.array(z.number()).optional(),
         categories: z.array(z.string()).optional(),
         conditions: z.array(z.enum(['good', 'fair', 'poor', 'critical', 'not_assessed'])).optional(),
         riskLevels: z.array(z.enum(['low', 'medium', 'high', 'critical'])).optional(),
+        priorities: z.array(z.enum(['critical', 'necessary', 'recommended', 'no_action'])).optional(),
+        actionTypes: z.array(z.enum(['renewal', 'repair', 'replace', 'monitor', 'immediate_action'])).optional(),
+        yearRange: z.object({ min: z.number(), max: z.number() }).optional(),
         onlyWithDeficiencies: z.boolean().optional(),
       }).optional(),
       sortBy: z.enum(['risk', 'condition', 'cost', 'name']).default('risk'),
       maxAssets: z.number().min(1).max(100).default(25),
+      includeRollups: z.boolean().default(true),
     }))
     .query(async ({ ctx, input }) => {
-      const { projectId, scope, selectedAssetIds, filters, sortBy, maxAssets } = input;
+      const { projectId, scope, selectedAssetIds, grouping, filters, sortBy, maxAssets, includeRollups } = input;
       const isAdmin = ctx.user.role === 'admin';
       
       // Verify project access
@@ -298,9 +303,11 @@ export const portfolioReportRouter = router({
       const componentData = await getComponentAssessmentsForReport(projectId, {
         scope,
         selectedAssetIds,
+        grouping,
         filters,
         sortBy,
         maxAssets,
+        includeRollups,
       });
       
       return {
@@ -308,6 +315,8 @@ export const portfolioReportRouter = router({
         projectName: project.name,
         componentAssessments: componentData,
         totalAssets: componentData.length,
+        grouping,
+        includeRollups,
         generatedAt: new Date().toISOString(),
       };
     }),

@@ -54,22 +54,31 @@ export interface GeographicSectionConfig {
   groupBy: GeographicGroupingOption;
 }
 
+export type ComponentGroupingOption = 'building_uniformat' | 'uniformat_building' | 'building_only' | 'uniformat_only';
+export type ComponentPriorityFilter = 'critical' | 'necessary' | 'recommended' | 'no_action';
+export type ComponentActionTypeFilter = 'renewal' | 'repair' | 'replace' | 'monitor' | 'immediate_action';
+
 export interface ComponentAssessmentFilters {
   facilities?: number[];
   categories?: string[];
   conditions?: ComponentConditionFilter[];
   riskLevels?: ComponentRiskFilter[];
+  priorities?: ComponentPriorityFilter[];
+  actionTypes?: ComponentActionTypeFilter[];
+  yearRange?: { min: number; max: number };
   onlyWithDeficiencies?: boolean;
 }
 
 export interface ComponentAssessmentSectionConfig {
   enabled: boolean;
-  scope: ComponentAssessmentScope;
+  scope: ComponentAssessmentScope; // 'all' = all assets, 'selected' = specific assets
   selectedAssetIds?: number[];
+  grouping: ComponentGroupingOption; // How to organize the component breakdown
   filters: ComponentAssessmentFilters;
   detailLevel: ComponentDetailLevel;
   sortBy: ComponentSortOption;
   maxAssets: number;
+  includeRollups: boolean; // Include cost/count rollups by building and UNIFORMAT
 }
 
 export interface ReportSectionToggles {
@@ -199,16 +208,20 @@ export const DEFAULT_COMPONENT_ASSESSMENT_CONFIG: ComponentAssessmentSectionConf
   enabled: false,
   scope: 'all',
   selectedAssetIds: [],
+  grouping: 'building_uniformat', // Default: group by building first, then UNIFORMAT
   filters: {
     facilities: [],
     categories: [],
     conditions: [],
     riskLevels: [],
+    priorities: [],
+    actionTypes: [],
     onlyWithDeficiencies: false,
   },
   detailLevel: 'standard',
   sortBy: 'risk',
   maxAssets: 25,
+  includeRollups: true, // Include cost and count rollups by default
 };
 
 // Validation error types

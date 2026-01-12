@@ -151,6 +151,30 @@ export function ComponentAssessmentConfigPanel({
           </RadioGroup>
         </div>
 
+        {/* Grouping Option */}
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">Component Breakdown Grouping</Label>
+          <Select
+            value={config.grouping || 'building_uniformat'}
+            onValueChange={(value: any) => {
+              onChange({ ...config, grouping: value });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select grouping" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="building_uniformat">By Building, then UNIFORMAT</SelectItem>
+              <SelectItem value="uniformat_building">By UNIFORMAT, then Building</SelectItem>
+              <SelectItem value="building_only">By Building Only</SelectItem>
+              <SelectItem value="uniformat_only">By UNIFORMAT Only</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Choose how to organize component assessments in the report
+          </p>
+        </div>
+
         {/* Asset Selection (only when scope is 'selected') */}
         {config.scope === 'selected' && (
           <div className="space-y-2">
@@ -288,6 +312,94 @@ export function ComponentAssessmentConfigPanel({
                   <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Priority Filter */}
+            <div className="space-y-2">
+              <Label htmlFor="priority-filter">Priority Band</Label>
+              <Select
+                value={config.filters.priorities?.[0] || "all"}
+                onValueChange={(value) => {
+                  handleFilterChange(
+                    'priorities',
+                    value === 'all' ? [] : [value as any]
+                  );
+                }}
+              >
+                <SelectTrigger id="priority-filter">
+                  <SelectValue placeholder="All priorities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All priorities</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="necessary">Necessary</SelectItem>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="no_action">No Action</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Action Type Filter */}
+            <div className="space-y-2">
+              <Label htmlFor="action-type-filter">Recommended Action Type</Label>
+              <Select
+                value={config.filters.actionTypes?.[0] || "all"}
+                onValueChange={(value) => {
+                  handleFilterChange(
+                    'actionTypes',
+                    value === 'all' ? [] : [value as any]
+                  );
+                }}
+              >
+                <SelectTrigger id="action-type-filter">
+                  <SelectValue placeholder="All action types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All action types</SelectItem>
+                  <SelectItem value="renewal">Renewal</SelectItem>
+                  <SelectItem value="repair">Repair</SelectItem>
+                  <SelectItem value="replace">Replace</SelectItem>
+                  <SelectItem value="monitor">Monitor</SelectItem>
+                  <SelectItem value="immediate_action">Immediate Action</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Year Range Filter */}
+            <div className="space-y-2">
+              <Label>Action Year Range</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="number"
+                  placeholder="Min year"
+                  value={config.filters.yearRange?.min || ''}
+                  onChange={(e) => {
+                    const min = e.target.value ? parseInt(e.target.value) : undefined;
+                    handleFilterChange('yearRange', {
+                      min,
+                      max: config.filters.yearRange?.max,
+                    });
+                  }}
+                  className="w-24"
+                />
+                <span className="text-muted-foreground">to</span>
+                <Input
+                  type="number"
+                  placeholder="Max year"
+                  value={config.filters.yearRange?.max || ''}
+                  onChange={(e) => {
+                    const max = e.target.value ? parseInt(e.target.value) : undefined;
+                    handleFilterChange('yearRange', {
+                      min: config.filters.yearRange?.min,
+                      max,
+                    });
+                  }}
+                  className="w-24"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Filter components by recommended action year
+              </p>
             </div>
 
             {/* Only With Deficiencies Toggle */}
