@@ -4686,3 +4686,67 @@ Deployment is allowed only when:
 - [ ] Verify no SQL errors appear in UI
 - [ ] Test audit trail and version tracking
 - [ ] Verify composite score recalculation after changes
+
+
+## 🔥 CURRENT PRIORITY: Portfolio Report Builder Revamp + Professional PDF Output
+
+### Report Builder UX (Fast, Clear, Fewer Errors)
+- [x] Keep existing presets (Recommended / Minimal Executive / Full Technical)
+- [x] Add new preset: Capital Planning Focus (Executive + KPIs + Capital Forecast + Priority)
+- [x] Add new preset: Asset Detail Focus (Building-by-Building + UNIFORMAT + Assumptions)
+- [x] Show banner when preset is applied: "Preset applied (you can still customize)"
+- [x] Add section configuration settings (not just on/off toggles)
+- [x] Building-by-Building section: add sort options (FCI worst-to-best / deferred maintenance / building name)
+- [x] Building-by-Building section: add scope options (all buildings vs Top 10 worst)
+- [x] Building-by-Building section: add column include/exclude options (Age, CRV, Deficiencies, etc.)
+- [x] UNIFORMAT section: add level options (L1 only vs L1+L2)
+- [x] UNIFORMAT section: add view options (by cost / by % of backlog / by FCI impact)
+- [x] Priority Recommendations section: add horizon configuration (Immediate, 1-2 yrs, 3-5 yrs, 6-10 yrs)
+- [x] Geographic Distribution section: add grouping options (City / Region / Site)
+- [x] Add validation before preview (require Report Title, Prepared By, Prepared For)
+- [x] Add missing data warnings with "Generate without this section" or "Fix data" options
+- [x] Show "Data as of" timestamp and lock snapshot at preview time
+- [x] Show notification if data changes after preview: "Data updated—regenerate preview to reflect changes"
+
+### PDF Generation Workflow (Preview vs Final)
+- [x] Implement two-step output: Generate Preview (DRAFT watermark) and Export Final PDF (no watermark)
+- [x] Use same locked snapshot for both preview and final export
+- [x] Ensure PDF renderer never captures UI overlays (toasts, snackbars, tooltips, floating buttons, debug overlays)
+- [x] Remove "Preview generated successfully" UI element from PDF render
+- [x] Use print/pdf mode CSS or dedicated "render-only" route without app chrome
+
+### PDF Layout Quality (Client-Ready Formatting)
+- [ ] Update cover page with optional fields: portfolio name (auto), assessment date range, report version, generated timestamp
+- [ ] Add support for consultant logo upload
+- [ ] Add support for client logo upload
+- [ ] Ensure consistent margins and centered content on cover page
+- [ ] Auto-generate Table of Contents with correct page numbers
+- [ ] Make TOC items clickable (PDF bookmarks)
+- [ ] Handle wide tables with landscape pages OR column wrapping + consistent row height
+- [ ] Repeat table headers on each page
+- [ ] Prevent rows splitting across pages
+- [ ] Use consistent numeric formatting ($ with separators, FCI to 1 decimal)
+- [ ] Add footer with confidentiality note, report generated timestamp, page X of Y
+- [ ] Keep footer consistent and avoid overlapping content
+
+### Report Content Improvements (Defensible BCA Narrative)
+- [ ] Generate structured Executive Summary (portfolio overview, top risks, 3-5 recommendations, funding guidance)
+- [ ] Add Metrics & KPI Definitions section (FCI definition, deferred maintenance, condition rating scale, assumptions)
+- [ ] Add Capital Forecast Clarity section (explain horizons, escalation notes, funding gap note)
+
+### Data Consistency + Integrity (Must Match the App)
+- [x] Ensure all KPIs match the same snapshot used in UI
+- [x] Verify consistency across: Cover page, Portfolio KPIs section, Building-by-Building totals, UNIFORMAT totals
+- [x] Run automated quality checks before export (duplicate buildings, missing CRV/condition/FCI, backlog reconciliation, negative values)
+- [x] Show warnings for data quality issue### Export Options (Nice-to-Have, High Value)
+- [x] Add CSV export for building list
+- [ ] Add CSV export for deficiency list
+- [x] Add CSV export for UNIFORMAT II rollup
+- [ ] Add "Include raw data appendix" toggle for technical users
+
+### Acceptance Criteria
+- [ ] Preview and final PDF are clean (no app UI overlays captured)
+- [ ] Selected sections render with correct page breaks, readable tables, consistent headers/footers
+- [ ] "Data as of" snapshot is consistent across UI and PDF
+- [ ] Users can apply presets + fine-tune section settings
+- [ ] Missing data never results in blank/broken pages; triggers warnings and section-level fallbacks

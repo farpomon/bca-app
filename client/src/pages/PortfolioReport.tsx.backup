@@ -44,22 +44,6 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { REPORT_PRESETS, applyPreset as applyPresetConfig } from "@/lib/reportPresets";
-import { getAllValidationIssues } from "@/lib/reportValidation";
-import { createDataSnapshot, hasDataChanged, saveSnapshotToSession, loadSnapshotFromSession } from "@/lib/reportSnapshot";
-import { ValidationAlerts, PresetAppliedBanner } from "@/components/report/ValidationAlerts";
-import { SnapshotStatus, SnapshotInfoCard } from "@/components/report/SnapshotStatus";
-import { BuildingSectionConfigPanel, UniformatSectionConfigPanel, GeographicSectionConfigPanel } from "@/components/report/SectionConfigPanel";
-import type { ReportConfiguration, DataSnapshot, BuildingSectionConfig, UniformatSectionConfig, GeographicSectionConfig, PrioritySectionConfig } from "@shared/reportTypes";
-import { DEFAULT_BUILDING_COLUMNS, DEFAULT_PRIORITY_HORIZONS } from "@shared/reportTypes";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { exportBuildingsCSV, exportUniformatCSV, exportDeficienciesCSV, exportCapitalForecastCSV } from "@/lib/csvExport";
 
 // Format currency
 function formatCurrency(value: number): string {
@@ -131,11 +115,76 @@ const SECTION_CATEGORIES = {
   }
 };
 
-// Use presets from shared configuration
-// REPORT_PRESETS imported from @/lib/reportPresets
+// Presets
+const PRESETS = {
+  recommended: {
+    label: "Recommended",
+    description: "Standard client deliverable (~12-18 pages)",
+    icon: Sparkles,
+    sections: {
+      includeExecutiveSummary: true,
+      includePortfolioMetrics: true,
+      includeBuildingBreakdown: true,
+      includeCategoryAnalysis: true,
+      includeCapitalForecast: true,
+      includePriorityRecommendations: true,
+      includeGeographicAnalysis: false,
+      includeAssumptions: false,
+      includeGlossary: false,
+    }
+  },
+  minimal: {
+    label: "Minimal Executive",
+    description: "Brief summary for executives (~3-5 pages)",
+    icon: FileCheck,
+    sections: {
+      includeExecutiveSummary: true,
+      includePortfolioMetrics: true,
+      includeBuildingBreakdown: false,
+      includeCategoryAnalysis: false,
+      includeCapitalForecast: false,
+      includePriorityRecommendations: true,
+      includeGeographicAnalysis: false,
+      includeAssumptions: false,
+      includeGlossary: false,
+    }
+  },
+  full: {
+    label: "Full Technical",
+    description: "Complete detail with appendices (~25-40 pages)",
+    icon: Layers,
+    sections: {
+      includeExecutiveSummary: true,
+      includePortfolioMetrics: true,
+      includeBuildingBreakdown: true,
+      includeCategoryAnalysis: true,
+      includeCapitalForecast: true,
+      includePriorityRecommendations: true,
+      includeGeographicAnalysis: true,
+      includeAssumptions: true,
+      includeGlossary: true,
+    }
+  }
+};
 
-// Using ReportConfiguration type from shared types
-// interface ReportOptions replaced with ReportConfiguration
+interface ReportOptions {
+  includeExecutiveSummary: boolean;
+  includePortfolioMetrics: boolean;
+  includeBuildingBreakdown: boolean;
+  includeCategoryAnalysis: boolean;
+  includeCapitalForecast: boolean;
+  includePriorityRecommendations: boolean;
+  includeGeographicAnalysis: boolean;
+  includeAssumptions: boolean;
+  includeGlossary: boolean;
+  reportTitle: string;
+  preparedBy: string;
+  preparedFor: string;
+  additionalNotes: string;
+  companyLogo: string | null;
+  clientLogo: string | null;
+  footerText: string;
+}
 
 interface ValidationErrors {
   reportTitle?: string;
@@ -159,23 +208,9 @@ export default function PortfolioReport() {
   });
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [activePreset, setActivePreset] = useState<string | null>("recommended");
-  const [showPresetBanner, setShowPresetBanner] = useState(false);
-  const [dataSnapshot, setDataSnapshot] = useState<DataSnapshot | null>(null);
-  const [showSectionConfig, setShowSectionConfig] = useState<string | null>(null);
   
-  const [config, setConfig] = useState<ReportConfiguration>({
-    // Section toggles
-    includeExecutiveSummary: true,
-    includePortfolioMetrics: true,
-    includeBuildingBreakdown: true,
-    includeCategoryAnalysis: true,
-    includeCapitalForecast: true,
-    includePriorityRecommendations: true,
-    includeGeographicAnalysis: false,
-    includeAssumptions: false,
-    includeGlossary: false,
-    includeMethodology: false,
-    // Metadata
+  const [options, setOptions] = useState<ReportOptions>({
+    ...PRESETS.recommended.sections,
     reportTitle: "Portfolio Condition Assessment Report",
     preparedBy: user?.name || "",
     preparedFor: "",
@@ -183,27 +218,7 @@ export default function PortfolioReport() {
     companyLogo: null,
     clientLogo: null,
     footerText: "CONFIDENTIAL - For internal use only",
-    // Section configurations
-    buildingSection: {
-      sortBy: 'fci',
-      scope: 'all',
-      columns: DEFAULT_BUILDING_COLUMNS,
-    },
-    uniformatSection: {
-      level: 'L1',
-      view: 'cost',
-    },
-    prioritySection: {
-      horizons: DEFAULT_PRIORITY_HORIZONS,
-      includeImmediateOnly: false,
-    },
-    geographicSection: {
-      groupBy: 'city',
-    },
   });
-  
-  // Backward compatibility - map config to options for existing code
-  const options = config;
 
   // Fetch analytics data
   const { data: dashboardData, isLoading, dataUpdatedAt } = trpc.portfolioAnalytics.getDashboardData.useQuery(
@@ -303,11 +318,13 @@ export default function PortfolioReport() {
   };
 
   const handleGeneratePreview = async () => {
-    // Use new validation system
-    const validation = getAllValidationIssues(config, dashboardData);
-    
-    if (!validation.canGenerate) {
-      toast.error("Please fix validation errors before generating preview");
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (hasBlockingErrors) {
+      toast.error("Cannot generate report due to missing data");
       return;
     }
 
@@ -328,11 +345,6 @@ export default function PortfolioReport() {
     // Simulate generation time
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Create and save data snapshot
-    const snapshot = createDataSnapshot(dashboardData);
-    setDataSnapshot(snapshot);
-    saveSnapshotToSession('portfolio-report-snapshot', snapshot);
-    
     clearInterval(progressInterval);
     setGenerationProgress(100);
     
@@ -342,7 +354,7 @@ export default function PortfolioReport() {
       setDataChangedSincePreview(false);
       setIsGenerating(false);
       setGenerationProgress(0);
-      // Don't show toast to avoid it appearing in PDF
+      toast.success("Preview generated successfully");
     }, 300);
   };
 
@@ -359,90 +371,38 @@ export default function PortfolioReport() {
   };
 
   const applyPreset = (presetKey: string) => {
-    const preset = REPORT_PRESETS[presetKey];
+    const preset = PRESETS[presetKey as keyof typeof PRESETS];
     if (preset) {
-      const newConfig = applyPresetConfig(config, presetKey);
-      setConfig(newConfig);
+      setOptions(prev => ({
+        ...prev,
+        ...preset.sections
+      }));
       setActivePreset(presetKey);
-      setShowPresetBanner(true);
       toast.success(`Applied "${preset.label}" preset`);
     }
   };
 
   const handleSectionToggle = (key: string, checked: boolean) => {
-    setConfig(prev => ({ ...prev, [key]: checked }));
+    setOptions(prev => ({ ...prev, [key]: checked }));
     setActivePreset(null); // Clear preset when manually changing
-    setShowPresetBanner(false);
   };
 
   const selectAll = () => {
     const allSections = Object.values(SECTION_CATEGORIES).flatMap(cat => cat.sections.map(s => s.key));
     const updates = allSections.reduce((acc, key) => ({ ...acc, [key]: true }), {});
-    setConfig(prev => ({ ...prev, ...updates }));
+    setOptions(prev => ({ ...prev, ...updates }));
     setActivePreset(null);
-    setShowPresetBanner(false);
   };
 
   const clearAll = () => {
     const allSections = Object.values(SECTION_CATEGORIES).flatMap(cat => cat.sections.map(s => s.key));
     const updates = allSections.reduce((acc, key) => ({ ...acc, [key]: false }), {});
-    setConfig(prev => ({ ...prev, ...updates }));
+    setOptions(prev => ({ ...prev, ...updates }));
     setActivePreset(null);
-    setShowPresetBanner(false);
   };
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
-  };
-
-  const handleExportCSV = (type: 'buildings' | 'uniformat' | 'deficiencies' | 'all') => {
-    if (!dashboardData || !dataSnapshot) {
-      toast.error('No data available to export');
-      return;
-    }
-
-    try {
-      const timestamp = new Date().toISOString().split('T')[0];
-      
-      if (type === 'buildings' || type === 'all') {
-        const buildings = dashboardData.buildingComparison?.map(b => ({
-          name: b.name,
-          location: b.location || '',
-          yearBuilt: b.yearBuilt,
-          grossArea: b.grossArea,
-          crv: b.crv,
-          deferredMaintenance: b.deferredMaintenance,
-          fci: b.fci,
-          conditionRating: b.conditionRating,
-          priorityScore: b.priorityScore,
-        })) || [];
-        exportBuildingsCSV(buildings, `portfolio-buildings-${timestamp}.csv`);
-      }
-      
-      if (type === 'uniformat' || type === 'all') {
-        const uniformat = dashboardData.categoryCostBreakdown?.map(item => ({
-          code: item.category,
-          description: item.category,
-          totalCost: item.totalCost,
-          percentOfBacklog: (item.totalCost / (dashboardData.overview?.totalDeferredMaintenance || 1)) * 100,
-        })) || [];
-        exportUniformatCSV(uniformat, `portfolio-uniformat-${timestamp}.csv`);
-      }
-      
-      if (type === 'deficiencies') {
-        // Note: This would require fetching deficiency data from backend
-        toast.info('Deficiency export coming soon');
-      }
-      
-      if (type === 'all') {
-        toast.success('All data exported successfully');
-      } else {
-        toast.success('Data exported successfully');
-      }
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export data');
-    }
   };
 
   if (authLoading || isLoading) {
@@ -521,29 +481,22 @@ export default function PortfolioReport() {
           </div>
 
           <div className="container py-6">
-            {/* Preset Applied Banner */}
-            {showPresetBanner && activePreset && (
-              <div className="mb-4">
-                <PresetAppliedBanner
-                  presetName={REPORT_PRESETS[activePreset]?.label || ''}
-                  onDismiss={() => setShowPresetBanner(false)}
-                />
+            {/* Data Validation Alerts */}
+            {dataValidation.length > 0 && (
+              <div className="mb-6 space-y-2">
+                {dataValidation.map((issue, i) => (
+                  <Alert key={i} variant={issue.severity === "error" ? "destructive" : "default"}>
+                    {issue.severity === "error" ? (
+                      <AlertCircle className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
+                    <AlertTitle>{issue.section}</AlertTitle>
+                    <AlertDescription>{issue.message}</AlertDescription>
+                  </Alert>
+                ))}
               </div>
             )}
-
-            {/* Validation Alerts */}
-            {(() => {
-              const validation = getAllValidationIssues(config, dashboardData);
-              return (
-                <div className="mb-6">
-                  <ValidationAlerts
-                    metadataErrors={validation.metadataErrors}
-                    dataIssues={validation.dataIssues}
-                    qualityIssues={validation.qualityIssues}
-                  />
-                </div>
-              );
-            })()}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Report Sections Panel */}
@@ -568,11 +521,8 @@ export default function PortfolioReport() {
                   <CardContent className="space-y-2">
                     {/* Presets */}
                     <div className="flex flex-wrap gap-2 pb-4 border-b">
-                      {Object.entries(REPORT_PRESETS).map(([key, preset]) => {
-                        const iconMap: Record<string, any> = {
-                          Sparkles, FileCheck, Layers, DollarSign, Building2
-                        };
-                        const Icon = iconMap[preset.icon] || Sparkles;
+                      {Object.entries(PRESETS).map(([key, preset]) => {
+                        const Icon = preset.icon;
                         return (
                           <Button
                             key={key}
@@ -644,28 +594,6 @@ export default function PortfolioReport() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Section Configuration Panels */}
-                {config.includeBuildingBreakdown && (
-                  <BuildingSectionConfigPanel
-                    config={config.buildingSection}
-                    onChange={(buildingSection) => setConfig({ ...config, buildingSection })}
-                  />
-                )}
-                
-                {config.includeCategoryAnalysis && (
-                  <UniformatSectionConfigPanel
-                    config={config.uniformatSection}
-                    onChange={(uniformatSection) => setConfig({ ...config, uniformatSection })}
-                  />
-                )}
-                
-                {config.includeGeographicAnalysis && (
-                  <GeographicSectionConfigPanel
-                    config={config.geographicSection}
-                    onChange={(geographicSection) => setConfig({ ...config, geographicSection })}
-                  />
-                )}
               </div>
 
               {/* Report Details Panel */}
@@ -682,8 +610,8 @@ export default function PortfolioReport() {
                       </Label>
                       <Input
                         id="reportTitle"
-                        value={config.reportTitle}
-                        onChange={(e) => setConfig({ ...config, reportTitle: e.target.value })}
+                        value={options.reportTitle}
+                        onChange={(e) => setOptions({ ...options, reportTitle: e.target.value })}
                         className={validationErrors.reportTitle ? "border-destructive" : ""}
                       />
                       {validationErrors.reportTitle && (
@@ -696,8 +624,8 @@ export default function PortfolioReport() {
                       </Label>
                       <Input
                         id="preparedBy"
-                        value={config.preparedBy}
-                        onChange={(e) => setConfig({ ...config, preparedBy: e.target.value })}
+                        value={options.preparedBy}
+                        onChange={(e) => setOptions({ ...options, preparedBy: e.target.value })}
                         className={validationErrors.preparedBy ? "border-destructive" : ""}
                       />
                       {validationErrors.preparedBy && (
@@ -710,8 +638,8 @@ export default function PortfolioReport() {
                       </Label>
                       <Input
                         id="preparedFor"
-                        value={config.preparedFor}
-                        onChange={(e) => setConfig({ ...config, preparedFor: e.target.value })}
+                        value={options.preparedFor}
+                        onChange={(e) => setOptions({ ...options, preparedFor: e.target.value })}
                         placeholder="Client name or organization"
                         className={validationErrors.preparedFor ? "border-destructive" : ""}
                       />
@@ -723,8 +651,8 @@ export default function PortfolioReport() {
                       <Label htmlFor="additionalNotes">Additional Notes</Label>
                       <Textarea
                         id="additionalNotes"
-                        value={config.additionalNotes}
-                        onChange={(e) => setConfig({ ...config, additionalNotes: e.target.value })}
+                        value={options.additionalNotes}
+                        onChange={(e) => setOptions({ ...options, additionalNotes: e.target.value })}
                         placeholder="Any additional notes to include..."
                         rows={3}
                       />
@@ -754,14 +682,18 @@ export default function PortfolioReport() {
                   </CardContent>
                 </Card>
 
-                {/* Data Snapshot Status */}
-                {dataSnapshot && (
-                  <Card>
-                    <CardContent className="pt-4">
-                      <SnapshotInfoCard snapshot={dataSnapshot} />
-                    </CardContent>
-                  </Card>
-                )}
+                {/* Data Snapshot */}
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Data as of:</span>
+                      <span className="font-medium">
+                        {new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
@@ -808,52 +740,26 @@ export default function PortfolioReport() {
                     <FileDown className="mr-2 h-4 w-4" />
                     Export PDF
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <FileDown className="mr-2 h-4 w-4" />
-                        Export Data
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleExportCSV('buildings')}>
-                        Building List (CSV)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExportCSV('uniformat')}>
-                        UNIFORMAT Breakdown (CSV)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExportCSV('deficiencies')}>
-                        Deficiency List (CSV)
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleExportCSV('all')}>
-                        Export All Data (ZIP)
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
               </div>
-              {dataSnapshot && (
-                <div className="mt-3">
-                  <SnapshotStatus
-                    snapshot={dataSnapshot}
-                    dataChanged={dataChangedSincePreview}
-                    onRefresh={handleRefreshPreview}
-                  />
-                </div>
+              {dataChangedSincePreview && (
+                <Alert className="mt-3" variant="default">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Data has been updated since this preview was generated. Click "Refresh Preview" to see the latest data.
+                  </AlertDescription>
+                </Alert>
               )}
             </div>
           </div>
 
           {/* Report Content */}
           <div ref={reportRef} className="container py-6 max-w-4xl mx-auto print:max-w-none print:py-0">
-            {/* Draft Watermark - Only in preview, hidden in print/PDF */}
+            {/* Draft Watermark - Only in preview */}
             <div className="fixed inset-0 pointer-events-none print:hidden flex items-center justify-center z-0">
-              <div className="relative">
-                <span className="text-[140px] font-bold text-red-500/8 rotate-[-30deg] select-none">
-                  DRAFT PREVIEW
-                </span>
-              </div>
+              <span className="text-[120px] font-bold text-muted-foreground/5 rotate-[-30deg] select-none">
+                DRAFT
+              </span>
             </div>
 
             {/* Cover Page */}
