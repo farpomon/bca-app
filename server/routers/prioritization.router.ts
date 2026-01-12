@@ -215,17 +215,25 @@ export const prioritizationRouter = router({
         name: z.string(),
         description: z.string().optional(),
         startYear: z.number(),
-        endYear: z.number(),
+        duration: z.number().min(1).max(30).default(4), // 1-30 years
         totalBudget: z.number().optional(),
+        inflationRate: z.number().min(0).max(20).default(2.0), // 0-20%
+        escalationRate: z.number().min(0).max(20).default(0.0), // 0-20%
+        fundingConstraints: z.record(z.string(), z.number()).optional(), // { "2024": 1000000, "2025": 1200000 }
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const endYear = input.startYear + input.duration - 1;
       const cycleId = await prioritizationDb.createBudgetCycle({
         name: input.name,
         description: input.description,
         startYear: input.startYear,
-        endYear: input.endYear,
+        endYear: endYear,
+        duration: input.duration,
         totalBudget: input.totalBudget !== undefined ? String(input.totalBudget) : undefined,
+        inflationRate: String(input.inflationRate),
+        escalationRate: String(input.escalationRate),
+        fundingConstraints: input.fundingConstraints ? JSON.stringify(input.fundingConstraints) : undefined,
         status: "planning",
         createdBy: ctx.user.id,
         createdAt: new Date().toISOString(),
@@ -242,16 +250,35 @@ export const prioritizationRouter = router({
         name: z.string().optional(),
         description: z.string().optional(),
         startYear: z.number().optional(),
-        endYear: z.number().optional(),
+        duration: z.number().min(1).max(30).optional(),
         totalBudget: z.number().optional(),
-        status: z.enum(["planning", "approved", "active", "completed"]).optional(),
+        inflationRate: z.number().min(0).max(20).optional(),
+        escalationRate: z.number().min(0).max(20).optional(),
+        fundingConstraints: z.record(z.string(), z.number()).optional(),
+        status: z.enum(["planning", "approved", "active", "completed", "archived"]).optional(),
       })
     )
-    .mutation(async ({ input }) => {
-      const { cycleId, totalBudget, ...rest } = input;
+    .mutation(async ({ input, ctx }) => {
+      const { cycleId, totalBudget, inflationRate, escalationRate, fundingConstraints, duration, startYear, ...rest } = input;
+      
+      // Calculate endYear if duration or startYear changed
+      let endYear: number | undefined;
+      if (duration !== undefined || startYear !== undefined) {
+        const cycle = await prioritizationDb.getBudgetCycle(cycleId);
+        const newStartYear = startYear ?? cycle.startYear;
+        const newDuration = duration ?? cycle.duration ?? (cycle.endYear - cycle.startYear + 1);
+        endYear = newStartYear + newDuration - 1;
+      }
+      
       const updates = {
         ...rest,
+        ...(startYear !== undefined && { startYear }),
+        ...(duration !== undefined && { duration }),
+        ...(endYear !== undefined && { endYear }),
         ...(totalBudget !== undefined && { totalBudget: String(totalBudget) }),
+        ...(inflationRate !== undefined && { inflationRate: String(inflationRate) }),
+        ...(escalationRate !== undefined && { escalationRate: String(escalationRate) }),
+        ...(fundingConstraints !== undefined && { fundingConstraints: JSON.stringify(fundingConstraints) }),
       };
       await prioritizationDb.updateBudgetCycle(cycleId, updates);
       return { success: true };
@@ -600,5 +627,113 @@ export const prioritizationRouter = router({
         input.projectId,
         input.companyId
       );
+    }),
+
+  // ============================================================================
+  // BULK CYCLE OPERATIONS (NEW)
+  // ============================================================================
+
+  bulkArchiveCycles: protectedProcedure
+    .input(
+      z.object({
+        cycleIds: z.array(z.number()),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const results = [];
+      for (const cycleId of input.cycleIds) {
+        await prioritizationDb.updateBudgetCycle(cycleId, {
+          status: 'archived',
+          archivedAt: new Date().toISOString(),
+          archivedBy: ctx.user.id,
+        });
+        results.push({ cycleId, success: true });
+      }
+      return { success: true, results };
+    }),
+
+  bulkDeleteCycles: protectedProcedure
+    .input(
+      z.object({
+        cycleIds: z.array(z.number()),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const results = [];
+      for (const cycleId of input.cycleIds) {
+        await prioritizationDb.deleteBudgetCycle(cycleId);
+        results.push({ cycleId, success: true });
+      }
+      return { success: true, results };
+    }),
+
+  bulkDeleteAllocations: protectedProcedure
+    .input(
+      z.object({
+        allocationIds: z.array(z.number()),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const results = [];
+      for (const allocationId of input.allocationIds) {
+        await prioritizationDb.deleteBudgetAllocation(allocationId);
+        results.push({ allocationId, success: true });
+      }
+      return { success: true, results };
+    }),
+
+  // ============================================================================
+  // CAPITAL PLANNING ANALYTICS (NEW)
+  // ============================================================================
+
+  getBacklogReductionAnalysis: protectedProcedure
+    .input(
+      z.object({
+        cycleId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      // TODO: Implement backlog reduction calculation
+      // This will compute how much deferred maintenance is reduced over time
+      return {
+        cycleId: input.cycleId,
+        backlogByYear: [],
+        totalReduction: 0,
+        percentReduction: 0,
+      };
+    }),
+
+  getRiskAnalysisTrends: protectedProcedure
+    .input(
+      z.object({
+        cycleId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      // TODO: Implement risk analysis trends
+      // This will show risk exposure over time, by building, by UNIFORMAT group
+      return {
+        cycleId: input.cycleId,
+        riskByYear: [],
+        riskByBuilding: [],
+        riskByUniformat: [],
+      };
+    }),
+
+  getUnfundedCriticalRisks: protectedProcedure
+    .input(
+      z.object({
+        cycleId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      // TODO: Implement unfunded critical risks
+      // This will list critical items not covered by funding with consequences
+      return {
+        cycleId: input.cycleId,
+        unfundedItems: [],
+        totalRiskExposure: 0,
+        criticalCount: 0,
+      };
     }),
 });

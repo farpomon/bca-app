@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE capital_budget_cycles \nADD COLUMN IF NOT EXISTS duration INT NOT NULL DEFAULT 4 AFTER endYear,\nADD COLUMN IF NOT EXISTS inflationRate DECIMAL(5,2) DEFAULT 2.00 AFTER totalBudget,\nADD COLUMN IF NOT EXISTS escalationRate DECIMAL(5,2) DEFAULT 0.00 AFTER inflationRate,\nADD COLUMN IF NOT EXISTS fundingConstraints TEXT AFTER escalationRate,\nADD COLUMN IF NOT EXISTS archivedAt TIMESTAMP NULL AFTER updatedAt,\nADD COLUMN IF NOT EXISTS archivedBy INT NULL AFTER archivedAt;\n\nALTER TABLE capital_budget_cycles \nMODIFY COLUMN status ENUM('planning','approved','active','completed','archived') DEFAULT 'planning' NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE capital_budget_cycles \nADD COLUMN IF NOT EXISTS duration INT NOT NULL DEFAULT 4 AFTER endYear,\nADD COLUMN IF NOT EXISTS inflationRate DECIMAL(5,2) DEFAULT 2.00 AFTER totalBudget,\nADD COLUMN IF NOT EXISTS escalationRate DECIMAL(5,2) DEFAULT 0.00 AFTER inflationRate,\nADD COLUMN IF NOT EXISTS fundingConstraints TEXT AFTER escalationRate,\nADD COLUMN IF NOT EXISTS archivedAt TIMESTAMP NULL AFTER updatedAt,\nADD COLUMN IF NOT EXISTS archivedBy INT NULL AFTER archivedAt;\n\nALTER TABLE capital_budget_cycles \nMODIFY COLUMN status ENUM('planning','approved','active','completed','archived') DEFAULT 'planning' NOT NULL;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'inflationrate' in 'capital_budget_cycles'"
+  ]
+}

@@ -382,11 +382,17 @@ export const capitalBudgetCycles = mysqlTable("capital_budget_cycles", {
 	description: text(),
 	startYear: int().notNull(),
 	endYear: int().notNull(),
+	duration: int().notNull(), // 1-30 years
 	totalBudget: decimal({ precision: 15, scale: 2 }),
-	status: mysqlEnum(['planning','approved','active','completed']).default('planning').notNull(),
+	inflationRate: decimal({ precision: 5, scale: 2 }).default('2.00'), // Annual inflation %
+	escalationRate: decimal({ precision: 5, scale: 2 }).default('0.00'), // Additional escalation %
+	fundingConstraints: text(), // JSON: yearly funding limits
+	status: mysqlEnum(['planning','approved','active','completed','archived']).default('planning').notNull(),
 	createdBy: int().notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	archivedAt: timestamp({ mode: 'string' }),
+	archivedBy: int(),
 });
 
 export const cashFlowProjections = mysqlTable("cash_flow_projections", {

@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE capital_budget_cycles \nADD COLUMN IF NOT EXISTS escalationRate DECIMAL(5,2) DEFAULT 0.00,\nADD COLUMN IF NOT EXISTS fundingConstraints TEXT,\nADD COLUMN IF NOT EXISTS archivedAt TIMESTAMP NULL,\nADD COLUMN IF NOT EXISTS archivedBy INT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute ALTER TABLE capital_budget_cycles \nADD COLUMN IF NOT EXISTS escalationRate DECIMAL(5,2) DEFAULT 0.00,\nADD COLUMN IF NOT EXISTS fundingConstraints TEXT,\nADD COLUMN IF NOT EXISTS archivedAt TIMESTAMP NULL,\nADD COLUMN IF NOT EXISTS archivedBy INT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1174
+}

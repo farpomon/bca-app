@@ -4810,3 +4810,163 @@ Deployment is allowed only when:
 - [ ] Test with assets having no photos
 - [ ] Generate sample reports for review
 - [ ] Write vitest tests for report data queries
+
+
+## 🔥 BCA REVAMP: PRIORITIZATION, CAPITAL PLANNING & PORTFOLIO REPORTS
+
+### HARD REQUIREMENTS (ALL)
+- [ ] Enforce consistent IDs and joins across projects, assets, components, criteria, scores, and budget cycles
+- [ ] Validate that all displayed totals match backend calculations (no ghost records, no inconsistent counts, no double counting)
+- [ ] Add pre-deployment Full App Check with automated smoke tests + integrity checks
+- [ ] Cap any confidence, completion, or percent fields to 0–100% (never display values >100%)
+- [ ] Standardize percent formatting to 0–100 with up to 1 decimal where needed
+- [ ] Add "Go Back" button to all secondary pages (Capital Budget Planning, Multi-Criteria Prioritization, Report Builder, Scoring Workspace)
+- [ ] Implement history back behavior with fallback route if history is empty
+
+### A) MULTI-CRITERIA PRIORITIZATION
+#### A1. Criteria Management
+- [ ] Keep current criteria dashboard as DEFAULT TEMPLATE set
+- [ ] Allow admins/users to add new criteria
+- [ ] Allow admins/users to edit criteria (name, category, description, scoring guidance, weight)
+- [ ] Allow admins/users to delete criteria with safeguards
+- [ ] Implement deletion rules: soft-delete, archive, or hard-delete options
+- [ ] Reflect criteria changes in Scoring Workspace (live)
+- [ ] Reflect criteria changes in composite score calculation
+- [ ] Reflect criteria changes in priority rankings
+- [ ] Reflect criteria changes in report outputs (PDF)
+
+#### A2. Combined Dashboard
+- [ ] Merge "Project Rankings", "Score Projects", and "Manage Criteria" into one integrated dashboard
+- [ ] Left section: Project list + search + filters
+- [ ] Center section: Scoring workspace (expandable criteria)
+- [ ] Right section: Live Summary + validation + quick insights
+- [ ] Use sections/accordions within one dashboard (no separate page navigation)
+
+#### A3. Scoring Workspace Enhancements
+- [ ] Add option to DELETE criteria from scoring workspace for a given project
+- [ ] Add "Reset to Default Template" for project scoring sheet
+- [ ] Provide "Copy from Similar" feature with preview before committing
+- [ ] Provide "Apply Defaults" feature with preview before committing
+
+#### A4. Fix Scoring Submission Error
+- [ ] Fix parameter binding error: "SELECT * FROM project_scores WHERE projectId = ? AND status = 'draft' params: 14"
+- [ ] Ensure consistent column naming (project_id vs projectId) across DB and ORM
+- [ ] Add migration/adapter if needed for canonical naming convention
+- [ ] Ensure draft rows exist or are created on first save
+- [ ] Handle empty results gracefully
+- [ ] Add backend endpoint contract tests for: create draft, update draft, submit final, fetch summary
+
+#### A5. On-screen AI Insights Formatting
+- [ ] Replace long single-line insights with wrapped multi-line layout
+- [ ] Use fixed max width (420–520px)
+- [ ] Add line clamp to 3–5 lines with "Show more" option
+- [ ] Ensure readability: one sentence per line where possible
+
+### B) CAPITAL BUDGET PLANNING
+#### B1. Variable Cycle Lengths
+- [ ] Support capital budget cycles from 1 to 30 years
+- [ ] Handle 1-year operational-style cycle
+- [ ] Handle 4-year typical capital plan
+- [ ] Handle 10/20/30-year long-range plan
+- [ ] Show cycle length clearly
+- [ ] Allow switching between cycles
+
+#### B2. Cycle Management UI
+- [ ] Replace long horizontal row of cycles with compact "Cycle Switcher"
+- [ ] Add dropdown or segmented control for cycle selection
+- [ ] Add searchable list modal for cycles
+- [ ] Add status chips (planning/approved/archived)
+- [ ] Provide "New Budget Cycle" wizard with: name, start year, duration (1–30), inflation/escalation assumptions, funding constraints
+
+#### B3. Delete Cycle Analyses
+- [ ] Add multi-select for analyses
+- [ ] Add bulk action: Delete selected analyses
+- [ ] Add bulk action: Archive selected analyses
+- [ ] Add bulk action: Export selected analyses
+- [ ] Ensure deleting analysis doesn't delete cycle definition unless explicitly requested
+
+#### B4. Integrate Assessment Data with Analytics
+- [ ] Compute and display backlog reduction over time
+- [ ] Compute and display risk analysis (risk exposure trend over time, risk-by-building, risk-by-UNIFORMAT group)
+- [ ] Compute and display unfunded critical risks with consequences
+- [ ] Add "Additional Analytics" section to replace "Coming Soon" placeholder
+
+#### B5. Output Consistency
+- [ ] Ensure sum of funded projects per year equals yearly allocations
+- [ ] Ensure unfunded list equals total needs minus funded
+- [ ] Ensure backlog reductions align with action list and component renewal timing
+
+### C) PORTFOLIO CONDITION ASSESSMENT REPORT (PDF) + REPORT BUILDER UX
+#### C1. Report Builder UI Improvements
+- [ ] Add report presets at top: Recommended / Minimal Executive / Full Technical
+- [ ] Add "Select All / Clear All" controls
+- [ ] Show per-section counts
+- [ ] Show live estimate of page count and generation time
+- [ ] Add mandatory fields validation (Prepared By, Prepared For, Title)
+- [ ] Add optional branding: footer text, logo upload, confidentiality tag
+
+#### C2. Component Assessment Inclusion Options
+- [ ] Add section toggle: "Component Assessment Detail" with options: Off / Per Asset / All Assets
+- [ ] When enabled, allow grouping: (a) By Building then UNIFORMAT, OR (b) By UNIFORMAT then Building
+- [ ] Add filters: priority (Critical/Necessary/Recommended/No action), action type (Renewal/Repair/etc.), year range
+- [ ] Add sorting: action year asc, cost desc, risk desc
+
+#### C3. Component Breakdown by Building + UNIFORMAT
+- [ ] Produce tables breaking down component assessment by Building/Asset
+- [ ] Produce tables breaking down component assessment by UNIFORMAT Level 1/2/3 code
+- [ ] Include: condition rating, ESL, last action year, recommended action, priority band, action year, estimated cost, notes
+- [ ] Provide rollups: cost by building and UNIFORMAT group
+- [ ] Provide rollups: count of critical items by building and UNIFORMAT group
+
+#### C4. Fix PDF Formatting Issues
+- [ ] Enforce consistent margins, headers, footers, page numbers, and fonts
+- [ ] Avoid orphaned headings and broken tables across pages
+- [ ] Ensure images are sized consistently and don't overlap text
+- [ ] Prevent long strings from overflowing (wrap + hyphenation rules)
+- [ ] Use table style with repeated header rows on page breaks
+- [ ] Add Table of Contents with correct page references for major sections
+
+#### C5. Align Report Structure to BCA Conventions
+- [ ] Executive summary (key risks, top capital drivers)
+- [ ] Portfolio KPIs (FCI, backlog, renewal need by horizon)
+- [ ] Building-by-building summary
+- [ ] UNIFORMAT category analysis
+- [ ] Capital forecast (by year, by group)
+- [ ] Priority recommendations (ranked list)
+- [ ] Appendices: geographic distribution, assumptions, glossary
+- [ ] Use consistent definitions/logic for action types, priority bands, and condition bands
+
+#### C6. Export Outputs
+- [ ] Generate PDF report
+- [ ] Generate optional CSV/Excel appendices for: action list, component list, UNIFORMAT rollups
+- [ ] Include "Data as of" date in report
+
+### D) ADMIN, AUDIT, DUPLICATE PREVENTION, CLEANUP JOBS
+#### D1. Admin UI Panel
+- [ ] Build Admin dashboard
+- [ ] Add audit logs (who changed criteria, weights, scores, cycles)
+- [ ] Add cleanup reports (orphan records, duplicates, failed joins)
+- [ ] Add data integrity metrics (counts, deltas over time)
+- [ ] Add visual dashboards (charts/tables)
+
+#### D2. Bulk Import Validation
+- [ ] Detect duplicates before importing (by normalized name + category + code)
+- [ ] Provide preview diff (new vs update vs duplicate)
+- [ ] Allow user to resolve conflicts before committing
+
+#### D3. Scheduled Cleanup Jobs
+- [ ] Implement weekly automated job to detect orphaned data
+- [ ] Detect scores without criteria, criteria without definitions, components without assets, cycles without allocations
+- [ ] Detect duplicates created by bulk actions
+- [ ] Produce cleanup report
+- [ ] Email notification to admins with summary + link to report
+
+### E) FULL APP CHECK
+- [ ] Implement "Full App Check" command/button (admin only)
+- [ ] Smoke tests: Load all key pages and verify API responses
+- [ ] Data integrity: Criteria weights sum to 100% for each template set
+- [ ] Data integrity: No percent fields >100
+- [ ] Data integrity: No orphaned foreign keys across core tables
+- [ ] Data integrity: Score calculation reproducibility (recompute and compare)
+- [ ] Data integrity: Cycle totals reconcile (funded + unfunded = total needs)
+- [ ] Report generation validation: Generate sample PDF and run layout validation
