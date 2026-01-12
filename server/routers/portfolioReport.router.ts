@@ -16,6 +16,12 @@ import {
   formatPercentage
 } from "../portfolioReportCalculations";
 import { getProjectById } from "../db";
+import { 
+  getComponentAssessmentsForReport, 
+  getProjectFacilities,
+  getProjectSystemCategories,
+  estimateComponentReportPages
+} from "../db-componentReport";
 
 export const portfolioReportRouter = router({
   /**
@@ -254,7 +260,104 @@ export const portfolioReportRouter = router({
         fciColor: summary.portfolioFCI <= 5 ? 'green' 
           : summary.portfolioFCI <= 10 ? 'yellow' 
           : summary.portfolioFCI <= 30 ? 'orange' 
-          : 'red'
+        : 'red'
+      }
+    }),
+
+  /**
+   * Get component assessment data for report generation
+   */
+  getComponentAssessments: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      scope: z.enum(['all', 'selected']).default('all'),
+      selectedAssetIds: z.array(z.number()).optional(),
+      filters: z.object({
+        facilities: z.array(z.number()).optional(),
+        categories: z.array(z.string()).optional(),
+        conditions: z.array(z.enum(['good', 'fair', 'poor', 'critical', 'not_assessed'])).optional(),
+        riskLevels: z.array(z.enum(['low', 'medium', 'high', 'critical'])).optional(),
+        onlyWithDeficiencies: z.boolean().optional(),
+      }).optional(),
+      sortBy: z.enum(['risk', 'condition', 'cost', 'name']).default('risk'),
+      maxAssets: z.number().min(1).max(100).default(25),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, scope, selectedAssetIds, filters, sortBy, maxAssets } = input;
+      const isAdmin = ctx.user.role === 'admin';
+      
+      // Verify project access
+      const project = await getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+      if (!project) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or access denied'
+        });
+      }
+      
+      const componentData = await getComponentAssessmentsForReport(projectId, {
+        scope,
+        selectedAssetIds,
+        filters,
+        sortBy,
+        maxAssets,
+      });
+      
+      return {
+        projectId,
+        projectName: project.name,
+        componentAssessments: componentData,
+        totalAssets: componentData.length,
+        generatedAt: new Date().toISOString(),
       };
-    })
+    }),
+
+  /**
+   * Get filter options for component assessment report
+   */
+  getComponentFilterOptions: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const isAdmin = ctx.user.role === 'admin';
+      
+      // Verify project access
+      const project = await getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+      if (!project) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or access denied'
+        });
+      }
+      
+      const facilities = await getProjectFacilities(projectId);
+      const categories = await getProjectSystemCategories(projectId);
+      
+      return {
+        facilities,
+        categories,
+        conditionOptions: ['good', 'fair', 'poor', 'critical', 'not_assessed'],
+        riskOptions: ['low', 'medium', 'high', 'critical'],
+      };
+    }),
+
+  /**
+   * Estimate page count for component assessment report
+   */
+  estimateComponentReportSize: protectedProcedure
+    .input(z.object({
+      assetCount: z.number(),
+      detailLevel: z.enum(['minimal', 'standard', 'full']).default('standard'),
+    }))
+    .query(async ({ input }) => {
+      const { assetCount, detailLevel } = input;
+      const estimatedPages = estimateComponentReportPages(assetCount, detailLevel);
+      
+      return {
+        estimatedPages,
+        warning: estimatedPages > 50 ? 'This report may be very large. Consider applying filters or reducing the maximum asset count.' : null,
+      };
+    }),
 });

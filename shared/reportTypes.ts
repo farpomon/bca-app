@@ -10,6 +10,13 @@ export type UniformatViewOption = 'cost' | 'percentage' | 'fci_impact';
 export type GeographicGroupingOption = 'city' | 'region' | 'site' | 'province';
 export type PriorityHorizon = 'immediate' | 'short_term' | 'medium_term' | 'long_term';
 
+// Individual Component Assessment types
+export type ComponentAssessmentScope = 'all' | 'selected';
+export type ComponentDetailLevel = 'minimal' | 'standard' | 'full';
+export type ComponentSortOption = 'risk' | 'condition' | 'cost' | 'name';
+export type ComponentConditionFilter = 'good' | 'fair' | 'poor' | 'critical' | 'not_assessed';
+export type ComponentRiskFilter = 'low' | 'medium' | 'high' | 'critical';
+
 export interface BuildingColumnConfig {
   name: boolean;
   age: boolean;
@@ -47,6 +54,24 @@ export interface GeographicSectionConfig {
   groupBy: GeographicGroupingOption;
 }
 
+export interface ComponentAssessmentFilters {
+  facilities?: number[];
+  categories?: string[];
+  conditions?: ComponentConditionFilter[];
+  riskLevels?: ComponentRiskFilter[];
+  onlyWithDeficiencies?: boolean;
+}
+
+export interface ComponentAssessmentSectionConfig {
+  enabled: boolean;
+  scope: ComponentAssessmentScope;
+  selectedAssetIds?: number[];
+  filters: ComponentAssessmentFilters;
+  detailLevel: ComponentDetailLevel;
+  sortBy: ComponentSortOption;
+  maxAssets: number;
+}
+
 export interface ReportSectionToggles {
   includeExecutiveSummary: boolean;
   includePortfolioMetrics: boolean;
@@ -55,6 +80,7 @@ export interface ReportSectionToggles {
   includeCapitalForecast: boolean;
   includePriorityRecommendations: boolean;
   includeGeographicAnalysis: boolean;
+  includeComponentAssessments: boolean;
   includeAssumptions: boolean;
   includeGlossary: boolean;
   includeMethodology: boolean;
@@ -77,6 +103,43 @@ export interface ReportConfiguration extends ReportSectionToggles, ReportMetadat
   uniformatSection: UniformatSectionConfig;
   prioritySection: PrioritySectionConfig;
   geographicSection: GeographicSectionConfig;
+  componentAssessmentSection: ComponentAssessmentSectionConfig;
+}
+
+export interface ComponentAssessmentData {
+  assetId: number;
+  assetName: string;
+  assetUniqueId: string;
+  location: string;
+  systemCategory: string;
+  overallCondition: string;
+  riskRating: string;
+  assessmentDate: string;
+  assessorName: string;
+  components: ComponentData[];
+  photos: PhotoData[];
+  hasDeficiencies: boolean;
+}
+
+export interface ComponentData {
+  componentCode: string;
+  componentName: string;
+  condition: string;
+  conditionPercentage: number | null;
+  riskLevel: string;
+  predictedFailureYear: number | null;
+  remainingLife: number | null;
+  recommendedAction: string;
+  estimatedCost: number | null;
+  notes: string;
+  aiInsights: string;
+}
+
+export interface PhotoData {
+  id: number;
+  url: string;
+  caption: string;
+  takenAt: string;
 }
 
 export interface DataSnapshot {
@@ -86,6 +149,7 @@ export interface DataSnapshot {
   buildingData: any[];
   uniformatData: any[];
   capitalForecastData: any[];
+  componentAssessmentData?: ComponentAssessmentData[];
 }
 
 export interface ReportPreset {
@@ -129,6 +193,22 @@ export const DEFAULT_PRIORITY_HORIZONS: Record<PriorityHorizon, PriorityHorizonD
     description: 'Strategic planning and lifecycle replacements',
     timeframe: '6-10 years',
   },
+};
+
+export const DEFAULT_COMPONENT_ASSESSMENT_CONFIG: ComponentAssessmentSectionConfig = {
+  enabled: false,
+  scope: 'all',
+  selectedAssetIds: [],
+  filters: {
+    facilities: [],
+    categories: [],
+    conditions: [],
+    riskLevels: [],
+    onlyWithDeficiencies: false,
+  },
+  detailLevel: 'standard',
+  sortBy: 'risk',
+  maxAssets: 25,
 };
 
 // Validation error types

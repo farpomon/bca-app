@@ -41,6 +41,7 @@ import {
   Layers,
   MapPin,
   BookOpen,
+  ClipboardList,
 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -50,8 +51,9 @@ import { createDataSnapshot, hasDataChanged, saveSnapshotToSession, loadSnapshot
 import { ValidationAlerts, PresetAppliedBanner } from "@/components/report/ValidationAlerts";
 import { SnapshotStatus, SnapshotInfoCard } from "@/components/report/SnapshotStatus";
 import { BuildingSectionConfigPanel, UniformatSectionConfigPanel, GeographicSectionConfigPanel } from "@/components/report/SectionConfigPanel";
-import type { ReportConfiguration, DataSnapshot, BuildingSectionConfig, UniformatSectionConfig, GeographicSectionConfig, PrioritySectionConfig } from "@shared/reportTypes";
-import { DEFAULT_BUILDING_COLUMNS, DEFAULT_PRIORITY_HORIZONS } from "@shared/reportTypes";
+import { ComponentAssessmentConfigPanel } from "@/components/report/ComponentAssessmentConfigPanel";
+import type { ReportConfiguration, DataSnapshot, BuildingSectionConfig, UniformatSectionConfig, GeographicSectionConfig, PrioritySectionConfig, ComponentAssessmentSectionConfig } from "@shared/reportTypes";
+import { DEFAULT_BUILDING_COLUMNS, DEFAULT_PRIORITY_HORIZONS, DEFAULT_COMPONENT_ASSESSMENT_CONFIG } from "@shared/reportTypes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -110,6 +112,7 @@ const SECTION_CATEGORIES = {
     sections: [
       { key: "includeBuildingBreakdown", label: "Building-by-Building", description: "Detailed breakdown per building" },
       { key: "includeCategoryAnalysis", label: "UNIFORMAT Analysis", description: "Category-level cost analysis" },
+      { key: "includeComponentAssessments", label: "Individual Component Assessments", description: "Component-level condition, risk, lifecycle, and recommendations" },
     ]
   },
   capital: {
@@ -172,6 +175,7 @@ export default function PortfolioReport() {
     includeCapitalForecast: true,
     includePriorityRecommendations: true,
     includeGeographicAnalysis: false,
+    includeComponentAssessments: false,
     includeAssumptions: false,
     includeGlossary: false,
     includeMethodology: false,
@@ -200,6 +204,7 @@ export default function PortfolioReport() {
     geographicSection: {
       groupBy: 'city',
     },
+    componentAssessmentSection: DEFAULT_COMPONENT_ASSESSMENT_CONFIG,
   });
   
   // Backward compatibility - map config to options for existing code
@@ -664,6 +669,16 @@ export default function PortfolioReport() {
                   <GeographicSectionConfigPanel
                     config={config.geographicSection}
                     onChange={(geographicSection) => setConfig({ ...config, geographicSection })}
+                  />
+                )}
+                
+                {config.includeComponentAssessments && projectId && (
+                  <ComponentAssessmentConfigPanel
+                    projectId={projectId}
+                    config={config.componentAssessmentSection}
+                    onChange={(componentAssessmentSection) => {
+                      setConfig({ ...config, componentAssessmentSection: { ...componentAssessmentSection, enabled: true } });
+                    }}
                   />
                 )}
               </div>

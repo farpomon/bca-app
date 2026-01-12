@@ -4750,3 +4750,61 @@ Deployment is allowed only when:
 - [ ] "Data as of" snapshot is consistent across UI and PDF
 - [ ] Users can apply presets + fine-tune section settings
 - [ ] Missing data never results in blank/broken pages; triggers warnings and section-level fallbacks
+
+
+## 🔥 CURRENT: Individual Component Assessment Report Section
+
+### Backend - Data Queries & Snapshots
+- [x] Create getComponentAssessmentsForReport query with asset filters
+- [x] Add support for scope selection (All Assets / Selected Assets)
+- [x] Implement asset filtering (facility, category, condition, risk)
+- [x] Add sorting options (highest risk, worst condition, highest cost)
+- [x] Implement page limit with top N assets selection
+- [x] Create report snapshot logic for component assessment data
+- [x] Add predicted failure year calculation
+- [x] Add remaining life calculation for components
+
+### Frontend - Report Configuration UI
+- [x] Add "Individual Component Assessments" section to report builder
+- [x] Create section configuration panel with scope selector
+- [x] Add multi-select asset picker for "Selected Assets" mode
+- [x] Implement asset filters UI (facility, category, condition, risk)
+- [x] Add "Only include assets with deficiencies" toggle
+- [x] Create detail level selector (Minimal/Standard/Full)
+- [x] Add page control with maximum assets input
+- [x] Implement sorting dropdown (risk/condition/cost)
+- [x] Show estimated pages warning for large reports
+- [x] Add filter preview showing selected criteria
+
+### PDF Generation - Component Assessment Pages
+- [x] Create asset header block template (name, location, system, ratings)
+- [x] Build component table with all required columns
+- [x] Implement text wrapping for notes/insights (no single long rows)
+- [x] Add photo embedding with 4 photo limit per asset
+- [x] Create mini table of contents for >5 assets
+- [x] Implement header row repetition on page breaks
+- [x] Add "Continued..." labels for multi-page assets
+- [x] Prevent component row splitting across pages
+- [x] Handle missing data gracefully ("Not available" messages)
+- [x] Add "No component assessment data" message for empty assets
+
+### PDF Formatting & Layout
+- [x] Add dedicated "Component Assessments" section header
+- [x] Ensure tables maintain readability with proper spacing
+- [x] Implement proper pagination for large datasets
+- [x] Add "Data as of [date]" timestamp to match report snapshot
+- [x] Remove UI overlays/toasts from PDF output
+- [ ] Test PDF generation with various asset counts (5, 25, 50+)
+- [ ] Verify page breaks don't split component rows
+
+### Testing & Validation
+- [ ] Test with "All Assets" scope and various filters
+- [ ] Test with "Selected Assets" scope (1, 5, 10 assets)
+- [ ] Test detail levels (Minimal, Standard, Full)
+- [ ] Test sorting options (risk, condition, cost)
+- [ ] Test page limits (10, 25, 50 assets)
+- [ ] Verify data integrity matches snapshot
+- [ ] Test with assets missing component data
+- [ ] Test with assets having no photos
+- [ ] Generate sample reports for review
+- [ ] Write vitest tests for report data queries
