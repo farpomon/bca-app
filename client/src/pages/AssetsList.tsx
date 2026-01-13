@@ -2,8 +2,9 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
-import { Building2, Plus, Edit, Trash2, Loader2, ClipboardCheck, Sparkles, Search, BarChart3 } from "lucide-react";
+import { Building2, Plus, Edit, Trash2, Loader2, ClipboardCheck, Sparkles, Search, BarChart3, FileText } from "lucide-react";
 import { useParams, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo, useCallback } from "react";
@@ -46,7 +47,37 @@ export default function AssetsList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | undefined>(undefined);
   const [aiImportDialogOpen, setAiImportDialogOpen] = useState(false);
+  const [selectedAssets, setSelectedAssets] = useState<Set<number>>(new Set());
   
+  // Selection handlers
+  const toggleAssetSelection = (assetId: number) => {
+    setSelectedAssets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(assetId)) {
+        newSet.delete(assetId);
+      } else {
+        newSet.add(assetId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedAssets.size === filteredAssets.length) {
+      setSelectedAssets(new Set());
+    } else {
+      setSelectedAssets(new Set(filteredAssets.map(a => a.id)));
+    }
+  };
+
+  const generateReportForSelected = () => {
+    if (selectedAssets.size === 0) {
+      toast.error("Please select at least one asset");
+      return;
+    }
+    toast.info("Report generation for selected assets coming soon");
+  };
+
   // Filter state with URL persistence
   const { filters, setFilter, clearFilters } = useFilterPersistence({
     search: "",
@@ -160,15 +191,43 @@ export default function AssetsList() {
           </div>
         </div>
         
-        {/* Search Bar */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, type, address, or unique ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        {/* Search Bar and Selection Controls */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, type, address, or unique ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          {filteredAssets && filteredAssets.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleSelectAll}
+              >
+                {selectedAssets.size === filteredAssets.length ? "Deselect All" : "Select All"}
+              </Button>
+              {selectedAssets.size > 0 && (
+                <>
+                  <Badge variant="secondary">
+                    {selectedAssets.size} selected
+                  </Badge>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={generateReportForSelected}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Generate Report
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </div>
         </div>
 
@@ -183,10 +242,19 @@ export default function AssetsList() {
             {filteredAssets.map((asset) => (
               <Card 
                 key={asset.id} 
-                className="project-card-enhanced cursor-pointer group"
+                className="project-card-enhanced cursor-pointer group relative"
                 onClick={() => setLocation(`/projects/${projectId}/assets/${asset.id}`)}
               >
-                <CardHeader>
+                <div className="absolute top-4 left-4 z-10">
+                  <Checkbox
+                    checked={selectedAssets.has(asset.id)}
+                    onCheckedChange={(checked) => {
+                      toggleAssetSelection(asset.id);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <CardHeader className="pl-12">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-5 w-5 text-muted-foreground" />

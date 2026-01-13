@@ -1784,6 +1784,10 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         estimatedRepairCost: z.number().optional(),
         replacementValue: z.number().optional(),
         actionYear: z.number().optional(),
+        actionDescription: z.string().optional(),
+        repairCost: z.number().optional(),
+        renewCost: z.number().optional(),
+        estimatedServiceLife: z.number().optional(),
         hasValidationOverrides: z.number().optional(),
         validationWarnings: z.string().optional(),
       }))

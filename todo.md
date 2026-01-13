@@ -4983,3 +4983,24 @@ Deployment is allowed only when:
 - [x] Update ComponentAssessmentConfigPanel UI with priority filter
 - [x] Update ComponentAssessmentConfigPanel UI with action type filter
 - [x] Update ComponentAssessmentConfigPanel UI with year range filter
+
+## Asset Selection Feature Enhancement
+
+- [x] Add individual asset selection checkbox to asset list items
+- [x] Add "Select All" checkbox to asset list header
+- [x] Implement multi-select functionality with shift-click support
+- [x] Add selected assets counter badge (e.g., "3 assets selected")
+- [x] Create bulk actions toolbar for selected assets
+- [x] Add "Generate Report for Selected" button
+- [x] Enhance asset component fields to match BCA template structure:
+  - [x] Add actionDescription field to asset components
+  - [x] Add actionYear field to asset components  
+  - [x] Add repairCost field (separate from replacementCost)
+  - [x] Add renewalCost field (alias for replacementCost)
+  - [x] Ensure all fields are captured: description, condition, estimatedServiceLife, reviewYear, lastTimeAction, actionDescription, priority, repairCost, renewalCost
+- [x] Update asset detail view to display all BCA template fields
+- [x] Update asset edit form to include all BCA template fields
+- [ ] Create report generation for selected assets matching BCA format
+- [ ] Test individual asset selection
+- [ ] Test multiple asset selection
+- [ ] Test bulk report generation for selected assets

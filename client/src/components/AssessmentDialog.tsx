@@ -331,6 +331,9 @@ export function AssessmentDialog({
       setEstimatedRepairCost(existingAssessment.estimatedRepairCost?.toString() || "");
       setReplacementValue(existingAssessment.replacementValue?.toString() || "");
       setActionYear(existingAssessment.actionYear?.toString() || "");
+      setActionDescription((existingAssessment as any).actionDescription || "");
+      setRepairCost((existingAssessment as any).repairCost?.toString() || "");
+      setRenewCost((existingAssessment as any).renewCost?.toString() || "");
       setSectionId(null); // TODO: Load from existingAssessment if available
     } else {
       // Reset to defaults for new assessment
@@ -359,6 +362,9 @@ export function AssessmentDialog({
   const [estimatedRepairCost, setEstimatedRepairCost] = useState("");
   const [replacementValue, setReplacementValue] = useState("");
   const [actionYear, setActionYear] = useState("");
+  const [actionDescription, setActionDescription] = useState("");
+  const [repairCost, setRepairCost] = useState("");
+  const [renewCost, setRenewCost] = useState("");
   const [sectionId, setSectionId] = useState<number | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
@@ -444,6 +450,9 @@ export function AssessmentDialog({
         estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
         replacementValue: replacementValue ? parseFloat(replacementValue) : null,
         actionYear: actionYear ? parseInt(actionYear) : null,
+        actionDescription: actionDescription || null,
+        repairCost: repairCost ? parseFloat(repairCost) : null,
+        renewCost: renewCost ? parseFloat(renewCost) : null,
         sectionId: sectionId || null,
       };
 
@@ -615,6 +624,9 @@ export function AssessmentDialog({
           estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
           replacementValue: replacementValue ? parseFloat(replacementValue) : null,
           actionYear: actionYear ? parseInt(actionYear) : null,
+          actionDescription: actionDescription || null,
+          repairCost: repairCost ? parseFloat(repairCost) : null,
+          renewCost: renewCost ? parseFloat(renewCost) : null,
         };
 
         await saveAssessment(assessmentData);
@@ -1175,6 +1187,63 @@ export function AssessmentDialog({
               value={actionYear}
               onChange={(e) => setActionYear(e.target.value)}
             />
+          </div>
+
+          {/* Action Description */}
+          <div className="space-y-2">
+            <Label htmlFor="actionDescription">Action Description</Label>
+            <Textarea
+              id="actionDescription"
+              value={actionDescription}
+              onChange={(e) => setActionDescription(e.target.value)}
+              placeholder="Describe the recommended action..."
+              rows={3}
+            />
+          </div>
+
+          {/* Repair and Renewal Costs */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="repairCost">Repair Cost ($)</Label>
+              <Input
+                id="repairCost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={repairCost}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    setRepairCost(value);
+                  }
+                }}
+                className={parseFloat(repairCost) < 0 ? 'border-destructive' : ''}
+              />
+              {parseFloat(repairCost) < 0 && (
+                <p className="text-sm text-destructive">Cost cannot be negative</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="renewCost">Renewal/Replacement Cost ($)</Label>
+              <Input
+                id="renewCost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={renewCost}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    setRenewCost(value);
+                  }
+                }}
+                className={parseFloat(renewCost) < 0 ? 'border-destructive' : ''}
+              />
+              {parseFloat(renewCost) < 0 && (
+                <p className="text-sm text-destructive">Cost cannot be negative</p>
+              )}
+            </div>
           </div>
 
           {/* Building Section */}
