@@ -5004,3 +5004,24 @@ Deployment is allowed only when:
 - [ ] Test individual asset selection
 - [ ] Test multiple asset selection
 - [ ] Test bulk report generation for selected assets
+
+## 🔥 PDF Report Generation for BCA Assessments
+
+- [ ] Install PDF generation dependencies (pdfkit)
+- [ ] Create backend PDF report generator service
+- [ ] Design BCA-formatted report template with all assessment fields
+- [ ] Implement reports.generate tRPC procedure
+- [ ] Connect frontend "Generate Report" button to backend endpoint
+- [ ] Add loading state and error handling for report generation
+- [ ] Test report generation with sample assessment data
+- [ ] Verify PDF formatting and data accuracy
+
+## 🔥 Voice Capture for Action Description Field
+
+- [x] Create backend tRPC endpoint for voice transcription using ElevenLabs
+- [x] Add audio recording functionality to Action Description field
+- [x] Create VoiceInputButton component with recording UI
+- [x] Integrate voice transcription with Action Description textarea
+- [x] Add loading state and error handling for voice capture
+- [ ] Test voice capture with real audio input
+- [ ] Verify transcription accuracy and field population

@@ -15,6 +15,7 @@ import { DocumentUploadZone } from "@/components/DocumentUploadZone";
 import { DocumentList } from "@/components/DocumentList";
 import { PhotoList } from "@/components/PhotoList";
 import { BuildingSectionSelector } from "@/components/BuildingSectionSelector";
+import { VoiceInputButton } from "@/components/VoiceInputButton";
 import { Badge } from "@/components/ui/badge";
 import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
 import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
@@ -1191,7 +1192,19 @@ export function AssessmentDialog({
 
           {/* Action Description */}
           <div className="space-y-2">
-            <Label htmlFor="actionDescription">Action Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="actionDescription">Action Description</Label>
+              <VoiceInputButton
+                onTranscriptionComplete={(text) => {
+                  // Append transcribed text to existing content
+                  setActionDescription((prev) => {
+                    const separator = prev.trim() ? " " : "";
+                    return prev + separator + text;
+                  });
+                }}
+                disabled={isSaving}
+              />
+            </div>
             <Textarea
               id="actionDescription"
               value={actionDescription}

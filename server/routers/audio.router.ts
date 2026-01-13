@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { textToSpeech, AUDIO_MESSAGES } from "../elevenlabs";
+import { transcribeAudio } from "../voiceTranscription";
 
 /**
  * Strip HTML tags from text before sending to TTS
@@ -139,6 +140,38 @@ export const audioRouter = router({
           error: error instanceof Error ? error.message : "Unknown error",
           originalText: cleanText,
           enhancedText: cleanText, // Fallback to cleaned version
+        };
+      }
+    }),
+
+  /**
+   * Transcribe audio to text using ElevenLabs Speech-to-Text
+   */
+  transcribeAudio: publicProcedure
+    .input(
+      z.object({
+        audioData: z.string(), // Base64 encoded audio
+        language: z.string().optional(), // Optional language code (e.g., 'en', 'fr')
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        // Decode base64 audio data
+        const audioBuffer = Buffer.from(input.audioData, "base64");
+
+        // Transcribe using ElevenLabs
+        const transcribedText = await transcribeAudio(audioBuffer, input.language);
+
+        return {
+          success: true,
+          text: transcribedText,
+        };
+      } catch (error) {
+        console.error("[Voice Transcription] Error:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+          text: "",
         };
       }
     }),
