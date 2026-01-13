@@ -5025,3 +5025,5 @@ Deployment is allowed only when:
 - [x] Add loading state and error handling for voice capture
 - [ ] Test voice capture with real audio input
 - [ ] Verify transcription accuracy and field population
+
+- [x] Fix ReferenceError "isSaving is not defined" on asset detail page

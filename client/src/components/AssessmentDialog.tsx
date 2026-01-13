@@ -389,7 +389,7 @@ export function AssessmentDialog({
   const [dragOverPhotoIndex, setDragOverPhotoIndex] = useState<number | null>(null);
 
   // Offline-capable hooks
-  const { saveAssessment, isSaving: isSavingOffline, isOnline } = useOfflineAssessment({
+  const { saveAssessment, isSaving, isOnline } = useOfflineAssessment({
     projectId,
     onSuccess: (assessmentId) => {
       console.log("Assessment saved with ID:", assessmentId);
