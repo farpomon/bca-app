@@ -1,13 +1,9 @@
-import { jsPDF } from "jspdf";
+import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Asset, Assessment, Deficiency, Photo } from "../drizzle/schema";
+import { validateAssetReport, calculateFCI, getFCIRating, fciToPercentage, type AssetReportData } from "./reportDataValidation";
 
-interface AssetReportData {
-  asset: Asset;
-  projectName: string;
-  assessments: (Assessment & { photos: Photo[] })[];
-  deficiencies: Deficiency[];
-}
+// AssetReportData type is now imported from reportDataValidation
 
 // B³NMA brand colors
 const B3NMA_TEAL: [number, number, number] = [64, 182, 176]; // Teal from logo
@@ -59,7 +55,20 @@ function calculatePaybackPeriod(initialCost: number, annualSavings: number): num
   return initialCost / annualSavings;
 }
 
-export async function generateAssetReport(data: AssetReportData): Promise<Buffer> {
+export async function generateAssetReport(inputData: AssetReportData): Promise<Buffer> {
+  // Step 1: Validate and reconcile data before generating PDF
+  const validationResult = validateAssetReport(inputData);
+  
+  if (!validationResult.canExport) {
+    const errorMessages = validationResult.issues
+      .filter(i => i.severity === 'error')
+      .map(i => i.message)
+      .join('; ');
+    throw new Error(`Report validation failed: ${errorMessages}`);
+  }
+  
+  // Use corrected data from validation
+  const data = validationResult.correctedData || inputData;
   const doc = new jsPDF();
   
   // Helper to add B³NMA header to each page
@@ -145,9 +154,10 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     ? totalReplacementValue 
     : (data.asset.grossFloorArea ? data.asset.grossFloorArea * 350 : totalDeferredMaintenance * 10);
 
-  // Calculate FCI as decimal ratio (0-1 scale)
-  const fci = estimatedCRV > 0 ? totalDeferredMaintenance / estimatedCRV : 0;
-  const fciRating = fci <= 0.05 ? "Good" : fci <= 0.10 ? "Fair" : fci <= 0.30 ? "Poor" : "Critical";
+  // Calculate FCI using validated functions
+  const fci = calculateFCI(totalDeferredMaintenance, estimatedCRV);
+  const fciRating = getFCIRating(fci);
+  const fciPercentage = fciToPercentage(fci);
 
   // Economic analysis calculations
   const discountRate = 0.05; // 5% industry standard
@@ -198,15 +208,19 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     });
   }
 
-  // Asset Overview Page
+  // ============================================
+  // ASSET OVERVIEW PAGE (NEW COMPREHENSIVE SUMMARY)
+  // ============================================
   doc.addPage();
   addB3NMAHeader();
   let yPos = 25;
   
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(...B3NMA_TEAL);
   doc.text("Asset Overview", 10, yPos);
-  yPos += 10;
+  doc.setTextColor(0, 0, 0);
+  yPos += 12;
 
   // Asset Details Table
   const assetDetails: string[][] = [
@@ -238,34 +252,67 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
 
-  // Summary Statistics with Repair and Replacement Costs
+  // Key Metrics Summary Box
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Assessment Summary", 10, yPos);
-  yPos += 10;
+  doc.text("Key Financial Metrics", 10, yPos);
+  yPos += 8;
 
-  const summaryStats: string[][] = [
-    ["Total Assessments:", totalAssessments.toString()],
-    ["Total Deficiencies:", totalDeficiencies.toString()],
-    ["Critical Deficiencies:", criticalDeficiencies.toString()],
-    ["Total Repair Cost:", `$${totalDeferredMaintenance.toLocaleString()}`],
-    ["Total Replacement Value:", `$${(totalReplacementValue || estimatedCRV).toLocaleString()}`],
-    ["Facility Condition Index (FCI):", `${fci.toFixed(2)}% (${fciRating})`],
+  const keyMetrics: string[][] = [
+    ["Current Replacement Value (CRV)", `$${(totalReplacementValue || estimatedCRV).toLocaleString()}`],
+    ["Total Deferred Maintenance", `$${totalDeferredMaintenance.toLocaleString()}`],
+    ["Facility Condition Index (FCI)", `${fciPercentage.toFixed(2)}% - ${fciRating}`],
+    ["Total Deficiencies", totalDeficiencies.toString()],
+    ["Critical Deficiencies", criticalDeficiencies.toString()],
   ];
 
   autoTable(doc, {
     startY: yPos,
-    body: summaryStats,
+    body: keyMetrics,
     theme: "plain",
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+    styles: { fontSize: 11, cellPadding: 4 },
     columnStyles: {
-      0: { cellWidth: 80, fontStyle: "bold" },
-      1: { cellWidth: 80 },
+      0: { cellWidth: 90, fontStyle: "bold", fillColor: HEADER_GRAY },
+      1: { cellWidth: 90 },
     },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  yPos = (doc as any).lastAutoTable.finalY + 12;
+
+  // DM by Priority Horizon
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Deferred Maintenance by Priority Horizon", 10, yPos);
+  yPos += 8;
+
+  const priorityLabelsShort: Record<string, string> = {
+    immediate: "0-1 Year",
+    short_term: "1-2 Years",
+    medium_term: "2-5 Years",
+    long_term: "5+ Years",
+  };
+
+  const dmByHorizon = Object.entries(costByPriority).map(([priority, cost]) => [
+    priorityLabelsShort[priority],
+    `$${cost.toLocaleString()}`,
+    totalDeferredMaintenance > 0 ? `${((cost / totalDeferredMaintenance) * 100).toFixed(1)}%` : "0%",
+  ]);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Priority Horizon", "Cost", "% of Total DM"]],
+    body: dmByHorizon,
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: B3NMA_NAVY, textColor: [255, 255, 255], fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: 60 },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 60 },
+    },
+  });
+
+  yPos = (doc as any).lastAutoTable.finalY + 12;
 
   // Condition Distribution
   if (data.assessments.length > 0) {
@@ -322,15 +369,27 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
       head: [["Component", "Condition", "Repair Cost", "Replacement Value", "Observations"]],
       body: assessmentRows,
       theme: "striped",
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
+      styles: { 
+        fontSize: 8, 
+        cellPadding: 2,
+        overflow: 'linebreak', // Wrap long text
+      },
+      headStyles: { 
+        fillColor: HEADER_GRAY, 
+        textColor: [0, 0, 0], 
+        fontStyle: "bold" 
+      },
       columnStyles: {
         0: { cellWidth: 35 },
         1: { cellWidth: 22 },
         2: { cellWidth: 28 },
         3: { cellWidth: 28 },
-        4: { cellWidth: 72 },
+        4: { cellWidth: 72, overflow: 'linebreak' }, // Wrap observations
       },
+      // Repeat headers on each page
+      showHead: 'everyPage',
+      // Prevent row splitting across pages
+      rowPageBreak: 'avoid',
       didParseCell: (data) => {
         if (data.section === 'body' && data.column.index === 1) {
           const condition = data.cell.text[0]?.toLowerCase().replace(' ', '_') || 'not_assessed';
@@ -342,16 +401,20 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     });
   }
 
-  // Deficiencies Details
+  // ============================================
+  // DEFICIENCIES SECTION (ENHANCED WITH DETAILED INFORMATION)
+  // ============================================
   if (data.deficiencies.length > 0) {
     doc.addPage();
     addB3NMAHeader();
     yPos = 25;
 
-    doc.setFontSize(16);
+    doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.text("Deficiencies", 10, yPos);
-    yPos += 10;
+    doc.setTextColor(...B3NMA_TEAL);
+    doc.text("Deficiencies & Recommended Actions", 10, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += 12;
 
     // Group by priority
     const deficienciesByPriority: Record<string, Deficiency[]> = {
@@ -389,26 +452,71 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
       doc.text(priorityLabels[priority], 10, yPos);
       yPos += 7;
 
-      const defRows = deficiencies.map(d => [
-        d.title || "Untitled",
-        d.description || "N/A",
-        d.severity || "N/A",
-        d.estimatedCost ? `$${d.estimatedCost.toLocaleString()}` : "N/A",
-      ]);
+      // Enhanced deficiency rows with system/location, consequence, recommended action, urgency, cost
+      const defRows = deficiencies.map(d => {
+        const system = d.componentCode || "N/A";
+        const location = d.location || "N/A";
+        const systemLocation = location !== "N/A" ? `${system} - ${location}` : system;
+        
+        // Consequence of deferral based on severity
+        let consequence = "";
+        switch (d.severity) {
+          case 'critical':
+            consequence = "Immediate safety risk or operational failure";
+            break;
+          case 'high':
+            consequence = "Accelerated deterioration, increased repair costs";
+            break;
+          case 'medium':
+            consequence = "Progressive degradation, potential service disruption";
+            break;
+          case 'low':
+            consequence = "Minor impact, cosmetic or functional decline";
+            break;
+          default:
+            consequence = "Impact assessment required";
+        }
+        
+        const recommendedAction = d.recommendedAction || "Assessment and repair planning required";
+        const cost = d.estimatedCost ? `$${d.estimatedCost.toLocaleString()}` : "TBD";
+        
+        return [
+          d.title || "Untitled",
+          systemLocation,
+          consequence,
+          recommendedAction,
+          cost,
+        ];
+      });
 
       autoTable(doc, {
         startY: yPos,
-        head: [["Title", "Description", "Severity", "Cost"]],
+        head: [["Issue", "System/Location", "Consequence of Deferral", "Recommended Action", "Cost"]],
         body: defRows,
         theme: "striped",
-        styles: { fontSize: 9, cellPadding: 3 },
-        headStyles: { fillColor: HEADER_GRAY, textColor: [0, 0, 0], fontStyle: "bold" },
-        columnStyles: {
-          0: { cellWidth: 45 },
-          1: { cellWidth: 80 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 30 },
+        styles: { fontSize: 8, cellPadding: 2.5, lineColor: [200, 200, 200], lineWidth: 0.1 },
+        headStyles: { 
+          fillColor: B3NMA_NAVY, 
+          textColor: [255, 255, 255], 
+          fontStyle: "bold",
+          fontSize: 9,
         },
+        columnStyles: {
+          0: { cellWidth: 35, fontStyle: "bold" },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 45 },
+          3: { cellWidth: 50 },
+          4: { cellWidth: 25, halign: "right" },
+        },
+        // Enable text wrapping for long content
+        bodyStyles: {
+          overflow: 'linebreak',
+          cellPadding: 2.5,
+        },
+        // Repeat headers on each page
+        showHead: 'everyPage',
+        // Prevent row splitting across pages
+        rowPageBreak: 'avoid',
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -685,7 +793,7 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
 
-  // Methodology Note
+  // Methodology Note with ROI/IRR explanation
   doc.setFontSize(10);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(100, 100, 100);
@@ -694,17 +802,37 @@ export async function generateAssetReport(data: AssetReportData): Promise<Buffer
     "2% annual operational savings from repairs, and 30% avoided replacement costs. Actual returns may vary",
     "based on project specifics, market conditions, and implementation timing.",
   ];
+  
+  // Add explanation for negative ROI/IRR
+  if (roi < 0 || irr < 0) {
+    methodologyNote.push("");
+    methodologyNote.push("Important: Negative ROI/IRR values indicate this is a lifecycle maintenance and risk mitigation");
+    methodologyNote.push("investment rather than a revenue-generating project. The primary value is in preventing asset");
+    methodologyNote.push("deterioration, avoiding costly emergency repairs, and maintaining operational functionality.");
+  }
+  
   methodologyNote.forEach((line, i) => {
     doc.text(line, 10, yPos + (i * 5));
   });
   doc.setTextColor(0, 0, 0);
 
-  // Add page numbers to all pages
+  // Add page numbers and data snapshot date to all pages
   const totalPages = doc.getNumberOfPages();
+  const snapshotDate = new Date().toLocaleDateString("en-US", { 
+    year: "numeric", 
+    month: "long", 
+    day: "numeric" 
+  });
+  
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     if (i > 1) {
       addFooter(i, totalPages);
+      // Add "Data as of" date to footer
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(`Data as of: ${snapshotDate}`, 105, 295, { align: "center" });
+      doc.setTextColor(0, 0, 0);
     }
   }
 

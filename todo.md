@@ -5027,3 +5027,35 @@ Deployment is allowed only when:
 - [ ] Verify transcription accuracy and field population
 
 - [x] Fix ReferenceError "isSaving is not defined" on asset detail page
+
+## 🔥 CURRENT PRIORITY: Portfolio/Asset Condition Assessment Report PDF Improvements
+
+### Data Validation & Consistency
+- [x] Implement pre-export data validation that recalculates Total DM, DM by horizon, and 5-year forecast
+- [x] Add reconciliation check: sum(DM by horizon) = Total DM (within rounding tolerance)
+- [x] Fix FCI rating logic to correctly apply thresholds (0-5% Good, 5-10% Fair, 10-30% Poor, >30% Critical)
+- [x] Remove duplicate component rows from reports
+- [x] Block PDF export if unresolved template variables exist (e.g., ${assetLifeExtension})
+
+### Report Layout Improvements
+- [x] Add one-page "Asset Overview" section with CRV, Total DM, FCI, deficiency counts, and DM by horizon chart
+- [ ] Replace long "Assessment Details" table with UNIFORMAT Level 1 summary (A-G systems) - Portfolio report only
+- [ ] Add optional detail drilldowns for Level 2/3 and component-level data - Portfolio report only
+- [x] Make tables print-safe: repeat headers on each page, prevent row splitting, wrap long text
+
+### Deficiency Section Enhancement
+- [x] Include system/location, consequence of deferral, recommended action for each deficiency
+- [x] Add urgency band (0-1, 1-2, 2-5, 5+ years) and cost to deficiencies
+- [ ] Add confidence level (0-100%) to deficiency data - Database schema update required
+- [x] Remove repetitive boilerplate and use concise, specific language
+
+### Financial Analysis Cleanup
+- [x] Add plain-language note for negative ROI/IRR explaining lifecycle/risk mitigation
+- [x] Ensure Cost by Priority reconciles to Total DM or label as "Near-term only"
+- [x] Verify all financial totals align across report sections
+
+### Export Quality
+- [x] Ensure PDF export excludes UI overlays (backend PDF generation, not browser print)
+- [x] Add page numbers to all PDF pages
+- [x] Add consistent footer with report metadata
+- [x] Add "Data as of" snapshot date to report
