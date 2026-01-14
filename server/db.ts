@@ -612,7 +612,7 @@ export async function getAssetAssessments(assetId: number) {
       END as condition,
       a.conditionNotes as observations,
       CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
-      0 as replacementValue,
+      a.replacementValue,
       a.remainingLifeYears as remainingUsefulLife,
       15 as expectedUsefulLife,
       CASE 
@@ -673,15 +673,25 @@ export async function upsertAssessment(data: InsertAssessment) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  console.log('[upsertAssessment] Input data:', {
+    componentCode: data.componentCode,
+    replacementValue: data.replacementValue,
+    replacementValueType: typeof data.replacementValue,
+    estimatedRepairCost: data.estimatedRepairCost
+  });
+  
   const existing = data.componentCode ? await getAssessmentByComponent(data.projectId, data.componentCode) : null;
   
   if (existing) {
+    const updateData = { ...data, updatedAt: new Date().toISOString() };
+    console.log('[upsertAssessment] Updating existing assessment:', existing.id, 'with replacementValue:', updateData.replacementValue);
     await db
       .update(assessments)
-      .set({ ...data, updatedAt: new Date().toISOString() })
+      .set(updateData)
       .where(eq(assessments.id, existing.id));
     return existing.id;
   } else {
+    console.log('[upsertAssessment] Inserting new assessment with replacementValue:', data.replacementValue);
     const result = await db.insert(assessments).values(data);
     return result[0].insertId;
   }
@@ -1649,7 +1659,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.conditionNotes as observations,
         '' as recommendations,
         CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
-        0 as replacementValue,
+        a.replacementValue,
         a.remainingLifeYears as remainingUsefulLife,
         15 as expectedUsefulLife,
         YEAR(CURDATE()) as reviewYear,
@@ -1691,7 +1701,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.conditionNotes as observations,
         '' as recommendations,
         CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
-        0 as replacementValue,
+        a.replacementValue,
         a.remainingLifeYears as remainingUsefulLife,
         15 as expectedUsefulLife,
         YEAR(CURDATE()) as reviewYear,

@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, componentCode, componentName, estimatedRepairCost, replacementValue, repairCost, renewCost, updatedAt FROM assessments WHERE id = 30004;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, componentName, estimatedRepairCost, replacementValue, repairCost, renewCost, updatedAt FROM assessments WHERE id = 30004;",
+  "rows": [
+    {
+      "id": "30004",
+      "componentCode": "D40",
+      "componentName": "Fire Protection",
+      "estimatedRepairCost": "1002174.00",
+      "replacementValue": "120000000.00",
+      "repairCost": "NULL",
+      "renewCost": "NULL",
+      "updatedAt": "2026-01-14 21:26:11"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcomponentName\testimatedRepairCost\treplacementValue\trepairCost\trenewCost\tupdatedAt\n30004\tD40\tFire Protection\t1002174.00\t120000000.00\tNULL\tNULL\t2026-01-14 21:26:11\n",
+  "stderr": "",
+  "execution_time_ms": 395
+}

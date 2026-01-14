@@ -5081,3 +5081,11 @@ Deployment is allowed only when:
 - [x] Apply CurrencyInput to Asset Dialog - currentReplacementValue field
 - [x] Apply CurrencyInput to MaintenanceEntryDialog - estimatedCost and actualCost fields
 - [x] Verified no other forms need currency input updates
+
+## 🔥 CRITICAL: Replacement Value Not Persisting
+
+- [x] Investigate why replacement value shows $0 after save - found hardcoded 0 in SQL queries
+- [x] Check if value is being sent to backend correctly - value saves correctly to database
+- [x] Verify database column is receiving the value - confirmed $120M saved
+- [x] Check if value is being retrieved correctly on load - found 3 queries returning hardcoded 0
+- [x] Fix the save/load logic - replaced hardcoded 0 with a.replacementValue in all queries
