@@ -6,6 +6,8 @@
 - [x] Verify jsPDF import statement is correct
 - [x] Fix jsPDF import in portfolioPdfGenerator.ts
 - [ ] Test PDF generation after fix
+- [x] Deep investigation of jsPDF module loading in Node.js
+- [x] Find correct import syntax for jsPDF 3.x with tsx/esbuild - use named export { jsPDF }
 
 ## Priority Scoring UI Improvements
 - [x] Remove "Calculate Composite Score" button - make composite score auto-calculate on score/weight changes
