@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -287,24 +288,22 @@ export function MaintenanceEntryDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="estimatedCost">Estimated Cost ($)</Label>
-              <Input
+              <CurrencyInput
                 id="estimatedCost"
-                type="number"
-                step="0.01"
                 value={formData.estimatedCost}
-                onChange={(e) => setFormData({ ...formData, estimatedCost: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, estimatedCost: value })}
+                placeholder="0.00"
               />
             </div>
 
             {formData.entryType === "executed" && (
               <div className="space-y-2">
                 <Label htmlFor="actualCost">Actual Cost ($)</Label>
-                <Input
+                <CurrencyInput
                   id="actualCost"
-                  type="number"
-                  step="0.01"
                   value={formData.actualCost}
-                  onChange={(e) => setFormData({ ...formData, actualCost: e.target.value })}
+                  onChange={(value) => setFormData({ ...formData, actualCost: value })}
+                  placeholder="0.00"
                 />
               </div>
             )}

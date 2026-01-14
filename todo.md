@@ -5075,3 +5075,9 @@ Deployment is allowed only when:
 - [x] Implement proper currency formatting for all $ amount fields (e.g., $10,021,740)
 - [x] Enable copy/paste functionality for all numerical input fields - built into CurrencyInput component
 - [x] Test assessment save/load with replacement value - ready for user testing
+
+## Currency Input Consistency
+
+- [x] Apply CurrencyInput to Asset Dialog - currentReplacementValue field
+- [x] Apply CurrencyInput to MaintenanceEntryDialog - estimatedCost and actualCost fields
+- [x] Verified no other forms need currency input updates

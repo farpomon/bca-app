@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -473,11 +474,12 @@ export function AssetDialog({ open, onOpenChange, projectId, asset, onSuccess }:
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="currentReplacementValue">Current Replacement Value</Label>
-            <Input
+            <Label htmlFor="currentReplacementValue">Current Replacement Value ($)</Label>
+            <CurrencyInput
               id="currentReplacementValue"
               value={currentReplacementValue}
-              onChange={(e) => setCurrentReplacementValue(e.target.value)}
+              onChange={(value) => setCurrentReplacementValue(value)}
+              placeholder="0.00"
             />
           </div>
 
