@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
@@ -1137,45 +1138,23 @@ export function AssessmentDialog({
           {/* Cost Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="repairCost">Estimated Repair Cost ($)</Label>
-              <Input
-                id="repairCost"
-                type="number"
-                min="0"
-                step="0.01"
+              <Label htmlFor="estimatedRepairCost">Estimated Repair Cost ($)</Label>
+              <CurrencyInput
+                id="estimatedRepairCost"
                 value={estimatedRepairCost}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    setEstimatedRepairCost(value);
-                  }
-                }}
-                className={parseFloat(estimatedRepairCost) < 0 ? 'border-destructive' : ''}
+                onChange={(value) => setEstimatedRepairCost(value)}
+                placeholder="0.00"
               />
-              {parseFloat(estimatedRepairCost) < 0 && (
-                <p className="text-sm text-destructive">Cost cannot be negative</p>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="replacementValue">Replacement Value ($)</Label>
-              <Input
+              <CurrencyInput
                 id="replacementValue"
-                type="number"
-                min="0"
-                step="0.01"
                 value={replacementValue}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    setReplacementValue(value);
-                  }
-                }}
-                className={parseFloat(replacementValue) < 0 ? 'border-destructive' : ''}
+                onChange={(value) => setReplacementValue(value)}
+                placeholder="0.00"
               />
-              {parseFloat(replacementValue) < 0 && (
-                <p className="text-sm text-destructive">Value cannot be negative</p>
-              )}
             </div>
           </div>
 
@@ -1218,44 +1197,22 @@ export function AssessmentDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="repairCost">Repair Cost ($)</Label>
-              <Input
+              <CurrencyInput
                 id="repairCost"
-                type="number"
-                min="0"
-                step="0.01"
                 value={repairCost}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    setRepairCost(value);
-                  }
-                }}
-                className={parseFloat(repairCost) < 0 ? 'border-destructive' : ''}
+                onChange={(value) => setRepairCost(value)}
+                placeholder="0.00"
               />
-              {parseFloat(repairCost) < 0 && (
-                <p className="text-sm text-destructive">Cost cannot be negative</p>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="renewCost">Renewal/Replacement Cost ($)</Label>
-              <Input
+              <CurrencyInput
                 id="renewCost"
-                type="number"
-                min="0"
-                step="0.01"
                 value={renewCost}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    setRenewCost(value);
-                  }
-                }}
-                className={parseFloat(renewCost) < 0 ? 'border-destructive' : ''}
+                onChange={(value) => setRenewCost(value)}
+                placeholder="0.00"
               />
-              {parseFloat(renewCost) < 0 && (
-                <p className="text-sm text-destructive">Cost cannot be negative</p>
-              )}
             </div>
           </div>
 

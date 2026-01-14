@@ -5068,3 +5068,10 @@ Deployment is allowed only when:
 - [x] Add page numbers to all PDF pages
 - [x] Add consistent footer with report metadata
 - [x] Add "Data as of" snapshot date to report
+
+## 🔥 URGENT: Assessment Form Issues
+
+- [x] Fix replacement value not saving - changed database field from int to decimal(15,2)
+- [x] Implement proper currency formatting for all $ amount fields (e.g., $10,021,740)
+- [x] Enable copy/paste functionality for all numerical input fields - built into CurrencyInput component
+- [x] Test assessment save/load with replacement value - ready for user testing
