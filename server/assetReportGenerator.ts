@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { default as jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Asset, Assessment, Deficiency, Photo } from "../drizzle/schema";
 import { validateAssetReport, calculateFCI, getFCIRating, fciToPercentage, type AssetReportData } from "./reportDataValidation";

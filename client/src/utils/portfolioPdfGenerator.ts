@@ -5,7 +5,7 @@
  * using jsPDF and jspdf-autotable
  */
 
-import jsPDF from 'jspdf';
+import { default as jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 // Types matching the portfolio report data structure

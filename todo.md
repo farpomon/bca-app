@@ -1,5 +1,12 @@
 # BCA App TODO
 
+## 🔥 URGENT: PDF Report Generation Error
+
+- [x] Fix "jsPDF3 is not a constructor" error in assetReportGenerator.ts
+- [x] Verify jsPDF import statement is correct
+- [x] Fix jsPDF import in portfolioPdfGenerator.ts
+- [ ] Test PDF generation after fix
+
 ## Priority Scoring UI Improvements
 - [x] Remove "Calculate Composite Score" button - make composite score auto-calculate on score/weight changes
 - [x] Remove "Setup Required" banner from priority scoring page
