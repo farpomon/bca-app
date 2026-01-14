@@ -64,74 +64,9 @@ import ExportButton from "@/components/ExportButton";
 import { Asset3DModelTab } from "@/components/Asset3DModelTab";
 import { AssetFinancialTab } from "@/components/AssetFinancialTab";
 import { FormattedMeasurement } from "@/components/FormattedMeasurement";
+import { ComponentSelectorDialog } from "@/components/ComponentSelectorDialog";
+import { AddCustomComponentDialog } from "@/components/AddCustomComponentDialog";
 
-// Component selector dialog for choosing UNIFORMAT II components
-function ComponentSelectorDialog({ 
-  open, 
-  onOpenChange, 
-  onSelectComponent 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  onSelectComponent: (code: string, name: string) => void;
-}) {
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const { data: components, isLoading } = trpc.buildingComponents.search.useQuery(
-    { query: searchTerm },
-    { enabled: open }
-  );
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Select Component to Assess</DialogTitle>
-          <DialogDescription>
-            Search for a UNIFORMAT II component to create a new assessment
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          <Input
-            placeholder="Search by code or name (e.g., C3020 or Furnishings)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
-          />
-          <div className="flex-1 overflow-y-auto border rounded-lg">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-            ) : components && components.length > 0 ? (
-              <div className="divide-y">
-                {components.map((component: any) => (
-                  <button
-                    key={component.code}
-                    onClick={() => onSelectComponent(component.code, component.name)}
-                    className="w-full p-4 text-left hover:bg-accent transition-colors"
-                  >
-                    <div className="font-medium">{component.code} - {component.name}</div>
-                    {component.description && (
-                      <div className="text-sm text-muted-foreground mt-1">{component.description}</div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ) : searchTerm ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No components found matching "{searchTerm}"
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                Start typing to search for components
-              </div>
-            )}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 // Scrollable tabs wrapper with left/right arrow indicators
 function ScrollableTabsWrapper({ children }: { children: React.ReactNode }) {
@@ -382,17 +317,31 @@ export default function AssetDetail() {
       <ComponentSelectorDialog
         open={showComponentSelector}
         onOpenChange={setShowComponentSelector}
+        assetId={assetIdNum}
+        projectId={projectId}
+        existingAssessments={assessments || []}
         onSelectComponent={(code, name) => {
-          // Check if assessment already exists for this component
-          const existingAssessment = assessments?.find(a => a.componentCode === code);
-          if (existingAssessment) {
-            toast.error(`An assessment for ${name} already exists. Please click on the existing assessment to edit it.`);
-            setShowComponentSelector(false);
-            return;
-          }
           setSelectedAssessment({ componentCode: code, componentName: name });
-          setShowComponentSelector(false);
           setShowAssessmentDialog(true);
+        }}
+        onOpenExistingAssessment={(componentCode) => {
+          const existingAssessment = assessments?.find(a => a.componentCode === componentCode);
+          if (existingAssessment) {
+            setSelectedAssessment(existingAssessment);
+            setShowAssessmentDialog(true);
+          }
+        }}
+        onCreateCustomComponent={() => {
+          setShowComponentSelector(false);
+          // TODO: Open AddCustomComponentDialog
+        }}
+        onBulkAdd={(components) => {
+          // Create assessment stubs for multiple components
+          components.forEach(comp => {
+            // TODO: Implement bulk assessment creation
+            console.log('Bulk add:', comp);
+          });
+          toast.success(`Added ${components.length} component assessment stubs`);
         }}
       />
       <AssessmentDialog

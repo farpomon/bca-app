@@ -1613,6 +1613,52 @@ Provide helpful insights, recommendations, and analysis based on this asset data
   }),
 
   components: router({
+    search: publicProcedure
+      .input(z.object({
+        query: z.string().optional(),
+        level: z.number().optional(),
+        systemGroup: z.string().optional(),
+        limit: z.number().optional(),
+        projectId: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const results = await db.searchBuildingComponents(input);
+        
+        // If projectId provided, merge custom components that match
+        if (input.projectId) {
+          const customComps = await customComponentsDb.getCustomComponentsByProject(input.projectId);
+          
+          // Filter custom components by query if provided
+          let filteredCustom = customComps;
+          if (input.query) {
+            const searchTerm = input.query.toLowerCase();
+            filteredCustom = customComps.filter((c: any) => 
+              c.code.toLowerCase().includes(searchTerm) || 
+              c.name.toLowerCase().includes(searchTerm)
+            );
+          }
+          
+          // Filter by level if provided
+          if (input.level !== undefined) {
+            filteredCustom = filteredCustom.filter((c: any) => c.level === input.level);
+          }
+          
+          // Filter by system group if provided
+          if (input.systemGroup) {
+            filteredCustom = filteredCustom.filter((c: any) => 
+              c.code.startsWith(input.systemGroup)
+            );
+          }
+          
+          return [...results, ...filteredCustom.map((c: any) => ({
+            ...c,
+            isCustom: true
+          }))];
+        }
+        
+        return results;
+      }),
+
     list: publicProcedure
       .input(z.object({ projectId: z.number().optional() }))
       .query(async ({ input }) => {
@@ -1795,6 +1841,13 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         const isAdmin = ctx.user.role === 'admin';
         const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
         if (!project) throw new Error("Project not found");
+        
+        console.log('[assessments.upsert] Input received:', {
+          componentCode: input.componentCode,
+          replacementValue: input.replacementValue,
+          replacementValueType: typeof input.replacementValue,
+          estimatedRepairCost: input.estimatedRepairCost,
+        });
         
         // Get existing assessment to detect changes
         const existing = input.componentCode ? await db.getAssessmentByComponent(input.projectId, input.componentCode) : null;

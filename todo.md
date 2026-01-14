@@ -5089,3 +5089,31 @@ Deployment is allowed only when:
 - [x] Verify database column is receiving the value - confirmed $120M saved
 - [x] Check if value is being retrieved correctly on load - found 3 queries returning hardcoded 0
 - [x] Fix the save/load logic - replaced hardcoded 0 with a.replacementValue in all queries
+
+## Component Assessment Input Improvements
+
+### 1.1 Better Search Experience
+- [x] Implement fuzzy search matching for UNIFORMAT codes (partial/full)
+- [x] Add component name keyword matching
+- [x] Highlight matched text in search results
+- [x] Add filter by UNIFORMAT Level (L1/L2/L3)
+- [x] Add filter by System Group (A-G)
+- [ ] Add "Most commonly used" components filter (future enhancement)
+
+### 1.2 Results List Layout
+- [x] Replace empty area with compact results list
+- [x] Show component code, name, group, and level in each row
+- [x] Limit to 30 results max
+- [x] Add loading state with skeleton rows
+- [x] Add "No results" state with helpful suggestions
+- [x] Add error state with retry option
+
+### 1.3 Duplicate Prevention
+- [x] Check if component already has assessment for same asset
+- [x] Show modal prompt for duplicate detection
+- [x] Add "Open existing assessment" option
+- [x] Add "Create new assessment version" option
+
+### 1.4 Quick Actions
+- [x] Add "Create custom component" button (admin-only)
+- [x] Add "Bulk add" button to select multiple components

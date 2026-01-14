@@ -538,6 +538,53 @@ export async function getBuildingComponentByCode(code: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function searchBuildingComponents(options: {
+  query?: string;
+  level?: number;
+  systemGroup?: string;
+  limit?: number;
+  projectId?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { query, level, systemGroup, limit = 30 } = options;
+  
+  // Build conditions
+  const conditions: any[] = [];
+  
+  // Filter by level if specified
+  if (level !== undefined) {
+    conditions.push(eq(buildingComponents.level, level));
+  }
+  
+  // Filter by system group (first letter of code: A-G)
+  if (systemGroup) {
+    conditions.push(sql`${buildingComponents.code} LIKE ${systemGroup + '%'}`);
+  }
+  
+  // Search by query (code or name)
+  if (query && query.trim()) {
+    const searchTerm = query.trim().toLowerCase();
+    // Match code (partial) or name (partial)
+    conditions.push(
+      sql`(LOWER(${buildingComponents.code}) LIKE ${`%${searchTerm}%`} OR LOWER(${buildingComponents.name}) LIKE ${`%${searchTerm}%`})`
+    );
+  }
+  
+  let queryBuilder = db.select().from(buildingComponents);
+  
+  if (conditions.length > 0) {
+    queryBuilder = queryBuilder.where(and(...conditions)) as any;
+  }
+  
+  const results = await queryBuilder
+    .orderBy(buildingComponents.code)
+    .limit(limit);
+  
+  return results;
+}
+
 // Assessments
 export async function getProjectAssessments(projectId: number) {
   const db = await getDb();
