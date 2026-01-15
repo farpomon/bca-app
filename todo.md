@@ -5117,3 +5117,59 @@ Deployment is allowed only when:
 ### 1.4 Quick Actions
 - [x] Add "Create custom component" button (admin-only)
 - [x] Add "Bulk add" button to select multiple components
+
+## Full ASTM E2018 UNIFORMAT II Master List Implementation
+
+### 1. Data Source (Single Source of Truth)
+- [ ] Create/verify master buildingComponents table with complete ASTM E2018 data
+- [ ] Include all fields: Group (A-G), Code, Name, Level (1-4), Parent code, Sort order, is_active
+- [ ] Populate with full UNIFORMAT II hierarchy (all groups A-G, all levels)
+- [ ] Ensure query uses master UNIFORMAT dataset, not assessed components
+
+### 2. Query + Pagination
+- [ ] Remove filtering that restricts results to partial subset
+- [ ] Implement server-side pagination with search endpoint
+- [ ] Support parameters: search, group, level, page, pageSize
+- [ ] Default page size 100-250 with virtual scrolling
+- [ ] Sort by Group then Code
+
+### 3. UI Enhancements
+- [ ] Add Group quick filters (A B C D E F G toggle chips)
+- [ ] Add Level filter (All / L1 / L2 / L3 / L4)
+- [ ] Add "Show hierarchy" toggle (tree vs flat list)
+- [ ] Display hierarchy path (e.g., C3020 > Floor Finishes)
+
+### 4. Assessed Status Handling
+- [ ] Show all master components as selectable (never hide)
+- [ ] Display "Assessed" badge for components with existing assessments
+- [ ] Prompt options: Open existing / Create new version
+
+### 5. Admin Validation Tool
+- [ ] Add admin-only UNIFORMAT validation page
+- [ ] Show master count and counts by Group/Level
+- [ ] Alert if groups A-G are missing or have duplicates
+- [ ] Block release if master list incomplete
+
+## Full ASTM E2018 UNIFORMAT II Master List Implementation
+
+### 1. Data Source (Single Source of Truth)
+- [ ] Verify master buildingComponents table has complete ASTM E2018 data
+- [ ] Include all fields: Group (A-G), Code, Name, Level (1-4), Parent code, Sort order, is_active
+- [ ] Populate with full UNIFORMAT II hierarchy (all groups A-G, all levels)
+
+### 2. Query + Pagination
+- [ ] Implement server-side pagination with search endpoint
+- [ ] Support parameters: search, group, level, page, pageSize
+- [ ] Default page size 100-250 with virtual scrolling
+
+### 3. UI Enhancements
+- [ ] Add Group quick filters (A B C D E F G toggle chips)
+- [ ] Add Level filter (All / L1 / L2 / L3 / L4)
+- [ ] Add "Show hierarchy" toggle (tree vs flat list)
+
+### 4. Assessed Status Handling
+- [ ] Show all master components as selectable
+- [ ] Display "Assessed" badge for components with existing assessments
+
+### 5. Admin Validation Tool
+- [ ] Add admin-only UNIFORMAT validation page

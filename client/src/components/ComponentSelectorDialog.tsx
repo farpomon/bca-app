@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -102,9 +102,13 @@ export function ComponentSelectorDialog({
   // Duplicate detection modal
   const [duplicateComponent, setDuplicateComponent] = useState<{ code: string; name: string } | null>(null);
   
-  // Query components
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
+  
+  // Query components with pagination
   const { 
-    data: components, 
+    data: searchResult, 
     isLoading, 
     isError, 
     refetch 
@@ -113,14 +117,26 @@ export function ComponentSelectorDialog({
       query: searchTerm,
       level: levelFilter !== "all" ? parseInt(levelFilter) : undefined,
       systemGroup: systemGroupFilter !== "all" ? systemGroupFilter : undefined,
-      limit: 30,
+      page,
+      pageSize,
       projectId,
+      assetId,
     },
     { 
       enabled: open,
       staleTime: 30000, // Cache for 30 seconds
     }
   );
+  
+  // Extract components from paginated result
+  const components = searchResult?.items || [];
+  const totalCount = searchResult?.totalCount || 0;
+  const totalPages = searchResult?.totalPages || 1;
+  
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, levelFilter, systemGroupFilter]);
   
   // Check if component already has an assessment
   const existingComponentCodes = useMemo(() => {
@@ -199,6 +215,30 @@ export function ComponentSelectorDialog({
           </DialogHeader>
           
           <div className="px-6 py-4 space-y-4 flex-1 overflow-hidden flex flex-col">
+            {/* Group Quick Filters */}
+            <div className="flex flex-wrap gap-1">
+              <Button
+                variant={systemGroupFilter === "all" ? "default" : "outline"}
+                size="sm"
+                className="h-7 px-3 text-xs"
+                onClick={() => setSystemGroupFilter("all")}
+              >
+                All
+              </Button>
+              {SYSTEM_GROUPS.map(group => (
+                <Button
+                  key={group.code}
+                  variant={systemGroupFilter === group.code ? "default" : "outline"}
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setSystemGroupFilter(group.code)}
+                  title={group.name}
+                >
+                  {group.code}
+                </Button>
+              ))}
+            </div>
+            
             {/* Search Input */}
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -358,18 +398,45 @@ export function ComponentSelectorDialog({
                   </p>
                 </div>
               ) : (
-                // Initial state
+                // Initial state - show all components
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Layers className="h-10 w-10 text-muted-foreground/50 mb-3" />
                   <p className="text-muted-foreground">
-                    Start typing to search for components
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Search by UNIFORMAT code or component name
+                    Loading UNIFORMAT II component library...
                   </p>
                 </div>
               )}
             </div>
+            
+            {/* Pagination Controls */}
+            {totalCount > 0 && (
+              <div className="flex items-center justify-between pt-2 text-sm">
+                <span className="text-muted-foreground">
+                  Showing {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, totalCount)} of {totalCount} components
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="flex items-center px-2">
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Footer with Quick Actions */}

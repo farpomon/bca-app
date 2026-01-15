@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_count,\n  COUNT(DISTINCT SUBSTRING(code, 1, 1)) as group_count,\n  GROUP_CONCAT(DISTINCT SUBSTRING(code, 1, 1) ORDER BY SUBSTRING(code, 1, 1)) as groups_present\nFROM building_components;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT \n  COUNT(*) as total_count,\n  COUNT(DISTINCT SUBSTRING(code, 1, 1)) as group_count,\n  GROUP_CONCAT(DISTINCT SUBSTRING(code, 1, 1) ORDER BY SUBSTRING(code, 1, 1)) as groups_present\nFROM building_components;",
+  "rows": [
+    {
+      "total_count": "107",
+      "group_count": "7",
+      "groups_present": "A,B,C,D,E,F,G"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_count\tgroup_count\tgroups_present\n107\t7\tA,B,C,D,E,F,G\n",
+  "stderr": "",
+  "execution_time_ms": 772
+}

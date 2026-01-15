@@ -1613,18 +1613,28 @@ Provide helpful insights, recommendations, and analysis based on this asset data
   }),
 
   components: router({
+    // Paginated search with total count for full UNIFORMAT II master list
     search: publicProcedure
       .input(z.object({
         query: z.string().optional(),
         level: z.number().optional(),
         systemGroup: z.string().optional(),
-        limit: z.number().optional(),
+        page: z.number().default(1),
+        pageSize: z.number().default(100),
         projectId: z.number().optional(),
+        assetId: z.number().optional(),
       }))
       .query(async ({ input }) => {
-        const results = await db.searchBuildingComponents(input);
+        // Get all matching components from master list
+        const allResults = await db.searchBuildingComponents({
+          query: input.query,
+          level: input.level,
+          systemGroup: input.systemGroup,
+          limit: 1000, // Get all matching for total count
+        });
         
         // If projectId provided, merge custom components that match
+        let allComponents = [...allResults];
         if (input.projectId) {
           const customComps = await customComponentsDb.getCustomComponentsByProject(input.projectId);
           
@@ -1650,13 +1660,28 @@ Provide helpful insights, recommendations, and analysis based on this asset data
             );
           }
           
-          return [...results, ...filteredCustom.map((c: any) => ({
+          allComponents = [...allResults, ...filteredCustom.map((c: any) => ({
             ...c,
             isCustom: true
           }))];
         }
         
-        return results;
+        // Sort by code
+        allComponents.sort((a: any, b: any) => a.code.localeCompare(b.code));
+        
+        // Apply pagination
+        const totalCount = allComponents.length;
+        const startIndex = (input.page - 1) * input.pageSize;
+        const endIndex = startIndex + input.pageSize;
+        const paginatedResults = allComponents.slice(startIndex, endIndex);
+        
+        return {
+          items: paginatedResults,
+          totalCount,
+          page: input.page,
+          pageSize: input.pageSize,
+          totalPages: Math.ceil(totalCount / input.pageSize),
+        };
       }),
 
     list: publicProcedure
@@ -1734,6 +1759,64 @@ Provide helpful insights, recommendations, and analysis based on this asset data
       .input(z.object({ code: z.string() }))
       .query(async ({ input }) => {
         return await db.getBuildingComponentByCode(input.code);
+      }),
+    
+    // Admin validation tool for UNIFORMAT data completeness
+    validateMasterList: protectedProcedure
+      .query(async ({ ctx }) => {
+        // Only admins can validate
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        
+        const allComponents = await db.getAllBuildingComponents();
+        
+        // Expected groups A-G
+        const expectedGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        
+        // Count by group and level
+        const groupCounts: Record<string, number> = {};
+        const levelCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0 };
+        const duplicates: string[] = [];
+        const seenCodes = new Set<string>();
+        
+        for (const comp of allComponents) {
+          const code = (comp as any).code;
+          const level = (comp as any).level || 3;
+          const group = code.charAt(0);
+          
+          // Check for duplicates
+          if (seenCodes.has(code)) {
+            duplicates.push(code);
+          } else {
+            seenCodes.add(code);
+          }
+          
+          // Count by group
+          groupCounts[group] = (groupCounts[group] || 0) + 1;
+          
+          // Count by level
+          if (level >= 1 && level <= 3) {
+            levelCounts[level]++;
+          }
+        }
+        
+        // Check for missing groups
+        const missingGroups = expectedGroups.filter(g => !groupCounts[g] || groupCounts[g] === 0);
+        
+        // Validation status
+        const isComplete = missingGroups.length === 0 && duplicates.length === 0;
+        
+        return {
+          totalCount: allComponents.length,
+          groupCounts,
+          levelCounts,
+          missingGroups,
+          duplicates,
+          isComplete,
+          expectedGroups,
+          validationDate: new Date().toISOString(),
+        };
       }),
   }),
 

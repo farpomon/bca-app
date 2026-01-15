@@ -1,0 +1,118 @@
+ASTM UNIFORMAT II Classification Standard (from ASTM E1557-09)
+
+Level I | Level II | Level III
+
+A Substructure
+  A10 Foundations
+    A1010 Standard Foundations
+    A1020 Special Foundations
+    A1030 Slab on Grade
+  A20 Basement Construction
+    A2010 Basement Excavation
+    A2020 Basement Walls
+
+B Shell
+  B10 Superstructure
+    B1010 Floor Construction
+    B1020 Roof Construction
+  B20 Exterior Enclosure
+    B2010 Exterior Walls
+    B2020 Exterior Windows
+    B2030 Exterior Doors
+  B30 Roofing
+    B3010 Roof Coverings
+    B3020 Roof Openings
+
+C Interiors
+  C10 Interior Construction
+    C1010 Partitions
+    C1020 Interior Doors
+    C1030 Fittings
+  C20 Stairs
+    C2010 Stair Construction
+    C2020 Stair Finishes
+  C30 Interior Finishes
+    C3010 Wall Finishes
+    C3020 Floor Finishes
+    C3030 Ceiling Finishes
+
+D Services
+  D10 Conveying
+    D1010 Elevators & Lifts
+    D1020 Escalators & Moving Walks
+    D1090 Other Conveying Systems
+  D20 Plumbing
+    D2010 Plumbing Fixtures
+    D2020 Domestic Water Distribution
+    D2030 Sanitary Waste
+    D2040 Rain Water Drainage
+    D2090 Other Plumbing Systems
+  D30 HVAC
+    D3010 Energy Supply
+    D3020 Heat Generating Systems
+    D3030 Cooling Generating Systems
+    D3040 Distribution Systems
+    D3050 Terminal & Package Units
+    D3060 Controls & Instrumentation
+    D3070 System Testing & Balancing
+    D3090 Other HVAC Systems & Equipment
+  D40 Fire Protection
+    D4010 Sprinklers
+    D4020 Standpipes
+    D4030 Fire Protection Specialties
+    D4090 Other Fire Protection Systems
+  D50 Electrical
+    D5010 Electrical Service & Distribution
+    D5020 Lighting and Branch Wiring
+    D5030 Communications & Security
+    D5090 Other Electrical Systems
+
+E Equipment & Furnishings
+  E10 Equipment
+    E1010 Commercial Equipment
+    E1020 Institutional Equipment
+    E1030 Vehicular Equipment
+    E1090 Other Equipment
+  E20 Furnishings
+    E2010 Fixed Furnishings
+    E2020 Movable Furnishings
+
+F Special Construction & Demolition
+  F10 Special Construction
+    F1010 Special Structures
+    F1020 Integrated Construction
+    F1030 Special Construction Systems
+    F1040 Special Facilities
+    F1050 Special Controls and Instrumentation
+  F20 Selective Building Demolition
+    F2010 Building Elements Demolition
+    F2020 Hazardous Components Abatement
+
+G Sitework & Utilities
+  G10 Site Preparation
+    G1010 Site Clearing
+    G1020 Site Demolition and Relocations
+    G1030 Site Earthwork
+    G1040 Hazardous Waste Removal
+  G20 Site Improvements
+    G2010 Roadways
+    G2020 Parking Lots
+    G2030 Pedestrian Paving
+    G2040 Site Development
+    G2050 Landscaping
+  G30 Site Mechanical Utilities
+    G3010 Water Supply
+    G3020 Sanitary Sewer
+    G3030 Storm Sewer
+    G3040 Heating Distribution
+    G3050 Cooling Distribution
+    G3060 Fuel Distribution
+    G3090 Other Site Mechanical Utilities
+  G40 Site Electrical Utilities
+    G4010 Electrical Distribution
+    G4020 Site Lighting
+    G4030 Site Communications & Security
+    G4090 Other Site Electrical Utilities
+  G90 Other Site Construction
+    G9010 Service and Pedestrian Tunnels
+    G9090 Other Site Systems and Equipment
