@@ -330,7 +330,6 @@ export function AssessmentDialog({
   const [actionYear, setActionYear] = useState("");
   const [actionDescription, setActionDescription] = useState(""); // Legacy field - kept for backward compatibility
   const [repairCost, setRepairCost] = useState("");
-  const [renewCost, setRenewCost] = useState("");
   const [sectionId, setSectionId] = useState<number | null>(null);
   const [actions, setActions] = useState<AssessmentAction[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
@@ -404,7 +403,6 @@ export function AssessmentDialog({
       setActionYear(existingAssessment.actionYear?.toString() || "");
       setActionDescription((existingAssessment as any).actionDescription || "");
       setRepairCost((existingAssessment as any).repairCost?.toString() || "");
-      setRenewCost((existingAssessment as any).renewCost?.toString() || "");
       setSectionId(null); // TODO: Load from existingAssessment if available
       // Actions will be loaded via the query
     } else {
@@ -484,7 +482,6 @@ export function AssessmentDialog({
         actionYear: actionYear ? parseInt(actionYear) : null,
         actionDescription: actionDescription || null,
         repairCost: repairCost ? parseFloat(repairCost) : null,
-        renewCost: renewCost ? parseFloat(renewCost) : null,
         sectionId: sectionId || null,
       };
 
@@ -683,7 +680,6 @@ export function AssessmentDialog({
           actionYear: actionYear ? parseInt(actionYear) : null,
           actionDescription: actionDescription || null,
           repairCost: repairCost ? parseFloat(repairCost) : null,
-          renewCost: renewCost ? parseFloat(renewCost) : null,
         };
 
         const assessmentId = await saveAssessment(assessmentData);
@@ -1260,27 +1256,15 @@ export function AssessmentDialog({
             />
           </div>
 
-          {/* Repair and Renewal Costs */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="repairCost">Repair Cost ($)</Label>
-              <CurrencyInput
-                id="repairCost"
-                value={repairCost}
-                onChange={(value) => setRepairCost(value)}
-                placeholder="0.00"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="renewCost">Renewal/Replacement Cost ($)</Label>
-              <CurrencyInput
-                id="renewCost"
-                value={renewCost}
-                onChange={(value) => setRenewCost(value)}
-                placeholder="0.00"
-              />
-            </div>
+          {/* Repair Cost */}
+          <div className="space-y-2">
+            <Label htmlFor="repairCost">Repair Cost ($)</Label>
+            <CurrencyInput
+              id="repairCost"
+              value={repairCost}
+              onChange={(value) => setRepairCost(value)}
+              placeholder="0.00"
+            />
           </div>
 
           {/* Building Section */}

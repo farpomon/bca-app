@@ -5218,3 +5218,9 @@ Deployment is allowed only when:
 - [x] Moved useEffect hooks after query definitions in AssessmentDialog.tsx
 - [x] Verified asset page loads correctly
 - [x] Verified AssessmentDialog multi-action feature works
+
+
+## Remove Duplicate Replacement Value Field (Completed)
+- [x] Remove "Renewal/Replacement Cost ($)" field from AssessmentDialog
+- [x] Keep only the single "Replacement Value ($)" field per assessed component
+- [x] Test and verify the change
