@@ -314,69 +314,11 @@ export function AssessmentDialog({
   existingAssessment,
   onSuccess,
 }: AssessmentDialogProps) {
+  // State declarations - all useState hooks first
   const [condition, setCondition] = useState(existingAssessment?.condition || "not_assessed");
   const [status, setStatus] = useState<"initial" | "active" | "completed">("initial");
   const [componentNameField, setComponentNameField] = useState("");
   const [componentLocationField, setComponentLocationField] = useState("");
-
-  // Sync state when existingAssessment changes (for edit mode)
-  useEffect(() => {
-    if (existingAssessment) {
-      setCondition(existingAssessment.condition || "not_assessed");
-      setComponentNameField(existingAssessment.componentName || "");
-      setComponentLocationField(existingAssessment.componentLocation || "");
-      setObservations(existingAssessment.observations || "");
-      setRecommendations(existingAssessment.recommendations || "");
-      setRemainingUsefulLife(existingAssessment.remainingUsefulLife?.toString() || "");
-      setEstimatedServiceLife(existingAssessment.expectedUsefulLife?.toString() || "");
-      setReviewYear(existingAssessment.reviewYear?.toString() || new Date().getFullYear().toString());
-      setLastTimeAction(existingAssessment.lastTimeAction?.toString() || "");
-      setEstimatedRepairCost(existingAssessment.estimatedRepairCost?.toString() || "");
-      setReplacementValue(existingAssessment.replacementValue?.toString() || "");
-      setActionYear(existingAssessment.actionYear?.toString() || "");
-      setActionDescription((existingAssessment as any).actionDescription || "");
-      setRepairCost((existingAssessment as any).repairCost?.toString() || "");
-      setRenewCost((existingAssessment as any).renewCost?.toString() || "");
-      setSectionId(null); // TODO: Load from existingAssessment if available
-      // Actions will be loaded via the query
-    } else {
-      // Reset to defaults for new assessment
-      setCondition("not_assessed");
-      setComponentNameField("");
-      setComponentLocationField("");
-      setObservations("");
-      setRecommendations("");
-      setRemainingUsefulLife("");
-      setEstimatedServiceLife("");
-      setReviewYear(new Date().getFullYear().toString());
-      setLastTimeAction("");
-      setEstimatedRepairCost("");
-      setReplacementValue("");
-      setActionYear("");
-      setSectionId(null);
-      setActions([]); // Reset actions for new assessment
-    }
-  }, [existingAssessment, open]);
-
-  // Load existing actions when they're fetched
-  useEffect(() => {
-    if (existingActions && existingActions.length > 0) {
-      setActions(existingActions.map(a => ({
-        id: a.id,
-        description: a.description,
-        priority: a.priority as AssessmentAction['priority'],
-        timeline: a.timeline || undefined,
-        estimatedCost: a.estimatedCost ? parseFloat(a.estimatedCost) : undefined,
-        consequenceOfDeferral: a.consequenceOfDeferral || undefined,
-        confidence: a.confidence || undefined,
-        sortOrder: a.sortOrder || 0,
-      })));
-    } else if (!existingAssessment) {
-      // Initialize with one empty action for new assessments
-      setActions([]);
-    }
-  }, [existingActions, existingAssessment]);
-
   const [observations, setObservations] = useState("");
   const [recommendations, setRecommendations] = useState("");
   const [remainingUsefulLife, setRemainingUsefulLife] = useState("");
@@ -444,6 +386,64 @@ export function AssessmentDialog({
   );
 
   const utils = trpc.useUtils();
+
+  // Sync state when existingAssessment changes (for edit mode)
+  useEffect(() => {
+    if (existingAssessment) {
+      setCondition(existingAssessment.condition || "not_assessed");
+      setComponentNameField(existingAssessment.componentName || "");
+      setComponentLocationField(existingAssessment.componentLocation || "");
+      setObservations(existingAssessment.observations || "");
+      setRecommendations(existingAssessment.recommendations || "");
+      setRemainingUsefulLife(existingAssessment.remainingUsefulLife?.toString() || "");
+      setEstimatedServiceLife(existingAssessment.expectedUsefulLife?.toString() || "");
+      setReviewYear(existingAssessment.reviewYear?.toString() || new Date().getFullYear().toString());
+      setLastTimeAction(existingAssessment.lastTimeAction?.toString() || "");
+      setEstimatedRepairCost(existingAssessment.estimatedRepairCost?.toString() || "");
+      setReplacementValue(existingAssessment.replacementValue?.toString() || "");
+      setActionYear(existingAssessment.actionYear?.toString() || "");
+      setActionDescription((existingAssessment as any).actionDescription || "");
+      setRepairCost((existingAssessment as any).repairCost?.toString() || "");
+      setRenewCost((existingAssessment as any).renewCost?.toString() || "");
+      setSectionId(null); // TODO: Load from existingAssessment if available
+      // Actions will be loaded via the query
+    } else {
+      // Reset to defaults for new assessment
+      setCondition("not_assessed");
+      setComponentNameField("");
+      setComponentLocationField("");
+      setObservations("");
+      setRecommendations("");
+      setRemainingUsefulLife("");
+      setEstimatedServiceLife("");
+      setReviewYear(new Date().getFullYear().toString());
+      setLastTimeAction("");
+      setEstimatedRepairCost("");
+      setReplacementValue("");
+      setActionYear("");
+      setSectionId(null);
+      setActions([]); // Reset actions for new assessment
+    }
+  }, [existingAssessment, open]);
+
+  // Load existing actions when they're fetched
+  useEffect(() => {
+    if (existingActions && existingActions.length > 0) {
+      setActions(existingActions.map(a => ({
+        id: a.id,
+        description: a.description,
+        priority: a.priority as AssessmentAction['priority'],
+        timeline: a.timeline || undefined,
+        estimatedCost: a.estimatedCost ? parseFloat(a.estimatedCost) : undefined,
+        consequenceOfDeferral: a.consequenceOfDeferral || undefined,
+        confidence: a.confidence || undefined,
+        sortOrder: a.sortOrder || 0,
+      })));
+    } else if (!existingAssessment) {
+      // Initialize with one empty action for new assessments
+      setActions([]);
+    }
+  }, [existingActions, existingAssessment]);
 
   // Note: We don't use onSuccess/onError here because we handle success/error
   // manually in handleSaveWithPhoto using mutateAsync with try/catch.
