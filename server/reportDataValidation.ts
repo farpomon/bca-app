@@ -26,11 +26,24 @@ export interface ValidationResult {
   correctedData?: any;
 }
 
+export interface AssessmentAction {
+  id?: number;
+  assessmentId: number;
+  description: string;
+  priority?: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+  timeline?: string;
+  estimatedCost?: number | string;
+  consequenceOfDeferral?: string;
+  confidence?: number;
+  sortOrder?: number;
+}
+
 export interface AssetReportData {
   asset: any;
   projectName: string;
   assessments: any[];
   deficiencies: any[];
+  assessmentActions?: AssessmentAction[]; // Multiple actions per assessment
 }
 
 export interface PortfolioReportData {

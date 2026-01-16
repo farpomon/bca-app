@@ -215,6 +215,24 @@ export const assessments = mysqlTable("assessments", {
 	hidden: int().default(0).notNull(),
 });
 
+// Assessment recommended actions (multiple actions per assessment)
+export const assessmentActions = mysqlTable("assessment_actions", {
+	id: int().autoincrement().primaryKey(),
+	assessmentId: int().notNull(),
+	description: text().notNull(),
+	priority: mysqlEnum(['immediate', 'short_term', 'medium_term', 'long_term']).default('medium_term'),
+	timeline: varchar({ length: 50 }), // e.g., "0-1 years", "1-3 years", "3-5 years", "5+ years"
+	estimatedCost: decimal({ precision: 12, scale: 2 }),
+	consequenceOfDeferral: text(), // What happens if this action is delayed
+	confidence: int(), // 0-100% confidence in the cost estimate
+	sortOrder: int().default(0),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+});
+
+export type AssessmentAction = typeof assessmentActions.$inferSelect;
+export type InsertAssessmentAction = typeof assessmentActions.$inferInsert;
+
 // Assessment deletion audit log
 export const assessmentDeletionLog = mysqlTable("assessment_deletion_log", {
 	id: int().autoincrement().primaryKey(),

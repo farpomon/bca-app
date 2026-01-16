@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Asset, Assessment, Deficiency, Photo } from "../drizzle/schema";
-import { validateAssetReport, calculateFCI, getFCIRating, fciToPercentage, type AssetReportData } from "./reportDataValidation";
+import { validateAssetReport, calculateFCI, getFCIRating, fciToPercentage, type AssetReportData, type AssessmentAction } from "./reportDataValidation";
 
 // AssetReportData type is now imported from reportDataValidation
 
@@ -521,6 +521,195 @@ export async function generateAssetReport(inputData: AssetReportData): Promise<B
 
       yPos = (doc as any).lastAutoTable.finalY + 10;
     });
+  }
+
+  // ============================================
+  // RECOMMENDED ACTIONS SECTION (from assessments)
+  // ============================================
+  if (data.assessmentActions && data.assessmentActions.length > 0) {
+    // Group actions by assessment for context
+    const actionsByAssessment = new Map<number, AssessmentAction[]>();
+    data.assessmentActions.forEach(action => {
+      const existing = actionsByAssessment.get(action.assessmentId) || [];
+      existing.push(action);
+      actionsByAssessment.set(action.assessmentId, existing);
+    });
+
+    // Create a lookup for assessment details
+    const assessmentMap = new Map<number, any>();
+    data.assessments.forEach(a => {
+      if (a.id) assessmentMap.set(a.id, a);
+    });
+
+    if (yPos > 200) {
+      doc.addPage();
+      addB3NMAHeader();
+      yPos = 25;
+    }
+
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...B3NMA_TEAL);
+    doc.text("Recommended Actions by Component", 10, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += 12;
+
+    // Group actions by priority for summary
+    const actionsByPriority: Record<string, AssessmentAction[]> = {
+      immediate: [],
+      short_term: [],
+      medium_term: [],
+      long_term: [],
+    };
+
+    data.assessmentActions.forEach(action => {
+      const priority = action.priority || 'medium_term';
+      if (actionsByPriority[priority]) {
+        actionsByPriority[priority].push(action);
+      }
+    });
+
+    const priorityLabelsActions: Record<string, string> = {
+      immediate: "Immediate (0-1 year)",
+      short_term: "Short Term (1-3 years)",
+      medium_term: "Medium Term (3-5 years)",
+      long_term: "Long Term (5+ years)",
+    };
+
+    // Render actions grouped by priority
+    Object.entries(actionsByPriority).forEach(([priority, actions]) => {
+      if (actions.length === 0) return;
+
+      if (yPos > 250) {
+        doc.addPage();
+        addB3NMAHeader();
+        yPos = 25;
+      }
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(priorityLabelsActions[priority], 10, yPos);
+      yPos += 7;
+
+      // Build action rows with component context
+      const actionRows = actions.map(action => {
+        const assessment = assessmentMap.get(action.assessmentId);
+        const componentInfo = assessment 
+          ? `${assessment.componentCode || 'N/A'} - ${assessment.componentName || 'Unknown'}` 
+          : 'Unknown Component';
+        
+        const cost = action.estimatedCost 
+          ? `$${(typeof action.estimatedCost === 'string' ? parseFloat(action.estimatedCost) : action.estimatedCost).toLocaleString()}` 
+          : 'TBD';
+        
+        const confidence = action.confidence ? `${action.confidence}%` : '-';
+        
+        return [
+          componentInfo,
+          action.description || 'No description',
+          action.timeline || priorityLabelsActions[priority].split(' ')[0] + ' ' + priorityLabelsActions[priority].split(' ')[1],
+          cost,
+          confidence,
+        ];
+      });
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [["Component", "Action Description", "Timeline", "Est. Cost", "Confidence"]],
+        body: actionRows,
+        theme: "striped",
+        styles: { fontSize: 8, cellPadding: 2.5, lineColor: [200, 200, 200], lineWidth: 0.1 },
+        headStyles: { 
+          fillColor: B3NMA_NAVY, 
+          textColor: [255, 255, 255], 
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 65 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 25, halign: "right" },
+          4: { cellWidth: 25, halign: "center" },
+        },
+        bodyStyles: {
+          overflow: 'linebreak',
+          cellPadding: 2.5,
+        },
+        showHead: 'everyPage',
+        rowPageBreak: 'avoid',
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    });
+
+    // Add action summary totals
+    if (yPos > 250) {
+      doc.addPage();
+      addB3NMAHeader();
+      yPos = 25;
+    }
+
+    const totalActionCost = data.assessmentActions.reduce((sum, a) => {
+      const cost = typeof a.estimatedCost === 'string' ? parseFloat(a.estimatedCost) : (a.estimatedCost || 0);
+      return sum + (isNaN(cost) ? 0 : cost);
+    }, 0);
+
+    const actionCostByPriority: Record<string, number> = {
+      immediate: 0,
+      short_term: 0,
+      medium_term: 0,
+      long_term: 0,
+    };
+
+    data.assessmentActions.forEach(action => {
+      const priority = action.priority || 'medium_term';
+      const cost = typeof action.estimatedCost === 'string' ? parseFloat(action.estimatedCost) : (action.estimatedCost || 0);
+      if (!isNaN(cost) && actionCostByPriority[priority] !== undefined) {
+        actionCostByPriority[priority] += cost;
+      }
+    });
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...B3NMA_TEAL);
+    doc.text("Action Cost Summary", 10, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += 8;
+
+    const actionSummaryRows = Object.entries(actionCostByPriority).map(([priority, cost]) => [
+      priorityLabelsActions[priority],
+      `$${cost.toLocaleString()}`,
+      totalActionCost > 0 ? `${((cost / totalActionCost) * 100).toFixed(1)}%` : '0%',
+    ]);
+
+    actionSummaryRows.push([
+      "Total Recommended Actions",
+      `$${totalActionCost.toLocaleString()}`,
+      "100%",
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Priority", "Estimated Cost", "% of Total"]],
+      body: actionSummaryRows,
+      theme: "striped",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: B3NMA_NAVY, textColor: [255, 255, 255], fontStyle: "bold" },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 50 },
+        2: { cellWidth: 40 },
+      },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.row.index === actionSummaryRows.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = HEADER_GRAY;
+        }
+      },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
   }
 
   // ============================================

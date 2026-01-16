@@ -7,6 +7,8 @@ import {
   buildingCodes,
   buildingComponents,
   assessments,
+  assessmentActions,
+  InsertAssessmentAction,
   assessmentDeletionLog,
   deficiencies,
   photos,
@@ -3197,4 +3199,114 @@ export async function getProjectAssets(projectId: number) {
     .select()
     .from(assets)
     .where(eq(assets.projectId, projectId));
+}
+
+
+// ============================================
+// Assessment Actions (Multiple actions per assessment)
+// ============================================
+
+export async function getAssessmentActions(assessmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(assessmentActions)
+    .where(eq(assessmentActions.assessmentId, assessmentId))
+    .orderBy(asc(assessmentActions.sortOrder), asc(assessmentActions.id));
+}
+
+export async function createAssessmentAction(data: InsertAssessmentAction) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(assessmentActions).values(data);
+  return result[0].insertId;
+}
+
+export async function updateAssessmentAction(actionId: number, data: Partial<InsertAssessmentAction>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(assessmentActions)
+    .set(data)
+    .where(eq(assessmentActions.id, actionId));
+}
+
+export async function deleteAssessmentAction(actionId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .delete(assessmentActions)
+    .where(eq(assessmentActions.id, actionId));
+}
+
+export async function bulkUpsertAssessmentActions(
+  assessmentId: number,
+  actions: Array<{
+    id?: number;
+    description: string;
+    priority?: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+    timeline?: string;
+    estimatedCost?: number;
+    consequenceOfDeferral?: string;
+    confidence?: number;
+    sortOrder?: number;
+  }>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get existing action IDs for this assessment
+  const existingActions = await getAssessmentActions(assessmentId);
+  const existingIds = new Set(existingActions.map(a => a.id));
+  
+  // Track which IDs are being kept
+  const keptIds = new Set<number>();
+  
+  for (let i = 0; i < actions.length; i++) {
+    const action = actions[i];
+    const actionData = {
+      assessmentId,
+      description: action.description,
+      priority: action.priority || 'medium_term',
+      timeline: action.timeline || null,
+      estimatedCost: action.estimatedCost?.toString() || null,
+      consequenceOfDeferral: action.consequenceOfDeferral || null,
+      confidence: action.confidence || null,
+      sortOrder: action.sortOrder ?? i,
+    };
+    
+    if (action.id && existingIds.has(action.id)) {
+      // Update existing action
+      await updateAssessmentAction(action.id, actionData);
+      keptIds.add(action.id);
+    } else {
+      // Create new action
+      await createAssessmentAction(actionData as InsertAssessmentAction);
+    }
+  }
+  
+  // Delete actions that were removed
+  for (const existingId of existingIds) {
+    if (!keptIds.has(existingId)) {
+      await deleteAssessmentAction(existingId);
+    }
+  }
+  
+  return getAssessmentActions(assessmentId);
+}
+
+export async function getAssessmentActionsTotalCost(assessmentId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const actions = await getAssessmentActions(assessmentId);
+  return actions.reduce((sum, action) => {
+    const cost = parseFloat(action.estimatedCost || '0');
+    return sum + (isNaN(cost) ? 0 : cost);
+  }, 0);
 }

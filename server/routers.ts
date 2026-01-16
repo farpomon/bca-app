@@ -2266,6 +2266,68 @@ Provide helpful insights, recommendations, and analysis based on this asset data
 
         return { success: true, message: "Assessment restored successfully" };
       }),
+
+    // Assessment Actions - Multiple actions per assessment
+    getActions: protectedProcedure
+      .input(z.object({
+        assessmentId: z.number(),
+        projectId: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        return await db.getAssessmentActions(input.assessmentId);
+      }),
+
+    saveActions: protectedProcedure
+      .input(z.object({
+        assessmentId: z.number(),
+        projectId: z.number(),
+        actions: z.array(z.object({
+          id: z.number().optional(),
+          description: z.string(),
+          priority: z.enum(['immediate', 'short_term', 'medium_term', 'long_term']).optional(),
+          timeline: z.string().optional(),
+          estimatedCost: z.number().optional(),
+          consequenceOfDeferral: z.string().optional(),
+          confidence: z.number().min(0).max(100).optional(),
+          sortOrder: z.number().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        const savedActions = await db.bulkUpsertAssessmentActions(input.assessmentId, input.actions);
+        
+        // Log to audit
+        await db.createAuditLog({
+          entityType: "assessment_actions",
+          entityId: input.assessmentId,
+          action: "update",
+          userId: ctx.user.id,
+          changes: JSON.stringify({ actionCount: input.actions.length })
+        });
+        
+        return savedActions;
+      }),
+
+    deleteAction: protectedProcedure
+      .input(z.object({
+        actionId: z.number(),
+        projectId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const isAdmin = ctx.user.role === 'admin';
+        const project = await db.getProjectById(input.projectId, ctx.user.id, ctx.user.company, isAdmin);
+        if (!project) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        
+        await db.deleteAssessmentAction(input.actionId);
+        return { success: true };
+      }),
   }),
 
   deficiencies: router({
@@ -2999,11 +3061,21 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         // Get deficiencies for this asset (join through assessments)
         const deficiencies = await db.getAssetDeficiencies(input.assetId);
 
+        // Get all assessment actions for this asset's assessments
+        const assessmentActions: any[] = [];
+        for (const assessment of assessments) {
+          if (assessment.id) {
+            const actions = await db.getAssessmentActions(assessment.id, input.projectId);
+            assessmentActions.push(...actions);
+          }
+        }
+
         const pdfBuffer = await generateAssetReport({
           asset,
           projectName: project.name,
           assessments: assessmentsWithPhotos,
           deficiencies,
+          assessmentActions,
         });
 
         // Upload to S3

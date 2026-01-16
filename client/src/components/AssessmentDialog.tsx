@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { useOfflineAssessment } from "@/hooks/useOfflineAssessment";
 import { useOfflinePhoto } from "@/hooks/useOfflinePhoto";
 import { initOfflineDB, STORES } from "@/lib/offlineStorage";
+import { AssessmentActionsEditor, AssessmentAction } from "@/components/AssessmentActionsEditor";
 
 // Component to display existing photos for an assessment
 function ExistingPhotosDisplay({ assessmentId, assetId, projectId, componentCode }: { assessmentId?: number; assetId: number; projectId: number; componentCode?: string }) {
@@ -337,6 +338,7 @@ export function AssessmentDialog({
       setRepairCost((existingAssessment as any).repairCost?.toString() || "");
       setRenewCost((existingAssessment as any).renewCost?.toString() || "");
       setSectionId(null); // TODO: Load from existingAssessment if available
+      // Actions will be loaded via the query
     } else {
       // Reset to defaults for new assessment
       setCondition("not_assessed");
@@ -352,8 +354,28 @@ export function AssessmentDialog({
       setReplacementValue("");
       setActionYear("");
       setSectionId(null);
+      setActions([]); // Reset actions for new assessment
     }
   }, [existingAssessment, open]);
+
+  // Load existing actions when they're fetched
+  useEffect(() => {
+    if (existingActions && existingActions.length > 0) {
+      setActions(existingActions.map(a => ({
+        id: a.id,
+        description: a.description,
+        priority: a.priority as AssessmentAction['priority'],
+        timeline: a.timeline || undefined,
+        estimatedCost: a.estimatedCost ? parseFloat(a.estimatedCost) : undefined,
+        consequenceOfDeferral: a.consequenceOfDeferral || undefined,
+        confidence: a.confidence || undefined,
+        sortOrder: a.sortOrder || 0,
+      })));
+    } else if (!existingAssessment) {
+      // Initialize with one empty action for new assessments
+      setActions([]);
+    }
+  }, [existingActions, existingAssessment]);
 
   const [observations, setObservations] = useState("");
   const [recommendations, setRecommendations] = useState("");
@@ -364,10 +386,11 @@ export function AssessmentDialog({
   const [estimatedRepairCost, setEstimatedRepairCost] = useState("");
   const [replacementValue, setReplacementValue] = useState("");
   const [actionYear, setActionYear] = useState("");
-  const [actionDescription, setActionDescription] = useState("");
+  const [actionDescription, setActionDescription] = useState(""); // Legacy field - kept for backward compatibility
   const [repairCost, setRepairCost] = useState("");
   const [renewCost, setRenewCost] = useState("");
   const [sectionId, setSectionId] = useState<number | null>(null);
+  const [actions, setActions] = useState<AssessmentAction[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -412,6 +435,13 @@ export function AssessmentDialog({
   const upsertAssessment = trpc.assessments.upsert.useMutation();
   const checkValidation = trpc.validation.check.useMutation();
   const logOverride = trpc.validation.logOverride.useMutation();
+  const saveActionsMutation = trpc.assessments.saveActions.useMutation();
+
+  // Query existing actions when editing an assessment
+  const { data: existingActions, refetch: refetchActions } = trpc.assessments.getActions.useQuery(
+    { assessmentId: existingAssessment?.id!, projectId },
+    { enabled: !!existingAssessment?.id && !!projectId }
+  );
 
   const utils = trpc.useUtils();
 
@@ -460,6 +490,31 @@ export function AssessmentDialog({
 
       const assessmentId = await saveAssessment(assessmentData);
       console.log('[AssessmentDialog] Assessment saved with ID:', assessmentId, 'Type:', typeof assessmentId);
+
+      // Save actions if we have any with descriptions and we're online with a valid assessment ID
+      const validActions = actions.filter(a => a.description.trim());
+      if (validActions.length > 0 && isOnline && typeof assessmentId === 'number') {
+        try {
+          await saveActionsMutation.mutateAsync({
+            assessmentId: assessmentId as number,
+            projectId,
+            actions: validActions.map((a, i) => ({
+              id: a.id,
+              description: a.description,
+              priority: a.priority,
+              timeline: a.timeline,
+              estimatedCost: a.estimatedCost,
+              consequenceOfDeferral: a.consequenceOfDeferral,
+              confidence: a.confidence,
+              sortOrder: i,
+            })),
+          });
+          console.log('[AssessmentDialog] Actions saved successfully');
+        } catch (actionError: any) {
+          console.error('[AssessmentDialog] Failed to save actions:', actionError);
+          toast.warning('Assessment saved but actions could not be saved: ' + actionError.message);
+        }
+      }
 
       // Then upload photos with the assessment ID
       if (photoFiles.length > 0) {
@@ -631,7 +686,33 @@ export function AssessmentDialog({
           renewCost: renewCost ? parseFloat(renewCost) : null,
         };
 
-        await saveAssessment(assessmentData);
+        const assessmentId = await saveAssessment(assessmentData);
+
+        // Save actions if we have any with descriptions and we're online with a valid assessment ID
+        const validActions = actions.filter(a => a.description.trim());
+        if (validActions.length > 0 && isOnline && typeof assessmentId === 'number') {
+          try {
+            await saveActionsMutation.mutateAsync({
+              assessmentId: assessmentId as number,
+              projectId,
+              actions: validActions.map((a, i) => ({
+                id: a.id,
+                description: a.description,
+                priority: a.priority,
+                timeline: a.timeline,
+                estimatedCost: a.estimatedCost,
+                consequenceOfDeferral: a.consequenceOfDeferral,
+                confidence: a.confidence,
+                sortOrder: i,
+              })),
+            });
+            console.log('[AssessmentDialog] Actions saved successfully');
+          } catch (actionError: any) {
+            console.error('[AssessmentDialog] Failed to save actions:', actionError);
+            toast.warning('Assessment saved but actions could not be saved: ' + actionError.message);
+          }
+        }
+
         onSuccess();
         handleClose();
       } catch (error: any) {
@@ -1158,38 +1239,24 @@ export function AssessmentDialog({
             </div>
           </div>
 
-          {/* Action Year */}
+          {/* Recommended Actions - Multi-action editor */}
+          <div className="space-y-2 border rounded-lg p-4 bg-muted/30">
+            <AssessmentActionsEditor
+              actions={actions}
+              onChange={setActions}
+              disabled={isSaving}
+            />
+          </div>
+
+          {/* Legacy Action Year - kept for backward compatibility */}
           <div className="space-y-2">
-            <Label htmlFor="actionYear">Action Year (Recommended)</Label>
+            <Label htmlFor="actionYear">Primary Action Year</Label>
             <Input
               id="actionYear"
               type="number"
               value={actionYear}
               onChange={(e) => setActionYear(e.target.value)}
-            />
-          </div>
-
-          {/* Action Description */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="actionDescription">Action Description</Label>
-              <VoiceInputButton
-                onTranscriptionComplete={(text) => {
-                  // Append transcribed text to existing content
-                  setActionDescription((prev) => {
-                    const separator = prev.trim() ? " " : "";
-                    return prev + separator + text;
-                  });
-                }}
-                disabled={isSaving}
-              />
-            </div>
-            <Textarea
-              id="actionDescription"
-              value={actionDescription}
-              onChange={(e) => setActionDescription(e.target.value)}
-              placeholder="Describe the recommended action..."
-              rows={3}
+              placeholder="Year for primary recommended action"
             />
           </div>
 

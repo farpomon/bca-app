@@ -5173,3 +5173,35 @@ Deployment is allowed only when:
 
 ### 5. Admin Validation Tool
 - [ ] Add admin-only UNIFORMAT validation page
+
+## Multiple Actions per Assessment
+
+### Database Schema
+- [ ] Create assessment_actions table with fields: id, assessmentId, description, priority, estimatedCost, timeline, sortOrder, createdAt, updatedAt
+- [ ] Add foreign key relationship to assessments table
+
+### Backend Endpoints
+- [ ] Create CRUD endpoints for assessment actions (create, read, update, delete)
+- [ ] Update assessment upsert to handle actions array
+- [ ] Add batch update endpoint for reordering actions
+
+### Frontend UI
+- [ ] Replace single "Action Description" field with multi-action interface
+- [ ] Add "Add Action" button to create new action entries
+- [ ] Show action list with description, priority dropdown, cost input
+- [ ] Add delete button for each action
+- [ ] Add drag-and-drop reordering for actions
+- [ ] Calculate total action costs and display summary
+
+
+## Multi-Action Feature for Component Assessments
+- [x] Create AssessmentActionsEditor component with priority, timeline, cost, and confidence fields
+- [x] Add state management for actions in AssessmentDialog
+- [x] Integrate AssessmentActionsEditor into AssessmentDialog (replacing single Action Description field)
+- [x] Add tRPC endpoints for getActions and saveActions
+- [x] Add database functions for CRUD operations on assessment_actions table
+- [x] Update PDF report generation to include multiple actions per assessment
+- [x] Add "Recommended Actions by Component" section to asset reports
+- [x] Add action cost summary by priority in PDF reports
+- [x] Write unit tests for assessment actions API
+- [x] All tests passing
