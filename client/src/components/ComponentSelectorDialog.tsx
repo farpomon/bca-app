@@ -162,7 +162,8 @@ export function ComponentSelectorDialog({
   }, [existingComponentCodes]);
   
   // Handle component selection
-  const handleSelectComponent = (code: string, name: string) => {
+  const handleSelectComponent = (component: any) => {
+    const { code, name } = component;
     if (bulkMode) {
       const newSelected = new Set(selectedComponents);
       if (newSelected.has(code)) {
@@ -175,7 +176,8 @@ export function ComponentSelectorDialog({
       if (hasExistingAssessment(code)) {
         setDuplicateComponent({ code, name });
       } else {
-        onSelectComponent(code, name);
+        // Pass full component metadata including id, level, and group
+        onSelectComponent(code, name, component.id, component.level, getSystemGroup(component.code));
         handleClose();
       }
     }
@@ -388,7 +390,7 @@ export function ComponentSelectorDialog({
                     return (
                       <button
                         key={component.code}
-                        onClick={() => handleSelectComponent(component.code, component.name)}
+                        onClick={() => handleSelectComponent(component)}
                         className={cn(
                           "w-full p-4 text-left hover:bg-accent/50 transition-colors flex items-start gap-3",
                           isSelected && "bg-primary/5 border-l-2 border-l-primary",

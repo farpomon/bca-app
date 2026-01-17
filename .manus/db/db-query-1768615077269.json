@@ -1,0 +1,18 @@
+{
+  "query": "SELECT componentCode, uniformatId FROM assessments WHERE componentCode IN ('D40', 'C10', 'E10') LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT componentCode, uniformatId FROM assessments WHERE componentCode IN ('D40', 'C10', 'E10') LIMIT 5;",
+  "rows": [
+    {
+      "componentCode": "D40",
+      "uniformatId": "19"
+    },
+    {
+      "componentCode": "E10",
+      "uniformatId": "21"
+    }
+  ],
+  "messages": [],
+  "stdout": "componentCode\tuniformatId\nD40\t19\nE10\t21\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

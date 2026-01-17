@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, code, name, level FROM building_components WHERE code = 'D40' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, code, name, level FROM building_components WHERE code = 'D40' LIMIT 1;",
+  "rows": [
+    {
+      "id": "19",
+      "code": "D40",
+      "name": "Fire Protection",
+      "level": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcode\tname\tlevel\n19\tD40\tFire Protection\t2\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

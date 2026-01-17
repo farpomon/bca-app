@@ -470,6 +470,10 @@ export function AssessmentDialog({
         componentCode,
         componentName: componentNameField || null,
         componentLocation: componentLocationField || null,
+        // UNIFORMAT metadata
+        uniformatId: existingAssessment?.uniformatId || null,
+        uniformatLevel: existingAssessment?.uniformatLevel || null,
+        uniformatGroup: existingAssessment?.uniformatGroup || null,
         condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
         status: status as "initial" | "active" | "completed" | null,
         observations: observations || null,
@@ -668,6 +672,10 @@ export function AssessmentDialog({
           componentCode,
           componentName: componentNameField || null,
           componentLocation: componentLocationField || null,
+          // UNIFORMAT metadata
+          uniformatId: existingAssessment?.uniformatId || null,
+          uniformatLevel: existingAssessment?.uniformatLevel || null,
+          uniformatGroup: existingAssessment?.uniformatGroup || null,
           condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
           status: status as "initial" | "active" | "completed" | null,
           observations: observations || null,

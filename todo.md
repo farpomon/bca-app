@@ -5250,3 +5250,23 @@ Deployment is allowed only when:
 - [x] Responsive design for desktop and tablet
 - [x] Escape key closes modal
 - [x] "Assessed" badges for already assessed components
+
+
+## Always Display UNIFORMAT Code for Selected Components
+- [ ] Add UNIFORMAT fields to assessments table (uniformat_code, uniformat_name, uniformat_level, uniformat_group, uniformat_id)
+- [ ] Update component selection flow to capture and store UNIFORMAT metadata
+- [ ] Update assessment list display to show CODE + Name consistently
+- [ ] Add "Custom" badge for custom components without UNIFORMAT codes
+- [ ] Create backfill migration for existing assessments missing codes
+- [ ] Test with existing assessments (Standpipes, Electrical) to verify codes appear
+- [ ] Verify custom components display "Custom" badge instead of fake codes
+
+
+## Always Display UNIFORMAT Codes for Selected Components (Completed)
+- [x] Add UNIFORMAT fields (uniformatId, uniformatLevel, uniformatGroup) to assessments table
+- [x] Update component selection flow to capture UNIFORMAT metadata (ComponentSelectorDialog, AssetDetail, AssessmentDialog)
+- [x] Update assessment list display to show CODE + Name consistently
+- [x] Add "Custom" badge for non-UNIFORMAT components
+- [x] Backfill existing assessments with UNIFORMAT metadata using SQL migration
+- [x] Update getAssetAssessments query to include uniformat fields
+- [x] Test and verify the implementation - all UNIFORMAT codes displaying correctly

@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, componentCode, componentName, uniformatId FROM assessments WHERE componentCode IS NOT NULL AND componentCode != '' AND uniformatId IS NULL LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, componentName, uniformatId FROM assessments WHERE componentCode IS NOT NULL AND componentCode != '' AND uniformatId IS NULL LIMIT 10;",
+  "rows": [
+    {
+      "id": "30007",
+      "componentCode": "A1010",
+      "componentName": "Standard Foundations (Wall Foundations - Concrete)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30009",
+      "componentCode": "TEST-DELETE-1767734057277",
+      "componentName": "Test Component for Deletion",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30010",
+      "componentCode": "TEST-DEL",
+      "componentName": "Test Component",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30011",
+      "componentCode": "A2010",
+      "componentName": "Standard Slabs-on-Grade (Slab on Grade)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30012",
+      "componentCode": "A3010",
+      "componentName": "Standard Stairs (Exterior Stairs)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30013",
+      "componentCode": "A4010",
+      "componentName": "Wall Construction (Wood Framing)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30014",
+      "componentCode": "B1010",
+      "componentName": "Exterior Walls (Exterior Painting Walls)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30015",
+      "componentCode": "B1020",
+      "componentName": "Exterior Windows (Vinyl Frame Windows)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30016",
+      "componentCode": "B1030",
+      "componentName": "Exterior Doors (Exterior Metal Doors)",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "30017",
+      "componentCode": "B3010",
+      "componentName": "Roof Coverings (SBS Membrane Roofing)",
+      "uniformatId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcomponentName\tuniformatId\n30007\tA1010\tStandard Foundations (Wall Foundations - Concrete)\tNULL\n30009\tTEST-DELETE-1767734057277\tTest Component for Deletion\tNULL\n30010\tTEST-DEL\tTest Component\tNULL\n30011\tA2010\tStandard Slabs-on-Grade (Slab on Grade)\tNULL\n30012\tA3010\tStandard Stairs (Exterior Stairs)\tNULL\n30013\tA4010\tWall Construction (Wood Framing)\tNULL\n30014\tB1010\tExterior Walls (Exterior Painting Walls)\tNULL\n30015\tB1020\tExterior Windows (Vinyl Frame Windows)\tNULL\n30016\tB1030\tExterior Doors (Exterior Metal Doors)\tNULL\n30017\tB3010\tRoof Coverings (SBS Membrane Roofing)\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

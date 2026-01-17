@@ -1,0 +1,60 @@
+{
+  "query": "SELECT code, name, level FROM building_components LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT code, name, level FROM building_components LIMIT 10;",
+  "rows": [
+    {
+      "code": "A",
+      "name": "SUBSTRUCTURE",
+      "level": "1"
+    },
+    {
+      "code": "B",
+      "name": "SHELL",
+      "level": "1"
+    },
+    {
+      "code": "C",
+      "name": "INTERIORS",
+      "level": "1"
+    },
+    {
+      "code": "D",
+      "name": "SERVICES",
+      "level": "1"
+    },
+    {
+      "code": "E",
+      "name": "EQUIPMENT & FURNISHINGS",
+      "level": "1"
+    },
+    {
+      "code": "F",
+      "name": "SPECIAL CONSTRUCTION & DEMOLITION",
+      "level": "1"
+    },
+    {
+      "code": "G",
+      "name": "SITE IMPROVEMENTS",
+      "level": "1"
+    },
+    {
+      "code": "A10",
+      "name": "Foundations",
+      "level": "2"
+    },
+    {
+      "code": "A20",
+      "name": "Basement Construction",
+      "level": "2"
+    },
+    {
+      "code": "B10",
+      "name": "Superstructure",
+      "level": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "code\tname\tlevel\nA\tSUBSTRUCTURE\t1\nB\tSHELL\t1\nC\tINTERIORS\t1\nD\tSERVICES\t1\nE\tEQUIPMENT & FURNISHINGS\t1\nF\tSPECIAL CONSTRUCTION & DEMOLITION\t1\nG\tSITE IMPROVEMENTS\t1\nA10\tFoundations\t2\nA20\tBasement Construction\t2\nB10\tSuperstructure\t2\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

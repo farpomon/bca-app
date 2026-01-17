@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, componentCode, componentName, componentId, uniformatId FROM assessments WHERE assetId = 133 LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, componentName, componentId, uniformatId FROM assessments WHERE assetId = 133 LIMIT 5;",
+  "rows": [
+    {
+      "id": "143",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "componentId": "8",
+      "uniformatId": "8"
+    },
+    {
+      "id": "144",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "componentId": "9",
+      "uniformatId": "9"
+    },
+    {
+      "id": "145",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "componentId": "10",
+      "uniformatId": "10"
+    },
+    {
+      "id": "146",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "componentId": "11",
+      "uniformatId": "11"
+    },
+    {
+      "id": "147",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "componentId": "12",
+      "uniformatId": "12"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcomponentName\tcomponentId\tuniformatId\n143\tNULL\tNULL\t8\t8\n144\tNULL\tNULL\t9\t9\n145\tNULL\tNULL\t10\t10\n146\tNULL\tNULL\t11\t11\n147\tNULL\tNULL\t12\t12\n",
+  "stderr": "",
+  "execution_time_ms": 48
+}

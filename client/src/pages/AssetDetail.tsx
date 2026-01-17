@@ -320,8 +320,14 @@ export default function AssetDetail() {
         assetId={assetIdNum}
         projectId={projectId}
         existingAssessments={assessments || []}
-        onSelectComponent={(code, name) => {
-          setSelectedAssessment({ componentCode: code, componentName: name });
+        onSelectComponent={(code, name, uniformatId, uniformatLevel, uniformatGroup) => {
+          setSelectedAssessment({ 
+            componentCode: code, 
+            componentName: name,
+            uniformatId,
+            uniformatLevel,
+            uniformatGroup
+          });
           setShowAssessmentDialog(true);
         }}
         onOpenExistingAssessment={(componentCode) => {
@@ -662,7 +668,18 @@ export default function AssetDetail() {
                               />
                             )}
                             <div className="flex-1">
-                              <p className="font-medium">{assessment.componentCode}</p>
+                              <div className="flex items-center gap-2">
+                                {assessment.componentCode ? (
+                                  <>
+                                    <p className="font-medium text-lg">{assessment.componentCode}</p>
+                                    {!assessment.uniformatId && (
+                                      <Badge variant="outline" className="text-xs">Custom</Badge>
+                                    )}
+                                  </>
+                                ) : (
+                                  <Badge variant="outline" className="text-xs">Custom</Badge>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>
                               {(assessment.estimatedRepairCost || assessment.replacementValue) && (
                                 <div className="flex gap-4 mt-1 text-xs text-muted-foreground">

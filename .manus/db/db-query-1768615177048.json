@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, componentCode, componentName, uniformatId FROM assessments WHERE assetId = 133 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, componentName, uniformatId FROM assessments WHERE assetId = 133 LIMIT 10;",
+  "rows": [
+    {
+      "id": "143",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "144",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "145",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "146",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "147",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "148",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "149",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "150",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "151",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    },
+    {
+      "id": "152",
+      "componentCode": "NULL",
+      "componentName": "NULL",
+      "uniformatId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcomponentName\tuniformatId\n143\tNULL\tNULL\tNULL\n144\tNULL\tNULL\tNULL\n145\tNULL\tNULL\tNULL\n146\tNULL\tNULL\tNULL\n147\tNULL\tNULL\tNULL\n148\tNULL\tNULL\tNULL\n149\tNULL\tNULL\tNULL\n150\tNULL\tNULL\tNULL\n151\tNULL\tNULL\tNULL\n152\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

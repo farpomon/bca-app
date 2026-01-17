@@ -192,6 +192,10 @@ export const assessments = mysqlTable("assessments", {
 	componentCode: varchar({ length: 20 }),
 	componentName: varchar({ length: 255 }),
 	componentLocation: varchar({ length: 500 }),
+	// UNIFORMAT II metadata
+	uniformatId: int(), // FK to building_components table
+	uniformatLevel: int(), // 1, 2, or 3
+	uniformatGroup: varchar({ length: 1 }), // A-G
 	sectionId: int(), // Optional: link assessment to a specific building section
 	condition: varchar({ length: 50 }),
 	conditionPercentage: varchar({ length: 10 }),
