@@ -5224,3 +5224,29 @@ Deployment is allowed only when:
 - [x] Remove "Renewal/Replacement Cost ($)" field from AssessmentDialog
 - [x] Keep only the single "Replacement Value ($)" field per assessed component
 - [x] Test and verify the change
+
+
+## Full-Screen Component Selection Modal
+- [ ] Convert modal to full-screen overlay (100vw x 100vh)
+- [ ] Add sticky header with title, subtitle, and close button
+- [ ] Add sticky controls row with group chips and search bar
+- [ ] Make content area scrollable with virtual scrolling
+- [ ] Add sticky footer with pagination and action buttons
+- [ ] Ensure no overlap between UI elements
+- [ ] Add responsive rules for smaller screens
+- [ ] Add loading skeletons and empty state
+- [ ] Test on common desktop resolutions
+
+
+## Full-Screen Component Selector Modal (Completed)
+- [x] Full-screen modal (100vw × 100vh)
+- [x] Sticky header with title, subtitle, close button
+- [x] Group filter chips (All, A-G) horizontally scrollable
+- [x] Search input with filter button
+- [x] Scrollable component list
+- [x] Sticky footer with pagination and action buttons
+- [x] No overlap between UI elements
+- [x] Background scroll lock
+- [x] Responsive design for desktop and tablet
+- [x] Escape key closes modal
+- [x] "Assessed" badges for already assessed components
