@@ -5270,3 +5270,15 @@ Deployment is allowed only when:
 - [x] Backfill existing assessments with UNIFORMAT metadata using SQL migration
 - [x] Update getAssetAssessments query to include uniformat fields
 - [x] Test and verify the implementation - all UNIFORMAT codes displaying correctly
+
+
+## Hide Fields from Assessment Dialog
+- [ ] Hide Primary Action Year field
+- [ ] Hide Repair Cost ($) field
+- [ ] Hide Timeline field from Recommended Actions
+
+
+## Hide Fields from Assessment Dialog (Completed)
+- [x] Hide Primary Action Year field
+- [x] Hide Repair Cost ($) field
+- [x] Hide Timeline field from Recommended Actions

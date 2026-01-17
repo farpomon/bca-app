@@ -295,8 +295,8 @@ export function AssessmentActionsEditor({
                     />
                   </div>
 
-                  {/* Priority and Timeline */}
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Priority */}
+                  <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor={`action-priority-${index}`} className="text-sm">Priority</Label>
                       <Select
@@ -320,7 +320,7 @@ export function AssessmentActionsEditor({
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="hidden space-y-2">
                       <Label htmlFor={`action-timeline-${index}`} className="text-sm">Timeline</Label>
                       <Select
                         value={action.timeline || '1-3 years'}
@@ -332,8 +332,8 @@ export function AssessmentActionsEditor({
                         </SelectTrigger>
                         <SelectContent>
                           {TIMELINE_OPTIONS.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
                             </SelectItem>
                           ))}
                         </SelectContent>

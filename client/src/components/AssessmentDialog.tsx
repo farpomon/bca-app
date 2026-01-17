@@ -1252,8 +1252,8 @@ export function AssessmentDialog({
             />
           </div>
 
-          {/* Legacy Action Year - kept for backward compatibility */}
-          <div className="space-y-2">
+          {/* Legacy Action Year - kept for backward compatibility - HIDDEN */}
+          <div className="hidden space-y-2">
             <Label htmlFor="actionYear">Primary Action Year</Label>
             <Input
               id="actionYear"
@@ -1264,8 +1264,8 @@ export function AssessmentDialog({
             />
           </div>
 
-          {/* Repair Cost */}
-          <div className="space-y-2">
+          {/* Repair Cost - HIDDEN */}
+          <div className="hidden space-y-2">
             <Label htmlFor="repairCost">Repair Cost ($)</Label>
             <CurrencyInput
               id="repairCost"
