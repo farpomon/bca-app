@@ -63,7 +63,7 @@ function getComponentLevel(code: string): number {
 interface ComponentSelectorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelectComponent: (code: string, name: string) => void;
+  onSelectComponent: (code: string, name: string, uniformatId?: number, uniformatLevel?: number, uniformatGroup?: { code: string; name: string }) => void;
   assetId: number;
   projectId: number;
   existingAssessments?: Array<{ componentCode: string | null }>;
@@ -98,7 +98,7 @@ export function ComponentSelectorDialog({
   const [selectedComponents, setSelectedComponents] = useState<Set<string>>(new Set());
   
   // Duplicate detection modal
-  const [duplicateComponent, setDuplicateComponent] = useState<{ code: string; name: string } | null>(null);
+  const [duplicateComponent, setDuplicateComponent] = useState<{ code: string; name: string; id?: number; level?: number; group?: { code: string; name: string } } | null>(null);
   
   // Pagination state
   const [page, setPage] = useState(1);
@@ -174,7 +174,7 @@ export function ComponentSelectorDialog({
       setSelectedComponents(newSelected);
     } else {
       if (hasExistingAssessment(code)) {
-        setDuplicateComponent({ code, name });
+        setDuplicateComponent({ code, name, id: component.id, level: component.level, group: getSystemGroup(component.code) });
       } else {
         // Pass full component metadata including id, level, and group
         onSelectComponent(code, name, component.id, component.level, getSystemGroup(component.code));
@@ -586,7 +586,7 @@ export function ComponentSelectorDialog({
               variant="outline"
               onClick={() => {
                 if (duplicateComponent) {
-                  onSelectComponent(duplicateComponent.code, duplicateComponent.name);
+                  onSelectComponent(duplicateComponent.code, duplicateComponent.name, duplicateComponent.id, duplicateComponent.level, duplicateComponent.group);
                   setDuplicateComponent(null);
                   handleClose();
                 }

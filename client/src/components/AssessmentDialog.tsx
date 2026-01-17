@@ -281,8 +281,13 @@ interface AssessmentDialogProps {
     id?: number;
     condition: string;
     conditionPercentage?: string | null;
+    componentCode?: string | null;
     componentName?: string | null;
     componentLocation?: string | null;
+    // UNIFORMAT metadata
+    uniformatId?: number | null;
+    uniformatLevel?: number | null;
+    uniformatGroup?: string | null;
     observations?: string | null;
     recommendations?: string | null;
     remainingUsefulLife?: number | null;
@@ -666,6 +671,7 @@ export function AssessmentDialog({
     } else {
       // No photo, just save the assessment using offline-capable hook
       try {
+        console.log('[AssessmentDialog] existingAssessment:', existingAssessment);
         const assessmentData = {
           projectId,
           assetId,
@@ -689,6 +695,7 @@ export function AssessmentDialog({
           actionDescription: actionDescription || null,
           repairCost: repairCost ? parseFloat(repairCost) : null,
         };
+        console.log('[AssessmentDialog] Saving assessment with data:', assessmentData);
 
         const assessmentId = await saveAssessment(assessmentData);
 
@@ -1249,6 +1256,7 @@ export function AssessmentDialog({
               actions={actions}
               onChange={setActions}
               disabled={isSaving}
+              uniformatCode={componentCode}
             />
           </div>
 

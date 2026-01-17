@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight, AlertTriangle, Clock, DollarSign } from "lucide-react";
+import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight, AlertTriangle, Clock, DollarSign, Library } from "lucide-react";
 import { VoiceInputButton } from "@/components/VoiceInputButton";
+import { ActionTemplatesDialog } from "@/components/ActionTemplatesDialog";
 import { cn } from "@/lib/utils";
 
 export interface AssessmentAction {
@@ -50,9 +51,11 @@ const TIMELINE_OPTIONS = [
 export function AssessmentActionsEditor({
   actions,
   onChange,
-  disabled = false,
+  disabled,
   className,
-}: AssessmentActionsEditorProps) {
+  uniformatCode,
+}: AssessmentActionsEditorProps & { uniformatCode?: string | null }) {
+  const [showTemplatesDialog, setShowTemplatesDialog] = useState(false);
   const [expandedActions, setExpandedActions] = useState<Set<number>>(new Set([0]));
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -73,6 +76,28 @@ export function AssessmentActionsEditor({
     confidence: undefined,
     sortOrder,
   });
+
+  const handleSelectTemplate = (template: any) => {
+    console.log('[AssessmentActionsEditor] Template selected:', template);
+    console.log('[AssessmentActionsEditor] Current actions:', actions);
+    
+    const newAction: AssessmentAction = {
+      description: template.description,
+      priority: template.priority,
+      timeline: template.timeline || undefined,
+      estimatedCost: template.estimatedCost ? parseFloat(template.estimatedCost) : undefined,
+      consequenceOfDeferral: template.consequenceOfDeferral || undefined,
+      confidence: template.confidence || undefined,
+      sortOrder: actions.length,
+    };
+    
+    console.log('[AssessmentActionsEditor] New action created:', newAction);
+    const updatedActions = [...actions, newAction];
+    console.log('[AssessmentActionsEditor] Updated actions:', updatedActions);
+    
+    onChange(updatedActions);
+    setExpandedActions(new Set([...expandedActions, actions.length]));
+  };
 
   const handleAddAction = () => {
     const newAction = createEmptyAction(actions.length);
@@ -396,18 +421,39 @@ export function AssessmentActionsEditor({
         ))}
       </div>
 
-      {/* Add action button */}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={handleAddAction}
-        disabled={disabled}
-        className="w-full gap-2"
-      >
-        <Plus className="w-4 h-4" />
-        Add Another Action
-      </Button>
+      {/* Add action buttons */}
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleAddAction}
+          disabled={disabled}
+          className="gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add Another Action
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowTemplatesDialog(true)}
+          disabled={disabled}
+          className="gap-2"
+        >
+          <Library className="w-4 h-4" />
+          Use Template
+        </Button>
+      </div>
+
+      {/* Action Templates Dialog */}
+      <ActionTemplatesDialog
+        open={showTemplatesDialog}
+        onClose={() => setShowTemplatesDialog(false)}
+        onSelectTemplate={handleSelectTemplate}
+        uniformatCode={uniformatCode}
+      />
 
       {/* Summary footer */}
       {actions.length > 1 && (

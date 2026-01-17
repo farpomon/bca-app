@@ -237,6 +237,27 @@ export const assessmentActions = mysqlTable("assessment_actions", {
 export type AssessmentAction = typeof assessmentActions.$inferSelect;
 export type InsertAssessmentAction = typeof assessmentActions.$inferInsert;
 
+// Action templates for common repairs
+export const actionTemplates = mysqlTable("action_templates", {
+	id: int().autoincrement().primaryKey(),
+	name: varchar({ length: 255 }).notNull(), // e.g., "HVAC System Replacement"
+	category: varchar({ length: 100 }).notNull(), // e.g., "HVAC", "Roofing", "Electrical", "Plumbing", "Structural"
+	description: text().notNull(),
+	priority: mysqlEnum(['immediate', 'short_term', 'medium_term', 'long_term']).default('medium_term'),
+	timeline: varchar({ length: 50 }), // e.g., "0-1 years", "1-3 years"
+	estimatedCost: decimal({ precision: 12, scale: 2 }),
+	consequenceOfDeferral: text(),
+	confidence: int(), // 0-100% confidence in the cost estimate
+	uniformatCodes: text(), // JSON array of applicable UNIFORMAT codes (e.g., ["D30", "D40"])
+	isSystemTemplate: int().default(1).notNull(), // 1 = system template, 0 = user-created
+	createdBy: int(), // User ID who created the template (null for system templates)
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+});
+
+export type ActionTemplate = typeof actionTemplates.$inferSelect;
+export type InsertActionTemplate = typeof actionTemplates.$inferInsert;
+
 // Assessment deletion audit log
 export const assessmentDeletionLog = mysqlTable("assessment_deletion_log", {
 	id: int().autoincrement().primaryKey(),

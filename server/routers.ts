@@ -76,6 +76,7 @@ import { auditLogsRouter } from "./routers/auditLogs.router";
 import { dataIntegrityRouter } from "./routers/dataIntegrity.router";
 import { importValidationRouter } from "./routers/importValidation.router";
 import { cleanupJobsRouter } from "./routers/cleanupJobs.router";
+import { actionTemplatesRouter } from "./routers/actionTemplates.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -116,6 +117,7 @@ export const appRouter = router({
   dataIntegrity: dataIntegrityRouter,
   importValidation: importValidationRouter,
   cleanupJobs: cleanupJobsRouter,
+  actionTemplates: actionTemplatesRouter,
   companyRoles: companyRolesRouter,
   pageVisibility: pageVisibilityRouter,
   analytics: analyticsRouter,

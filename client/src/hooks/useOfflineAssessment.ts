@@ -21,6 +21,10 @@ export interface AssessmentFormData {
   componentCode: string | null;
   componentName: string | null;
   componentLocation: string | null;
+  // UNIFORMAT metadata
+  uniformatId?: number | null;
+  uniformatLevel?: number | null;
+  uniformatGroup?: string | null;
   condition: string | null;
   status: string | null;
   observations: string | null;
@@ -95,6 +99,10 @@ export function useOfflineAssessment({
               componentCode: data.componentCode ?? undefined,
               componentName: data.componentName ?? undefined,
               componentLocation: data.componentLocation ?? undefined,
+              // UNIFORMAT metadata
+              uniformatId: data.uniformatId ?? undefined,
+              uniformatLevel: data.uniformatLevel ?? undefined,
+              uniformatGroup: data.uniformatGroup ?? undefined,
               condition: (data.condition ?? undefined) as "good" | "fair" | "poor" | "not_assessed" | undefined,
               status: (data.status ?? undefined) as "initial" | "active" | "completed" | undefined,
               observations: data.observations ?? undefined,

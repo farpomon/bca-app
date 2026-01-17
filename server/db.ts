@@ -9,6 +9,7 @@ import {
   assessments,
   assessmentActions,
   InsertAssessmentAction,
+  actionTemplates,
   assessmentDeletionLog,
   deficiencies,
   photos,
@@ -3312,4 +3313,57 @@ export async function getAssessmentActionsTotalCost(assessmentId: number): Promi
     const cost = parseFloat(action.estimatedCost || '0');
     return sum + (isNaN(cost) ? 0 : cost);
   }, 0);
+}
+
+// ============================================
+// Action Templates
+// ============================================
+
+export async function getAllActionTemplates() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(actionTemplates)
+    .orderBy(asc(actionTemplates.category), asc(actionTemplates.name));
+}
+
+export async function getActionTemplatesByCategory(category: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(actionTemplates)
+    .where(eq(actionTemplates.category, category))
+    .orderBy(asc(actionTemplates.name));
+}
+
+export async function getActionTemplatesByUniformatCode(uniformatCode: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const allTemplates = await getAllActionTemplates();
+  return allTemplates.filter(template => {
+    try {
+      const codes = JSON.parse(template.uniformatCodes || '[]');
+      return codes.includes(uniformatCode);
+    } catch {
+      return false;
+    }
+  });
+}
+
+export async function getActionTemplateById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db
+    .select()
+    .from(actionTemplates)
+    .where(eq(actionTemplates.id, id))
+    .limit(1);
+  
+  return result[0] || null;
 }

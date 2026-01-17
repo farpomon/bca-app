@@ -5282,3 +5282,31 @@ Deployment is allowed only when:
 - [x] Hide Primary Action Year field
 - [x] Hide Repair Cost ($) field
 - [x] Hide Timeline field from Recommended Actions
+
+
+## Action Templates Library and Bulk Action Management
+- [ ] Create action_templates table in database schema
+- [ ] Add CRUD operations for action templates (create, read, update, delete)
+- [ ] Seed database with pre-defined templates (HVAC, roofing, electrical, plumbing, structural, etc.)
+- [ ] Create ActionTemplatesLibrary component for browsing and selecting templates
+- [ ] Add "Use Template" button in AssessmentActionsEditor
+- [ ] Implement template application logic (populate action fields from template)
+- [ ] Add "Copy Actions" button to assessment list items
+- [ ] Implement copy actions between components
+- [ ] Add bulk selection mode to assessment list
+- [ ] Add "Apply Template to Selected" bulk action
+- [ ] Test template selection and application
+- [ ] Test copying actions between components
+- [ ] Test bulk apply templates to multiple assessments
+
+## Bug Fixes
+
+- [ ] Fix UNIFORMAT code display: New assessments show "Custom" badge instead of actual UNIFORMAT code (D40, D50, etc.) in assessment list
+
+## Bug Fixes
+
+- [ ] Fix UNIFORMAT code display: New assessments show "Custom" badge instead of actual UNIFORMAT code (D40, D50, etc.) in assessment list
+  - ✅ Updated ComponentSelectorDialog to pass uniformat metadata (uniformatId, uniformatLevel, uniformatGroup)
+  - ✅ Added uniformat fields to AssessmentFormData interface
+  - ✅ Added uniformat fields to existingAssessment interface in AssessmentDialog
+  - ⚠️ INCOMPLETE: Uniformat metadata still saving as NULL in database - need to check backend tRPC mutation schema

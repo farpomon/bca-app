@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS action_templates (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  name VARCHAR(255) NOT NULL,\n  category VARCHAR(100) NOT NULL,\n  description TEXT NOT NULL,\n  priority ENUM('immediate', 'short_term', 'medium_term', 'long_term') DEFAULT 'medium_term',\n  timeline VARCHAR(50),\n  estimatedCost DECIMAL(12, 2),\n  consequenceOfDeferral TEXT,\n  confidence INT,\n  uniformatCodes TEXT,\n  isSystemTemplate INT DEFAULT 1 NOT NULL,\n  createdBy INT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS action_templates (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  name VARCHAR(255) NOT NULL,\n  category VARCHAR(100) NOT NULL,\n  description TEXT NOT NULL,\n  priority ENUM('immediate', 'short_term', 'medium_term', 'long_term') DEFAULT 'medium_term',\n  timeline VARCHAR(50),\n  estimatedCost DECIMAL(12, 2),\n  consequenceOfDeferral TEXT,\n  confidence INT,\n  uniformatCodes TEXT,\n  isSystemTemplate INT DEFAULT 1 NOT NULL,\n  createdBy INT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 209
+}
