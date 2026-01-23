@@ -16,6 +16,10 @@ export interface OfflineAssessment {
   componentCode: string | null;
   componentName: string | null;
   componentLocation: string | null;
+  // UNIFORMAT metadata
+  uniformatId?: number | null;
+  uniformatLevel?: number | null;
+  uniformatGroup?: string | null;
   condition: string | null;
   status: string | null;
   observations: string | null;

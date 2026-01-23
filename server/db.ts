@@ -726,26 +726,74 @@ export async function upsertAssessment(data: InsertAssessment) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  console.log('[upsertAssessment] Input data:', {
-    componentCode: data.componentCode,
-    replacementValue: data.replacementValue,
-    replacementValueType: typeof data.replacementValue,
-    estimatedRepairCost: data.estimatedRepairCost
+  // Auto-populate uniformat metadata from componentCode if not provided
+  let uniformatData = {
+    uniformatId: data.uniformatId,
+    uniformatLevel: data.uniformatLevel,
+    uniformatGroup: data.uniformatGroup,
+  };
+  
+  // If uniformat data is missing but we have a componentCode, look it up
+  if (data.componentCode && (!data.uniformatId || !data.uniformatLevel || !data.uniformatGroup)) {
+    const component = await db
+      .select({
+        id: buildingComponents.id,
+        level: buildingComponents.level,
+        code: buildingComponents.code,
+      })
+      .from(buildingComponents)
+      .where(eq(buildingComponents.code, data.componentCode))
+      .limit(1);
+    
+    if (component.length > 0) {
+      const comp = component[0];
+      // Extract the group letter from the code (first character: A, B, C, D, E, F, G)
+      const groupLetter = data.componentCode.charAt(0).toUpperCase();
+      const groupNames: Record<string, string> = {
+        'A': 'A - Substructure',
+        'B': 'B - Shell',
+        'C': 'C - Interiors',
+        'D': 'D - Services',
+        'E': 'E - Equipment & Furnishings',
+        'F': 'F - Special Construction',
+        'G': 'G - Building Sitework',
+      };
+      
+      uniformatData = {
+        uniformatId: data.uniformatId ?? comp.id,
+        uniformatLevel: data.uniformatLevel ?? comp.level,
+        uniformatGroup: data.uniformatGroup ?? groupNames[groupLetter] ?? groupLetter,
+      };
+      console.log('[upsertAssessment] Auto-populated uniformat data:', uniformatData);
+    }
+  }
+  
+  // Merge uniformat data into the assessment data
+  const assessmentData = {
+    ...data,
+    ...uniformatData,
+  };
+  
+  console.log('[upsertAssessment] Final data:', {
+    componentCode: assessmentData.componentCode,
+    uniformatId: assessmentData.uniformatId,
+    uniformatLevel: assessmentData.uniformatLevel,
+    uniformatGroup: assessmentData.uniformatGroup,
   });
   
   const existing = data.componentCode ? await getAssessmentByComponent(data.projectId, data.componentCode) : null;
   
   if (existing) {
-    const updateData = { ...data, updatedAt: new Date().toISOString() };
-    console.log('[upsertAssessment] Updating existing assessment:', existing.id, 'with replacementValue:', updateData.replacementValue);
+    const updateData = { ...assessmentData, updatedAt: new Date().toISOString() };
+    console.log('[upsertAssessment] Updating existing assessment:', existing.id);
     await db
       .update(assessments)
       .set(updateData)
       .where(eq(assessments.id, existing.id));
     return existing.id;
   } else {
-    console.log('[upsertAssessment] Inserting new assessment with replacementValue:', data.replacementValue);
-    const result = await db.insert(assessments).values(data);
+    console.log('[upsertAssessment] Inserting new assessment');
+    const result = await db.insert(assessments).values(assessmentData);
     return result[0].insertId;
   }
 }

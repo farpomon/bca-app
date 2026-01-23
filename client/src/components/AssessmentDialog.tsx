@@ -383,6 +383,16 @@ export function AssessmentDialog({
   const logOverride = trpc.validation.logOverride.useMutation();
   const saveActionsMutation = trpc.assessments.saveActions.useMutation();
 
+  // Debug: Log existingAssessment when it changes
+  useEffect(() => {
+    console.log('[AssessmentDialog] existingAssessment:', JSON.stringify(existingAssessment, null, 2));
+    console.log('[AssessmentDialog] uniformat fields:', JSON.stringify({
+      uniformatId: existingAssessment?.uniformatId,
+      uniformatLevel: existingAssessment?.uniformatLevel,
+      uniformatGroup: existingAssessment?.uniformatGroup,
+    }, null, 2));
+  }, [existingAssessment]);
+
   // Query existing actions when editing an assessment
   const { data: existingActions, refetch: refetchActions } = trpc.assessments.getActions.useQuery(
     { assessmentId: existingAssessment?.id!, projectId },
@@ -475,10 +485,10 @@ export function AssessmentDialog({
         componentCode,
         componentName: componentNameField || null,
         componentLocation: componentLocationField || null,
-        // UNIFORMAT metadata
-        uniformatId: existingAssessment?.uniformatId || null,
-        uniformatLevel: existingAssessment?.uniformatLevel || null,
-        uniformatGroup: existingAssessment?.uniformatGroup || null,
+        // UNIFORMAT metadata - use nullish coalescing to preserve 0 values
+        uniformatId: existingAssessment?.uniformatId !== undefined ? existingAssessment.uniformatId : null,
+        uniformatLevel: existingAssessment?.uniformatLevel !== undefined ? existingAssessment.uniformatLevel : null,
+        uniformatGroup: existingAssessment?.uniformatGroup !== undefined ? existingAssessment.uniformatGroup : null,
         condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
         status: status as "initial" | "active" | "completed" | null,
         observations: observations || null,
@@ -672,16 +682,23 @@ export function AssessmentDialog({
       // No photo, just save the assessment using offline-capable hook
       try {
         console.log('[AssessmentDialog] existingAssessment:', existingAssessment);
+        console.log('[AssessmentDialog] proceedWithSave - existingAssessment:', JSON.stringify(existingAssessment));
+        console.log('[AssessmentDialog] uniformat data at save time:', {
+          uniformatId: existingAssessment?.uniformatId,
+          uniformatIdType: typeof existingAssessment?.uniformatId,
+          uniformatLevel: existingAssessment?.uniformatLevel,
+          uniformatGroup: existingAssessment?.uniformatGroup,
+        });
         const assessmentData = {
           projectId,
           assetId,
           componentCode,
           componentName: componentNameField || null,
           componentLocation: componentLocationField || null,
-          // UNIFORMAT metadata
-          uniformatId: existingAssessment?.uniformatId || null,
-          uniformatLevel: existingAssessment?.uniformatLevel || null,
-          uniformatGroup: existingAssessment?.uniformatGroup || null,
+          // UNIFORMAT metadata - use nullish coalescing to preserve 0 values
+          uniformatId: existingAssessment?.uniformatId !== undefined ? existingAssessment.uniformatId : null,
+          uniformatLevel: existingAssessment?.uniformatLevel !== undefined ? existingAssessment.uniformatLevel : null,
+          uniformatGroup: existingAssessment?.uniformatGroup !== undefined ? existingAssessment.uniformatGroup : null,
           condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
           status: status as "initial" | "active" | "completed" | null,
           observations: observations || null,

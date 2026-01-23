@@ -5310,3 +5310,10 @@ Deployment is allowed only when:
   - ✅ Added uniformat fields to AssessmentFormData interface
   - ✅ Added uniformat fields to existingAssessment interface in AssessmentDialog
   - ⚠️ INCOMPLETE: Uniformat metadata still saving as NULL in database - need to check backend tRPC mutation schema
+
+
+## UNIFORMAT Code Display Fix
+
+- [x] Fix UNIFORMAT code display: New assessments show "Custom" badge instead of actual UNIFORMAT code
+  - Fixed: Altered uniformatGroup column from varchar(1) to varchar(64)
+  - Fixed: Backend auto-populates uniformat metadata from componentCode when saving

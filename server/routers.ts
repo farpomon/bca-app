@@ -1921,6 +1921,10 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         estimatedServiceLife: z.number().optional(),
         hasValidationOverrides: z.number().optional(),
         validationWarnings: z.string().optional(),
+        // UNIFORMAT metadata
+        uniformatId: z.number().optional().nullable(),
+        uniformatLevel: z.number().optional().nullable(),
+        uniformatGroup: z.string().optional().nullable(),
       }))
       .mutation(async ({ ctx, input }) => {
         const isAdmin = ctx.user.role === 'admin';
@@ -1932,6 +1936,9 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           replacementValue: input.replacementValue,
           replacementValueType: typeof input.replacementValue,
           estimatedRepairCost: input.estimatedRepairCost,
+          uniformatId: input.uniformatId,
+          uniformatLevel: input.uniformatLevel,
+          uniformatGroup: input.uniformatGroup,
         });
         
         // Get existing assessment to detect changes

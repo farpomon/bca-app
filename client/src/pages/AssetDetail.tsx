@@ -321,12 +321,23 @@ export default function AssetDetail() {
         projectId={projectId}
         existingAssessments={assessments || []}
         onSelectComponent={(code, name, uniformatId, uniformatLevel, uniformatGroup) => {
+          // uniformatGroup comes as { code, name } object from ComponentSelectorDialog
+          // Convert to string format "code - name" for storage
+          const uniformatGroupStr = uniformatGroup ? `${uniformatGroup.code} - ${uniformatGroup.name}` : null;
+          console.log('[AssetDetail] onSelectComponent called with:', {
+            code,
+            name,
+            uniformatId,
+            uniformatLevel,
+            uniformatGroup,
+            uniformatGroupStr,
+          });
           setSelectedAssessment({ 
             componentCode: code, 
             componentName: name,
             uniformatId,
             uniformatLevel,
-            uniformatGroup
+            uniformatGroup: uniformatGroupStr
           });
           setShowAssessmentDialog(true);
         }}
