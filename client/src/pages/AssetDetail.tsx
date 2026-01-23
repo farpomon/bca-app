@@ -680,15 +680,17 @@ export default function AssetDetail() {
                             )}
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                {assessment.componentCode ? (
+                                {assessment.componentCode && assessment.sourceType === 'UNIFORMAT' ? (
                                   <>
                                     <p className="font-medium text-lg">{assessment.componentCode}</p>
-                                    {!assessment.uniformatId && (
-                                      <Badge variant="outline" className="text-xs">Custom</Badge>
-                                    )}
                                   </>
                                 ) : (
-                                  <Badge variant="outline" className="text-xs">Custom</Badge>
+                                  <>
+                                    <Badge variant="outline" className="text-xs">Custom</Badge>
+                                    {assessment.componentCode && (
+                                      <p className="text-sm text-muted-foreground">{assessment.componentCode}</p>
+                                    )}
+                                  </>
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground">{assessment.componentName || 'Unknown Component'}</p>

@@ -5317,3 +5317,26 @@ Deployment is allowed only when:
 - [x] Fix UNIFORMAT code display: New assessments show "Custom" badge instead of actual UNIFORMAT code
   - Fixed: Altered uniformatGroup column from varchar(1) to varchar(64)
   - Fixed: Backend auto-populates uniformat metadata from componentCode when saving
+
+
+## UNIFORMAT Component Input Simplification & "Custom" Badge Fix
+
+- [ ] Add source_type enum field to assessments table ('UNIFORMAT' | 'CUSTOM')
+- [ ] Make uniformat_code required when source_type='UNIFORMAT'
+- [ ] Add validation to block save if source_type='UNIFORMAT' but uniformat_code is null
+- [ ] Create backfill migration to fix existing assessments marked as custom
+- [ ] Update ComponentSelectorDialog to enforce UNIFORMAT identity on creation
+- [ ] Update assessment list rendering to show UNIFORMAT code instead of "Custom" pill
+- [ ] Simplify "Add Component" flow with single primary action
+- [ ] Test complete flow and verify UNIFORMAT selections never show as "Custom"
+
+## UNIFORMAT Component Input Simplification (COMPLETED)
+
+- [x] Add `sourceType` enum field to assessments table ('UNIFORMAT' | 'CUSTOM')
+- [x] Update schema to make uniformat fields required when sourceType='UNIFORMAT'
+- [x] Create backfill migration to fix existing assessments marked as custom (591 assessments updated)
+- [x] Update frontend component selector to enforce UNIFORMAT identity on creation
+- [x] Update assessment list rendering to display UNIFORMAT codes correctly
+- [x] Update backend to auto-set sourceType based on uniformat data
+- [x] Fix uniformatGroup column size from varchar(1) to varchar(64)
+- [x] Test complete flow: create new assessment → displays UNIFORMAT code (not "Custom")

@@ -195,7 +195,8 @@ export const assessments = mysqlTable("assessments", {
 	// UNIFORMAT II metadata
 	uniformatId: int(), // FK to building_components table
 	uniformatLevel: int(), // 1, 2, or 3
-	uniformatGroup: varchar({ length: 1 }), // A-G
+	uniformatGroup: varchar({ length: 64 }), // Full group name (e.g., "D - Services")
+	sourceType: mysqlEnum(['UNIFORMAT', 'CUSTOM']), // Track if component is from UNIFORMAT library or custom
 	sectionId: int(), // Optional: link assessment to a specific building section
 	condition: varchar({ length: 50 }),
 	conditionPercentage: varchar({ length: 10 }),

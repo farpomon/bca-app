@@ -679,7 +679,8 @@ export async function getAssetAssessments(assetId: number) {
       (SELECT COUNT(*) FROM photos p WHERE p.assessmentId = a.id AND p.deletedAt IS NULL) as photoCount,
       a.uniformatId,
       a.uniformatLevel,
-      a.uniformatGroup
+      a.uniformatGroup,
+      a.sourceType
     FROM assessments a
     LEFT JOIN building_components bc ON a.componentId = bc.id
     WHERE a.assetId = ${assetId}
@@ -768,10 +769,16 @@ export async function upsertAssessment(data: InsertAssessment) {
     }
   }
   
-  // Merge uniformat data into the assessment data
+  // Determine sourceType based on uniformat data
+  const sourceType = uniformatData.uniformatId && uniformatData.uniformatLevel && uniformatData.uniformatGroup
+    ? 'UNIFORMAT'
+    : 'CUSTOM';
+  
+  // Merge uniformat data and sourceType into the assessment data
   const assessmentData = {
     ...data,
     ...uniformatData,
+    sourceType,
   };
   
   console.log('[upsertAssessment] Final data:', {
