@@ -5346,3 +5346,5 @@ Deployment is allowed only when:
 - [x] Fix component name changes not persisting in assessment list - Root cause: assessment ID not passed to backend, causing duplicate creation instead of update
 
 - [x] Fix UNIFORMAT code badge displaying "Custom" instead of actual code when creating component assessments - Root cause: UNIFORMAT metadata not passed to AssessmentDialog
+
+- [x] Fix dialog title showing "GENERAL" instead of UNIFORMAT code (e.g., "B1020") after creating and saving an assessment from UNIFORMAT component - Root cause: getAssetAssessments query only used building_components.code instead of assessments.componentCode

@@ -651,7 +651,7 @@ export async function getAssetAssessments(assetId: number) {
       a.id,
       a.assetId,
       a.componentId,
-      bc.code as componentCode,
+      COALESCE(a.componentCode, bc.code) as componentCode,
       COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
       CASE 
