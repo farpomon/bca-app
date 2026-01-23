@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, componentCode, componentName, componentId FROM assessments WHERE id = 180006;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, componentName, componentId FROM assessments WHERE id = 180006;",
+  "rows": [
+    {
+      "id": "180006",
+      "componentCode": "A1030",
+      "componentName": "Slab on GradeSlab on grade",
+      "componentId": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcomponentName\tcomponentId\n180006\tA1030\tSlab on GradeSlab on grade\t0\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

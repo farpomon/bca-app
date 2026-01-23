@@ -5340,3 +5340,7 @@ Deployment is allowed only when:
 - [x] Update backend to auto-set sourceType based on uniformat data
 - [x] Fix uniformatGroup column size from varchar(1) to varchar(64)
 - [x] Test complete flow: create new assessment → displays UNIFORMAT code (not "Custom")
+
+- [ ] Fix component assessment name not updating in dashboard list after editing and saving
+
+- [x] Fix component name changes not persisting in assessment list - Root cause: assessment ID not passed to backend, causing duplicate creation instead of update

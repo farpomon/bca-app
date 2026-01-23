@@ -480,6 +480,7 @@ export function AssessmentDialog({
     try {
       // Use offline-capable save
       const assessmentData = {
+        ...(existingAssessment?.id ? { id: existingAssessment.id } : {}),
         projectId,
         assetId,
         componentCode,
@@ -690,6 +691,7 @@ export function AssessmentDialog({
           uniformatGroup: existingAssessment?.uniformatGroup,
         });
         const assessmentData = {
+          ...(existingAssessment?.id ? { id: existingAssessment.id } : {}),
           projectId,
           assetId,
           componentCode,

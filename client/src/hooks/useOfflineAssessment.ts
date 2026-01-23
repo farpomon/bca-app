@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
 export interface AssessmentFormData {
+  id?: number;
   projectId: number;
   assetId: number;
   componentCode: string | null;
@@ -65,6 +66,9 @@ export function useOfflineAssessment({
   
   const { isOnline } = useOfflineSync();
   
+  // Get utils for cache invalidation
+  const utils = trpc.useUtils();
+  
   // Use real tRPC mutation for online sync
   const createAssessmentMutation = trpc.assessments.upsert.useMutation();
 
@@ -94,6 +98,7 @@ export function useOfflineAssessment({
           try {
             // Convert null to undefined for tRPC
             const tRPCData = {
+              ...(data.id ? { id: data.id } : {}),
               projectId: data.projectId,
               assetId: data.assetId,
               componentCode: data.componentCode ?? undefined,
@@ -115,6 +120,12 @@ export function useOfflineAssessment({
               actionYear: data.actionYear ?? undefined,
             };
             const result = await createAssessmentMutation.mutateAsync(tRPCData);
+            
+            // Invalidate the assessment list cache to ensure UI shows updated data
+            await utils.assessments.listByAsset.invalidate({ 
+              assetId: data.assetId, 
+              projectId: data.projectId 
+            });
             
             toast.success("Assessment saved successfully");
             

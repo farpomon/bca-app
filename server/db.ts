@@ -783,16 +783,29 @@ export async function upsertAssessment(data: InsertAssessment) {
   
   console.log('[upsertAssessment] Final data:', {
     componentCode: assessmentData.componentCode,
+    componentName: assessmentData.componentName,
     uniformatId: assessmentData.uniformatId,
     uniformatLevel: assessmentData.uniformatLevel,
     uniformatGroup: assessmentData.uniformatGroup,
   });
   
+  // If an ID is provided, this is an update operation
+  if (data.id) {
+    const updateData = { ...assessmentData, updatedAt: new Date().toISOString() };
+    console.log('[upsertAssessment] Updating existing assessment:', data.id, 'with componentName:', updateData.componentName);
+    await db
+      .update(assessments)
+      .set(updateData)
+      .where(eq(assessments.id, data.id));
+    return data.id;
+  }
+  
+  // Otherwise, check if an assessment exists for this component
   const existing = data.componentCode ? await getAssessmentByComponent(data.projectId, data.componentCode) : null;
   
   if (existing) {
     const updateData = { ...assessmentData, updatedAt: new Date().toISOString() };
-    console.log('[upsertAssessment] Updating existing assessment:', existing.id);
+    console.log('[upsertAssessment] Updating existing assessment by componentCode:', existing.id, 'with componentName:', updateData.componentName);
     await db
       .update(assessments)
       .set(updateData)

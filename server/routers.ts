@@ -1898,6 +1898,7 @@ Provide helpful insights, recommendations, and analysis based on this asset data
 
     upsert: protectedProcedure
       .input(z.object({
+        id: z.number().optional(),
         projectId: z.number(),
         assetId: z.number().optional(),
         componentCode: z.string().optional(),
