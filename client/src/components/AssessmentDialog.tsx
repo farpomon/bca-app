@@ -277,6 +277,10 @@ interface AssessmentDialogProps {
   assetId: number;
   componentCode: string;
   componentName: string;
+  // UNIFORMAT metadata props for new assessments
+  uniformatId?: number | null;
+  uniformatLevel?: number | null;
+  uniformatGroup?: string | null;
   existingAssessment?: {
     id?: number;
     condition: string;
@@ -486,10 +490,10 @@ export function AssessmentDialog({
         componentCode,
         componentName: componentNameField || null,
         componentLocation: componentLocationField || null,
-        // UNIFORMAT metadata - use nullish coalescing to preserve 0 values
-        uniformatId: existingAssessment?.uniformatId !== undefined ? existingAssessment.uniformatId : null,
-        uniformatLevel: existingAssessment?.uniformatLevel !== undefined ? existingAssessment.uniformatLevel : null,
-        uniformatGroup: existingAssessment?.uniformatGroup !== undefined ? existingAssessment.uniformatGroup : null,
+        // UNIFORMAT metadata - use props for new assessments, existingAssessment for edits
+        uniformatId: existingAssessment?.uniformatId !== undefined ? existingAssessment.uniformatId : (uniformatId !== undefined ? uniformatId : null),
+        uniformatLevel: existingAssessment?.uniformatLevel !== undefined ? existingAssessment.uniformatLevel : (uniformatLevel !== undefined ? uniformatLevel : null),
+        uniformatGroup: existingAssessment?.uniformatGroup !== undefined ? existingAssessment.uniformatGroup : (uniformatGroup !== undefined ? uniformatGroup : null),
         condition: condition as "good" | "fair" | "poor" | "not_assessed" | null,
         status: status as "initial" | "active" | "completed" | null,
         observations: observations || null,

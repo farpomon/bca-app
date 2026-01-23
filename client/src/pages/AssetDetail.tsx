@@ -371,6 +371,9 @@ export default function AssetDetail() {
         assetId={assetIdNum}
         componentCode={selectedAssessment?.componentCode || "GENERAL"}
         componentName={selectedAssessment?.componentName || "General Assessment"}
+        uniformatId={selectedAssessment?.uniformatId}
+        uniformatLevel={selectedAssessment?.uniformatLevel}
+        uniformatGroup={selectedAssessment?.uniformatGroup}
         existingAssessment={selectedAssessment}
         onSuccess={() => {
           utils.assessments.listByAsset.invalidate();

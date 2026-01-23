@@ -5344,3 +5344,5 @@ Deployment is allowed only when:
 - [ ] Fix component assessment name not updating in dashboard list after editing and saving
 
 - [x] Fix component name changes not persisting in assessment list - Root cause: assessment ID not passed to backend, causing duplicate creation instead of update
+
+- [x] Fix UNIFORMAT code badge displaying "Custom" instead of actual code when creating component assessments - Root cause: UNIFORMAT metadata not passed to AssessmentDialog
