@@ -600,7 +600,6 @@ export async function getProjectAssessments(projectId: number) {
       a.id,
       a.assetId,
       a.componentId,
-      bc.code as componentCode,
       COALESCE(a.componentCode, bc.code) as componentCode,
       COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
@@ -1768,7 +1767,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.id,
         a.assetId,
         a.componentId,
-        bc.code as componentCode,
+        COALESCE(a.componentCode, bc.code) as componentCode,
         COALESCE(a.componentName, bc.name) as componentName,
         a.conditionRating,
         CASE 
@@ -1810,7 +1809,7 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.id,
         a.assetId,
         a.componentId,
-        bc.code as componentCode,
+        COALESCE(a.componentCode, bc.code) as componentCode,
         COALESCE(a.componentName, bc.name) as componentName,
         a.conditionRating,
         CASE 
