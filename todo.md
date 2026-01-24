@@ -5350,3 +5350,6 @@ Deployment is allowed only when:
 - [x] Fix dialog title showing "GENERAL" instead of UNIFORMAT code (e.g., "B1020") after creating and saving an assessment from UNIFORMAT component - Root cause: getAssetAssessments query only used building_components.code instead of assessments.componentCode
 
 - [x] Fix dialog title showing "GENERAL" instead of UNIFORMAT code after saving assessments - Root cause: getAssetAssessments query ignored assessments.componentCode field
+
+- [x] Set up automatic daily backup schedule - Existing backup system with scheduling UI available in Admin panel
+- [x] Create backup retrieval documentation and UI instructions - Created comprehensive BACKUP_GUIDE.md
