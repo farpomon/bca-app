@@ -1,0 +1,55 @@
+{
+  "query": "SELECT code, name, level \nFROM building_components \nWHERE code LIKE 'E%' \nORDER BY code \nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT code, name, level \nFROM building_components \nWHERE code LIKE 'E%' \nORDER BY code \nLIMIT 20;",
+  "rows": [
+    {
+      "code": "E",
+      "name": "EQUIPMENT & FURNISHINGS",
+      "level": "1"
+    },
+    {
+      "code": "E10",
+      "name": "Equipment",
+      "level": "2"
+    },
+    {
+      "code": "E1010",
+      "name": "Commercial Equipment",
+      "level": "3"
+    },
+    {
+      "code": "E1020",
+      "name": "Institutional Equipment",
+      "level": "3"
+    },
+    {
+      "code": "E1030",
+      "name": "Vehicular Equipment",
+      "level": "3"
+    },
+    {
+      "code": "E1090",
+      "name": "Other Equipment",
+      "level": "3"
+    },
+    {
+      "code": "E20",
+      "name": "Furnishings",
+      "level": "2"
+    },
+    {
+      "code": "E2010",
+      "name": "Fixed Furnishings",
+      "level": "3"
+    },
+    {
+      "code": "E2020",
+      "name": "Movable Furnishings",
+      "level": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "code\tname\tlevel\nE\tEQUIPMENT & FURNISHINGS\t1\nE10\tEquipment\t2\nE1010\tCommercial Equipment\t3\nE1020\tInstitutional Equipment\t3\nE1030\tVehicular Equipment\t3\nE1090\tOther Equipment\t3\nE20\tFurnishings\t2\nE2010\tFixed Furnishings\t3\nE2020\tMovable Furnishings\t3\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

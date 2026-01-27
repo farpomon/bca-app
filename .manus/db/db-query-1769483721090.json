@@ -1,0 +1,25 @@
+{
+  "query": "SELECT \n  level,\n  COUNT(*) as count,\n  GROUP_CONCAT(DISTINCT SUBSTRING(code, 1, 1) ORDER BY code SEPARATOR ', ') as level1_codes\nFROM building_components\nGROUP BY level\nORDER BY level;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT \n  level,\n  COUNT(*) as count,\n  GROUP_CONCAT(DISTINCT SUBSTRING(code, 1, 1) ORDER BY code SEPARATOR ', ') as level1_codes\nFROM building_components\nGROUP BY level\nORDER BY level;",
+  "rows": [
+    {
+      "level": "1",
+      "count": "7",
+      "level1_codes": "A, B, C, D, E, F, G"
+    },
+    {
+      "level": "2",
+      "count": "22",
+      "level1_codes": "A, B, C, D, E, F, G"
+    },
+    {
+      "level": "3",
+      "count": "79",
+      "level1_codes": "A, B, C, D, E, F, G"
+    }
+  ],
+  "messages": [],
+  "stdout": "level\tcount\tlevel1_codes\n1\t7\tA, B, C, D, E, F, G\n2\t22\tA, B, C, D, E, F, G\n3\t79\tA, B, C, D, E, F, G\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

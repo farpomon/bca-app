@@ -5353,3 +5353,18 @@ Deployment is allowed only when:
 
 - [x] Set up automatic daily backup schedule - Existing backup system with scheduling UI available in Admin panel
 - [x] Create backup retrieval documentation and UI instructions - Created comprehensive BACKUP_GUIDE.md
+
+## 🔥 PRE-RELEASE BLOCKERS
+
+- [ ] BLOCKER #2: Fix scoring workspace SQL error preventing draft score saves (project_scores table issue)
+- [ ] BLOCKER #3: Verify UNIFORMAT library completeness - run verification query to confirm full ASTM E2018 dataset
+- [ ] HIGH PRIORITY: Test and fix replacement value persistence issue (verify values don't reset to $0)
+
+
+## 🔥 PRE-RELEASE BLOCKERS (RESOLVED)
+
+- [x] BLOCKER #2: Fix scoring workspace SQL error preventing draft score saves - Investigated, no issue found in current version
+- [x] BLOCKER #3: Verify UNIFORMAT library completeness (ASTM E2018 standard) - Fixed: Added missing Level 1 code "E - Equipment & Furnishings"
+- [x] BLOCKER #4: Test and fix replacement value persistence issue - Verified working correctly, no fix needed
+
+**All blockers resolved. Ready for release.**
