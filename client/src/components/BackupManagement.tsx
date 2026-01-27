@@ -127,6 +127,8 @@ export function BackupManagement() {
   const [scheduleMinute, setScheduleMinute] = useState("0");
   const [scheduleRetention, setScheduleRetention] = useState("30");
   const [scheduleEncryption, setScheduleEncryption] = useState(true);
+  const [emailOnSuccess, setEmailOnSuccess] = useState(true);
+  const [emailOnFailure, setEmailOnFailure] = useState(true);
 
   // Queries
   const backupsQuery = trpc.backup.list.useQuery({ limit: 20, offset: 0 });
@@ -284,6 +286,8 @@ export function BackupManagement() {
     setScheduleMinute("0");
     setScheduleRetention("30");
     setScheduleEncryption(true);
+    setEmailOnSuccess(true);
+    setEmailOnFailure(true);
   };
 
   const handleCreateBackup = () => {
@@ -304,6 +308,8 @@ export function BackupManagement() {
       timezone: "America/New_York",
       retentionDays: parseInt(scheduleRetention),
       encryptionEnabled: scheduleEncryption,
+      emailOnSuccess,
+      emailOnFailure,
     });
   };
 
@@ -1067,6 +1073,41 @@ export function BackupManagement() {
                 checked={scheduleEncryption}
                 onCheckedChange={setScheduleEncryption}
               />
+            </div>
+
+            {/* Email Notification Options */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Notify on Success
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Send email when backup completes successfully
+                  </p>
+                </div>
+                <Switch
+                  checked={emailOnSuccess}
+                  onCheckedChange={setEmailOnSuccess}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    Notify on Failure
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Send email alert when backup fails
+                  </p>
+                </div>
+                <Switch
+                  checked={emailOnFailure}
+                  onCheckedChange={setEmailOnFailure}
+                />
+              </div>
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg">

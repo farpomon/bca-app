@@ -730,6 +730,8 @@ export const backupRouter = router({
       timezone: z.string().default("America/New_York"),
       retentionDays: z.number().min(1).max(365).default(30),
       encryptionEnabled: z.boolean().default(true),
+      emailOnSuccess: z.boolean().default(true),
+      emailOnFailure: z.boolean().default(true),
     }))
     .mutation(async ({ ctx, input }) => {
       const database = await getDb();
@@ -746,6 +748,8 @@ export const backupRouter = router({
         isEnabled: 1,
         retentionDays: input.retentionDays,
         encryptionEnabled: input.encryptionEnabled ? 1 : 0,
+        emailOnSuccess: input.emailOnSuccess ? 1 : 0,
+        emailOnFailure: input.emailOnFailure ? 1 : 0,
         nextRunAt: nextRun.toISOString(),
         createdBy: ctx.user.id,
       });

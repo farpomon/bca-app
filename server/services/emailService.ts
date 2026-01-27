@@ -235,3 +235,131 @@ If you believe this decision was made in error or if you have additional informa
     html: htmlContent,
   });
 }
+
+/**
+ * Send backup success notification to admin
+ */
+export async function sendBackupSuccessNotification(data: {
+  backupName: string;
+  backupId: string;
+  scheduleName?: string;
+  fileSize: string;
+  duration: string;
+  timestamp: string;
+}): Promise<boolean> {
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #10b981;">✓ Backup Completed Successfully</h2>
+      
+      <p>Your scheduled backup has completed successfully.</p>
+      
+      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+        <h3 style="margin-top: 0; color: #1f2937;">Backup Details</h3>
+        ${data.scheduleName ? `<p><strong>Schedule:</strong> ${data.scheduleName}</p>` : ''}
+        <p><strong>Backup Name:</strong> ${data.backupName}</p>
+        <p><strong>Backup ID:</strong> ${data.backupId}</p>
+        <p><strong>File Size:</strong> ${data.fileSize}</p>
+        <p><strong>Duration:</strong> ${data.duration}</p>
+        <p><strong>Completed At:</strong> ${data.timestamp}</p>
+      </div>
+      
+      <p style="color: #6b7280;">
+        Your data has been securely backed up and is available for restoration if needed.
+      </p>
+      
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px;">
+        <p>This is an automated notification from the BCA System Backup Service.</p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+✓ Backup Completed Successfully
+
+Your scheduled backup has completed successfully.
+
+Backup Details:
+${data.scheduleName ? `- Schedule: ${data.scheduleName}` : ''}
+- Backup Name: ${data.backupName}
+- Backup ID: ${data.backupId}
+- File Size: ${data.fileSize}
+- Duration: ${data.duration}
+- Completed At: ${data.timestamp}
+
+Your data has been securely backed up and is available for restoration if needed.
+  `.trim();
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'lfaria@mabenconsulting.ca';
+  
+  return sendEmail({
+    to: adminEmail,
+    subject: `✓ Backup Successful: ${data.backupName}`,
+    text: textContent,
+    html: htmlContent,
+  });
+}
+
+/**
+ * Send backup failure notification to admin
+ */
+export async function sendBackupFailureNotification(data: {
+  scheduleName?: string;
+  error: string;
+  timestamp: string;
+  attemptNumber?: number;
+}): Promise<boolean> {
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #ef4444;">⚠ Backup Failed</h2>
+      
+      <p>Your scheduled backup has failed and requires attention.</p>
+      
+      <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+        <h3 style="margin-top: 0; color: #1f2937;">Failure Details</h3>
+        ${data.scheduleName ? `<p><strong>Schedule:</strong> ${data.scheduleName}</p>` : ''}
+        <p><strong>Failed At:</strong> ${data.timestamp}</p>
+        ${data.attemptNumber ? `<p><strong>Attempt:</strong> ${data.attemptNumber}</p>` : ''}
+        <p><strong>Error:</strong><br/><code style="background-color: #fee2e2; padding: 8px; border-radius: 4px; display: block; margin-top: 8px;">${data.error}</code></p>
+      </div>
+      
+      <div style="background-color: #fffbeb; padding: 16px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+        <p style="margin: 0; color: #92400e;">
+          <strong>Action Required:</strong> Please review the backup configuration and system logs to resolve this issue.
+        </p>
+      </div>
+      
+      <p style="color: #6b7280;">
+        Log in to the BCA System admin panel to view detailed error logs and retry the backup.
+      </p>
+      
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px;">
+        <p>This is an automated notification from the BCA System Backup Service.</p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+⚠ Backup Failed
+
+Your scheduled backup has failed and requires attention.
+
+Failure Details:
+${data.scheduleName ? `- Schedule: ${data.scheduleName}` : ''}
+- Failed At: ${data.timestamp}
+${data.attemptNumber ? `- Attempt: ${data.attemptNumber}` : ''}
+- Error: ${data.error}
+
+ACTION REQUIRED: Please review the backup configuration and system logs to resolve this issue.
+
+Log in to the BCA System admin panel to view detailed error logs and retry the backup.
+  `.trim();
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'lfaria@mabenconsulting.ca';
+  
+  return sendEmail({
+    to: adminEmail,
+    subject: `⚠ Backup Failed${data.scheduleName ? `: ${data.scheduleName}` : ''}`,
+    text: textContent,
+    html: htmlContent,
+  });
+}

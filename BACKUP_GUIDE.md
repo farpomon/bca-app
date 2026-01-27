@@ -24,6 +24,8 @@ Your BCA app includes a comprehensive backup system that automatically creates e
      - Minute: 0
    - **Retention Days**: 30 (keeps backups for 30 days before auto-deletion)
    - **Enable Encryption**: ✓ (recommended for security)
+   - **Notify on Success**: ✓ (receive email when backup completes successfully)
+   - **Notify on Failure**: ✓ (receive email alert when backup fails)
 4. Click **"Create Schedule"**
 
 ### Step 2: Verify Schedule is Active
@@ -38,6 +40,9 @@ Your BCA app includes a comprehensive backup system that automatically creates e
 - **Automatic Cleanup**: Old backups are automatically deleted after the retention period
 - **Encryption**: Backups are encrypted using AES-256-GCM for security
 - **Storage**: Backups are stored in secure S3-compatible cloud storage
+- **Email Notifications**: Receive email alerts for backup success or failure
+  - Success emails include: backup name, file size, duration, and timestamp
+  - Failure emails include: error details, timestamp, and troubleshooting guidance
 
 ## Retrieving Backups
 
@@ -123,6 +128,25 @@ While the app stores backups in secure cloud storage, you can create an addition
 
 ## Monitoring Backups
 
+### Email Notifications
+
+Stay informed about your backup operations through automated email alerts:
+
+**Success Notifications**
+- Sent when scheduled backup completes successfully
+- Includes backup details: name, size, duration, timestamp
+- Confirms your data is safely backed up
+
+**Failure Notifications**
+- Sent immediately when backup fails
+- Includes error details and troubleshooting guidance
+- Allows you to take quick action to resolve issues
+
+**Email Configuration**
+- Notifications are sent to the admin email address
+- Configure notification preferences when creating or editing schedules
+- Toggle notifications on/off independently for success and failure events
+
 ### Check Backup Status
 
 1. Go to **Admin Panel → Backup & Restore**
@@ -147,6 +171,7 @@ While the app stores backups in secure cloud storage, you can create an addition
 - Check database connection
 - Verify sufficient storage space
 - Review error logs in the backup details
+- Check your email for failure notification with detailed error information
 
 **Restore Failed**
 - Ensure backup file is not corrupted
@@ -157,6 +182,12 @@ While the app stores backups in secure cloud storage, you can create an addition
 - Verify schedule is enabled
 - Check Next Run Time is in the future
 - Ensure server time is correct
+
+**Not Receiving Email Notifications**
+- Verify email notifications are enabled in the schedule settings
+- Check your spam/junk folder for backup notification emails
+- Confirm the admin email address is correctly configured
+- Contact support if emails are still not arriving
 
 ## Emergency Recovery
 

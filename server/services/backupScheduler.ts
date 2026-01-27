@@ -9,6 +9,7 @@ import { backupSchedules, databaseBackups } from '../../drizzle/schema';
 import { eq, and, lte, sql, desc } from 'drizzle-orm';
 import { encryptBackupString, calculateChecksum } from './backupEncryption';
 import { storagePut } from '../storage';
+import { sendBackupSuccessNotification, sendBackupFailureNotification } from './emailService';
 
 // Import tables for backup
 import {
@@ -207,6 +208,7 @@ export async function executeScheduledBackup(scheduleId: number): Promise<{
   });
 
   const backupId = Number(backupResult[0].insertId);
+  const startTime = Date.now();
 
   try {
     // Collect all data from tables
@@ -315,6 +317,24 @@ export async function executeScheduledBackup(scheduleId: number): Promise<{
 
     console.log(`[BackupScheduler] Scheduled backup completed: ${fileName}`);
 
+    // Send success email notification if enabled
+    if (schedule.emailOnSuccess === 1) {
+      const endTime = Date.now();
+      const duration = `${Math.round((endTime - startTime) / 1000)}s`;
+      const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+      
+      await sendBackupSuccessNotification({
+        backupName: fileName,
+        backupId: backupId.toString(),
+        scheduleName: schedule.name,
+        fileSize: `${fileSizeMB} MB`,
+        duration,
+        timestamp: new Date().toLocaleString('en-US', { timeZone: schedule.timezone }),
+      }).catch(error => {
+        console.error('[BackupScheduler] Failed to send success email:', error);
+      });
+    }
+
     return { success: true, backupId };
   } catch (error) {
     // Update backup record with failure
@@ -341,6 +361,17 @@ export async function executeScheduledBackup(scheduleId: number): Promise<{
       .where(eq(backupSchedules.id, scheduleId));
 
     console.error('[BackupScheduler] Scheduled backup failed:', error);
+
+    // Send failure email notification if enabled
+    if (schedule.emailOnFailure === 1) {
+      await sendBackupFailureNotification({
+        scheduleName: schedule.name,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toLocaleString('en-US', { timeZone: schedule.timezone }),
+      }).catch(emailError => {
+        console.error('[BackupScheduler] Failed to send failure email:', emailError);
+      });
+    }
 
     return {
       success: false,
