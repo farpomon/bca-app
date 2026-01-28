@@ -330,6 +330,15 @@ export function AssessmentDialog({
   const [componentLocationField, setComponentLocationField] = useState("");
   const [observations, setObservations] = useState("");
   const [recommendations, setRecommendations] = useState("");
+
+  // Debug logging for observations and recommendations
+  useEffect(() => {
+    console.log("[AssessmentDialog] Observations updated:", observations);
+  }, [observations]);
+
+  useEffect(() => {
+    console.log("[AssessmentDialog] Recommendations updated:", recommendations);
+  }, [recommendations]);
   const [remainingUsefulLife, setRemainingUsefulLife] = useState("");
   const [estimatedServiceLife, setEstimatedServiceLife] = useState("");
   const [reviewYear, setReviewYear] = useState(new Date().getFullYear().toString());
@@ -359,6 +368,7 @@ export function AssessmentDialog({
   const [showComponentNameVoice, setShowComponentNameVoice] = useState(false);
   const [showComponentLocationVoice, setShowComponentLocationVoice] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
   const [dragOverPhotoIndex, setDragOverPhotoIndex] = useState<number | null>(null);
 
@@ -404,6 +414,17 @@ export function AssessmentDialog({
   );
 
   const utils = trpc.useUtils();
+
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    return (
+      condition !== "Not Assessed" &&
+      status !== "" &&
+      estimatedServiceLife !== "" &&
+      !isNaN(parseFloat(estimatedServiceLife)) &&
+      parseFloat(estimatedServiceLife) > 0
+    );
+  };
 
   // Sync state when existingAssessment changes (for edit mode)
   useEffect(() => {
@@ -499,6 +520,8 @@ export function AssessmentDialog({
         observations: observations || null,
         recommendations: recommendations || null,
         estimatedServiceLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
+        // Debug: Log what we're sending
+        ...(console.log("[handleSaveWithPhoto] Sending observations:", observations, "recommendations:", recommendations) || {}),
         reviewYear: reviewYear ? parseInt(reviewYear) : null,
         lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : null,
         estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
@@ -632,6 +655,18 @@ export function AssessmentDialog({
   };
 
   const handleSave = async () => {
+    // Check if form is valid
+    if (!isFormValid()) {
+      setShowValidationErrors(true);
+      toast.error("Please fill in all required fields", {
+        description: "Condition, Assessment Status, and Estimated Service Life are required.",
+        duration: 5000,
+      });
+      return;
+    }
+    
+    setShowValidationErrors(false);
+    
     // Build assessment data
     const assessmentData = {
       componentCode,
@@ -709,7 +744,7 @@ export function AssessmentDialog({
           status: status as "initial" | "active" | "completed" | null,
           observations: observations || null,
           recommendations: recommendations || null,
-          estimatedServiceLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
+          expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
           reviewYear: reviewYear ? parseInt(reviewYear) : null,
           lastTimeAction: lastTimeAction ? parseInt(lastTimeAction) : null,
           estimatedRepairCost: estimatedRepairCost ? parseFloat(estimatedRepairCost) : null,
@@ -1155,7 +1190,7 @@ export function AssessmentDialog({
             <div className="space-y-2">
               <Label htmlFor="condition">Condition *</Label>
               <Select value={condition} onValueChange={setCondition}>
-                <SelectTrigger id="condition">
+                <SelectTrigger id="condition" className={showValidationErrors && condition === "Not Assessed" ? "border-red-500" : ""}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1170,7 +1205,7 @@ export function AssessmentDialog({
             <div className="space-y-2">
               <Label htmlFor="status">Assessment Status *</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as "initial" | "active" | "completed")}>
-                <SelectTrigger id="status">
+                <SelectTrigger id="status" className={showValidationErrors && status === "" ? "border-red-500" : ""}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1192,6 +1227,7 @@ export function AssessmentDialog({
                 min="0"
                 max="200"
                 value={estimatedServiceLife}
+                className={showValidationErrors && (estimatedServiceLife === "" || isNaN(parseFloat(estimatedServiceLife)) || parseFloat(estimatedServiceLife) <= 0) ? "border-red-500" : ""}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 200)) {
@@ -1578,7 +1614,7 @@ export function AssessmentDialog({
           <Button variant="outline" onClick={handleClose} disabled={upsertAssessment.isPending || uploadingPhoto}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={upsertAssessment.isPending || uploadingPhoto}>
+          <Button onClick={handleSave} disabled={!isFormValid() || upsertAssessment.isPending || uploadingPhoto}>
             {(upsertAssessment.isPending || uploadingPhoto) && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}

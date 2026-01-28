@@ -5386,3 +5386,11 @@ Deployment is allowed only when:
 
 - [ ] Fix bug: Saved component assessments not appearing in Component Assessments dashboard list
 - [x] Fix bug: Saved assessments not appearing in Component Assessments dashboard
+- [ ] Add validation to prevent saving assessments with missing mandatory fields
+- [ ] Fix bug: Observations and recommendations not being saved or displayed
+
+- [x] Add validation to prevent saving assessments without required fields
+- [x] Fix bug: Replacement Value and Repair Cost placeholder misleading users  
+- [x] Fix bug: Saved assessments not appearing in Component Assessments dashboard
+- [x] Fix bug: Observations and recommendations field name mismatch causing backend validation failure
+- [x] Implement intelligent merge strategy for offline sync conflict resolution

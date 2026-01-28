@@ -788,6 +788,8 @@ export async function upsertAssessment(data: InsertAssessment) {
     uniformatGroup: assessmentData.uniformatGroup,
     replacementValue: assessmentData.replacementValue,
     estimatedRepairCost: assessmentData.estimatedRepairCost,
+    observations: assessmentData.observations,
+    recommendations: assessmentData.recommendations,
   });
   
   // If an ID is provided, this is an update operation

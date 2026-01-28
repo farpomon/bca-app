@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, componentCode, condition, expectedUsefulLife, observations, recommendations, createdAt, updatedAt FROM assessments WHERE componentCode = 'E1090' AND projectId = 14 ORDER BY updatedAt DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentCode, condition, expectedUsefulLife, observations, recommendations, createdAt, updatedAt FROM assessments WHERE componentCode = 'E1090' AND projectId = 14 ORDER BY updatedAt DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "300006",
+      "componentCode": "E1090",
+      "condition": "fair",
+      "expectedUsefulLife": "NULL",
+      "observations": "<p>Equipment shows moderate wear and tear. Some components require maintenance within the next 2-3 years.</p>",
+      "recommendations": "<p>Schedule preventive maintenance inspection. Replace worn components before failure occurs.</p>",
+      "createdAt": "2026-01-28 19:08:12",
+      "updatedAt": "2026-01-28 19:08:12"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentCode\tcondition\texpectedUsefulLife\tobservations\trecommendations\tcreatedAt\tupdatedAt\n300006\tE1090\tfair\tNULL\t<p>Equipment shows moderate wear and tear. Some components require maintenance within the next 2-3 years.</p>\t<p>Schedule preventive maintenance inspection. Replace worn components before failure occurs.</p>\t2026-01-28 19:08:12\t2026-01-28 19:08:12\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

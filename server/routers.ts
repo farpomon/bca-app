@@ -1942,6 +1942,19 @@ Provide helpful insights, recommendations, and analysis based on this asset data
           uniformatGroup: input.uniformatGroup,
         });
         
+        // Validate required fields for new assessments
+        if (!input.id) {
+          if (!input.condition || input.condition === "not_assessed") {
+            throw new Error("Condition is required and cannot be 'Not Assessed'");
+          }
+          if (!input.status) {
+            throw new Error("Assessment Status is required");
+          }
+          if (!input.expectedUsefulLife || input.expectedUsefulLife <= 0) {
+            throw new Error("Estimated Service Life must be greater than 0");
+          }
+        }
+        
         // Get existing assessment to detect changes
         const existing = input.componentCode ? await db.getAssessmentByComponent(input.projectId, input.componentCode) : null;
         const isNew = !existing;

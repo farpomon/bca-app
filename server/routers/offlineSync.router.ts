@@ -58,19 +58,74 @@ export const offlineSyncRouter = router({
         existingAssessment = await db.getAssessmentByComponent(input.projectId, input.componentCode);
       }
       
-      // Server-wins conflict resolution
-      // If assessment exists and was modified after offline creation, keep server version
+      // Intelligent merge conflict resolution
+      // If assessment exists, merge offline data with server data instead of discarding
       if (existingAssessment) {
         const serverModifiedAt = new Date(existingAssessment.assessedAt || existingAssessment.createdAt);
         const offlineCreatedAt = new Date(createdAt);
         
         if (serverModifiedAt > offlineCreatedAt) {
-          // Server version is newer, return existing ID without updating
+          // Server version is newer, but merge valuable offline data
+          // Preserve offline observations/recommendations if server doesn't have them
+          const mergedData: any = {};
+          
+          // Merge observations: use offline if server is empty
+          if (input.observations && (!existingAssessment.observations || existingAssessment.observations.trim() === '')) {
+            mergedData.observations = input.observations;
+          }
+          
+          // Merge recommendations: use offline if server is empty
+          if (input.recommendations && (!existingAssessment.recommendations || existingAssessment.recommendations.trim() === '')) {
+            mergedData.recommendations = input.recommendations;
+          }
+          
+          // Merge other fields: use offline if server is null/undefined/0
+          if (input.estimatedRepairCost && !existingAssessment.estimatedRepairCost) {
+            mergedData.estimatedRepairCost = input.estimatedRepairCost;
+          }
+          if (input.replacementValue && !existingAssessment.replacementValue) {
+            mergedData.replacementValue = input.replacementValue;
+          }
+          
+          // If we have data to merge, update the existing assessment
+          if (Object.keys(mergedData).length > 0) {
+            await db.upsertAssessment({
+              id: existingAssessment.id,
+              ...mergedData,
+            });
+            
+            // Log the merge to component history
+            const { logAssessmentChange } = await import("../componentHistoryService");
+            if (input.componentCode) {
+              await logAssessmentChange({
+                projectId: input.projectId,
+                componentCode: input.componentCode,
+                assessmentId: existingAssessment.id,
+                userId: ctx.user.id,
+                userName: ctx.user.name || undefined,
+                isNew: false,
+                changes: undefined,
+                richTextFields: {
+                  ...(mergedData.observations && { observations: mergedData.observations }),
+                  ...(mergedData.recommendations && { recommendations: mergedData.recommendations }),
+                },
+              });
+            }
+            
+            return {
+              assessmentId: existingAssessment.id,
+              conflict: true,
+              resolution: "merged",
+              message: "Server version kept, offline data merged"
+            };
+          }
+          
+          // No data to merge, keep server version as-is
           return {
             assessmentId: existingAssessment.id,
             conflict: true,
             resolution: "server_wins",
-            message: "Server version is newer, offline changes discarded"
+            message: "Server version is newer, no offline data to merge"
           };
         }
       }
