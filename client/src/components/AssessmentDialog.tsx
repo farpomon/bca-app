@@ -519,7 +519,7 @@ export function AssessmentDialog({
         status: status as "initial" | "active" | "completed" | null,
         observations: observations || null,
         recommendations: recommendations || null,
-        estimatedServiceLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
+        expectedUsefulLife: estimatedServiceLife ? parseInt(estimatedServiceLife) : null,
         // Debug: Log what we're sending
         ...(console.log("[handleSaveWithPhoto] Sending observations:", observations, "recommendations:", recommendations) || {}),
         reviewYear: reviewYear ? parseInt(reviewYear) : null,
@@ -1188,7 +1188,7 @@ export function AssessmentDialog({
           {/* Condition Rating */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="condition">Condition *</Label>
+              <Label htmlFor="condition">Condition <span className="text-red-500">*</span></Label>
               <Select value={condition} onValueChange={setCondition}>
                 <SelectTrigger id="condition" className={showValidationErrors && condition === "Not Assessed" ? "border-red-500" : ""}>
                   <SelectValue />
@@ -1203,7 +1203,7 @@ export function AssessmentDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Assessment Status *</Label>
+              <Label htmlFor="status">Assessment Status <span className="text-red-500">*</span></Label>
               <Select value={status} onValueChange={(v) => setStatus(v as "initial" | "active" | "completed")}>
                 <SelectTrigger id="status" className={showValidationErrors && status === "" ? "border-red-500" : ""}>
                   <SelectValue />
@@ -1220,7 +1220,7 @@ export function AssessmentDialog({
           <div className="grid grid-cols-2 gap-4">
 
             <div className="space-y-2">
-              <Label htmlFor="esl">Estimated Service Life (years) *</Label>
+              <Label htmlFor="esl">Estimated Service Life (years) <span className="text-red-500">*</span></Label>
               <Input
                 id="esl"
                 type="number"

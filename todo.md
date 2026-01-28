@@ -5394,3 +5394,6 @@ Deployment is allowed only when:
 - [x] Fix bug: Saved assessments not appearing in Component Assessments dashboard
 - [x] Fix bug: Observations and recommendations field name mismatch causing backend validation failure
 - [x] Implement intelligent merge strategy for offline sync conflict resolution
+
+- [x] Fix bug: Assessments with photos not appearing in dashboard (fixed expectedUsefulLife field name)
+- [x] Improve mandatory field highlighting using industry best practices (added red asterisks) (asterisks, labels, visual indicators)
