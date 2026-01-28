@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, componentId, estimatedRepairCost, replacementValue, estimatedServiceLife, `condition` FROM assessments WHERE componentId = 'C1010' ORDER BY updatedAt DESC LIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, componentId, estimatedRepairCost, replacementValue, estimatedServiceLife, `condition` FROM assessments WHERE componentId = 'C1010' ORDER BY updatedAt DESC LIMIT 3;",
+  "rows": [
+    {
+      "id": "300001",
+      "componentId": "0",
+      "estimatedRepairCost": "5000.00",
+      "replacementValue": "25000.00",
+      "estimatedServiceLife": "NULL",
+      "condition": "fair"
+    },
+    {
+      "id": "180003",
+      "componentId": "0",
+      "estimatedRepairCost": "10000.00",
+      "replacementValue": "100000.00",
+      "estimatedServiceLife": "NULL",
+      "condition": "fair"
+    },
+    {
+      "id": "150001",
+      "componentId": "0",
+      "estimatedRepairCost": "0.00",
+      "replacementValue": "50000.00",
+      "estimatedServiceLife": "NULL",
+      "condition": "fair"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcomponentId\testimatedRepairCost\treplacementValue\testimatedServiceLife\tcondition\n300001\t0\t5000.00\t25000.00\tNULL\tfair\n180003\t0\t10000.00\t100000.00\tNULL\tfair\n150001\t0\t0.00\t50000.00\tNULL\tfair\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

@@ -1258,7 +1258,7 @@ export function AssessmentDialog({
                 id="estimatedRepairCost"
                 value={estimatedRepairCost}
                 onChange={(value) => setEstimatedRepairCost(value)}
-                placeholder="0.00"
+                placeholder="Enter amount"
               />
             </div>
 
@@ -1268,7 +1268,7 @@ export function AssessmentDialog({
                 id="replacementValue"
                 value={replacementValue}
                 onChange={(value) => setReplacementValue(value)}
-                placeholder="0.00"
+                placeholder="Enter amount"
               />
             </div>
           </div>

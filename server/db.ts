@@ -786,6 +786,8 @@ export async function upsertAssessment(data: InsertAssessment) {
     uniformatId: assessmentData.uniformatId,
     uniformatLevel: assessmentData.uniformatLevel,
     uniformatGroup: assessmentData.uniformatGroup,
+    replacementValue: assessmentData.replacementValue,
+    estimatedRepairCost: assessmentData.estimatedRepairCost,
   });
   
   // If an ID is provided, this is an update operation

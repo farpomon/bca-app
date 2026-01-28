@@ -5379,3 +5379,7 @@ Deployment is allowed only when:
 - [ ] Test success notification with manual backup
 - [ ] Test failure notification by simulating backup error
 - [ ] Update BACKUP_GUIDE.md with notification setup instructions
+
+- [ ] Fix bug: Replacement Value and Repair Cost not saving when creating/editing assessments
+
+- [x] Fix bug: Replacement Value and Repair Cost not saving when creating/editing assessments

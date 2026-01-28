@@ -47,7 +47,12 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     // Update display value when prop value changes
     React.useEffect(() => {
       if (!isFocused) {
-        setDisplayValue(formatCurrency(value));
+        // Don't format if value is empty string - keep it empty
+        if (value === "" || value === null || value === undefined) {
+          setDisplayValue("");
+        } else {
+          setDisplayValue(formatCurrency(value));
+        }
       }
     }, [value, isFocused]);
 
