@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, assetId, componentCode, componentName, condition, estimatedRepairCost, replacementValue, createdAt FROM assessments WHERE assetId = 133 AND componentCode LIKE 'E1020%' ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, assetId, componentCode, componentName, condition, estimatedRepairCost, replacementValue, createdAt FROM assessments WHERE assetId = 133 AND componentCode LIKE 'E1020%' ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "300002",
+      "assetId": "133",
+      "componentCode": "E1020",
+      "componentName": "NULL",
+      "condition": "good",
+      "estimatedRepairCost": "12000.00",
+      "replacementValue": "45000.00",
+      "createdAt": "2026-01-28 18:15:29"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tassetId\tcomponentCode\tcomponentName\tcondition\testimatedRepairCost\treplacementValue\tcreatedAt\n300002\t133\tE1020\tNULL\tgood\t12000.00\t45000.00\t2026-01-28 18:15:29\n",
+  "stderr": "",
+  "execution_time_ms": 136
+}

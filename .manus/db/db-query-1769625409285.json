@@ -1,0 +1,110 @@
+{
+  "query": "SELECT \n  a.id,\n  a.assetId,\n  a.componentId,\n  COALESCE(a.componentCode, bc.code) as componentCode,\n  COALESCE(a.componentName, bc.name) as componentName,\n  a.conditionRating,\n  CASE \n    WHEN a.conditionRating IN ('1', '2') THEN 'good'\n    WHEN a.conditionRating = '3' THEN 'fair'\n    WHEN a.conditionRating IN ('4', '5') THEN 'poor'\n    ELSE 'not_assessed'\n  END as condition,\n  a.status\nFROM assessments a\nLEFT JOIN building_components bc ON a.componentId = bc.id\nWHERE a.assetId = 133\n  AND a.deletedAt IS NULL\nORDER BY a.createdAt DESC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT \n  a.id,\n  a.assetId,\n  a.componentId,\n  COALESCE(a.componentCode, bc.code) as componentCode,\n  COALESCE(a.componentName, bc.name) as componentName,\n  a.conditionRating,\n  CASE \n    WHEN a.conditionRating IN ('1', '2') THEN 'good'\n    WHEN a.conditionRating = '3' THEN 'fair'\n    WHEN a.conditionRating IN ('4', '5') THEN 'poor'\n    ELSE 'not_assessed'\n  END as condition,\n  a.status\nFROM assessments a\nLEFT JOIN building_components bc ON a.componentId = bc.id\nWHERE a.assetId = 133\n  AND a.deletedAt IS NULL\nORDER BY a.createdAt DESC\nLIMIT 10;",
+  "rows": [
+    {
+      "id": "180004",
+      "assetId": "133",
+      "componentId": "0",
+      "componentCode": "D30",
+      "componentName": "HVAC",
+      "conditionRating": "3",
+      "condition": "fair",
+      "status": "initial"
+    },
+    {
+      "id": "30009",
+      "assetId": "133",
+      "componentId": "0",
+      "componentCode": "TEST-DELETE-1767734057277",
+      "componentName": "Test Component for Deletion",
+      "conditionRating": "3",
+      "condition": "fair",
+      "status": "initial"
+    },
+    {
+      "id": "175",
+      "assetId": "133",
+      "componentId": "18",
+      "componentCode": "D30",
+      "componentName": "HVAC",
+      "conditionRating": "2",
+      "condition": "good",
+      "status": "initial"
+    },
+    {
+      "id": "156",
+      "assetId": "133",
+      "componentId": "21",
+      "componentCode": "E10",
+      "componentName": "Equipment",
+      "conditionRating": "4",
+      "condition": "poor",
+      "status": "submitted"
+    },
+    {
+      "id": "151",
+      "assetId": "133",
+      "componentId": "16",
+      "componentCode": "D10",
+      "componentName": "Conveying",
+      "conditionRating": "4",
+      "condition": "poor",
+      "status": "submitted"
+    },
+    {
+      "id": "159",
+      "assetId": "133",
+      "componentId": "24",
+      "componentCode": "F20",
+      "componentName": "Selective Building Demolition",
+      "conditionRating": "5",
+      "condition": "poor",
+      "status": "submitted"
+    },
+    {
+      "id": "152",
+      "assetId": "133",
+      "componentId": "17",
+      "componentCode": "D20",
+      "componentName": "Plumbing",
+      "conditionRating": "2",
+      "condition": "good",
+      "status": "submitted"
+    },
+    {
+      "id": "155",
+      "assetId": "133",
+      "componentId": "20",
+      "componentCode": "D50",
+      "componentName": "Electrical",
+      "conditionRating": "4",
+      "condition": "poor",
+      "status": "submitted"
+    },
+    {
+      "id": "150",
+      "assetId": "133",
+      "componentId": "15",
+      "componentCode": "C30",
+      "componentName": "Interior Finishes",
+      "conditionRating": "3",
+      "condition": "fair",
+      "status": "submitted"
+    },
+    {
+      "id": "148",
+      "assetId": "133",
+      "componentId": "13",
+      "componentCode": "C10",
+      "componentName": "Interior Construction",
+      "conditionRating": "4",
+      "condition": "poor",
+      "status": "submitted"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tassetId\tcomponentId\tcomponentCode\tcomponentName\tconditionRating\tcondition\tstatus\n180004\t133\t0\tD30\tHVAC\t3\tfair\tinitial\n30009\t133\t0\tTEST-DELETE-1767734057277\tTest Component for Deletion\t3\tfair\tinitial\n175\t133\t18\tD30\tHVAC\t2\tgood\tinitial\n156\t133\t21\tE10\tEquipment\t4\tpoor\tsubmitted\n151\t133\t16\tD10\tConveying\t4\tpoor\tsubmitted\n159\t133\t24\tF20\tSelective Building Demolition\t5\tpoor\tsubmitted\n152\t133\t17\tD20\tPlumbing\t2\tgood\tsubmitted\n155\t133\t20\tD50\tElectrical\t4\tpoor\tsubmitted\n150\t133\t15\tC30\tInterior Finishes\t3\tfair\tsubmitted\n148\t133\t13\tC10\tInterior Construction\t4\tpoor\tsubmitted\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

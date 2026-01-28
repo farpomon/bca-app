@@ -5383,3 +5383,6 @@ Deployment is allowed only when:
 - [ ] Fix bug: Replacement Value and Repair Cost not saving when creating/editing assessments
 
 - [x] Fix bug: Replacement Value and Repair Cost not saving when creating/editing assessments
+
+- [ ] Fix bug: Saved component assessments not appearing in Component Assessments dashboard list
+- [x] Fix bug: Saved assessments not appearing in Component Assessments dashboard

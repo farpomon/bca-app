@@ -376,7 +376,7 @@ export default function AssetDetail() {
         uniformatGroup={selectedAssessment?.uniformatGroup}
         existingAssessment={selectedAssessment}
         onSuccess={() => {
-          utils.assessments.listByAsset.invalidate();
+          utils.assessments.listByAsset.invalidate({ assetId: assetIdNum, projectId });
           setSelectedAssessment(null);
         }}
       />
