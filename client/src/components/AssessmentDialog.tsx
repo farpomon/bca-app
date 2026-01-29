@@ -729,6 +729,7 @@ export function AssessmentDialog({
           uniformatLevel: existingAssessment?.uniformatLevel,
           uniformatGroup: existingAssessment?.uniformatGroup,
         });
+        console.log('[AssessmentDialog] estimatedServiceLife value before save:', estimatedServiceLife, 'parsed:', estimatedServiceLife ? parseInt(estimatedServiceLife) : null);
         const assessmentData = {
           ...(existingAssessment?.id ? { id: existingAssessment.id } : {}),
           projectId,

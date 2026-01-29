@@ -1919,7 +1919,6 @@ Provide helpful insights, recommendations, and analysis based on this asset data
         actionDescription: z.string().optional(),
         repairCost: z.number().optional(),
         renewCost: z.number().optional(),
-        estimatedServiceLife: z.number().optional(),
         hasValidationOverrides: z.number().optional(),
         validationWarnings: z.string().optional(),
         // UNIFORMAT metadata

@@ -112,7 +112,7 @@ export function useOfflineAssessment({
               status: (data.status ?? undefined) as "initial" | "active" | "completed" | undefined,
               observations: data.observations ?? undefined,
               recommendations: data.recommendations ?? undefined,
-              remainingUsefulLife: data.estimatedServiceLife ?? undefined,
+              expectedUsefulLife: data.expectedUsefulLife ?? undefined,
               reviewYear: data.reviewYear ?? undefined,
               lastTimeAction: data.lastTimeAction ?? undefined,
               estimatedRepairCost: data.estimatedRepairCost ?? undefined,
