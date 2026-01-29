@@ -34,6 +34,7 @@ export default function PortfolioMap() {
   const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
   const [clusteringEnabled, setClusteringEnabled] = useState(true);
   const [validAssets, setValidAssets] = useState<BuildingMarker[]>([]);
+  const [activeInfoWindow, setActiveInfoWindow] = useState<google.maps.InfoWindow | null>(null);
 
   // Fetch all assets with coordinates
   const { data: assets, isLoading, error } = trpc.assets.getAllAssetsWithCoordinates.useQuery();
@@ -248,76 +249,48 @@ export default function PortfolioMap() {
           zIndex: cluster.markers.length,
         });
 
-        // Add hover tooltip
-        clusterMarker.addListener("mouseover", () => {
-          const tooltipContent = `
-            <div style="padding: 8px; min-width: 200px;">
-              <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${cluster.markers.length} Buildings</h3>
-              <p style="color: #666; font-size: 14px;">Click to view details or zoom in</p>
+        // Create info window content with asset list
+        const infoContent = `
+          <div style="max-width: 300px; max-height: 400px; overflow-y: auto;">
+            <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">
+              ${cluster.markers.length} Buildings in this area
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${cluster.markers.map(asset => `
+                <div style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;"
+                     onclick="window.location.href='/projects/${asset.projectId}/assets/${asset.id}'">
+                  <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${asset.name}</div>
+                  <div style="font-size: 12px; color: #6b7280;">${asset.address || 'No address'}</div>
+                  <div style="font-size: 12px; margin-top: 4px;">
+                    <span style="padding: 2px 6px; border-radius: 4px; background: ${getFciColor(asset.fci)}20; color: ${getFciColor(asset.fci)};">
+                      FCI: ${(asset.fci * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
             </div>
-          `;
-          infoWindow.setContent(tooltipContent);
-          infoWindow.setPosition(cluster.center);
-          infoWindow.open(map);
-        });
+          </div>
+        `;
 
-        clusterMarker.addListener("mouseout", () => {
-          infoWindow.close();
+        const infoWindow = new google.maps.InfoWindow({
+          content: infoContent,
         });
 
         clusterMarker.addListener("click", () => {
-          // Show detailed list of assets in cluster
-          const assetList = cluster.markers
-            .map((asset) => {
-              const fciPercent = asset.fci * 100;
-              const markerColor = getFciColor(asset.fci);
-              return `
-                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; margin-bottom: 8px;">
-                  <h4 style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${asset.name}</h4>
-                  <p style="color: #666; font-size: 12px; margin-bottom: 4px;">${asset.address}</p>
-                  <p style="font-size: 12px; margin-bottom: 4px;">
-                    <strong>FCI:</strong> <span style="color: ${markerColor}; font-weight: 600;">${fciPercent.toFixed(1)}%</span>
-                  </p>
-                  <a 
-                    href="/projects/${asset.projectId}/assets/${asset.id}" 
-                    style="color: #3b82f6; text-decoration: underline; font-size: 12px;"
-                  >
-                    View Details →
-                  </a>
-                </div>
-              `;
-            })
-            .join("");
-
-          const content = `
-            <div style="padding: 8px; min-width: 300px; max-height: 400px; overflow-y: auto;">
-              <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">${cluster.markers.length} Buildings in this Area</h3>
-              ${assetList}
-              <button 
-                onclick="window.dispatchEvent(new CustomEvent('zoom-cluster'))" 
-                style="margin-top: 8px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%;"
-              >
-                Zoom In to Separate
-              </button>
-            </div>
-          `;
-          infoWindow.setContent(content);
-          infoWindow.setPosition(cluster.center);
-          infoWindow.open(map);
-
-          // Handle zoom button click
-          window.addEventListener(
-            "zoom-cluster",
-            () => {
-              map.fitBounds(cluster.bounds);
-              const newZoom = map.getZoom();
-              if (newZoom && newZoom < maxZoom) {
-                map.setZoom(Math.min(newZoom + 2, maxZoom));
-              }
-              infoWindow.close();
-            },
-            { once: true }
-          );
+          // Close any open info windows
+          setActiveInfoWindow((prev) => {
+            if (prev) prev.close();
+            return infoWindow;
+          });
+          // Open new info window
+          infoWindow.open(map, clusterMarker);
+          
+          // Also zoom in to show more detail
+          map.fitBounds(cluster.bounds);
+          const newZoom = map.getZoom();
+          if (newZoom && newZoom < maxZoom) {
+            map.setZoom(Math.min(newZoom + 2, maxZoom));
+          }
         });
 
         newClusterMarkers.push(clusterMarker);

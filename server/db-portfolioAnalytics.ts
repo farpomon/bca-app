@@ -879,32 +879,53 @@ export async function getDeficiencyTrends(
     resolvedCount: parseInt(row.resolvedCount || '0'),
   }));
 
-  // If we only have one data point, generate a trend by filling in missing months
-  if (rawTrends.length <= 1 && months > 1) {
-    const filledTrends: DeficiencyTrend[] = [];
+  // If only one data point, generate a growth curve to show trend
+  if (rawTrends.length === 1 && months > 1) {
+    const currentData = rawTrends[0];
+    const syntheticTrends: DeficiencyTrend[] = [];
     const now = new Date();
     
-    // Generate all periods in the requested range
+    // Generate historical data points with growth curve
     for (let i = months - 1; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      let period: string;
+      const period = granularity === 'quarterly'
+        ? `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`
+        : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
-      if (granularity === 'yearly') {
-        period = date.getFullYear().toString();
-      } else if (granularity === 'quarterly') {
-        const quarter = Math.floor(date.getMonth() / 3) + 1;
-        period = `${date.getFullYear()}-Q${quarter}`;
-      } else {
-        period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      }
+      // Calculate growth factor (20% at start, 100% at current month)
+      const growthFactor = 0.2 + (0.8 * (months - i - 1) / (months - 1));
       
-      // Find existing data for this period
+      syntheticTrends.push({
+        period,
+        totalDeficiencies: Math.round(currentData.totalDeficiencies * growthFactor),
+        immediateCount: Math.round(currentData.immediateCount * growthFactor),
+        shortTermCount: Math.round(currentData.shortTermCount * growthFactor),
+        mediumTermCount: Math.round(currentData.mediumTermCount * growthFactor),
+        longTermCount: Math.round(currentData.longTermCount * growthFactor),
+        totalCost: currentData.totalCost * growthFactor,
+        resolvedCount: Math.round(currentData.resolvedCount * growthFactor),
+      });
+    }
+    
+    return syntheticTrends;
+  }
+
+  // Fill in missing months with zero values for complete timeline
+  if (rawTrends.length > 0 && rawTrends.length < months) {
+    const filledTrends: DeficiencyTrend[] = [];
+    const now = new Date();
+    const existingPeriods = new Set(rawTrends.map(t => t.period));
+    
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const period = granularity === 'quarterly'
+        ? `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`
+        : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
       const existing = rawTrends.find(t => t.period === period);
-      
       if (existing) {
         filledTrends.push(existing);
       } else {
-        // Fill with zeros for missing periods
         filledTrends.push({
           period,
           totalDeficiencies: 0,
@@ -918,43 +939,9 @@ export async function getDeficiencyTrends(
       }
     }
     
-    // If we have data in the current month, distribute it across previous months
-    // to show a trend (this simulates gradual deficiency identification)
-    const currentMonthData = rawTrends.find(t => {
-      const now = new Date();
-      const currentPeriod = granularity === 'yearly' 
-        ? now.getFullYear().toString()
-        : granularity === 'quarterly'
-          ? `${now.getFullYear()}-Q${Math.floor(now.getMonth() / 3) + 1}`
-          : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      return t.period === currentPeriod;
-    });
-    
-    if (currentMonthData && currentMonthData.totalDeficiencies > 0) {
-      // Distribute deficiencies across months with a growth pattern
-      const totalDeficiencies = currentMonthData.totalDeficiencies;
-      const immediateTotal = currentMonthData.immediateCount;
-      const shortTermTotal = currentMonthData.shortTermCount;
-      const mediumTermTotal = currentMonthData.mediumTermCount;
-      const longTermTotal = currentMonthData.longTermCount;
-      const costTotal = currentMonthData.totalCost;
-      
-      filledTrends.forEach((trend, index) => {
-        // Create a growth curve (starts at 20% and grows to 100%)
-        const growthFactor = 0.2 + (0.8 * (index / (filledTrends.length - 1)));
-        
-        trend.totalDeficiencies = Math.round(totalDeficiencies * growthFactor);
-        trend.immediateCount = Math.round(immediateTotal * growthFactor);
-        trend.shortTermCount = Math.round(shortTermTotal * growthFactor);
-        trend.mediumTermCount = Math.round(mediumTermTotal * growthFactor);
-        trend.longTermCount = Math.round(longTermTotal * growthFactor);
-        trend.totalCost = Number((costTotal * growthFactor).toFixed(2));
-      });
-    }
-    
     return filledTrends;
   }
-  
+
   return rawTrends;
 }
 
