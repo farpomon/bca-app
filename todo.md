@@ -5399,3 +5399,5 @@ Deployment is allowed only when:
 - [x] Improve mandatory field highlighting using industry best practices (added red asterisks) (asterisks, labels, visual indicators)
 
 - [x] Fix Google Maps loading error on Photos tab Photo Map View ("This page can't load Google Maps correctly")
+
+- [x] Fix Current Replacement Value (CRV) calculation - showing concatenated numbers instead of properly summed currency value

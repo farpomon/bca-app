@@ -109,12 +109,12 @@ const FCI_COLORS = {
 export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFinancialTabProps) {
   // Calculate financial metrics
   const metrics = useMemo(() => {
-    const totalRepairCost = assessments?.reduce((sum, a) => sum + (a.estimatedRepairCost || 0), 0) || 0;
-    const totalReplacementValue = assessments?.reduce((sum, a) => sum + (a.replacementValue || 0), 0) || 0;
+    const totalRepairCost = assessments?.reduce((sum, a) => sum + (Number(a.estimatedRepairCost) || 0), 0) || 0;
+    const totalReplacementValue = assessments?.reduce((sum, a) => sum + (Number(a.replacementValue) || 0), 0) || 0;
     
     // Use asset's CRV if available, otherwise use sum from assessments
-    const assetCRV = asset.currentReplacementValue ? parseFloat(asset.currentReplacementValue) : 0;
-    const assetRV = asset.replacementValue ? parseFloat(asset.replacementValue) : 0;
+    const assetCRV = asset.currentReplacementValue ? Number(asset.currentReplacementValue) : 0;
+    const assetRV = asset.replacementValue ? Number(asset.replacementValue) : 0;
     const currentReplacementValue = assetCRV > 0 ? assetCRV : (assetRV > 0 ? assetRV : totalReplacementValue);
     
     // Calculate FCI (Facility Condition Index)
@@ -127,13 +127,13 @@ export function AssetFinancialTab({ asset, assessments, deficiencies }: AssetFin
     else if (fci > 5) fciRating = "fair";
     
     // Calculate deficiency costs
-    const deficiencyCost = deficiencies?.reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
+    const deficiencyCost = deficiencies?.reduce((sum, d) => sum + (Number(d.estimatedCost) || 0), 0) || 0;
     
     // Priority breakdown
-    const immediateCost = deficiencies?.filter(d => d.priority === "immediate").reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
-    const shortTermCost = deficiencies?.filter(d => d.priority === "short_term").reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
-    const mediumTermCost = deficiencies?.filter(d => d.priority === "medium_term").reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
-    const longTermCost = deficiencies?.filter(d => d.priority === "long_term").reduce((sum, d) => sum + (d.estimatedCost || 0), 0) || 0;
+    const immediateCost = deficiencies?.filter(d => d.priority === "immediate").reduce((sum, d) => sum + (Number(d.estimatedCost) || 0), 0) || 0;
+    const shortTermCost = deficiencies?.filter(d => d.priority === "short_term").reduce((sum, d) => sum + (Number(d.estimatedCost) || 0), 0) || 0;
+    const mediumTermCost = deficiencies?.filter(d => d.priority === "medium_term").reduce((sum, d) => sum + (Number(d.estimatedCost) || 0), 0) || 0;
+    const longTermCost = deficiencies?.filter(d => d.priority === "long_term").reduce((sum, d) => sum + (Number(d.estimatedCost) || 0), 0) || 0;
     
     // Asset age
     const currentYear = new Date().getFullYear();
