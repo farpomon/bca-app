@@ -5401,3 +5401,6 @@ Deployment is allowed only when:
 - [x] Fix Google Maps loading error on Photos tab Photo Map View ("This page can't load Google Maps correctly")
 
 - [x] Fix Current Replacement Value (CRV) calculation - showing concatenated numbers instead of properly summed currency value
+
+- [x] Fix portfolio map cluster tooltips - show asset list when hovering/clicking on clustered markers
+- [x] Improve analytics dashboard trends - replace single data points with meaningful time-series visualizations
