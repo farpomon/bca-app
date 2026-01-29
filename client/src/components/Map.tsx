@@ -218,6 +218,7 @@ export function MapView({
       initAttempted.current = true;
       
       map.current = new window.google.maps.Map(mapContainer.current, {
+        mapId: "DEMO_MAP_ID",
         zoom: initialZoom,
         center: initialCenter,
         mapTypeControl: true,

@@ -5397,3 +5397,5 @@ Deployment is allowed only when:
 
 - [x] Fix bug: Assessments with photos not appearing in dashboard (fixed expectedUsefulLife field name)
 - [x] Improve mandatory field highlighting using industry best practices (added red asterisks) (asterisks, labels, visual indicators)
+
+- [x] Fix Google Maps loading error on Photos tab Photo Map View ("This page can't load Google Maps correctly")
