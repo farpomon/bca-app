@@ -5404,3 +5404,6 @@ Deployment is allowed only when:
 
 - [x] Fix portfolio map cluster tooltips - show asset list when hovering/clicking on clustered markers
 - [x] Improve portfolio analytics trends dashboard - show meaningful 12-month time-series data instead of single points
+
+- [ ] Re-implement portfolio map cluster tooltips - show asset list when clicking on clustered markers
+- [ ] Re-implement portfolio analytics trends - display meaningful 12-month time-series visualizations
