@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,16 +59,17 @@ export default function DeletedProjects() {
 
   if (isLoading) {
     return (
-      <div className="container py-8">
+      <DashboardLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-muted-foreground">Loading deleted projects...</div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container py-8">
+    <DashboardLayout>
+      <div className="space-y-6">
       <BackButton to="dashboard" />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Deleted Projects</h1>
@@ -167,6 +169,7 @@ export default function DeletedProjects() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

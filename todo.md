@@ -5407,3 +5407,5 @@ Deployment is allowed only when:
 
 - [ ] Re-implement portfolio map cluster tooltips - show asset list when clicking on clustered markers
 - [ ] Re-implement portfolio analytics trends - display meaningful 12-month time-series visualizations
+
+- [x] Ensure navigation ribbon remains visible on all pages (investigate and fix any routes without DashboardLayout wrapper)

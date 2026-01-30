@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -204,31 +205,35 @@ export default function PortfolioAnalytics() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!dashboardData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">No analytics data available</p>
-          <Button onClick={() => refetch()} className="mt-4">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-muted-foreground">No analytics data available</p>
+            <Button onClick={() => refetch()} className="mt-4">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   const { overview, conditionDistribution, categoryCostBreakdown, priorityBreakdown, capitalForecast, geographicDistribution, propertyTypeDistribution } = dashboardData;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container py-6 space-y-6">
+    <DashboardLayout>
+      <div className="space-y-6">
         {/* Enhanced Analytics Banner - Hidden */}
         {/* <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
           <AlertDescription className="flex flex-col md:flex-row md:items-center justify-between gap-2">
@@ -1129,6 +1134,6 @@ export default function PortfolioAnalytics() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </DashboardLayout>
   );
 }
