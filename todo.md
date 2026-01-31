@@ -5409,3 +5409,15 @@ Deployment is allowed only when:
 - [ ] Re-implement portfolio analytics trends - display meaningful 12-month time-series visualizations
 
 - [x] Ensure navigation ribbon remains visible on all pages (investigate and fix any routes without DashboardLayout wrapper)
+
+
+## Generate Portfolio Report Feature Improvement
+
+- [x] A) Report Configuration UI - Add panel with Report Title, Prepared By/For, Notes, Branding, Section selector with presets
+- [x] B) Component Assessment Detail Options - Include/exclude components, grouping by building/UNIFORMAT, display level, photos, costs
+- [ ] C) PDF Layout & Formatting - Print-safe styles, page numbers, prevent orphan headings, table overflow handling
+- [ ] D) Photo Embedding - Component photos inline with captions, date taken, asset/component reference
+- [ ] E) Dashboard Section - Portfolio summary charts, condition summary by UNIFORMAT group, FCI summary
+- [ ] F) Action List Output - Tabular summary with filtering by assets and year horizon
+- [ ] G) Performance & Reliability - Handle large reports with progress status, robust error messages
+- [ ] H) Acceptance Testing - Validate section order, component grouping, photo rendering, cost formatting, TOC accuracy

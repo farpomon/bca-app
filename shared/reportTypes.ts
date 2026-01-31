@@ -69,6 +69,8 @@ export interface ComponentAssessmentFilters {
   onlyWithDeficiencies?: boolean;
 }
 
+export type UniformatDisplayLevel = 'L2' | 'L3' | 'both';
+
 export interface ComponentAssessmentSectionConfig {
   enabled: boolean;
   scope: ComponentAssessmentScope; // 'all' = all assets, 'selected' = specific assets
@@ -79,6 +81,14 @@ export interface ComponentAssessmentSectionConfig {
   sortBy: ComponentSortOption;
   maxAssets: number;
   includeRollups: boolean; // Include cost/count rollups by building and UNIFORMAT
+  
+  // Enhanced options for professional reports
+  displayLevel: UniformatDisplayLevel; // L2 summary, L3 detail, or both
+  includePhotos: boolean; // Include component photos in report
+  maxPhotosPerComponent: number; // 1-6 photos per component
+  includeCostFields: boolean; // Show repair/replacement cost columns
+  includeActionDetails: boolean; // Show action descriptions and recommendations
+  yearHorizon: number; // Filter components by action year (1-50 years)
 }
 
 export interface ReportSectionToggles {
@@ -222,6 +232,14 @@ export const DEFAULT_COMPONENT_ASSESSMENT_CONFIG: ComponentAssessmentSectionConf
   sortBy: 'risk',
   maxAssets: 25,
   includeRollups: true, // Include cost and count rollups by default
+  
+  // Enhanced options defaults
+  displayLevel: 'L3', // Show Level 3 detail by default
+  includePhotos: true, // Include photos by default
+  maxPhotosPerComponent: 4, // 4 photos per component by default
+  includeCostFields: true, // Show cost fields by default
+  includeActionDetails: true, // Show action details by default
+  yearHorizon: 20, // 20-year horizon by default
 };
 
 // Validation error types

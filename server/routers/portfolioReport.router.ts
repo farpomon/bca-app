@@ -22,6 +22,16 @@ import {
   getProjectSystemCategories,
   estimateComponentReportPages
 } from "../db-componentReport";
+import {
+  getComponentsForReport,
+  getActionListForReport,
+  getUniformatGroupSummaries,
+  estimateReportPageCount,
+  UNIFORMAT_GROUPS,
+  PRIORITY_BUCKETS,
+  ACTION_TYPES,
+  CONDITION_RATINGS,
+} from "../db-reportEnhanced";
 
 export const portfolioReportRouter = router({
   /**
@@ -367,6 +377,359 @@ export const portfolioReportRouter = router({
       return {
         estimatedPages,
         warning: estimatedPages > 50 ? 'This report may be very large. Consider applying filters or reducing the maximum asset count.' : null,
+      };
+    }),
+
+  // ==========================================
+  // ENHANCED REPORT GENERATION ENDPOINTS
+  // ==========================================
+
+  /**
+   * Get enhanced component data with UNIFORMAT grouping for professional reports
+   * Supports grouping by building → UNIFORMAT or UNIFORMAT → building
+   */
+  getEnhancedComponents: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      scope: z.enum(['all', 'selected']).default('all'),
+      selectedAssetIds: z.array(z.number()).optional(),
+      grouping: z.enum(['building_uniformat', 'uniformat_building', 'building_only', 'uniformat_only']).default('building_uniformat'),
+      displayLevel: z.enum(['L2', 'L3', 'both']).default('L3'),
+      includePhotos: z.boolean().default(true),
+      maxPhotosPerComponent: z.number().min(1).max(6).default(4),
+      conditions: z.array(z.string()).optional(),
+      priorities: z.array(z.string()).optional(),
+      actionTypes: z.array(z.string()).optional(),
+      yearHorizon: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, ...options } = input;
+      const isAdmin = ctx.user.role === 'admin';
+      
+      // Verify project access
+      const project = await getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+      if (!project) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or access denied'
+        });
+      }
+      
+      const components = await getComponentsForReport(projectId, options);
+      
+      // Group components based on grouping option
+      let groupedData: Record<string, Record<string, typeof components>> = {};
+      
+      if (options.grouping === 'building_uniformat') {
+        // Group by building first, then by UNIFORMAT Level 1
+        for (const comp of components) {
+          if (!groupedData[comp.assetName]) {
+            groupedData[comp.assetName] = {};
+          }
+          const uniformatGroup = comp.uniformatLevel1;
+          if (!groupedData[comp.assetName][uniformatGroup]) {
+            groupedData[comp.assetName][uniformatGroup] = [];
+          }
+          groupedData[comp.assetName][uniformatGroup].push(comp);
+        }
+      } else if (options.grouping === 'uniformat_building') {
+        // Group by UNIFORMAT Level 1 first, then by building
+        for (const comp of components) {
+          const uniformatGroup = comp.uniformatLevel1;
+          if (!groupedData[uniformatGroup]) {
+            groupedData[uniformatGroup] = {};
+          }
+          if (!groupedData[uniformatGroup][comp.assetName]) {
+            groupedData[uniformatGroup][comp.assetName] = [];
+          }
+          groupedData[uniformatGroup][comp.assetName].push(comp);
+        }
+      } else if (options.grouping === 'building_only') {
+        // Group by building only
+        for (const comp of components) {
+          if (!groupedData[comp.assetName]) {
+            groupedData[comp.assetName] = { 'all': [] };
+          }
+          groupedData[comp.assetName]['all'].push(comp);
+        }
+      } else {
+        // Group by UNIFORMAT only
+        for (const comp of components) {
+          const uniformatGroup = comp.uniformatLevel1;
+          if (!groupedData[uniformatGroup]) {
+            groupedData[uniformatGroup] = { 'all': [] };
+          }
+          groupedData[uniformatGroup]['all'].push(comp);
+        }
+      }
+      
+      // Calculate summary statistics
+      const totalComponents = components.length;
+      const totalPhotos = components.reduce((sum, c) => sum + c.photos.length, 0);
+      const totalRepairCost = components.reduce((sum, c) => sum + (c.repairCost || 0), 0);
+      const totalReplacementCost = components.reduce((sum, c) => sum + (c.replacementCost || 0), 0);
+      
+      // Count by condition
+      const conditionCounts = {
+        good: components.filter(c => c.condition?.toLowerCase().includes('good')).length,
+        fair: components.filter(c => c.condition?.toLowerCase().includes('fair')).length,
+        poor: components.filter(c => c.condition?.toLowerCase().includes('poor')).length,
+        failed: components.filter(c => c.condition?.toLowerCase().includes('fail') || c.condition?.toLowerCase().includes('critical')).length,
+      };
+      
+      // Count by priority
+      const priorityCounts = {
+        critical: components.filter(c => c.priority === 'critical').length,
+        necessary: components.filter(c => c.priority === 'necessary').length,
+        recommended: components.filter(c => c.priority === 'recommended').length,
+        no_action: components.filter(c => c.priority === 'no_action').length,
+      };
+      
+      return {
+        projectId,
+        projectName: project.name,
+        components,
+        groupedData,
+        summary: {
+          totalComponents,
+          totalPhotos,
+          totalRepairCost,
+          totalReplacementCost,
+          totalCost: totalRepairCost + totalReplacementCost,
+          conditionCounts,
+          priorityCounts,
+        },
+        uniformatGroups: UNIFORMAT_GROUPS,
+        generatedAt: new Date().toISOString(),
+      };
+    }),
+
+  /**
+   * Get action list for report generation
+   * Returns tabular data for the Action List section
+   */
+  getActionList: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      scope: z.enum(['all', 'selected']).default('all'),
+      selectedAssetIds: z.array(z.number()).optional(),
+      yearHorizon: z.number().min(1).max(50).default(20),
+      includePriorities: z.array(z.enum(['critical', 'necessary', 'recommended', 'no_action'])).default(['critical', 'necessary', 'recommended']),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, ...options } = input;
+      const isAdmin = ctx.user.role === 'admin';
+      
+      // Verify project access
+      const project = await getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+      if (!project) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or access denied'
+        });
+      }
+      
+      const actionList = await getActionListForReport(projectId, options);
+      
+      // Calculate totals by priority
+      const totalsByPriority = {
+        critical: { count: 0, cost: 0 },
+        necessary: { count: 0, cost: 0 },
+        recommended: { count: 0, cost: 0 },
+        no_action: { count: 0, cost: 0 },
+      };
+      
+      for (const action of actionList) {
+        const priority = action.priority as keyof typeof totalsByPriority;
+        if (totalsByPriority[priority]) {
+          totalsByPriority[priority].count++;
+          totalsByPriority[priority].cost += action.actionCost || 0;
+        }
+      }
+      
+      // Calculate totals by UNIFORMAT group
+      const totalsByUniformat: Record<string, { count: number; cost: number }> = {};
+      for (const action of actionList) {
+        const group = action.uniformatCode.charAt(0);
+        if (!totalsByUniformat[group]) {
+          totalsByUniformat[group] = { count: 0, cost: 0 };
+        }
+        totalsByUniformat[group].count++;
+        totalsByUniformat[group].cost += action.actionCost || 0;
+      }
+      
+      return {
+        projectId,
+        projectName: project.name,
+        actions: actionList,
+        totalActions: actionList.length,
+        totalCost: actionList.reduce((sum, a) => sum + (a.actionCost || 0), 0),
+        totalsByPriority,
+        totalsByUniformat,
+        priorityBuckets: PRIORITY_BUCKETS,
+        actionTypes: ACTION_TYPES,
+        generatedAt: new Date().toISOString(),
+      };
+    }),
+
+  /**
+   * Get UNIFORMAT group summaries for dashboard section
+   */
+  getUniformatSummaries: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      assetIds: z.array(z.number()).optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, assetIds } = input;
+      const isAdmin = ctx.user.role === 'admin';
+      
+      // Verify project access
+      const project = await getProjectById(projectId, ctx.user.id, ctx.user.company, isAdmin);
+      if (!project) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or access denied'
+        });
+      }
+      
+      const summaries = await getUniformatGroupSummaries(projectId, assetIds);
+      
+      // Calculate overall totals
+      const totalComponents = summaries.reduce((sum, s) => sum + s.componentCount, 0);
+      const totalRepairCost = summaries.reduce((sum, s) => sum + s.totalRepairCost, 0);
+      const totalReplacementCost = summaries.reduce((sum, s) => sum + s.totalReplacementCost, 0);
+      
+      return {
+        projectId,
+        projectName: project.name,
+        summaries,
+        totals: {
+          components: totalComponents,
+          repairCost: totalRepairCost,
+          replacementCost: totalReplacementCost,
+          totalCost: totalRepairCost + totalReplacementCost,
+        },
+        uniformatGroups: UNIFORMAT_GROUPS,
+        conditionRatings: CONDITION_RATINGS,
+        generatedAt: new Date().toISOString(),
+      };
+    }),
+
+  /**
+   * Estimate report page count based on configuration
+   */
+  estimateEnhancedReportSize: protectedProcedure
+    .input(z.object({
+      componentCount: z.number(),
+      photoCount: z.number(),
+      includePhotos: z.boolean().default(true),
+      displayLevel: z.enum(['L2', 'L3', 'both']).default('L3'),
+      includeDashboard: z.boolean().default(true),
+      includeActionList: z.boolean().default(true),
+      includeIntroduction: z.boolean().default(true),
+    }))
+    .query(async ({ input }) => {
+      const estimatedPages = estimateReportPageCount(input);
+      
+      let warning = null;
+      if (estimatedPages > 100) {
+        warning = 'This report will be very large (100+ pages). Consider applying filters or reducing scope.';
+      } else if (estimatedPages > 50) {
+        warning = 'This report may be large. Generation may take several minutes.';
+      }
+      
+      return {
+        estimatedPages,
+        estimatedGenerationTime: Math.ceil(estimatedPages * 0.5), // ~0.5 seconds per page
+        warning,
+      };
+    }),
+
+  /**
+   * Get report configuration presets
+   */
+  getReportPresets: protectedProcedure
+    .query(async () => {
+      return {
+        presets: [
+          {
+            id: 'recommended',
+            label: 'Recommended',
+            description: 'Standard report with executive summary, dashboard, component details, and action list',
+            icon: 'star',
+            sections: {
+              includeExecutiveSummary: true,
+              includePortfolioMetrics: true,
+              includeBuildingBreakdown: true,
+              includeCategoryAnalysis: true,
+              includeCapitalForecast: true,
+              includePriorityRecommendations: true,
+              includeComponentAssessments: true,
+              includeAssumptions: true,
+              includeGlossary: true,
+              includeMethodology: true,
+            },
+            componentOptions: {
+              displayLevel: 'L3',
+              includePhotos: true,
+              maxPhotosPerComponent: 4,
+              grouping: 'building_uniformat',
+            },
+          },
+          {
+            id: 'minimal_executive',
+            label: 'Minimal Executive',
+            description: 'Brief executive summary with key metrics and priority recommendations only',
+            icon: 'briefcase',
+            sections: {
+              includeExecutiveSummary: true,
+              includePortfolioMetrics: true,
+              includeBuildingBreakdown: false,
+              includeCategoryAnalysis: false,
+              includeCapitalForecast: true,
+              includePriorityRecommendations: true,
+              includeComponentAssessments: false,
+              includeAssumptions: false,
+              includeGlossary: false,
+              includeMethodology: false,
+            },
+            componentOptions: {
+              displayLevel: 'L2',
+              includePhotos: false,
+              maxPhotosPerComponent: 0,
+              grouping: 'uniformat_only',
+            },
+          },
+          {
+            id: 'full_technical',
+            label: 'Full Technical',
+            description: 'Comprehensive report with all sections, detailed component assessments, and full photo documentation',
+            icon: 'file-text',
+            sections: {
+              includeExecutiveSummary: true,
+              includePortfolioMetrics: true,
+              includeBuildingBreakdown: true,
+              includeCategoryAnalysis: true,
+              includeCapitalForecast: true,
+              includePriorityRecommendations: true,
+              includeComponentAssessments: true,
+              includeAssumptions: true,
+              includeGlossary: true,
+              includeMethodology: true,
+            },
+            componentOptions: {
+              displayLevel: 'both',
+              includePhotos: true,
+              maxPhotosPerComponent: 6,
+              grouping: 'building_uniformat',
+            },
+          },
+        ],
+        uniformatGroups: UNIFORMAT_GROUPS,
+        priorityBuckets: PRIORITY_BUCKETS,
+        actionTypes: ACTION_TYPES,
+        conditionRatings: CONDITION_RATINGS,
       };
     }),
 });

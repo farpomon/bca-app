@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { AlertCircle, Building2, Layers, TrendingUp, Filter, Info } from "lucide-react";
+import { AlertCircle, Building2, Layers, TrendingUp, Filter, Info, Image } from "lucide-react";
 import type { ComponentAssessmentSectionConfig } from "@shared/reportTypes";
 import { MultiSelect } from "@/components/ui/multi-select";
 
@@ -94,31 +94,9 @@ export function ComponentAssessmentConfigPanel({
 
   const selectedAssetValues = config.selectedAssetIds?.map(id => id.toString()) || [];
 
-  // Show info message for portfolio-wide reports
-  if (!projectId) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5" />
-            Component Assessment Configuration
-          </CardTitle>
-          <CardDescription>
-            Configure which assets and components to include in the detailed assessment section
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              Component assessments will be included for all assets across your portfolio. 
-              Detailed filtering options are available when generating reports for individual projects.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
-  }
+  // For portfolio-wide reports (no projectId), show core configuration options
+  // but disable asset-specific filtering
+  const isPortfolioWide = !projectId;
 
   return (
     <Card>
@@ -132,24 +110,37 @@ export function ComponentAssessmentConfigPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Scope Selection */}
-        <div className="space-y-3">
-          <Label className="text-base font-semibold">Scope</Label>
-          <RadioGroup value={config.scope} onValueChange={handleScopeChange}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="all" id="scope-all" />
-              <Label htmlFor="scope-all" className="font-normal cursor-pointer">
-                Include for All Assets
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="selected" id="scope-selected" />
-              <Label htmlFor="scope-selected" className="font-normal cursor-pointer">
-                Include for Selected Assets
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
+        {/* Portfolio-wide info banner */}
+        {isPortfolioWide && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Component assessments will be included for all assets across your portfolio.
+              Asset-specific filtering is available when generating reports for individual projects.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Scope Selection - only show for project-specific reports */}
+        {!isPortfolioWide && (
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">Scope</Label>
+            <RadioGroup value={config.scope} onValueChange={handleScopeChange}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="all" id="scope-all" />
+                <Label htmlFor="scope-all" className="font-normal cursor-pointer">
+                  Include for All Assets
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="selected" id="scope-selected" />
+                <Label htmlFor="scope-selected" className="font-normal cursor-pointer">
+                  Include for Selected Assets
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+        )}
 
         {/* Grouping Option */}
         <div className="space-y-3">
@@ -175,8 +166,8 @@ export function ComponentAssessmentConfigPanel({
           </p>
         </div>
 
-        {/* Asset Selection (only when scope is 'selected') */}
-        {config.scope === 'selected' && (
+        {/* Asset Selection (only when scope is 'selected' and not portfolio-wide) */}
+        {!isPortfolioWide && config.scope === 'selected' && (
           <div className="space-y-2">
             <Label htmlFor="asset-select">Select Assets</Label>
             <MultiSelect
@@ -199,8 +190,8 @@ export function ComponentAssessmentConfigPanel({
           </div>
         )}
 
-        {/* Asset Filters (only when scope is 'all') */}
-        {config.scope === 'all' && (
+        {/* Asset Filters (only when scope is 'all' and not portfolio-wide) */}
+        {!isPortfolioWide && config.scope === 'all' && (
           <div className="space-y-4 p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Filter className="h-4 w-4" />
@@ -418,9 +409,42 @@ export function ComponentAssessmentConfigPanel({
           </div>
         )}
 
+        {/* UNIFORMAT Display Level */}
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">UNIFORMAT Display Level</Label>
+          <Select
+            value={config.displayLevel || 'L3'}
+            onValueChange={(value: any) => onChange({ ...config, displayLevel: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select display level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="L2">
+                <div>
+                  <div className="font-medium">Level 2 Summary</div>
+                  <div className="text-xs text-muted-foreground">Group by major system (e.g., B20 Exterior Enclosure)</div>
+                </div>
+              </SelectItem>
+              <SelectItem value="L3">
+                <div>
+                  <div className="font-medium">Level 3 Detail</div>
+                  <div className="text-xs text-muted-foreground">Individual components (e.g., B2010 Exterior Walls)</div>
+                </div>
+              </SelectItem>
+              <SelectItem value="both">
+                <div>
+                  <div className="font-medium">Both Levels</div>
+                  <div className="text-xs text-muted-foreground">L2 summary with L3 details nested</div>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Detail Level */}
         <div className="space-y-2">
-          <Label htmlFor="detail-level">Detail Level</Label>
+          <Label htmlFor="detail-level">Content Detail Level</Label>
           <Select
             value={config.detailLevel}
             onValueChange={(value: any) => onChange({ ...config, detailLevel: value })}
@@ -449,6 +473,123 @@ export function ComponentAssessmentConfigPanel({
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Photo Options */}
+        <div className="space-y-4 p-4 border rounded-lg">
+          <div className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            <Label className="text-base font-semibold">Photo Options</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-photos"
+              checked={config.includePhotos !== false}
+              onCheckedChange={(checked) => {
+                onChange({ ...config, includePhotos: !!checked });
+              }}
+            />
+            <Label htmlFor="include-photos" className="font-normal cursor-pointer">
+              Include component photos in report
+            </Label>
+          </div>
+
+          {config.includePhotos !== false && (
+            <div className="space-y-2 pl-6">
+              <Label htmlFor="max-photos">Maximum Photos per Component</Label>
+              <Select
+                value={(config.maxPhotosPerComponent || 4).toString()}
+                onValueChange={(value) => {
+                  onChange({ ...config, maxPhotosPerComponent: parseInt(value) });
+                }}
+              >
+                <SelectTrigger id="max-photos" className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 photo</SelectItem>
+                  <SelectItem value="2">2 photos</SelectItem>
+                  <SelectItem value="3">3 photos</SelectItem>
+                  <SelectItem value="4">4 photos</SelectItem>
+                  <SelectItem value="5">5 photos</SelectItem>
+                  <SelectItem value="6">6 photos</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Photos will be embedded inline with each component assessment
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Display Options */}
+        <div className="space-y-4 p-4 border rounded-lg">
+          <Label className="text-base font-semibold">Display Options</Label>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-cost-fields"
+              checked={config.includeCostFields !== false}
+              onCheckedChange={(checked) => {
+                onChange({ ...config, includeCostFields: !!checked });
+              }}
+            />
+            <Label htmlFor="include-cost-fields" className="font-normal cursor-pointer">
+              Show cost fields (Repair Cost, Replacement Value)
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-action-details"
+              checked={config.includeActionDetails !== false}
+              onCheckedChange={(checked) => {
+                onChange({ ...config, includeActionDetails: !!checked });
+              }}
+            />
+            <Label htmlFor="include-action-details" className="font-normal cursor-pointer">
+              Show action details (Description, Recommendations)
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-rollups"
+              checked={config.includeRollups !== false}
+              onCheckedChange={(checked) => {
+                onChange({ ...config, includeRollups: !!checked });
+              }}
+            />
+            <Label htmlFor="include-rollups" className="font-normal cursor-pointer">
+              Include cost/count rollups by building and UNIFORMAT group
+            </Label>
+          </div>
+        </div>
+
+        {/* Year Horizon */}
+        <div className="space-y-2">
+          <Label htmlFor="year-horizon">Action Year Horizon</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="year-horizon"
+              type="number"
+              min={1}
+              max={50}
+              value={config.yearHorizon || 20}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (!isNaN(value) && value >= 1 && value <= 50) {
+                  onChange({ ...config, yearHorizon: value });
+                }
+              }}
+              className="w-24"
+            />
+            <span className="text-sm text-muted-foreground">years</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Only include components with actions planned within this timeframe
+          </p>
         </div>
 
         {/* Page Control */}
