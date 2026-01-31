@@ -168,6 +168,8 @@ export default function PortfolioReport() {
   const [showPresetBanner, setShowPresetBanner] = useState(false);
   const [dataSnapshot, setDataSnapshot] = useState<DataSnapshot | null>(null);
   const [showSectionConfig, setShowSectionConfig] = useState<string | null>(null);
+  const [pdfGenerationStage, setPdfGenerationStage] = useState<string>('');
+  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   
   const [config, setConfig] = useState<ReportConfiguration>({
     // Section toggles
@@ -354,9 +356,137 @@ export default function PortfolioReport() {
     }, 300);
   };
 
-  const handleExportPDF = () => {
-    window.print();
-    toast.success("Use your browser's print dialog to save as PDF");
+  const handleExportPDF = async () => {
+    if (!dashboardData) {
+      toast.error("No data available for PDF generation");
+      return;
+    }
+
+    // Validate required fields
+    const validation = getAllValidationIssues(config, dashboardData);
+    if (!validation.canGenerate) {
+      toast.error("Please fix validation errors before generating PDF");
+      return;
+    }
+
+    setIsPdfGenerating(true);
+    setPdfGenerationStage('Preparing report data...');
+    setGenerationProgress(0);
+
+    try {
+      // Build the enhanced report config from current settings
+      const enhancedConfig: EnhancedReportConfig = {
+        reportTitle: config.reportTitle || 'Portfolio Condition Assessment Report',
+        preparedBy: config.preparedBy || 'B3NMA',
+        preparedFor: config.preparedFor || 'Client',
+        reportDate: new Date().toLocaleDateString('en-CA'),
+        projectName: dashboardData.overview?.projectName || 'Portfolio',
+        clientName: config.preparedFor || 'Client',
+        clientAddress: '',
+        
+        // Section toggles
+        includeExecutiveSummary: config.includeExecutiveSummary,
+        includeAssetOverview: config.includeBuildingBreakdown,
+        includeComponentAssessments: config.includeComponentAssessments,
+        includeActionList: config.includePriorityRecommendations,
+        includeCapitalForecast: config.includeCapitalForecast,
+        includePriorityMatrix: config.includePriorityRecommendations,
+        includeUniformatBreakdown: config.includeCategoryAnalysis,
+        includePhotoAppendix: false,
+        
+        // Component assessment options
+        componentGrouping: config.componentAssessmentSection?.grouping || 'building_uniformat',
+        displayLevel: config.componentAssessmentSection?.displayLevel || 'L3',
+        includePhotos: config.componentAssessmentSection?.includePhotos ?? true,
+        maxPhotosPerComponent: config.componentAssessmentSection?.maxPhotosPerComponent || 4,
+        showCostFields: config.componentAssessmentSection?.showCostFields ?? true,
+        showActionDetails: config.componentAssessmentSection?.showActionDetails ?? true,
+        includeRollups: config.componentAssessmentSection?.includeRollups ?? true,
+        
+        // Action list options
+        actionYearHorizon: config.componentAssessmentSection?.actionYearHorizon || 20,
+      };
+
+      // Build report data from dashboard data
+      const reportData: EnhancedReportData = {
+        config: enhancedConfig,
+        summary: {
+          totalAssets: dashboardData.overview?.totalBuildings || 0,
+          totalCurrentReplacementValue: dashboardData.overview?.totalCRV || 0,
+          totalDeferredMaintenanceCost: dashboardData.overview?.totalDeferredMaintenance || 0,
+          portfolioFCI: dashboardData.overview?.portfolioFCI || 0,
+          portfolioFCIRating: dashboardData.overview?.fciRating || 'N/A',
+          averageConditionScore: dashboardData.overview?.avgConditionScore || 0,
+          averageConditionRating: dashboardData.overview?.conditionRating || 'N/A',
+          totalDeficiencies: dashboardData.overview?.totalDeficiencies || 0,
+          totalAssessments: dashboardData.overview?.totalAssessments || 0,
+          fundingGap: dashboardData.overview?.fundingGap || 0,
+          averageAssetAge: dashboardData.overview?.avgBuildingAge || 0,
+        },
+        assetMetrics: (dashboardData.buildingComparison || []).map((b: any) => ({
+          assetId: b.assetId || 0,
+          assetName: b.name || 'Unknown',
+          address: b.address,
+          yearBuilt: b.yearBuilt,
+          grossFloorArea: b.grossFloorArea,
+          currentReplacementValue: b.crv || 0,
+          deferredMaintenanceCost: b.deferredMaintenance || 0,
+          fci: b.fci || 0,
+          fciRating: b.fciRating || 'N/A',
+          conditionScore: b.conditionScore || 0,
+          conditionRating: b.conditionRating || 'N/A',
+          assessmentCount: b.assessmentCount || 0,
+          deficiencyCount: b.deficiencyCount || 0,
+          immediateNeeds: b.immediateNeeds || 0,
+          shortTermNeeds: b.shortTermNeeds || 0,
+          mediumTermNeeds: b.mediumTermNeeds || 0,
+          longTermNeeds: b.longTermNeeds || 0,
+          averageRemainingLife: b.avgRemainingLife || 0,
+          priorityScore: b.priorityScore || 0,
+        })),
+        components: [], // Will be populated if component assessments are included
+        actionList: [], // Will be populated if action list is included
+        uniformatSummary: (dashboardData.categoryCostBreakdown || []).map((c: any) => ({
+          groupCode: c.category?.substring(0, 1) || 'A',
+          groupName: c.category || 'Unknown',
+          componentCount: c.count || 0,
+          totalRepairCost: c.totalCost || 0,
+          totalReplacementCost: 0,
+          avgConditionPercentage: 0,
+          conditionDistribution: { good: 0, fair: 0, poor: 0, failed: 0 },
+        })),
+        capitalForecast: (dashboardData.capitalForecast || []).map((f: any) => ({
+          year: f.year,
+          immediateNeeds: f.immediateNeeds || 0,
+          shortTermNeeds: f.shortTermNeeds || 0,
+          mediumTermNeeds: f.mediumTermNeeds || 0,
+          longTermNeeds: f.longTermNeeds || 0,
+          totalProjectedCost: f.total || 0,
+          cumulativeCost: f.cumulative || 0,
+        })),
+        priorityMatrix: (dashboardData.priorityMatrix || []).map((p: any) => ({
+          priority: p.priority || 'Unknown',
+          count: p.count || 0,
+          totalCost: p.totalCost || 0,
+          percentageOfTotal: p.percentage || 0,
+        })),
+      };
+
+      // Generate the PDF with progress callback
+      await generateEnhancedPDF(reportData, (stage, progress) => {
+        setPdfGenerationStage(stage);
+        setGenerationProgress(progress);
+      });
+
+      toast.success('PDF generated successfully!');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error(`Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsPdfGenerating(false);
+      setPdfGenerationStage('');
+      setGenerationProgress(0);
+    }
   };
 
   const handleRefreshPreview = () => {
@@ -504,25 +634,45 @@ export default function PortfolioReport() {
                     </p>
                   </div>
                 </div>
-                <Button 
-                  onClick={handleGeneratePreview} 
-                  disabled={isGenerating || hasBlockingErrors}
-                  size="lg"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Generate Preview
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleGeneratePreview} 
+                    disabled={isGenerating || isPdfGenerating || hasBlockingErrors}
+                    size="lg"
+                    variant="outline"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-2 h-4 w-4" />
+                        Preview
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={handleExportPDF} 
+                    disabled={isGenerating || isPdfGenerating || hasBlockingErrors}
+                    size="lg"
+                  >
+                    {isPdfGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {pdfGenerationStage || 'Generating PDF...'}
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-              {isGenerating && (
+              {(isGenerating || isPdfGenerating) && (
                 <Progress value={generationProgress} className="mt-3 h-1" />
               )}
             </div>

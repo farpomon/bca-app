@@ -5440,3 +5440,12 @@ Deployment is allowed only when:
 - [x] Show estimated page count and layout preview
 - [x] Add toggle between "Configuration" and "Preview" views (Details/Preview tabs)
 - [x] Integrate preview panel with PortfolioReport page
+
+
+## Wire Up PDF Generation Button
+
+- [x] Review current Generate Preview button implementation in PortfolioReport.tsx
+- [x] Connect button to enhanced PDF generator with photo fetching
+- [x] Add progress indicator during PDF generation (loading state, percentage)
+- [x] Implement PDF download trigger with proper filename
+- [x] Test PDF download with various configurations (with/without photos, different sections)
