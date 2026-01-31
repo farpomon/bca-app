@@ -5421,3 +5421,22 @@ Deployment is allowed only when:
 - [ ] F) Action List Output - Tabular summary with filtering by assets and year horizon
 - [ ] G) Performance & Reliability - Handle large reports with progress status, robust error messages
 - [ ] H) Acceptance Testing - Validate section order, component grouping, photo rendering, cost formatting, TOC accuracy
+
+
+## PDF Generation with Photo Embedding & Report Preview Mode
+
+### PDF Generation with Photo Embedding
+- [x] Review current portfolioPdfGenerator.ts implementation
+- [x] Add photo fetching logic to retrieve component photos from storage
+- [x] Implement photo embedding in component assessment sections
+- [x] Add photo captions with date taken and component reference
+- [x] Handle photo sizing and layout within PDF pages
+- [ ] Test PDF generation with various photo counts (1-6 per component)
+
+### Report Preview Mode
+- [x] Create ReportPreviewPanel component
+- [x] Implement live preview rendering based on configuration
+- [x] Add sample data display for each enabled section
+- [x] Show estimated page count and layout preview
+- [x] Add toggle between "Configuration" and "Preview" views (Details/Preview tabs)
+- [x] Integrate preview panel with PortfolioReport page

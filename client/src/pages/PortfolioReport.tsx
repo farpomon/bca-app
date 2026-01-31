@@ -52,6 +52,8 @@ import { ValidationAlerts, PresetAppliedBanner } from "@/components/report/Valid
 import { SnapshotStatus, SnapshotInfoCard } from "@/components/report/SnapshotStatus";
 import { BuildingSectionConfigPanel, UniformatSectionConfigPanel, GeographicSectionConfigPanel } from "@/components/report/SectionConfigPanel";
 import { ComponentAssessmentConfigPanel } from "@/components/report/ComponentAssessmentConfigPanel";
+import { ReportPreviewPanel } from "@/components/report/ReportPreviewPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ReportConfiguration, DataSnapshot, BuildingSectionConfig, UniformatSectionConfig, GeographicSectionConfig, PrioritySectionConfig, ComponentAssessmentSectionConfig } from "@shared/reportTypes";
 import { DEFAULT_BUILDING_COLUMNS, DEFAULT_PRIORITY_HORIZONS, DEFAULT_COMPONENT_ASSESSMENT_CONFIG } from "@shared/reportTypes";
 import {
@@ -62,6 +64,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { exportBuildingsCSV, exportUniformatCSV, exportDeficienciesCSV, exportCapitalForecastCSV } from "@/lib/csvExport";
+import { generateEnhancedPDF, type EnhancedReportData, type EnhancedReportConfig } from "@/utils/enhancedPdfGenerator";
 
 // Format currency
 function formatCurrency(value: number): string {
@@ -682,100 +685,158 @@ export default function PortfolioReport() {
                 )}
               </div>
 
-              {/* Report Details Panel */}
+              {/* Report Details & Preview Panel */}
               <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Report Details</CardTitle>
-                    <CardDescription>Required information for your report</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reportTitle">
-                        Report Title <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="reportTitle"
-                        value={config.reportTitle}
-                        onChange={(e) => setConfig({ ...config, reportTitle: e.target.value })}
-                        className={validationErrors.reportTitle ? "border-destructive" : ""}
-                      />
-                      {validationErrors.reportTitle && (
-                        <p className="text-xs text-destructive">{validationErrors.reportTitle}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="preparedBy">
-                        Prepared By <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="preparedBy"
-                        value={config.preparedBy}
-                        onChange={(e) => setConfig({ ...config, preparedBy: e.target.value })}
-                        className={validationErrors.preparedBy ? "border-destructive" : ""}
-                      />
-                      {validationErrors.preparedBy && (
-                        <p className="text-xs text-destructive">{validationErrors.preparedBy}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="preparedFor">
-                        Prepared For <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="preparedFor"
-                        value={config.preparedFor}
-                        onChange={(e) => setConfig({ ...config, preparedFor: e.target.value })}
-                        placeholder="Client name or organization"
-                        className={validationErrors.preparedFor ? "border-destructive" : ""}
-                      />
-                      {validationErrors.preparedFor && (
-                        <p className="text-xs text-destructive">{validationErrors.preparedFor}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="additionalNotes">Additional Notes</Label>
-                      <Textarea
-                        id="additionalNotes"
-                        value={config.additionalNotes}
-                        onChange={(e) => setConfig({ ...config, additionalNotes: e.target.value })}
-                        placeholder="Any additional notes to include..."
-                        rows={3}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                <Tabs defaultValue="details" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="details" className="gap-2">
+                      <Settings className="h-4 w-4" />
+                      Details
+                    </TabsTrigger>
+                    <TabsTrigger value="preview" className="gap-2">
+                      <Eye className="h-4 w-4" />
+                      Preview
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="details" className="space-y-4 mt-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Report Details</CardTitle>
+                        <CardDescription>Required information for your report</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="reportTitle">
+                            Report Title <span className="text-destructive">*</span>
+                          </Label>
+                          <Input
+                            id="reportTitle"
+                            value={config.reportTitle}
+                            onChange={(e) => setConfig({ ...config, reportTitle: e.target.value })}
+                            className={validationErrors.reportTitle ? "border-destructive" : ""}
+                          />
+                          {validationErrors.reportTitle && (
+                            <p className="text-xs text-destructive">{validationErrors.reportTitle}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="preparedBy">
+                            Prepared By <span className="text-destructive">*</span>
+                          </Label>
+                          <Input
+                            id="preparedBy"
+                            value={config.preparedBy}
+                            onChange={(e) => setConfig({ ...config, preparedBy: e.target.value })}
+                            className={validationErrors.preparedBy ? "border-destructive" : ""}
+                          />
+                          {validationErrors.preparedBy && (
+                            <p className="text-xs text-destructive">{validationErrors.preparedBy}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="preparedFor">
+                            Prepared For <span className="text-destructive">*</span>
+                          </Label>
+                          <Input
+                            id="preparedFor"
+                            value={config.preparedFor}
+                            onChange={(e) => setConfig({ ...config, preparedFor: e.target.value })}
+                            placeholder="Client name or organization"
+                            className={validationErrors.preparedFor ? "border-destructive" : ""}
+                          />
+                          {validationErrors.preparedFor && (
+                            <p className="text-xs text-destructive">{validationErrors.preparedFor}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="additionalNotes">Additional Notes</Label>
+                          <Textarea
+                            id="additionalNotes"
+                            value={config.additionalNotes}
+                            onChange={(e) => setConfig({ ...config, additionalNotes: e.target.value })}
+                            placeholder="Any additional notes to include..."
+                            rows={3}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                {/* Branding Options */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Branding (Optional)</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="footerText">Footer Text</Label>
-                      <Input
-                        id="footerText"
-                        value={options.footerText}
-                        onChange={(e) => setOptions({ ...options, footerText: e.target.value })}
-                        placeholder="Confidentiality notice"
-                      />
-                    </div>
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" />
-                      Logo upload coming soon
-                    </div>
-                  </CardContent>
-                </Card>
+                    {/* Branding Options */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base">Branding (Optional)</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="footerText">Footer Text</Label>
+                          <Input
+                            id="footerText"
+                            value={options.footerText}
+                            onChange={(e) => setOptions({ ...options, footerText: e.target.value })}
+                            placeholder="Confidentiality notice"
+                          />
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Info className="h-3 w-3" />
+                          Logo upload coming soon
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                {/* Data Snapshot Status */}
-                {dataSnapshot && (
-                  <Card>
-                    <CardContent className="pt-4">
-                      <SnapshotInfoCard snapshot={dataSnapshot} />
-                    </CardContent>
-                  </Card>
-                )}
+                    {/* Data Snapshot Status */}
+                    {dataSnapshot && (
+                      <Card>
+                        <CardContent className="pt-4">
+                          <SnapshotInfoCard snapshot={dataSnapshot} />
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="preview" className="mt-4">
+                    <ReportPreviewPanel
+                      config={{
+                        reportTitle: config.reportTitle,
+                        preparedBy: config.preparedBy,
+                        preparedFor: config.preparedFor,
+                        projectName: dashboardData?.projectName || 'Portfolio Report',
+                        clientName: dashboardData?.clientName || config.preparedFor,
+                        includeExecutiveSummary: options.includeExecutiveSummary,
+                        includeAssetOverview: options.includeBuildingBreakdown,
+                        includeComponentAssessments: options.includeComponentAssessments,
+                        includeActionList: options.includePriorityMatrix,
+                        includeCapitalForecast: options.includeCapitalForecast,
+                        includeUniformatBreakdown: options.includeCategoryAnalysis,
+                        includePhotos: config.componentAssessmentSection?.includePhotos ?? true,
+                        maxPhotosPerComponent: config.componentAssessmentSection?.maxPhotosPerComponent ?? 4,
+                        showCostFields: config.componentAssessmentSection?.showCostFields ?? true,
+                        showActionDetails: config.componentAssessmentSection?.showActionDetails ?? true,
+                        displayLevel: config.componentAssessmentSection?.displayLevel ?? 'L3',
+                      }}
+                      summary={dashboardData ? {
+                        totalAssets: dashboardData.totalAssets || 0,
+                        portfolioFCI: dashboardData.portfolioFCI || 0,
+                        portfolioFCIRating: dashboardData.portfolioFCIRating || 'N/A',
+                        totalCRV: dashboardData.totalCurrentReplacementValue || 0,
+                        totalDeferredMaintenance: dashboardData.totalDeferredMaintenanceCost || 0,
+                        fundingGap: dashboardData.fundingGap || 0,
+                      } : undefined}
+                      sampleAssets={allBuildings?.slice(0, 10).map(a => ({
+                        id: a.assetId,
+                        name: a.assetName,
+                        fci: a.fci,
+                        fciRating: a.fciRating,
+                        crv: a.currentReplacementValue,
+                        deferredMaintenance: a.deferredMaintenanceCost,
+                      })) || []}
+                      sampleComponents={[]}
+                      sampleActions={[]}
+                      estimatedPages={estimatedPages.max}
+                      isLoading={isLoading}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </div>
