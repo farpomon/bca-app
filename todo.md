@@ -5543,3 +5543,18 @@ Deployment is allowed only when:
 - [x] PDF now generates 95 pages with full component assessment details
 - [x] Components organized by UNIFORMAT II categories (A-Substructure, B-Shell, etc.)
 - [x] Each component shows: Asset Name, Location, Condition, Remaining Life, Repair Cost, Replacement Cost, Action Year, Priority
+
+
+## 🔥 Bug Fix: CRV Number Formatting
+
+- [ ] Fix CRV displaying malformed number with excessive decimal places ($0150000.00200000.000000...)
+- [ ] Ensure proper currency formatting for all financial values in PDF
+- [ ] Test CRV display in Asset Overview section
+
+
+## 🔥 Bug Fix: CRV Number Formatting (Completed)
+
+- [x] Fix CRV number formatting displaying malformed values with excessive decimal places
+- [x] Add proper number parsing with parseFloat() before formatting
+- [x] Add Math.round() to ensure clean integer values for currency
+- [x] Test PDF generation with fixed CRV values

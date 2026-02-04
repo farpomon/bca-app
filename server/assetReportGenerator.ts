@@ -142,17 +142,28 @@ export async function generateAssetReport(inputData: AssetReportData): Promise<B
   const criticalDeficiencies = data.deficiencies.filter(d => d.severity === 'critical').length;
   
   // Calculate repair costs from assessments
-  const totalRepairCost = data.assessments.reduce((sum, a) => sum + (a.estimatedRepairCost || a.repairCost || 0), 0);
-  const deficiencyCost = data.deficiencies.reduce((sum, d) => sum + (d.estimatedCost || 0), 0);
+  // Ensure numeric values are properly parsed (handle string values from database)
+  const totalRepairCost = Math.round(data.assessments.reduce((sum, a) => {
+    const value = Number(a.estimatedRepairCost) || Number(a.repairCost) || 0;
+    return sum + (isNaN(value) ? 0 : value);
+  }, 0));
+  const deficiencyCost = Math.round(data.deficiencies.reduce((sum, d) => {
+    const value = Number(d.estimatedCost) || 0;
+    return sum + (isNaN(value) ? 0 : value);
+  }, 0));
   const totalDeferredMaintenance = totalRepairCost > 0 ? totalRepairCost : deficiencyCost;
   
   // Calculate replacement value from assessments
-  const totalReplacementValue = data.assessments.reduce((sum, a) => sum + (a.replacementValue || a.replacementCost || 0), 0);
+  // Ensure numeric values are properly parsed (handle string values from database)
+  const totalReplacementValue = Math.round(data.assessments.reduce((sum, a) => {
+    const value = Number(a.replacementValue) || Number(a.replacementCost) || 0;
+    return sum + (isNaN(value) ? 0 : value);
+  }, 0));
   
   // Estimate CRV if not available
-  const estimatedCRV = totalReplacementValue > 0 
+  const estimatedCRV = Math.round(totalReplacementValue > 0 
     ? totalReplacementValue 
-    : (data.asset.grossFloorArea ? data.asset.grossFloorArea * 350 : totalDeferredMaintenance * 10);
+    : (data.asset.grossFloorArea ? Number(data.asset.grossFloorArea) * 350 : totalDeferredMaintenance * 10));
 
   // Calculate FCI using validated functions
   const fci = calculateFCI(totalDeferredMaintenance, estimatedCRV);

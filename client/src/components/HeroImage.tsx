@@ -16,8 +16,8 @@ import { useState, useEffect, useRef } from "react";
  */
 
 const HERO_IMAGES = [
-  "/hero-images/hero-1.png",
-  "/hero-images/hero-2.png",
+  "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028353512/KmZgwRoKnRyWrXEA.png",
+  "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028353512/LzECdakaqUsrbpAq.png",
   "/hero-images/hero-3.png",
   "/hero-images/hero-4.png",
   "/hero-images/hero-5.png",
