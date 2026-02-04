@@ -1004,3 +1004,339 @@ export async function getCapitalPlanningForecast(
 
   return forecast;
 }
+
+
+// ============================================================================
+// Component Assessments for PDF Report
+// ============================================================================
+
+export interface ComponentAssessmentForPDF {
+  id: number;
+  assetId: number;
+  assetName: string;
+  assetAddress: string;
+  uniformatCode: string;
+  uniformatLevel1: string;
+  uniformatLevel2: string | null;
+  uniformatLevel3: string | null;
+  uniformatGroup: string;
+  componentName: string;
+  componentLocation: string | null;
+  condition: string;
+  conditionPercentage: number | null;
+  estimatedServiceLife: number | null;
+  remainingUsefulLife: number | null;
+  reviewYear: number | null;
+  lastTimeAction: number | null;
+  repairCost: number | null;
+  replacementCost: number | null;
+  totalCost: number | null;
+  actionType: string;
+  actionYear: number | null;
+  actionDescription: string | null;
+  priority: string;
+  assessmentDate: string;
+  assessorName: string | null;
+  observations: string | null;
+  recommendations: string | null;
+  photos: Array<{
+    id: number;
+    url: string;
+    caption: string | null;
+    takenAt: string | null;
+    componentCode: string;
+    assetName: string;
+  }>;
+}
+
+export async function getComponentAssessmentsForPDF(
+  userId: number,
+  company: string | null,
+  isAdmin: boolean,
+  options: {
+    assetIds?: number[];
+    includePhotos?: boolean;
+    maxPhotosPerComponent?: number;
+    sortBy?: 'uniformat' | 'asset' | 'condition' | 'cost';
+  } = {}
+): Promise<ComponentAssessmentForPDF[]> {
+  // UNIQUE MARKER 20260204-0725 - If this shows up, the code is being reloaded
+  console.error('=== FUNCTION CALLED AT', new Date().toISOString(), '===');
+  console.log('[getComponentAssessmentsForPDF] Starting with:', { userId, company, isAdmin, options });
+  const db = await getDb();
+  if (!db) {
+    console.log('[getComponentAssessmentsForPDF] No database connection');
+    return [];
+  }
+
+  const { assetIds, includePhotos = true, maxPhotosPerComponent = 4, sortBy = 'uniformat' } = options;
+
+  // Build project conditions based on user permissions
+  console.log('[getComponentAssessmentsForPDF] Building conditions - isAdmin:', isAdmin, 'company:', company, 'userId:', userId);
+  // For super admins with no company filter, we'll skip the project condition entirely
+  const skipProjectFilter = isAdmin && !company;
+  let projectConditions: ReturnType<typeof sql>;
+  if (skipProjectFilter) {
+    // Use a condition that's always true
+    projectConditions = sql`p.id IS NOT NULL`;
+  } else if (isAdmin && company) {
+    projectConditions = sql`p.company = ${company}`;
+  } else if (company) {
+    projectConditions = sql`(p.userId = ${userId} OR p.company = ${company})`;
+  } else {
+    projectConditions = sql`p.userId = ${userId}`;
+  }
+  console.log('[getComponentAssessmentsForPDF] Project condition:', skipProjectFilter ? 'p.id IS NOT NULL (all)' : (isAdmin ? `p.company = ${company}` : (company ? `(p.userId = ${userId} OR p.company = ${company})` : `p.userId = ${userId}`)));
+
+  // Add asset filter if specified
+  const assetCondition = assetIds && assetIds.length > 0
+    ? sql`AND a.id IN (${sql.join(assetIds.map(id => sql`${id}`), sql`, `)})`
+    : sql``;
+
+  // Determine sort order
+  let orderByClause: ReturnType<typeof sql>;
+  switch (sortBy) {
+    case 'asset':
+      orderByClause = sql`a.name ASC, ass.componentCode ASC`;
+      break;
+    case 'condition':
+      orderByClause = sql`
+        CASE ass.condition
+          WHEN 'critical' THEN 1
+          WHEN 'poor' THEN 2
+          WHEN 'fair' THEN 3
+          WHEN 'good' THEN 4
+          WHEN 'excellent' THEN 5
+          ELSE 6
+        END ASC,
+        ass.componentCode ASC
+      `;
+      break;
+    case 'cost':
+      orderByClause = sql`COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) DESC`;
+      break;
+    case 'uniformat':
+    default:
+      orderByClause = sql`ass.componentCode ASC, a.name ASC`;
+      break;
+  }
+
+  // Build the full SQL query string for debugging
+  console.log('[getComponentAssessmentsForPDF] Building SQL query...');
+  
+  // For super admin with no company filter, use a simple raw query
+  let result;
+  console.log('[getComponentAssessmentsForPDF] skipProjectFilter:', skipProjectFilter, 'assetIds:', assetIds);
+  if (skipProjectFilter && (!assetIds || assetIds.length === 0)) {
+    console.log('[getComponentAssessmentsForPDF] Using simplified raw query for super admin - BRANCH 1');
+    result = await db.execute(sql`
+      SELECT 
+        ass.id,
+        ass.assetId,
+        a.name as assetName,
+        COALESCE(a.address, p.address, '') as assetAddress,
+        COALESCE(ass.componentCode, '') as uniformatCode,
+        COALESCE(SUBSTRING(ass.componentCode, 1, 1), 'Z') as uniformatLevel1,
+        CASE 
+          WHEN LENGTH(ass.componentCode) >= 3 THEN SUBSTRING(ass.componentCode, 1, 3)
+          ELSE NULL 
+        END as uniformatLevel2,
+        CASE 
+          WHEN LENGTH(ass.componentCode) >= 5 THEN SUBSTRING(ass.componentCode, 1, 5)
+          ELSE NULL 
+        END as uniformatLevel3,
+        COALESCE(ass.uniformatGroup, '') as uniformatGroup,
+        COALESCE(ass.componentName, 'Unknown Component') as componentName,
+        ass.componentLocation,
+        COALESCE(ass.condition, 'not_assessed') as conditionRating,
+        CAST(ass.conditionPercentage AS DECIMAL(5,2)) as conditionPercentage,
+        ass.estimatedServiceLife,
+        ass.remainingUsefulLife,
+        ass.reviewYear,
+        ass.lastTimeAction,
+        CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+        CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost,
+        CAST(COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) AS DECIMAL(15,2)) as totalCost,
+        COALESCE(ass.recommendedAction, 'monitor') as actionType,
+        ass.actionYear,
+        ass.actionDescription,
+        COALESCE(
+          CASE ass.priorityLevel
+            WHEN '1' THEN 'immediate'
+            WHEN '2' THEN 'short_term'
+            WHEN '3' THEN 'medium_term'
+            WHEN '4' THEN 'long_term'
+            WHEN '5' THEN 'long_term'
+            ELSE 'medium_term'
+          END,
+          'medium_term'
+        ) as priority,
+        COALESCE(ass.assessmentDate, ass.createdAt) as assessmentDate,
+        u.name as assessorName,
+        ass.observations,
+        ass.recommendations
+      FROM assessments ass
+      INNER JOIN assets a ON ass.assetId = a.id
+      INNER JOIN projects p ON a.projectId = p.id
+      LEFT JOIN users u ON ass.assessorId = u.id
+      WHERE p.deletedAt IS NULL
+        AND ass.deletedAt IS NULL
+        AND (ass.hidden = 0 OR ass.hidden IS NULL)
+      ORDER BY ass.componentCode ASC, a.name ASC
+    `);
+  } else {
+    console.log('[getComponentAssessmentsForPDF] Using full query with project conditions - BRANCH 2');
+    // Fetch assessments with asset and project info
+    result = await db.execute(sql`
+      SELECT 
+        ass.id,
+        ass.assetId,
+        a.name as assetName,
+        COALESCE(a.address, p.address, '') as assetAddress,
+        COALESCE(ass.componentCode, '') as uniformatCode,
+        COALESCE(SUBSTRING(ass.componentCode, 1, 1), 'Z') as uniformatLevel1,
+        CASE 
+          WHEN LENGTH(ass.componentCode) >= 3 THEN SUBSTRING(ass.componentCode, 1, 3)
+          ELSE NULL 
+        END as uniformatLevel2,
+        CASE 
+          WHEN LENGTH(ass.componentCode) >= 5 THEN SUBSTRING(ass.componentCode, 1, 5)
+          ELSE NULL 
+        END as uniformatLevel3,
+        COALESCE(ass.uniformatGroup, '') as uniformatGroup,
+        COALESCE(ass.componentName, 'Unknown Component') as componentName,
+        ass.componentLocation,
+        COALESCE(ass.condition, 'not_assessed') as conditionRating,
+        CAST(ass.conditionPercentage AS DECIMAL(5,2)) as conditionPercentage,
+        ass.estimatedServiceLife,
+        ass.remainingUsefulLife,
+        ass.reviewYear,
+        ass.lastTimeAction,
+        CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+        CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost,
+        CAST(COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) AS DECIMAL(15,2)) as totalCost,
+        COALESCE(ass.recommendedAction, 'monitor') as actionType,
+        ass.actionYear,
+        ass.actionDescription,
+        COALESCE(
+          CASE ass.priorityLevel
+            WHEN '1' THEN 'immediate'
+            WHEN '2' THEN 'short_term'
+            WHEN '3' THEN 'medium_term'
+            WHEN '4' THEN 'long_term'
+            WHEN '5' THEN 'long_term'
+            ELSE 'medium_term'
+          END,
+          'medium_term'
+        ) as priority,
+        COALESCE(ass.assessmentDate, ass.createdAt) as assessmentDate,
+        u.name as assessorName,
+        ass.observations,
+        ass.recommendations
+      FROM assessments ass
+      INNER JOIN assets a ON ass.assetId = a.id
+      INNER JOIN projects p ON a.projectId = p.id
+      LEFT JOIN users u ON ass.assessorId = u.id
+      WHERE ${projectConditions}
+        AND ass.deletedAt IS NULL
+        AND (ass.hidden = 0 OR ass.hidden IS NULL)
+        ${assetCondition}
+      ORDER BY ${orderByClause}
+    `);
+  }
+
+  console.error('[getComponentAssessmentsForPDF] Raw result:', JSON.stringify(result).substring(0, 500));
+  console.error('[getComponentAssessmentsForPDF] Raw result type:', typeof result, Array.isArray(result) ? 'isArray' : 'notArray');
+  if (Array.isArray(result)) {
+    console.error('[getComponentAssessmentsForPDF] Result[0] type:', typeof result[0], Array.isArray(result[0]) ? 'isArray' : 'notArray');
+    console.error('[getComponentAssessmentsForPDF] Result[0] length:', Array.isArray(result[0]) ? result[0].length : 'N/A');
+    if (Array.isArray(result[0]) && result[0].length > 0) {
+      console.error('[getComponentAssessmentsForPDF] First row sample:', JSON.stringify(result[0][0]));
+    }
+  }
+  const assessmentRows = extractRows(result);
+  console.log('[getComponentAssessmentsForPDF] Query returned', assessmentRows.length, 'rows');
+
+  // If no assessments found, return empty array
+  if (assessmentRows.length === 0) {
+    console.log('[getComponentAssessmentsForPDF] No assessments found, returning empty array');
+    return [];
+  }
+
+  // Get photos if requested
+  let photosMap = new Map<number, ComponentAssessmentForPDF['photos']>();
+  
+  if (includePhotos) {
+    const assessmentIds = assessmentRows.map(r => r.id);
+    
+    const photosResult = await db.execute(sql`
+      SELECT 
+        ph.id,
+        ph.assessmentId,
+        ph.url,
+        ph.caption,
+        ph.takenAt,
+        ass.componentCode,
+        a.name as assetName
+      FROM photos ph
+      INNER JOIN assessments ass ON ph.assessmentId = ass.id
+      INNER JOIN assets a ON ass.assetId = a.id
+      WHERE ph.assessmentId IN (${sql.join(assessmentIds.map(id => sql`${id}`), sql`, `)})
+      ORDER BY ph.takenAt ASC
+    `);
+
+    const photoRows = extractRows(photosResult);
+    
+    // Group photos by assessment ID
+    for (const photo of photoRows) {
+      const assessmentId = photo.assessmentId;
+      if (!photosMap.has(assessmentId)) {
+        photosMap.set(assessmentId, []);
+      }
+      const photos = photosMap.get(assessmentId)!;
+      if (photos.length < maxPhotosPerComponent) {
+        photos.push({
+          id: photo.id,
+          url: photo.url,
+          caption: photo.caption,
+          takenAt: photo.takenAt,
+          componentCode: photo.componentCode || '',
+          assetName: photo.assetName || '',
+        });
+      }
+    }
+  }
+
+  // Map results to the expected format
+  return assessmentRows.map(row => ({
+    id: row.id,
+    assetId: row.assetId,
+    assetName: row.assetName || 'Unknown Asset',
+    assetAddress: row.assetAddress || '',
+    uniformatCode: row.uniformatCode || '',
+    uniformatLevel1: row.uniformatLevel1 || 'Z',
+    uniformatLevel2: row.uniformatLevel2 || null,
+    uniformatLevel3: row.uniformatLevel3 || null,
+    uniformatGroup: row.uniformatGroup || '',
+    componentName: row.componentName || 'Unknown Component',
+    componentLocation: row.componentLocation || null,
+    condition: row.condition || 'not_assessed',
+    conditionPercentage: row.conditionPercentage ? parseFloat(row.conditionPercentage) : null,
+    estimatedServiceLife: row.estimatedServiceLife || null,
+    remainingUsefulLife: row.remainingUsefulLife || null,
+    reviewYear: row.reviewYear || null,
+    lastTimeAction: row.lastTimeAction || null,
+    repairCost: row.repairCost ? parseFloat(row.repairCost) : null,
+    replacementCost: row.replacementCost ? parseFloat(row.replacementCost) : null,
+    totalCost: row.totalCost ? parseFloat(row.totalCost) : null,
+    actionType: row.actionType || 'monitor',
+    actionYear: row.actionYear || null,
+    actionDescription: row.actionDescription || null,
+    priority: row.priority || 'medium_term',
+    assessmentDate: row.assessmentDate || new Date().toISOString(),
+    assessorName: row.assessorName || null,
+    observations: row.observations || null,
+    recommendations: row.recommendations || null,
+    photos: photosMap.get(row.id) || [],
+  }));
+}

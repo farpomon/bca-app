@@ -224,6 +224,9 @@ export default function PortfolioReport() {
   // Backward compatibility - map config to options for existing code
   const options = config;
 
+  // Get trpc utils for imperative fetching
+  const trpcUtils = trpc.useUtils();
+
   // Fetch analytics data
   const { data: dashboardData, isLoading, dataUpdatedAt } = trpc.portfolioAnalytics.getDashboardData.useQuery(
     undefined,
@@ -481,7 +484,7 @@ export default function PortfolioReport() {
           averageRemainingLife: b.avgRemainingLife || 0,
           priorityScore: b.priorityScore || 0,
         })),
-        components: [], // Will be populated if component assessments are included
+        components: [], // Will be populated below if component assessments are included
         actionList: [], // Will be populated if action list is included
         uniformatSummary: (dashboardData.categoryCostBreakdown || []).map((c: any) => ({
           groupCode: c.categoryCode || 'Z',
@@ -508,6 +511,67 @@ export default function PortfolioReport() {
           percentageOfTotal: p.percentage || 0,
         })),
       };
+
+      // Fetch component assessments if enabled
+      if (config.includeComponentAssessments) {
+        setPdfGenerationStage('Fetching component assessments...');
+        setGenerationProgress(15);
+        
+        try {
+          // Get asset IDs to filter by (for single asset or selected assets)
+          const assetIdsToFetch = isSingleAsset && config.selectedAssetId
+            ? [config.selectedAssetId]
+            : assetsToInclude.map((a: any) => a.assetId).filter(Boolean);
+          
+          console.log('[PDF] Fetching component assessments for assetIds:', assetIdsToFetch);
+          console.log('[PDF] assetsToInclude:', assetsToInclude.map((a: any) => ({ id: a.id, assetId: a.assetId, name: a.name })));
+
+          const componentData = await trpcUtils.portfolioAnalytics.getComponentAssessments.fetch({
+            assetIds: assetIdsToFetch.length > 0 ? assetIdsToFetch : undefined,
+            includePhotos: config.componentAssessmentSection?.includePhotos ?? true,
+            maxPhotosPerComponent: config.componentAssessmentSection?.maxPhotosPerComponent ?? 4,
+            sortBy: 'uniformat',
+          });
+
+          // Map the component data to the expected format
+          reportData.components = (componentData || []).map((c: any) => ({
+            id: c.id,
+            assetId: c.assetId,
+            assetName: c.assetName || 'Unknown Asset',
+            assetAddress: c.assetAddress || '',
+            uniformatCode: c.uniformatCode || '',
+            uniformatLevel1: c.uniformatLevel1 || 'Z',
+            uniformatLevel2: c.uniformatLevel2 || null,
+            uniformatLevel3: c.uniformatLevel3 || null,
+            uniformatGroup: c.uniformatGroup || '',
+            componentName: c.componentName || 'Unknown Component',
+            componentLocation: c.componentLocation || null,
+            condition: c.condition || 'not_assessed',
+            conditionPercentage: c.conditionPercentage,
+            estimatedServiceLife: c.estimatedServiceLife,
+            remainingUsefulLife: c.remainingUsefulLife,
+            reviewYear: c.reviewYear,
+            lastTimeAction: c.lastTimeAction,
+            repairCost: c.repairCost,
+            replacementCost: c.replacementCost,
+            totalCost: c.totalCost,
+            actionType: c.actionType || 'monitor',
+            actionYear: c.actionYear,
+            actionDescription: c.actionDescription,
+            priority: c.priority || 'medium_term',
+            assessmentDate: c.assessmentDate || new Date().toISOString(),
+            assessorName: c.assessorName,
+            observations: c.observations,
+            recommendations: c.recommendations,
+            photos: c.photos || [],
+          }));
+
+          console.log(`[PDF] Fetched ${reportData.components.length} component assessments`);
+        } catch (compError) {
+          console.error('Failed to fetch component assessments:', compError);
+          toast.error('Warning: Could not fetch component assessments. Report will be generated without component details.');
+        }
+      }
 
       // Generate the PDF with progress callback
       await generateEnhancedPDF(reportData, (stage, progress) => {

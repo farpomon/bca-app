@@ -5515,3 +5515,31 @@ Deployment is allowed only when:
 - [x] Fix Asset Portfolio Overview Deferred Maint. column showing $0
 - [x] Fix Capital Forecast Total column showing $0 - use totalProjectedCost field
 - [x] Fix Capital Forecast Cumulative column showing $0 - use cumulativeCost field
+
+
+## 🔥 PDF Report Enhancement: Detailed Component Assessments (2026-02-04)
+
+- [ ] Add component-level details to PDF reports including:
+  - [ ] Component observations (field notes, visual findings)
+  - [ ] Recommendations (repair actions, replacement needs)
+  - [ ] Repair costs per component
+  - [ ] Replacement costs per component
+  - [ ] Condition rating and score
+  - [ ] Remaining useful life
+  - [ ] Priority/urgency level
+- [ ] Group components by UNIFORMAT category in report
+- [ ] Add component photos to PDF (optional)
+- [ ] Update report configuration UI for component detail options
+
+
+## 🔥 PDF Report Enhancement - Component Assessments (Completed 2026-02-04)
+
+- [x] Add component observations and recommendations to PDF report
+- [x] Add repair/replacement costs for each component
+- [x] Create backend endpoint for component assessment data (getComponentAssessments)
+- [x] Update PDF generator to include component details section
+- [x] Add configuration options for component assessment display
+- [x] Fix tsx watch caching issue by implementing direct SQL in router
+- [x] PDF now generates 95 pages with full component assessment details
+- [x] Components organized by UNIFORMAT II categories (A-Substructure, B-Shell, etc.)
+- [x] Each component shows: Asset Name, Location, Condition, Remaining Life, Repair Cost, Replacement Cost, Action Year, Priority

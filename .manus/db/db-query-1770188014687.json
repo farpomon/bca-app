@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) as total, \n       SUM(CASE WHEN observations IS NOT NULL AND observations != '' THEN 1 ELSE 0 END) as with_observations,\n       SUM(CASE WHEN recommendations IS NOT NULL AND recommendations != '' THEN 1 ELSE 0 END) as with_recommendations\nFROM assessments LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as total, \n       SUM(CASE WHEN observations IS NOT NULL AND observations != '' THEN 1 ELSE 0 END) as with_observations,\n       SUM(CASE WHEN recommendations IS NOT NULL AND recommendations != '' THEN 1 ELSE 0 END) as with_recommendations\nFROM assessments LIMIT 1;",
+  "rows": [
+    {
+      "total": "656",
+      "with_observations": "42",
+      "with_recommendations": "36"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\twith_observations\twith_recommendations\n656\t42\t36\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

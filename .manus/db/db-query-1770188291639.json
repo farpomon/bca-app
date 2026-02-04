@@ -1,0 +1,50 @@
+{
+  "query": "SELECT ass.id, ass.assetId, a.name as assetName, p.id as projectId, p.userId, p.company\nFROM assessments ass\nINNER JOIN assets a ON ass.assetId = a.id\nINNER JOIN projects p ON a.projectId = p.id\nWHERE ass.deletedAt IS NULL\n  AND (ass.hidden = 0 OR ass.hidden IS NULL)\nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT ass.id, ass.assetId, a.name as assetName, p.id as projectId, p.userId, p.company\nFROM assessments ass\nINNER JOIN assets a ON ass.assetId = a.id\nINNER JOIN projects p ON a.projectId = p.id\nWHERE ass.deletedAt IS NULL\n  AND (ass.hidden = 0 OR ass.hidden IS NULL)\nLIMIT 5;",
+  "rows": [
+    {
+      "id": "143",
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "projectId": "14",
+      "userId": "18000035",
+      "company": "City of Edmonton"
+    },
+    {
+      "id": "144",
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "projectId": "14",
+      "userId": "18000035",
+      "company": "City of Edmonton"
+    },
+    {
+      "id": "145",
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "projectId": "14",
+      "userId": "18000035",
+      "company": "City of Edmonton"
+    },
+    {
+      "id": "146",
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "projectId": "14",
+      "userId": "18000035",
+      "company": "City of Edmonton"
+    },
+    {
+      "id": "147",
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "projectId": "14",
+      "userId": "18000035",
+      "company": "City of Edmonton"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tassetId\tassetName\tprojectId\tuserId\tcompany\n143\t133\tCommonwealth Recreation Centre\t14\t18000035\tCity of Edmonton\n144\t133\tCommonwealth Recreation Centre\t14\t18000035\tCity of Edmonton\n145\t133\tCommonwealth Recreation Centre\t14\t18000035\tCity of Edmonton\n146\t133\tCommonwealth Recreation Centre\t14\t18000035\tCity of Edmonton\n147\t133\tCommonwealth Recreation Centre\t14\t18000035\tCity of Edmonton\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

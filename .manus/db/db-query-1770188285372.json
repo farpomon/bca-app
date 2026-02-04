@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) as total, \n       SUM(CASE WHEN deletedAt IS NULL THEN 1 ELSE 0 END) as not_deleted,\n       SUM(CASE WHEN hidden = 0 OR hidden IS NULL THEN 1 ELSE 0 END) as not_hidden\nFROM assessments;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COUNT(*) as total, \n       SUM(CASE WHEN deletedAt IS NULL THEN 1 ELSE 0 END) as not_deleted,\n       SUM(CASE WHEN hidden = 0 OR hidden IS NULL THEN 1 ELSE 0 END) as not_hidden\nFROM assessments;",
+  "rows": [
+    {
+      "total": "656",
+      "not_deleted": "619",
+      "not_hidden": "655"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tnot_deleted\tnot_hidden\n656\t619\t655\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

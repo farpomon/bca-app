@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, assetId, componentCode, componentName, observations, recommendations, repairCost FROM assessments WHERE deletedAt IS NULL LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, assetId, componentCode, componentName, observations, recommendations, repairCost FROM assessments WHERE deletedAt IS NULL LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "assetId": "1",
+      "componentCode": "C10",
+      "componentName": "Interior Construction",
+      "observations": "NULL",
+      "recommendations": "NULL",
+      "repairCost": "NULL"
+    },
+    {
+      "id": "2",
+      "assetId": "1",
+      "componentCode": "A20",
+      "componentName": "Basement Construction",
+      "observations": "NULL",
+      "recommendations": "NULL",
+      "repairCost": "NULL"
+    },
+    {
+      "id": "3",
+      "assetId": "1",
+      "componentCode": "D30",
+      "componentName": "HVAC",
+      "observations": "NULL",
+      "recommendations": "NULL",
+      "repairCost": "NULL"
+    },
+    {
+      "id": "4",
+      "assetId": "1",
+      "componentCode": "E",
+      "componentName": "EQUIPMENT & FURNISHINGS",
+      "observations": "NULL",
+      "recommendations": "NULL",
+      "repairCost": "NULL"
+    },
+    {
+      "id": "5",
+      "assetId": "2",
+      "componentCode": "D30",
+      "componentName": "HVAC",
+      "observations": "NULL",
+      "recommendations": "NULL",
+      "repairCost": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tassetId\tcomponentCode\tcomponentName\tobservations\trecommendations\trepairCost\n1\t1\tC10\tInterior Construction\tNULL\tNULL\tNULL\n2\t1\tA20\tBasement Construction\tNULL\tNULL\tNULL\n3\t1\tD30\tHVAC\tNULL\tNULL\tNULL\n4\t1\tE\tEQUIPMENT & FURNISHINGS\tNULL\tNULL\tNULL\n5\t2\tD30\tHVAC\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

@@ -1,0 +1,17 @@
+{
+  "query": "SELECT p.id, p.userId, p.company, p.deletedAt, COUNT(a.id) as assetCount\nFROM projects p\nLEFT JOIN assets a ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nGROUP BY p.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT p.id, p.userId, p.company, p.deletedAt, COUNT(a.id) as assetCount\nFROM projects p\nLEFT JOIN assets a ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nGROUP BY p.id;",
+  "rows": [
+    {
+      "id": "14",
+      "userId": "18000035",
+      "company": "City of Edmonton",
+      "deletedAt": "NULL",
+      "assetCount": "21"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tcompany\tdeletedAt\tassetCount\n14\t18000035\tCity of Edmonton\tNULL\t21\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

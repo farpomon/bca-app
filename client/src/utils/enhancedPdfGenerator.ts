@@ -596,7 +596,7 @@ export async function generateEnhancedPDF(
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...colors.text);
 
-        // Left column
+        // Left column - Asset info and condition
         let leftY = yPos;
         doc.setFont('helvetica', 'bold');
         doc.text('Asset:', leftColX, leftY);
@@ -614,61 +614,125 @@ export async function generateEnhancedPDF(
         doc.text('Condition:', leftColX, leftY);
         doc.setTextColor(...getConditionColor(component.condition));
         doc.setFont('helvetica', 'bold');
-        doc.text(component.condition || 'N/A', leftColX + 20, leftY);
+        const conditionText = component.condition || 'N/A';
+        const conditionPct = component.conditionPercentage ? ` (${component.conditionPercentage}%)` : '';
+        doc.text(`${conditionText}${conditionPct}`, leftColX + 22, leftY);
         doc.setTextColor(...colors.text);
         doc.setFont('helvetica', 'normal');
         leftY += 5;
 
-        // Right column
+        // Remaining Useful Life
+        doc.setFont('helvetica', 'bold');
+        doc.text('Remaining Life:', leftColX, leftY);
+        doc.setFont('helvetica', 'normal');
+        const rulText = component.remainingUsefulLife !== null ? `${component.remainingUsefulLife} years` : 'N/A';
+        doc.text(rulText, leftColX + 30, leftY);
+        leftY += 5;
+
+        // Right column - Costs and action info
         let rightY = yPos;
         if (config.showCostFields) {
           doc.setFont('helvetica', 'bold');
           doc.text('Repair Cost:', rightColX, rightY);
           doc.setFont('helvetica', 'normal');
-          doc.text(formatCurrency(component.repairCost), rightColX + 25, rightY);
+          doc.text(formatCurrency(component.repairCost), rightColX + 28, rightY);
           rightY += 5;
 
           doc.setFont('helvetica', 'bold');
-          doc.text('Replacement:', rightColX, rightY);
+          doc.text('Replacement Cost:', rightColX, rightY);
           doc.setFont('helvetica', 'normal');
-          doc.text(formatCurrency(component.replacementCost), rightColX + 25, rightY);
+          doc.text(formatCurrency(component.replacementCost), rightColX + 38, rightY);
           rightY += 5;
+
+          // Total cost if both exist
+          if (component.repairCost || component.replacementCost) {
+            doc.setFont('helvetica', 'bold');
+            doc.text('Total Cost:', rightColX, rightY);
+            doc.setFont('helvetica', 'normal');
+            doc.text(formatCurrency(component.totalCost), rightColX + 28, rightY);
+            rightY += 5;
+          }
         }
 
         doc.setFont('helvetica', 'bold');
         doc.text('Action Year:', rightColX, rightY);
         doc.setFont('helvetica', 'normal');
-        doc.text(component.actionYear?.toString() || 'N/A', rightColX + 25, rightY);
+        doc.text(component.actionYear?.toString() || 'N/A', rightColX + 28, rightY);
         rightY += 5;
 
         doc.setFont('helvetica', 'bold');
         doc.text('Priority:', rightColX, rightY);
         doc.setFont('helvetica', 'normal');
-        doc.text(getPriorityLabel(component.priority), rightColX + 25, rightY);
+        doc.text(getPriorityLabel(component.priority), rightColX + 28, rightY);
 
         yPos = Math.max(leftY, rightY) + 3;
 
-        // Action details
-        if (config.showActionDetails && (component.actionDescription || component.recommendations)) {
+        // OBSERVATIONS section - always show if available
+        if (component.observations) {
           checkPageBreak(20);
+          doc.setFillColor(245, 247, 250);
+          doc.rect(margin, yPos - 1, contentWidth, 4, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(...colors.primary);
+          doc.text('OBSERVATIONS:', margin + 2, yPos + 2);
+          yPos += 5;
           
-          if (component.actionDescription) {
-            doc.setFont('helvetica', 'bold');
-            doc.text('Action:', margin, yPos);
-            doc.setFont('helvetica', 'normal');
-            const actionLines = doc.splitTextToSize(component.actionDescription, contentWidth - 20);
-            doc.text(actionLines.slice(0, 2), margin + 15, yPos);
-            yPos += actionLines.slice(0, 2).length * 4 + 2;
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...colors.text);
+          const obsLines = doc.splitTextToSize(component.observations, contentWidth - 4);
+          const maxObsLines = Math.min(obsLines.length, 4); // Limit to 4 lines
+          for (let i = 0; i < maxObsLines; i++) {
+            doc.text(obsLines[i], margin + 2, yPos);
+            yPos += 4;
           }
+          if (obsLines.length > 4) {
+            doc.setTextColor(...colors.secondary);
+            doc.text('...', margin + 2, yPos);
+            yPos += 4;
+          }
+          yPos += 2;
+        }
 
-          if (component.recommendations) {
-            doc.setFont('helvetica', 'bold');
-            doc.text('Notes:', margin, yPos);
-            doc.setFont('helvetica', 'normal');
-            const recLines = doc.splitTextToSize(component.recommendations, contentWidth - 15);
-            doc.text(recLines.slice(0, 2), margin + 15, yPos);
-            yPos += recLines.slice(0, 2).length * 4 + 2;
+        // RECOMMENDATIONS section - always show if available
+        if (component.recommendations) {
+          checkPageBreak(20);
+          doc.setFillColor(240, 253, 244);
+          doc.rect(margin, yPos - 1, contentWidth, 4, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(34, 139, 34);
+          doc.text('RECOMMENDATIONS:', margin + 2, yPos + 2);
+          yPos += 5;
+          
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...colors.text);
+          const recLines = doc.splitTextToSize(component.recommendations, contentWidth - 4);
+          const maxRecLines = Math.min(recLines.length, 4); // Limit to 4 lines
+          for (let i = 0; i < maxRecLines; i++) {
+            doc.text(recLines[i], margin + 2, yPos);
+            yPos += 4;
           }
+          if (recLines.length > 4) {
+            doc.setTextColor(...colors.secondary);
+            doc.text('...', margin + 2, yPos);
+            yPos += 4;
+          }
+          yPos += 2;
+        }
+
+        // ACTION DESCRIPTION section (if different from recommendations)
+        if (config.showActionDetails && component.actionDescription && component.actionDescription !== component.recommendations) {
+          checkPageBreak(15);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(...colors.warning);
+          doc.text('PLANNED ACTION:', margin, yPos);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...colors.text);
+          const actionLines = doc.splitTextToSize(component.actionDescription, contentWidth - 35);
+          doc.text(actionLines.slice(0, 2), margin + 35, yPos);
+          yPos += actionLines.slice(0, 2).length * 4 + 2;
         }
 
         // Photos

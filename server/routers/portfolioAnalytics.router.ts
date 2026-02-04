@@ -25,6 +25,7 @@ import {
   getPriorityBreakdown,
   getDeficiencyTrends,
   getCapitalPlanningForecast,
+  getComponentAssessmentsForPDF,
 } from "../db-portfolioAnalytics";
 
 // Helper to get effective admin status and company for analytics queries
@@ -182,5 +183,182 @@ export const portfolioAnalyticsRouter = router({
       capitalForecast,
       generatedAt: new Date().toISOString(),
     };
+  }),
+
+  /**
+   * Get component assessments for PDF report generation
+   * Returns detailed component data with observations, recommendations, and costs
+   */
+  getComponentAssessments: protectedProcedure
+    .input(z.object({
+      assetIds: z.array(z.number()).optional(),
+      includePhotos: z.boolean().default(true),
+      maxPhotosPerComponent: z.number().min(0).max(10).default(4),
+      sortBy: z.enum(['uniformat', 'asset', 'condition', 'cost']).default('uniformat'),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      // Direct SQL implementation to bypass tsx watch caching issue
+      const { getDb } = await import('../db');
+      const { sql } = await import('drizzle-orm');
+      const db = await getDb();
+      if (!db) {
+        console.log('[getComponentAssessments] No database connection');
+        return [];
+      }
+      
+      console.log('[getComponentAssessments] Running direct SQL query...');
+      
+      // Execute the main query
+      const result = await db.execute(sql`
+        SELECT 
+          ass.id,
+          ass.assetId,
+          a.name as assetName,
+          COALESCE(a.address, p.address, '') as assetAddress,
+          COALESCE(ass.componentCode, '') as uniformatCode,
+          COALESCE(SUBSTRING(ass.componentCode, 1, 1), 'Z') as uniformatLevel1,
+          CASE 
+            WHEN LENGTH(ass.componentCode) >= 3 THEN SUBSTRING(ass.componentCode, 1, 3)
+            ELSE NULL 
+          END as uniformatLevel2,
+          CASE 
+            WHEN LENGTH(ass.componentCode) >= 5 THEN SUBSTRING(ass.componentCode, 1, 5)
+            ELSE NULL 
+          END as uniformatLevel3,
+          COALESCE(ass.uniformatGroup, '') as uniformatGroup,
+          COALESCE(ass.componentName, 'Unknown Component') as componentName,
+          ass.componentLocation,
+          COALESCE(ass.condition, 'not_assessed') as conditionRating,
+          CAST(ass.conditionPercentage AS DECIMAL(5,2)) as conditionPercentage,
+          ass.estimatedServiceLife,
+          ass.remainingUsefulLife,
+          ass.reviewYear,
+          ass.lastTimeAction,
+          CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+          CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost,
+          CAST(COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) AS DECIMAL(15,2)) as totalCost,
+          COALESCE(ass.recommendedAction, 'monitor') as actionType,
+          ass.actionYear,
+          ass.actionDescription,
+          COALESCE(
+            CASE ass.priorityLevel
+              WHEN '1' THEN 'immediate'
+              WHEN '2' THEN 'short_term'
+              WHEN '3' THEN 'medium_term'
+              WHEN '4' THEN 'long_term'
+              WHEN '5' THEN 'long_term'
+              ELSE 'medium_term'
+            END,
+            'medium_term'
+          ) as priority,
+          COALESCE(ass.assessmentDate, ass.createdAt) as assessmentDate,
+          u.name as assessorName,
+          ass.observations,
+          ass.recommendations
+        FROM assessments ass
+        INNER JOIN assets a ON ass.assetId = a.id
+        INNER JOIN projects p ON a.projectId = p.id
+        LEFT JOIN users u ON ass.assessorId = u.id
+        WHERE p.deletedAt IS NULL
+          AND ass.deletedAt IS NULL
+          AND (ass.hidden = 0 OR ass.hidden IS NULL)
+        ORDER BY ass.componentCode ASC, a.name ASC
+      `);
+      
+      // Extract rows from drizzle result
+      let rows: any[];
+      if (Array.isArray(result) && Array.isArray(result[0])) {
+        rows = result[0];
+      } else {
+        rows = result as any[];
+      }
+      
+      console.log('[getComponentAssessments] Query returned', rows.length, 'rows');
+      
+      if (rows.length === 0) {
+        return [];
+      }
+      
+      // Transform rows to expected format
+      const components = rows.map((row: any) => ({
+        id: row.id,
+        assetId: row.assetId,
+        assetName: row.assetName || 'Unknown Asset',
+        assetAddress: row.assetAddress || '',
+        uniformatCode: row.uniformatCode || '',
+        uniformatLevel1: row.uniformatLevel1 || 'Z',
+        uniformatLevel2: row.uniformatLevel2 || null,
+        uniformatLevel3: row.uniformatLevel3 || null,
+        uniformatGroup: row.uniformatGroup || '',
+        componentName: row.componentName || 'Unknown Component',
+        componentLocation: row.componentLocation || null,
+        conditionRating: row.conditionRating || 'not_assessed',
+        conditionPercentage: row.conditionPercentage ? Number(row.conditionPercentage) : null,
+        estimatedServiceLife: row.estimatedServiceLife || null,
+        remainingUsefulLife: row.remainingUsefulLife || null,
+        reviewYear: row.reviewYear || null,
+        lastTimeAction: row.lastTimeAction || null,
+        repairCost: row.repairCost ? Number(row.repairCost) : null,
+        replacementCost: row.replacementCost ? Number(row.replacementCost) : null,
+        totalCost: row.totalCost ? Number(row.totalCost) : 0,
+        actionType: row.actionType || 'monitor',
+        actionYear: row.actionYear || null,
+        actionDescription: row.actionDescription || null,
+        priority: row.priority || 'medium_term',
+        assessmentDate: row.assessmentDate || null,
+        assessorName: row.assessorName || null,
+        observations: row.observations || null,
+        recommendations: row.recommendations || null,
+        photos: [],
+      }));
+      
+      console.log('[getComponentAssessments] Returning', components.length, 'components');
+      return components;
+    }),
+
+  /**
+   * Test endpoint to directly query component assessments
+   * This bypasses the complex function to debug the issue
+   */
+  testComponentQuery: protectedProcedure.query(async ({ ctx }) => {
+    const { getDb } = await import('../db');
+    const { sql } = await import('drizzle-orm');
+    const db = await getDb();
+    if (!db) return { error: 'No database connection' };
+    
+    console.log('[testComponentQuery] Running direct SQL query...');
+    const result = await db.execute(sql`
+      SELECT 
+        ass.id,
+        ass.assetId,
+        a.name as assetName,
+        COALESCE(ass.componentCode, '') as uniformatCode,
+        COALESCE(ass.componentName, 'Unknown Component') as componentName,
+        ass.observations,
+        ass.recommendations,
+        CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+        CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost
+      FROM assessments ass
+      INNER JOIN assets a ON ass.assetId = a.id
+      INNER JOIN projects p ON a.projectId = p.id
+      WHERE p.deletedAt IS NULL
+        AND ass.deletedAt IS NULL
+        AND (ass.hidden = 0 OR ass.hidden IS NULL)
+      ORDER BY ass.componentCode ASC
+      LIMIT 10
+    `);
+    
+    console.log('[testComponentQuery] Raw result type:', typeof result, Array.isArray(result));
+    
+    // Extract rows
+    let rows: any[];
+    if (Array.isArray(result) && Array.isArray(result[0])) {
+      rows = result[0];
+    } else {
+      rows = result as any[];
+    }
+    
+    console.log('[testComponentQuery] Extracted rows count:', rows.length);
+    return { count: rows.length, rows: rows.slice(0, 3) };
   }),
 });
