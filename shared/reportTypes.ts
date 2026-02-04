@@ -3,6 +3,9 @@
  * Defines all configuration options for the enhanced report builder
  */
 
+// Report Scope - Single Asset vs Portfolio-Wide
+export type ReportScope = 'single_asset' | 'portfolio';
+
 export type BuildingSortOption = 'fci' | 'deferredMaintenance' | 'name' | 'age' | 'priorityScore';
 export type BuildingScopeOption = 'all' | 'top10' | 'top20' | 'critical';
 export type UniformatLevelOption = 'L1' | 'L1_L2';
@@ -115,6 +118,17 @@ export interface ReportMetadata {
   footerText: string;
   assessmentDateRange?: string;
   reportVersion?: string;
+  
+  // Report Scope
+  reportScope: ReportScope;
+  selectedAssetId?: number; // For single asset reports
+  
+  // Capital Planning Horizon
+  capitalPlanningHorizon: number; // 1-30 years
+  
+  // Professional Report Options
+  isFinalForClient: boolean;
+  revisionNumber: string;
 }
 
 export interface ReportConfiguration extends ReportSectionToggles, ReportMetadata {

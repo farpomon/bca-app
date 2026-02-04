@@ -5449,3 +5449,69 @@ Deployment is allowed only when:
 - [x] Add progress indicator during PDF generation (loading state, percentage)
 - [x] Implement PDF download trigger with proper filename
 - [x] Test PDF download with various configurations (with/without photos, different sections)
+
+
+## 🔥 PRIORITY: Professional PDF Report Generator (Comox-Style)
+
+### A) Report Scope UI Options
+- [ ] Add Report Type selection (Single Asset / Portfolio)
+- [ ] Add Component Assessment inclusion options (Off / Selected asset / All assets)
+- [ ] Add Grouping options (By Building→UNIFORMAT / By UNIFORMAT→Building)
+- [ ] Add UNIFORMAT Depth selection (Level 2 / Level 3 / Both)
+- [ ] Add Filters (assessed only / all UNIFORMAT / multi-select groups)
+- [ ] Add Photo options (inline toggle, max per component 1-6, 2-column grid)
+- [ ] Add Capital Planning Horizon selector (1-30 years, default 20)
+
+### B) Report Structure (Mirror Comox Style)
+- [ ] Cover Page with title, client, prepared by, asset/portfolio, date, revision status
+- [ ] Table of Contents with auto-generated page numbers
+- [ ] Executive Summary with key findings, cost drivers, risks
+- [ ] Introduction/Methodology with scope, property info, definitions, limitations
+- [ ] Portfolio/Asset Dashboard with summary charts and condition distribution
+- [ ] Component Assessment Detail with UNIFORMAT groupings and inline photos
+- [ ] Deficiencies & Actions section filtered by asset with horizon buckets
+- [ ] Capital Planning & Budget Forecast with year-by-year projection
+- [ ] Appendices (Assumptions, Glossary, Photo Appendix)
+
+### C) Photo Requirements
+- [ ] Embed photos next to component entries when inline enabled
+- [ ] Include caption, date taken, asset+component reference
+- [ ] Show "No photos available" message when none exist
+- [ ] Support 2-column grid layout for photos
+
+### D) Data Integrity Fixes (BLOCKING)
+- [ ] Fix currency formatting - consistent $1,234,567.89 format
+- [ ] Fix NaN/undefined values - show "N/A" with explanation
+- [ ] Fix cross-asset leakage - filter deficiencies strictly by asset_id
+- [ ] Add reconciliation checks for condition distribution totals
+- [ ] Validate FCI calculation (Deferred Maintenance / CRV)
+
+### E) Layout & Formatting
+- [ ] Consistent typography hierarchy (H1/H2/H3)
+- [ ] Page footer with report name, date, page numbers
+- [ ] Prevent orphan headings at page bottom
+- [ ] Table header repetition on new pages
+- [ ] Image containers to prevent overlap
+- [ ] Text truncation policy for long narratives
+
+### F) Component Identifier Fix
+- [ ] Display UNIFORMAT code + name for library components
+- [ ] Show "Custom" only for true custom components
+- [ ] Backfill existing "custom" records to UNIFORMAT where possible
+
+### G) Performance & Reliability
+- [ ] Support single asset with dozens of photos
+- [ ] Support multi-asset portfolio with hundreds of components
+- [ ] Server-side rendering with progress steps
+- [ ] Clear error messages for missing data vs generation failure
+
+
+## 🔥 PDF Report Generation Fixes (2026-02-04)
+
+- [x] Fix UNIFORMAT category names showing "Unknown" - use categoryName field from backend
+- [x] Fix CRV showing $0 in Executive Summary - use currentReplacementValue field
+- [x] Fix Deferred Maintenance showing $0 - use deferredMaintenanceCost field
+- [x] Fix Asset Portfolio Overview CRV column showing $0
+- [x] Fix Asset Portfolio Overview Deferred Maint. column showing $0
+- [x] Fix Capital Forecast Total column showing $0 - use totalProjectedCost field
+- [x] Fix Capital Forecast Cumulative column showing $0 - use cumulativeCost field

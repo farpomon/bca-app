@@ -65,6 +65,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { exportBuildingsCSV, exportUniformatCSV, exportDeficienciesCSV, exportCapitalForecastCSV } from "@/lib/csvExport";
 import { generateEnhancedPDF, type EnhancedReportData, type EnhancedReportConfig } from "@/utils/enhancedPdfGenerator";
+import { generateProfessionalBCAReport, type ProfessionalReportConfig, type ProfessionalReportData, type ComponentAssessment, type ActionListItem, type UniformatGroupSummary } from "@/utils/professionalPdfGenerator";
 
 // Format currency
 function formatCurrency(value: number): string {
@@ -186,12 +187,20 @@ export default function PortfolioReport() {
     includeMethodology: false,
     // Metadata
     reportTitle: "Portfolio Condition Assessment Report",
-    preparedBy: user?.name || "",
+    preparedBy: user?.name || "B3NMA",
     preparedFor: "",
     additionalNotes: "",
     companyLogo: null,
     clientLogo: null,
     footerText: "CONFIDENTIAL - For internal use only",
+    // Report Scope
+    reportScope: 'portfolio' as const,
+    selectedAssetId: undefined,
+    // Capital Planning
+    capitalPlanningHorizon: 20,
+    // Professional Report Options
+    isFinalForClient: false,
+    revisionNumber: 'A',
     // Section configurations
     buildingSection: {
       sortBy: 'fci',
@@ -369,20 +378,41 @@ export default function PortfolioReport() {
       return;
     }
 
+    // Validate single asset selection if in single asset mode
+    if (config.reportScope === 'single_asset' && !config.selectedAssetId) {
+      toast.error("Please select an asset for single asset report");
+      return;
+    }
+
     setIsPdfGenerating(true);
     setPdfGenerationStage('Preparing report data...');
     setGenerationProgress(0);
 
     try {
+      // Determine which assets to include based on report scope
+      const isSingleAsset = config.reportScope === 'single_asset';
+      const selectedAsset = isSingleAsset 
+        ? dashboardData.buildingComparison?.find((b: any) => b.assetId === config.selectedAssetId)
+        : null;
+
+      // Filter assets based on scope
+      const assetsToInclude = isSingleAsset && selectedAsset
+        ? [selectedAsset]
+        : dashboardData.buildingComparison || [];
+
       // Build the enhanced report config from current settings
       const enhancedConfig: EnhancedReportConfig = {
-        reportTitle: config.reportTitle || 'Portfolio Condition Assessment Report',
+        reportTitle: isSingleAsset && selectedAsset 
+          ? `Building Condition Assessment - ${selectedAsset.assetName}` 
+          : (config.reportTitle || 'Portfolio Condition Assessment Report'),
         preparedBy: config.preparedBy || 'B3NMA',
         preparedFor: config.preparedFor || 'Client',
         reportDate: new Date().toLocaleDateString('en-CA'),
-        projectName: dashboardData.overview?.projectName || 'Portfolio',
+        projectName: isSingleAsset && selectedAsset 
+          ? selectedAsset.assetName 
+          : (dashboardData.overview?.projectName || 'Portfolio'),
         clientName: config.preparedFor || 'Client',
-        clientAddress: '',
+        clientAddress: selectedAsset?.address || '',
         
         // Section toggles
         includeExecutiveSummary: config.includeExecutiveSummary,
@@ -404,33 +434,40 @@ export default function PortfolioReport() {
         includeRollups: config.componentAssessmentSection?.includeRollups ?? true,
         
         // Action list options
-        actionYearHorizon: config.componentAssessmentSection?.actionYearHorizon || 20,
+        actionYearHorizon: config.capitalPlanningHorizon || config.componentAssessmentSection?.actionYearHorizon || 20,
       };
+
+      // Calculate summary metrics based on selected assets
+      const totalCRV = assetsToInclude.reduce((sum: number, b: any) => sum + Number(b.currentReplacementValue || b.crv || 0), 0);
+      const totalDeferred = assetsToInclude.reduce((sum: number, b: any) => sum + Number(b.deferredMaintenanceCost || b.deferredMaintenance || 0), 0);
+      const portfolioFCI = totalCRV > 0 ? (totalDeferred / totalCRV) * 100 : 0;
 
       // Build report data from dashboard data
       const reportData: EnhancedReportData = {
         config: enhancedConfig,
         summary: {
-          totalAssets: dashboardData.overview?.totalBuildings || 0,
-          totalCurrentReplacementValue: dashboardData.overview?.totalCRV || 0,
-          totalDeferredMaintenanceCost: dashboardData.overview?.totalDeferredMaintenance || 0,
-          portfolioFCI: dashboardData.overview?.portfolioFCI || 0,
-          portfolioFCIRating: dashboardData.overview?.fciRating || 'N/A',
-          averageConditionScore: dashboardData.overview?.avgConditionScore || 0,
-          averageConditionRating: dashboardData.overview?.conditionRating || 'N/A',
-          totalDeficiencies: dashboardData.overview?.totalDeficiencies || 0,
-          totalAssessments: dashboardData.overview?.totalAssessments || 0,
+          totalAssets: assetsToInclude.length,
+          totalCurrentReplacementValue: totalCRV,
+          totalDeferredMaintenanceCost: totalDeferred,
+          portfolioFCI: isSingleAsset && selectedAsset ? (selectedAsset.fci || 0) : portfolioFCI,
+          portfolioFCIRating: isSingleAsset && selectedAsset ? (selectedAsset.fciRating || 'N/A') : (dashboardData.overview?.fciRating || 'N/A'),
+          averageConditionScore: isSingleAsset && selectedAsset ? (selectedAsset.conditionScore || 0) : (dashboardData.overview?.avgConditionScore || 0),
+          averageConditionRating: isSingleAsset && selectedAsset ? (selectedAsset.conditionRating || 'N/A') : (dashboardData.overview?.conditionRating || 'N/A'),
+          totalDeficiencies: isSingleAsset && selectedAsset ? (selectedAsset.deficiencyCount || 0) : (dashboardData.overview?.totalDeficiencies || 0),
+          totalAssessments: isSingleAsset && selectedAsset ? (selectedAsset.assessmentCount || 0) : (dashboardData.overview?.totalAssessments || 0),
           fundingGap: dashboardData.overview?.fundingGap || 0,
-          averageAssetAge: dashboardData.overview?.avgBuildingAge || 0,
+          averageAssetAge: isSingleAsset && selectedAsset 
+            ? (new Date().getFullYear() - (selectedAsset.yearBuilt || 1970)) 
+            : (dashboardData.overview?.avgBuildingAge || 0),
         },
-        assetMetrics: (dashboardData.buildingComparison || []).map((b: any) => ({
+        assetMetrics: assetsToInclude.map((b: any) => ({
           assetId: b.assetId || 0,
-          assetName: b.name || 'Unknown',
+          assetName: b.assetName || b.name || 'Unknown',
           address: b.address,
           yearBuilt: b.yearBuilt,
           grossFloorArea: b.grossFloorArea,
-          currentReplacementValue: b.crv || 0,
-          deferredMaintenanceCost: b.deferredMaintenance || 0,
+          currentReplacementValue: Number(b.currentReplacementValue || b.crv || 0),
+          deferredMaintenanceCost: Number(b.deferredMaintenanceCost || b.deferredMaintenance || 0),
           fci: b.fci || 0,
           fciRating: b.fciRating || 'N/A',
           conditionScore: b.conditionScore || 0,
@@ -447,22 +484,22 @@ export default function PortfolioReport() {
         components: [], // Will be populated if component assessments are included
         actionList: [], // Will be populated if action list is included
         uniformatSummary: (dashboardData.categoryCostBreakdown || []).map((c: any) => ({
-          groupCode: c.category?.substring(0, 1) || 'A',
-          groupName: c.category || 'Unknown',
-          componentCount: c.count || 0,
-          totalRepairCost: c.totalCost || 0,
-          totalReplacementCost: 0,
-          avgConditionPercentage: 0,
+          groupCode: c.categoryCode || 'Z',
+          groupName: c.categoryName || c.category || 'General',
+          componentCount: c.assessmentCount || c.count || 0,
+          totalRepairCost: c.totalRepairCost || c.totalCost || 0,
+          totalReplacementCost: c.totalReplacementValue || 0,
+          avgConditionPercentage: c.avgConditionScore || 0,
           conditionDistribution: { good: 0, fair: 0, poor: 0, failed: 0 },
         })),
         capitalForecast: (dashboardData.capitalForecast || []).map((f: any) => ({
           year: f.year,
-          immediateNeeds: f.immediateNeeds || 0,
-          shortTermNeeds: f.shortTermNeeds || 0,
-          mediumTermNeeds: f.mediumTermNeeds || 0,
-          longTermNeeds: f.longTermNeeds || 0,
-          totalProjectedCost: f.total || 0,
-          cumulativeCost: f.cumulative || 0,
+          immediateNeeds: Number(f.immediateNeeds || 0),
+          shortTermNeeds: Number(f.shortTermNeeds || 0),
+          mediumTermNeeds: Number(f.mediumTermNeeds || 0),
+          longTermNeeds: Number(f.longTermNeeds || 0),
+          totalProjectedCost: Number(f.totalProjectedCost || f.total || 0),
+          cumulativeCost: Number(f.cumulativeCost || f.cumulative || 0),
         })),
         priorityMatrix: (dashboardData.priorityMatrix || []).map((p: any) => ({
           priority: p.priority || 'Unknown',
@@ -702,6 +739,127 @@ export default function PortfolioReport() {
                 </div>
               );
             })()}
+
+            {/* Report Scope Selection */}
+            <Card className="mb-6">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <CardTitle>Report Scope</CardTitle>
+                    <CardDescription>Choose what to include in your report</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Single Asset Report */}
+                  <div 
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      config.reportScope === 'single_asset' 
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => setConfig({ ...config, reportScope: 'single_asset' })}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${config.reportScope === 'single_asset' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <Building2 className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Single Asset Report</h4>
+                        <p className="text-sm text-muted-foreground">Generate a detailed BCA report for one specific building</p>
+                      </div>
+                    </div>
+                    {config.reportScope === 'single_asset' && (
+                      <div className="mt-4 pt-4 border-t">
+                        <Label className="text-sm font-medium">Select Asset</Label>
+                        <select
+                          className="w-full mt-2 p-2 border rounded-md bg-background"
+                          value={config.selectedAssetId || ''}
+                          onChange={(e) => setConfig({ ...config, selectedAssetId: e.target.value ? Number(e.target.value) : undefined })}
+                        >
+                          <option value="">Choose an asset...</option>
+                          {(dashboardData?.buildingComparison || []).map((building: any) => (
+                            <option key={building.assetId} value={building.assetId}>
+                              {building.assetName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Portfolio-Wide Report */}
+                  <div 
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      config.reportScope === 'portfolio' 
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => setConfig({ ...config, reportScope: 'portfolio', selectedAssetId: undefined })}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${config.reportScope === 'portfolio' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <Layers className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Portfolio-Wide Report</h4>
+                        <p className="text-sm text-muted-foreground">Generate a comprehensive report covering all assets in your portfolio</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Capital Planning Horizon */}
+                <div className="mt-6 pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="font-medium">Capital Planning Horizon</Label>
+                      <p className="text-sm text-muted-foreground">How many years of capital planning to include</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={config.capitalPlanningHorizon}
+                        onChange={(e) => setConfig({ ...config, capitalPlanningHorizon: Math.min(30, Math.max(1, Number(e.target.value))) })}
+                        className="w-20"
+                      />
+                      <span className="text-sm text-muted-foreground">years</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Professional Report Options */}
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="isFinalForClient"
+                          checked={config.isFinalForClient}
+                          onCheckedChange={(checked) => setConfig({ ...config, isFinalForClient: !!checked })}
+                        />
+                        <Label htmlFor="isFinalForClient" className="text-sm cursor-pointer">
+                          Final for Client Distribution
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm">Revision:</Label>
+                      <Input
+                        value={config.revisionNumber}
+                        onChange={(e) => setConfig({ ...config, revisionNumber: e.target.value })}
+                        className="w-16"
+                        placeholder="A"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Report Sections Panel */}
