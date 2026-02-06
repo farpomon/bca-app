@@ -215,7 +215,10 @@ export async function getPortfolioOverview(
   const pm = pmRows[0] || {};
   const totalCRV = parseFloat(pm.totalCRV || '0');
   const totalDMC = parseFloat(pm.totalDMC || '0');
-  const portfolioFCI = totalCRV > 0 ? (totalDMC / totalCRV) * 100 : 0;
+  // FCI as decimal ratio (0-1 scale) for getFCIRating
+  const portfolioFCIDecimal = totalCRV > 0 ? (totalDMC / totalCRV) : 0;
+  // FCI as percentage (0-100 scale) for display
+  const portfolioFCIPercent = portfolioFCIDecimal * 100;
 
   // Get asset count
   const assetMetrics = await db.execute(sql`
@@ -272,8 +275,8 @@ export async function getPortfolioOverview(
     totalDeficiencies: parseInt(dm.totalDeficiencies || '0'),
     totalCurrentReplacementValue: totalCRV,
     totalDeferredMaintenance: totalDMC,
-    portfolioFCI: Math.round(portfolioFCI * 100) / 100,
-    portfolioFCIRating: getFCIRating(portfolioFCI),
+    portfolioFCI: Math.round(portfolioFCIPercent * 100) / 100, // percentage for display (e.g., 5.17)
+    portfolioFCIRating: getFCIRating(portfolioFCIDecimal), // rating uses decimal (e.g., 0.0517)
     averageConditionScore: Math.round(avgConditionScore),
     averageConditionRating: getConditionRating(avgConditionScore),
     averageBuildingAge: Math.round(parseFloat(pm.avgAge || '0')),
@@ -506,7 +509,8 @@ export async function getBuildingComparison(
 
   if (assetIds.length === 0) return [];
 
-  // Get assessment counts and condition scores per asset
+  // Get assessment counts, condition scores, and per-asset deferred maintenance cost
+  // FIXED: Calculate per-asset DMC from sum of estimatedRepairCost instead of using project-level DMC
   const assessmentData = await db.execute(sql`
     SELECT 
       ass.assetId, 
@@ -516,14 +520,21 @@ export async function getBuildingComparison(
         WHEN ass.conditionRating = '3' THEN 65
         WHEN ass.conditionRating IN ('4', '5') THEN 35
         ELSE 50
-      END) as avgConditionScore
+      END) as avgConditionScore,
+      SUM(COALESCE(ass.repairCost, ass.estimatedRepairCost, 0)) as assetDMC
     FROM assessments ass
     WHERE ass.assetId IN (${sql.join(assetIds.map(id => sql`${id}`), sql`, `)})
+      AND ass.deletedAt IS NULL
+      AND (ass.hidden = 0 OR ass.hidden IS NULL)
     GROUP BY ass.assetId
   `);
   const assessmentMap = new Map(extractRows(assessmentData).map(r => [
     r.assetId, 
-    { count: parseInt(r.count || '0'), avgScore: parseFloat(r.avgConditionScore || '50') }
+    { 
+      count: parseInt(r.count || '0'), 
+      avgScore: parseFloat(r.avgConditionScore || '50'),
+      assetDMC: parseFloat(r.assetDMC || '0')
+    }
   ]));
 
   // Get deficiency data per project (deficiencies are project-level, not asset-level)
@@ -550,11 +561,12 @@ export async function getBuildingComparison(
   // Build comparison data for each asset
   const comparisons: BuildingComparison[] = assetRows.map(a => {
     const crv = parseFloat(a.crv || '0');
-    const dmc = parseFloat(a.dmc || '0');
+    const assessmentInfo = assessmentMap.get(a.assetId) || { count: 0, avgScore: 50, assetDMC: 0 };
+    // Use per-asset DMC from assessment costs, not project-level DMC
+    const dmc = assessmentInfo.assetDMC;
     // FCI as decimal ratio (0-1 scale)
     const fci = crv > 0 ? dmc / crv : 0;
     const buildingAge = a.yearBuilt ? currentYear - a.yearBuilt : 0;
-    const assessmentInfo = assessmentMap.get(a.assetId) || { count: 0, avgScore: 50 };
     const deficiencyInfo = deficiencyMap.get(a.projectId) || { count: 0, immediateNeeds: 0, shortTermNeeds: 0 };
 
     // Calculate priority score (fci is now 0-1, so adjust threshold from 30% to 0.30)
@@ -1101,19 +1113,12 @@ export async function getComponentAssessmentsForPDF(
       break;
     case 'condition':
       orderByClause = sql`
-        CASE ass.condition
-          WHEN 'critical' THEN 1
-          WHEN 'poor' THEN 2
-          WHEN 'fair' THEN 3
-          WHEN 'good' THEN 4
-          WHEN 'excellent' THEN 5
-          ELSE 6
-        END ASC,
+        CAST(COALESCE(ass.conditionRating, '99') AS UNSIGNED) DESC,
         ass.componentCode ASC
       `;
       break;
     case 'cost':
-      orderByClause = sql`COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) DESC`;
+      orderByClause = sql`COALESCE(ass.repairCost, ass.estimatedRepairCost, 0) + COALESCE(ass.renewCost, 0) DESC`;
       break;
     case 'uniformat':
     default:
@@ -1148,15 +1153,40 @@ export async function getComponentAssessmentsForPDF(
         COALESCE(ass.uniformatGroup, '') as uniformatGroup,
         COALESCE(ass.componentName, 'Unknown Component') as componentName,
         ass.componentLocation,
-        COALESCE(ass.condition, 'not_assessed') as conditionRating,
-        CAST(ass.conditionPercentage AS DECIMAL(5,2)) as conditionPercentage,
+        COALESCE(
+            ass.condition,
+            CASE ass.conditionRating
+              WHEN '1' THEN 'good'
+              WHEN '2' THEN 'good'
+              WHEN '3' THEN 'fair'
+              WHEN '4' THEN 'poor'
+              WHEN '5' THEN 'poor'
+              ELSE 'not_assessed'
+            END
+          ) as conditionLabel,
+        ass.conditionRating as conditionRatingRaw,
+        CAST(
+            COALESCE(
+              ass.conditionPercentage,
+              CASE ass.conditionRating
+                WHEN '1' THEN 95
+                WHEN '2' THEN 80
+                WHEN '3' THEN 60
+                WHEN '4' THEN 35
+                WHEN '5' THEN 15
+                ELSE NULL
+              END
+            ) AS DECIMAL(5,2)
+          ) as conditionPercentage,
         ass.estimatedServiceLife,
         ass.remainingUsefulLife,
         ass.reviewYear,
         ass.lastTimeAction,
-        CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+        CAST(COALESCE(ass.repairCost, ass.estimatedRepairCost) AS DECIMAL(15,2)) as repairCost,
         CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost,
-        CAST(COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) AS DECIMAL(15,2)) as totalCost,
+        CAST(
+            COALESCE(ass.repairCost, ass.estimatedRepairCost, 0) + COALESCE(ass.renewCost, 0)
+          AS DECIMAL(15,2)) as totalCost,
         COALESCE(ass.recommendedAction, 'monitor') as actionType,
         ass.actionYear,
         ass.actionDescription,
@@ -1206,15 +1236,40 @@ export async function getComponentAssessmentsForPDF(
         COALESCE(ass.uniformatGroup, '') as uniformatGroup,
         COALESCE(ass.componentName, 'Unknown Component') as componentName,
         ass.componentLocation,
-        COALESCE(ass.condition, 'not_assessed') as conditionRating,
-        CAST(ass.conditionPercentage AS DECIMAL(5,2)) as conditionPercentage,
+        COALESCE(
+            ass.condition,
+            CASE ass.conditionRating
+              WHEN '1' THEN 'good'
+              WHEN '2' THEN 'good'
+              WHEN '3' THEN 'fair'
+              WHEN '4' THEN 'poor'
+              WHEN '5' THEN 'poor'
+              ELSE 'not_assessed'
+            END
+          ) as conditionLabel,
+        ass.conditionRating as conditionRatingRaw,
+        CAST(
+            COALESCE(
+              ass.conditionPercentage,
+              CASE ass.conditionRating
+                WHEN '1' THEN 95
+                WHEN '2' THEN 80
+                WHEN '3' THEN 60
+                WHEN '4' THEN 35
+                WHEN '5' THEN 15
+                ELSE NULL
+              END
+            ) AS DECIMAL(5,2)
+          ) as conditionPercentage,
         ass.estimatedServiceLife,
         ass.remainingUsefulLife,
         ass.reviewYear,
         ass.lastTimeAction,
-        CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+        CAST(COALESCE(ass.repairCost, ass.estimatedRepairCost) AS DECIMAL(15,2)) as repairCost,
         CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost,
-        CAST(COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) AS DECIMAL(15,2)) as totalCost,
+        CAST(
+            COALESCE(ass.repairCost, ass.estimatedRepairCost, 0) + COALESCE(ass.renewCost, 0)
+          AS DECIMAL(15,2)) as totalCost,
         COALESCE(ass.recommendedAction, 'monitor') as actionType,
         ass.actionYear,
         ass.actionDescription,
@@ -1320,7 +1375,7 @@ export async function getComponentAssessmentsForPDF(
     uniformatGroup: row.uniformatGroup || '',
     componentName: row.componentName || 'Unknown Component',
     componentLocation: row.componentLocation || null,
-    condition: row.condition || 'not_assessed',
+    condition: row.conditionLabel || 'not_assessed',
     conditionPercentage: row.conditionPercentage ? parseFloat(row.conditionPercentage) : null,
     estimatedServiceLife: row.estimatedServiceLife || null,
     remainingUsefulLife: row.remainingUsefulLife || null,

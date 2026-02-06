@@ -1,0 +1,50 @@
+{
+  "query": "\nSELECT \n  a.id as assetId, \n  a.name as assetName, \n  CAST(a.replacementValue AS CHAR) as assetCRV,\n  p.id as projectId,\n  CAST(p.currentReplacementValue AS CHAR) as projectCRV,\n  CAST(p.deferredMaintenanceCost AS CHAR) as projectDMC\nFROM assets a\nINNER JOIN projects p ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nLIMIT 5;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute \nSELECT \n  a.id as assetId, \n  a.name as assetName, \n  CAST(a.replacementValue AS CHAR) as assetCRV,\n  p.id as projectId,\n  CAST(p.currentReplacementValue AS CHAR) as projectCRV,\n  CAST(p.deferredMaintenanceCost AS CHAR) as projectDMC\nFROM assets a\nINNER JOIN projects p ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nLIMIT 5;\n",
+  "rows": [
+    {
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "assetCRV": "150000000.00",
+      "projectId": "14",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50"
+    },
+    {
+      "assetId": "134",
+      "assetName": "Stanley A. Milner Library",
+      "assetCRV": "95000000.00",
+      "projectId": "14",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50"
+    },
+    {
+      "assetId": "135",
+      "assetName": "Fire Station No. 1",
+      "assetCRV": "12500000.00",
+      "projectId": "14",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50"
+    },
+    {
+      "assetId": "136",
+      "assetName": "Clareview Recreation Centre",
+      "assetCRV": "75000000.00",
+      "projectId": "14",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50"
+    },
+    {
+      "assetId": "137",
+      "assetName": "E.L. Smith Water Treatment Plant",
+      "assetCRV": "285000000.00",
+      "projectId": "14",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50"
+    }
+  ],
+  "messages": [],
+  "stdout": "assetId\tassetName\tassetCRV\tprojectId\tprojectCRV\tprojectDMC\n133\tCommonwealth Recreation Centre\t150000000.00\t14\t1888500000.00\t97626575.50\n134\tStanley A. Milner Library\t95000000.00\t14\t1888500000.00\t97626575.50\n135\tFire Station No. 1\t12500000.00\t14\t1888500000.00\t97626575.50\n136\tClareview Recreation Centre\t75000000.00\t14\t1888500000.00\t97626575.50\n137\tE.L. Smith Water Treatment Plant\t285000000.00\t14\t1888500000.00\t97626575.50\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

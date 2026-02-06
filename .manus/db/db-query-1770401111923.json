@@ -1,0 +1,120 @@
+{
+  "query": "\nSELECT \n  a.id as assetId, \n  a.name as assetName, \n  a.replacementValue,\n  a.yearBuilt,\n  p.id as projectId,\n  p.name as projectName,\n  p.currentReplacementValue as projectCRV,\n  p.deferredMaintenanceCost as projectDMC,\n  (SELECT COUNT(*) FROM assessments ass WHERE ass.assetId = a.id AND ass.deletedAt IS NULL AND (ass.hidden = 0 OR ass.hidden IS NULL)) as assessmentCount\nFROM assets a\nINNER JOIN projects p ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute \nSELECT \n  a.id as assetId, \n  a.name as assetName, \n  a.replacementValue,\n  a.yearBuilt,\n  p.id as projectId,\n  p.name as projectName,\n  p.currentReplacementValue as projectCRV,\n  p.deferredMaintenanceCost as projectDMC,\n  (SELECT COUNT(*) FROM assessments ass WHERE ass.assetId = a.id AND ass.deletedAt IS NULL AND (ass.hidden = 0 OR ass.hidden IS NULL)) as assessmentCount\nFROM assets a\nINNER JOIN projects p ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nLIMIT 10;\n",
+  "rows": [
+    {
+      "assetId": "140",
+      "assetName": "Terwillegar Community Recreation Centre",
+      "replacementValue": "85000000.00",
+      "yearBuilt": "2011",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "142",
+      "assetName": "Gold Bar Wastewater Treatment Plant",
+      "replacementValue": "425000000.00",
+      "yearBuilt": "1956",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "141",
+      "assetName": "Coronation Community Hall",
+      "replacementValue": "4500000.00",
+      "yearBuilt": "1953",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "137",
+      "assetName": "E.L. Smith Water Treatment Plant",
+      "replacementValue": "285000000.00",
+      "yearBuilt": "1976",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "135",
+      "assetName": "Fire Station No. 1",
+      "replacementValue": "12500000.00",
+      "yearBuilt": "1954",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "23"
+    },
+    {
+      "assetId": "138",
+      "assetName": "LRT Maintenance Facility - D.L. MacDonald",
+      "replacementValue": "95000000.00",
+      "yearBuilt": "1978",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "134",
+      "assetName": "Stanley A. Milner Library",
+      "replacementValue": "95000000.00",
+      "yearBuilt": "1967",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "136",
+      "assetName": "Clareview Recreation Centre",
+      "replacementValue": "75000000.00",
+      "yearBuilt": "2009",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "139",
+      "assetName": "City Hall",
+      "replacementValue": "185000000.00",
+      "yearBuilt": "1992",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "22"
+    },
+    {
+      "assetId": "133",
+      "assetName": "Commonwealth Recreation Centre",
+      "replacementValue": "150000000.00",
+      "yearBuilt": "2014",
+      "projectId": "14",
+      "projectName": "City of Edmonton - Municipal Building Portfolio",
+      "projectCRV": "1888500000.00",
+      "projectDMC": "97626575.50",
+      "assessmentCount": "23"
+    }
+  ],
+  "messages": [],
+  "stdout": "assetId\tassetName\treplacementValue\tyearBuilt\tprojectId\tprojectName\tprojectCRV\tprojectDMC\tassessmentCount\n140\tTerwillegar Community Recreation Centre\t85000000.00\t2011\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n142\tGold Bar Wastewater Treatment Plant\t425000000.00\t1956\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n141\tCoronation Community Hall\t4500000.00\t1953\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n137\tE.L. Smith Water Treatment Plant\t285000000.00\t1976\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n135\tFire Station No. 1\t12500000.00\t1954\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t23\n138\tLRT Maintenance Facility - D.L. MacDonald\t95000000.00\t1978\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n134\tStanley A. Milner Library\t95000000.00\t1967\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n136\tClareview Recreation Centre\t75000000.00\t2009\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n139\tCity Hall\t185000000.00\t1992\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t22\n133\tCommonwealth Recreation Centre\t150000000.00\t2014\t14\tCity of Edmonton - Municipal Building Portfolio\t1888500000.00\t97626575.50\t23\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}

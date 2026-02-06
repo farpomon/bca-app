@@ -5558,3 +5558,20 @@ Deployment is allowed only when:
 - [x] Add proper number parsing with parseFloat() before formatting
 - [x] Add Math.round() to ensure clean integer values for currency
 - [x] Test PDF generation with fixed CRV values
+
+## 🔧 Report Data Quality Fixes (Feb 6, 2026)
+
+- [x] Fix FCI scale mismatch: getPortfolioOverview was passing percentage (5.17) to getFCIRating which expects decimal (0.0517), causing all FCI ratings to show "Critical"
+- [x] Fix FCI display: getPortfolioOverview now returns FCI as percentage for display, uses decimal for rating calculation
+- [x] Fix per-asset FCI in getBuildingComparison: convert decimal FCI to percentage in client-side mapping
+- [x] Fix single-asset report FCI: multiply selectedAsset.fci by 100 for percentage display
+- [x] Fix condition field mapping: SQL queries now use conditionRating (1-5 scale) to derive condition labels when ass.condition is NULL
+- [x] Fix conditionPercentage: derive from conditionRating (1→95%, 2→80%, 3→60%, 4→35%, 5→15%) when conditionPercentage is NULL
+- [x] Fix component repair costs: use COALESCE(ass.repairCost, ass.estimatedRepairCost) instead of just ass.repairCost (which was NULL)
+- [x] Fix total cost calculation: include estimatedRepairCost fallback in totalCost sum
+- [x] Fix per-asset DMC in getBuildingComparison: calculate from sum of assessment estimatedRepairCost instead of project-level deferredMaintenanceCost
+- [x] Fix field name mismatches: client used overview.fciRating (should be portfolioFCIRating), overview.conditionRating (should be averageConditionRating), overview.avgBuildingAge (should be averageBuildingAge)
+- [x] Fix condition sort order: use CAST(conditionRating AS UNSIGNED) instead of CASE on ass.condition text field
+- [x] Fix cost sort order: include estimatedRepairCost fallback in ORDER BY clause
+- [x] Applied fixes to both BRANCH 1 (super admin) and BRANCH 2 (filtered) SQL queries in getComponentAssessmentsForPDF
+- [x] Added unit tests for FCI calculations, condition mapping, and display conversion

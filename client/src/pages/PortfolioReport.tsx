@@ -446,22 +446,23 @@ export default function PortfolioReport() {
       const portfolioFCI = totalCRV > 0 ? (totalDeferred / totalCRV) * 100 : 0;
 
       // Build report data from dashboard data
+      // NOTE: FCI from getBuildingComparison is decimal (0-1), PDF expects percentage (0-100)
       const reportData: EnhancedReportData = {
         config: enhancedConfig,
         summary: {
           totalAssets: assetsToInclude.length,
           totalCurrentReplacementValue: totalCRV,
           totalDeferredMaintenanceCost: totalDeferred,
-          portfolioFCI: isSingleAsset && selectedAsset ? (selectedAsset.fci || 0) : portfolioFCI,
-          portfolioFCIRating: isSingleAsset && selectedAsset ? (selectedAsset.fciRating || 'N/A') : (dashboardData.overview?.fciRating || 'N/A'),
-          averageConditionScore: isSingleAsset && selectedAsset ? (selectedAsset.conditionScore || 0) : (dashboardData.overview?.avgConditionScore || 0),
-          averageConditionRating: isSingleAsset && selectedAsset ? (selectedAsset.conditionRating || 'N/A') : (dashboardData.overview?.conditionRating || 'N/A'),
+          portfolioFCI: isSingleAsset && selectedAsset ? ((selectedAsset.fci || 0) * 100) : portfolioFCI,
+          portfolioFCIRating: isSingleAsset && selectedAsset ? (selectedAsset.fciRating || 'N/A') : (dashboardData.overview?.portfolioFCIRating || 'N/A'),
+          averageConditionScore: isSingleAsset && selectedAsset ? (selectedAsset.conditionScore || 0) : (dashboardData.overview?.averageConditionScore || 0),
+          averageConditionRating: isSingleAsset && selectedAsset ? (selectedAsset.conditionRating || 'N/A') : (dashboardData.overview?.averageConditionRating || 'N/A'),
           totalDeficiencies: isSingleAsset && selectedAsset ? (selectedAsset.deficiencyCount || 0) : (dashboardData.overview?.totalDeficiencies || 0),
           totalAssessments: isSingleAsset && selectedAsset ? (selectedAsset.assessmentCount || 0) : (dashboardData.overview?.totalAssessments || 0),
           fundingGap: dashboardData.overview?.fundingGap || 0,
           averageAssetAge: isSingleAsset && selectedAsset 
             ? (new Date().getFullYear() - (selectedAsset.yearBuilt || 1970)) 
-            : (dashboardData.overview?.avgBuildingAge || 0),
+            : (dashboardData.overview?.averageBuildingAge || 0),
         },
         assetMetrics: assetsToInclude.map((b: any) => ({
           assetId: b.assetId || 0,
@@ -471,7 +472,7 @@ export default function PortfolioReport() {
           grossFloorArea: b.grossFloorArea,
           currentReplacementValue: Number(b.currentReplacementValue || b.crv || 0),
           deferredMaintenanceCost: Number(b.deferredMaintenanceCost || b.deferredMaintenance || 0),
-          fci: b.fci || 0,
+          fci: (b.fci || 0) * 100, // Convert decimal ratio (0-1) to percentage (0-100) for PDF display
           fciRating: b.fciRating || 'N/A',
           conditionScore: b.conditionScore || 0,
           conditionRating: b.conditionRating || 'N/A',

@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, name, replacementValue, fciScore, overallCondition FROM assets LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, replacementValue, fciScore, overallCondition FROM assets LIMIT 10;",
+  "rows": [
+    {
+      "id": "113",
+      "name": "Commonwealth Recreation Centre",
+      "replacementValue": "150000000.00",
+      "fciScore": "0.0350",
+      "overallCondition": "excellent"
+    },
+    {
+      "id": "114",
+      "name": "Stanley A. Milner Library",
+      "replacementValue": "95000000.00",
+      "fciScore": "0.0850",
+      "overallCondition": "good"
+    },
+    {
+      "id": "115",
+      "name": "Fire Station No. 1",
+      "replacementValue": "12500000.00",
+      "fciScore": "0.2150",
+      "overallCondition": "fair"
+    },
+    {
+      "id": "116",
+      "name": "Clareview Recreation Centre",
+      "replacementValue": "75000000.00",
+      "fciScore": "0.0950",
+      "overallCondition": "good"
+    },
+    {
+      "id": "117",
+      "name": "E.L. Smith Water Treatment Plant",
+      "replacementValue": "285000000.00",
+      "fciScore": "0.1250",
+      "overallCondition": "good"
+    },
+    {
+      "id": "118",
+      "name": "LRT Maintenance Facility - D.L. MacDonald",
+      "replacementValue": "95000000.00",
+      "fciScore": "0.1850",
+      "overallCondition": "fair"
+    },
+    {
+      "id": "119",
+      "name": "City Hall",
+      "replacementValue": "185000000.00",
+      "fciScore": "0.1150",
+      "overallCondition": "good"
+    },
+    {
+      "id": "120",
+      "name": "Terwillegar Community Recreation Centre",
+      "replacementValue": "85000000.00",
+      "fciScore": "0.0750",
+      "overallCondition": "good"
+    },
+    {
+      "id": "121",
+      "name": "Coronation Community Hall",
+      "replacementValue": "4500000.00",
+      "fciScore": "0.3250",
+      "overallCondition": "poor"
+    },
+    {
+      "id": "122",
+      "name": "Gold Bar Wastewater Treatment Plant",
+      "replacementValue": "425000000.00",
+      "fciScore": "0.1950",
+      "overallCondition": "fair"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\treplacementValue\tfciScore\toverallCondition\n113\tCommonwealth Recreation Centre\t150000000.00\t0.0350\texcellent\n114\tStanley A. Milner Library\t95000000.00\t0.0850\tgood\n115\tFire Station No. 1\t12500000.00\t0.2150\tfair\n116\tClareview Recreation Centre\t75000000.00\t0.0950\tgood\n117\tE.L. Smith Water Treatment Plant\t285000000.00\t0.1250\tgood\n118\tLRT Maintenance Facility - D.L. MacDonald\t95000000.00\t0.1850\tfair\n119\tCity Hall\t185000000.00\t0.1150\tgood\n120\tTerwillegar Community Recreation Centre\t85000000.00\t0.0750\tgood\n121\tCoronation Community Hall\t4500000.00\t0.3250\tpoor\n122\tGold Bar Wastewater Treatment Plant\t425000000.00\t0.1950\tfair\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

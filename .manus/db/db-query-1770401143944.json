@@ -1,0 +1,45 @@
+{
+  "query": "\nSELECT \n  a.id, a.name, \n  a.replacementValue,\n  p.currentReplacementValue as pCRV,\n  p.deferredMaintenanceCost as pDMC\nFROM assets a\nINNER JOIN projects p ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nLIMIT 5\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute \nSELECT \n  a.id, a.name, \n  a.replacementValue,\n  p.currentReplacementValue as pCRV,\n  p.deferredMaintenanceCost as pDMC\nFROM assets a\nINNER JOIN projects p ON a.projectId = p.id\nWHERE p.deletedAt IS NULL\nLIMIT 5\n",
+  "rows": [
+    {
+      "id": "133",
+      "name": "Commonwealth Recreation Centre",
+      "replacementValue": "150000000.00",
+      "pCRV": "1888500000.00",
+      "pDMC": "97626575.50"
+    },
+    {
+      "id": "134",
+      "name": "Stanley A. Milner Library",
+      "replacementValue": "95000000.00",
+      "pCRV": "1888500000.00",
+      "pDMC": "97626575.50"
+    },
+    {
+      "id": "135",
+      "name": "Fire Station No. 1",
+      "replacementValue": "12500000.00",
+      "pCRV": "1888500000.00",
+      "pDMC": "97626575.50"
+    },
+    {
+      "id": "136",
+      "name": "Clareview Recreation Centre",
+      "replacementValue": "75000000.00",
+      "pCRV": "1888500000.00",
+      "pDMC": "97626575.50"
+    },
+    {
+      "id": "137",
+      "name": "E.L. Smith Water Treatment Plant",
+      "replacementValue": "285000000.00",
+      "pCRV": "1888500000.00",
+      "pDMC": "97626575.50"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\treplacementValue\tpCRV\tpDMC\n133\tCommonwealth Recreation Centre\t150000000.00\t1888500000.00\t97626575.50\n134\tStanley A. Milner Library\t95000000.00\t1888500000.00\t97626575.50\n135\tFire Station No. 1\t12500000.00\t1888500000.00\t97626575.50\n136\tClareview Recreation Centre\t75000000.00\t1888500000.00\t97626575.50\n137\tE.L. Smith Water Treatment Plant\t285000000.00\t1888500000.00\t97626575.50\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

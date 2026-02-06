@@ -209,6 +209,9 @@ export const portfolioAnalyticsRouter = router({
       console.log('[getComponentAssessments] Running direct SQL query...');
       
       // Execute the main query
+      // FIXED: Use conditionRating (1-5 scale) instead of condition (mostly NULL)
+      // FIXED: Use estimatedRepairCost instead of repairCost/renewCost (both NULL)
+      // FIXED: Derive conditionPercentage from conditionRating when conditionPercentage is NULL
       const result = await db.execute(sql`
         SELECT 
           ass.id,
@@ -228,15 +231,40 @@ export const portfolioAnalyticsRouter = router({
           COALESCE(ass.uniformatGroup, '') as uniformatGroup,
           COALESCE(ass.componentName, 'Unknown Component') as componentName,
           ass.componentLocation,
-          COALESCE(ass.condition, 'not_assessed') as conditionRating,
-          CAST(ass.conditionPercentage AS DECIMAL(5,2)) as conditionPercentage,
+          COALESCE(
+            ass.condition,
+            CASE ass.conditionRating
+              WHEN '1' THEN 'good'
+              WHEN '2' THEN 'good'
+              WHEN '3' THEN 'fair'
+              WHEN '4' THEN 'poor'
+              WHEN '5' THEN 'poor'
+              ELSE 'not_assessed'
+            END
+          ) as conditionLabel,
+          ass.conditionRating as conditionRatingRaw,
+          CAST(
+            COALESCE(
+              ass.conditionPercentage,
+              CASE ass.conditionRating
+                WHEN '1' THEN 95
+                WHEN '2' THEN 80
+                WHEN '3' THEN 60
+                WHEN '4' THEN 35
+                WHEN '5' THEN 15
+                ELSE NULL
+              END
+            ) AS DECIMAL(5,2)
+          ) as conditionPercentage,
           ass.estimatedServiceLife,
           ass.remainingUsefulLife,
           ass.reviewYear,
           ass.lastTimeAction,
-          CAST(ass.repairCost AS DECIMAL(15,2)) as repairCost,
+          CAST(COALESCE(ass.repairCost, ass.estimatedRepairCost) AS DECIMAL(15,2)) as repairCost,
           CAST(ass.renewCost AS DECIMAL(15,2)) as replacementCost,
-          CAST(COALESCE(ass.repairCost, 0) + COALESCE(ass.renewCost, 0) AS DECIMAL(15,2)) as totalCost,
+          CAST(
+            COALESCE(ass.repairCost, ass.estimatedRepairCost, 0) + COALESCE(ass.renewCost, 0)
+          AS DECIMAL(15,2)) as totalCost,
           COALESCE(ass.recommendedAction, 'monitor') as actionType,
           ass.actionYear,
           ass.actionDescription,
@@ -280,6 +308,8 @@ export const portfolioAnalyticsRouter = router({
       }
       
       // Transform rows to expected format
+      // FIXED: Use conditionLabel (derived from conditionRating) for condition field
+      // FIXED: Use derived conditionPercentage from conditionRating when null
       const components = rows.map((row: any) => ({
         id: row.id,
         assetId: row.assetId,
@@ -292,7 +322,8 @@ export const portfolioAnalyticsRouter = router({
         uniformatGroup: row.uniformatGroup || '',
         componentName: row.componentName || 'Unknown Component',
         componentLocation: row.componentLocation || null,
-        conditionRating: row.conditionRating || 'not_assessed',
+        condition: row.conditionLabel || 'not_assessed',
+        conditionRating: row.conditionRatingRaw || null,
         conditionPercentage: row.conditionPercentage ? Number(row.conditionPercentage) : null,
         estimatedServiceLife: row.estimatedServiceLife || null,
         remainingUsefulLife: row.remainingUsefulLife || null,
