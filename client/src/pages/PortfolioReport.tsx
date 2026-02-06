@@ -505,7 +505,7 @@ export default function PortfolioReport() {
           totalProjectedCost: Number(f.totalProjectedCost || f.total || 0),
           cumulativeCost: Number(f.cumulativeCost || f.cumulative || 0),
         })),
-        priorityMatrix: (dashboardData.priorityMatrix || []).map((p: any) => ({
+        priorityMatrix: (dashboardData.priorityBreakdown || []).map((p: any) => ({
           priority: p.priority || 'Unknown',
           count: p.count || 0,
           totalCost: p.totalCost || 0,
@@ -568,9 +568,77 @@ export default function PortfolioReport() {
           }));
 
           console.log(`[PDF] Fetched ${reportData.components.length} component assessments`);
+
+          // Build action list from component assessments
+          if (config.includeActionList) {
+            let actionIndex = 0;
+            reportData.actionList = reportData.components
+              .filter((c: any) => c.actionType && c.actionType !== 'monitor' && c.actionType !== 'none')
+              .map((c: any) => {
+                actionIndex++;
+                return {
+                  id: c.id,
+                  itemId: `ACT-${String(actionIndex).padStart(3, '0')}`,
+                  actionName: c.componentName || 'Unknown',
+                  actionType: c.actionType || 'repair',
+                  actionYear: c.actionYear,
+                  actionCost: c.totalCost || c.repairCost || 0,
+                  assetName: c.assetName || 'Unknown',
+                  assetId: c.assetId || 0,
+                  uniformatCode: c.uniformatCode || '',
+                  uniformatGroup: c.uniformatGroup || '',
+                  priority: c.priority || 'medium_term',
+                  description: c.actionDescription || c.recommendations || null,
+                };
+              });
+            console.log(`[PDF] Built ${reportData.actionList.length} action list items from components`);
+          }
         } catch (compError) {
           console.error('Failed to fetch component assessments:', compError);
           toast.error('Warning: Could not fetch component assessments. Report will be generated without component details.');
+        }
+      }
+
+      // If action list is needed but component assessments were not fetched, fetch components just for the action list
+      if (config.includePriorityRecommendations && reportData.actionList.length === 0 && !config.includeComponentAssessments) {
+        try {
+          setPdfGenerationStage('Fetching action items...');
+          setGenerationProgress(25);
+          
+          const assetIdsToFetch = isSingleAsset && config.selectedAssetId
+            ? [config.selectedAssetId]
+            : assetsToInclude.map((a: any) => a.assetId).filter(Boolean);
+          
+          const componentData = await trpcUtils.portfolioAnalytics.getComponentAssessments.fetch({
+            assetIds: assetIdsToFetch.length > 0 ? assetIdsToFetch : undefined,
+            includePhotos: false,
+            maxPhotosPerComponent: 0,
+            sortBy: 'uniformat',
+          });
+
+          let actionIndex = 0;
+          reportData.actionList = (componentData || [])
+            .filter((c: any) => c.actionType && c.actionType !== 'monitor' && c.actionType !== 'none')
+            .map((c: any) => {
+              actionIndex++;
+              return {
+                id: c.id,
+                itemId: `ACT-${String(actionIndex).padStart(3, '0')}`,
+                actionName: c.componentName || 'Unknown',
+                actionType: c.actionType || 'repair',
+                actionYear: c.actionYear,
+                actionCost: c.totalCost || c.repairCost || 0,
+                assetName: c.assetName || 'Unknown',
+                assetId: c.assetId || 0,
+                uniformatCode: c.uniformatCode || '',
+                uniformatGroup: c.uniformatGroup || '',
+                priority: c.priority || 'medium_term',
+                description: c.actionDescription || c.recommendations || null,
+              };
+            });
+          console.log(`[PDF] Built ${reportData.actionList.length} action list items (standalone fetch)`);
+        } catch (actionError) {
+          console.error('Failed to fetch action list data:', actionError);
         }
       }
 
@@ -1178,7 +1246,7 @@ export default function PortfolioReport() {
                         includeExecutiveSummary: options.includeExecutiveSummary,
                         includeAssetOverview: options.includeBuildingBreakdown,
                         includeComponentAssessments: options.includeComponentAssessments,
-                        includeActionList: options.includePriorityMatrix,
+                        includeActionList: options.includePriorityRecommendations,
                         includeCapitalForecast: options.includeCapitalForecast,
                         includeUniformatBreakdown: options.includeCategoryAnalysis,
                         includePhotos: config.componentAssessmentSection?.includePhotos ?? true,

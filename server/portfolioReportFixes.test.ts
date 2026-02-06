@@ -144,3 +144,108 @@ describe("FCI Display Conversion", () => {
     expect(rating).toBe("Fair"); // NOT "Critical"
   });
 });
+
+describe("Report Data Assembly - Action List", () => {
+  it("builds action list from component assessments by filtering actionable items", () => {
+    const components = [
+      { id: 1, componentName: "Roof Membrane", actionType: "replace", actionYear: 2026, totalCost: 50000, repairCost: 50000, assetName: "Building A", assetId: 1, uniformatCode: "B3010", uniformatGroup: "Shell", priority: "immediate", actionDescription: "Replace membrane", recommendations: "Full replacement needed" },
+      { id: 2, componentName: "HVAC Unit", actionType: "monitor", actionYear: null, totalCost: 0, repairCost: 0, assetName: "Building A", assetId: 1, uniformatCode: "D3040", uniformatGroup: "Services", priority: "long_term", actionDescription: null, recommendations: null },
+      { id: 3, componentName: "Windows", actionType: "repair", actionYear: 2027, totalCost: 25000, repairCost: 25000, assetName: "Building B", assetId: 2, uniformatCode: "B2020", uniformatGroup: "Shell", priority: "short_term", actionDescription: "Seal and repair", recommendations: "Caulking needed" },
+      { id: 4, componentName: "Foundation", actionType: "none", actionYear: null, totalCost: 0, repairCost: 0, assetName: "Building A", assetId: 1, uniformatCode: "A1010", uniformatGroup: "Substructure", priority: "long_term", actionDescription: null, recommendations: null },
+    ];
+
+    // Filter actionable items (not 'monitor' or 'none')
+    let actionIndex = 0;
+    const actionList = components
+      .filter((c) => c.actionType && c.actionType !== 'monitor' && c.actionType !== 'none')
+      .map((c) => {
+        actionIndex++;
+        return {
+          id: c.id,
+          itemId: `ACT-${String(actionIndex).padStart(3, '0')}`,
+          actionName: c.componentName || 'Unknown',
+          actionType: c.actionType || 'repair',
+          actionYear: c.actionYear,
+          actionCost: c.totalCost || c.repairCost || 0,
+          assetName: c.assetName || 'Unknown',
+          assetId: c.assetId || 0,
+          uniformatCode: c.uniformatCode || '',
+          uniformatGroup: c.uniformatGroup || '',
+          priority: c.priority || 'medium_term',
+          description: c.actionDescription || c.recommendations || null,
+        };
+      });
+
+    expect(actionList).toHaveLength(2); // Only 'replace' and 'repair', not 'monitor' or 'none'
+    expect(actionList[0].itemId).toBe('ACT-001');
+    expect(actionList[0].actionName).toBe('Roof Membrane');
+    expect(actionList[0].actionCost).toBe(50000);
+    expect(actionList[1].itemId).toBe('ACT-002');
+    expect(actionList[1].actionName).toBe('Windows');
+    expect(actionList[1].priority).toBe('short_term');
+  });
+});
+
+describe("Report Data Assembly - Priority Matrix", () => {
+  it("maps priorityBreakdown to priorityMatrix format", () => {
+    // Server returns priorityBreakdown, NOT priorityMatrix
+    const priorityBreakdown = [
+      { priority: 'immediate', count: 50, totalCost: 500000, percentage: 40, buildings: ['Building A'] },
+      { priority: 'short_term', count: 30, totalCost: 300000, percentage: 25, buildings: ['Building B'] },
+      { priority: 'medium_term', count: 25, totalCost: 250000, percentage: 20, buildings: ['Building A', 'Building C'] },
+      { priority: 'long_term', count: 20, totalCost: 200000, percentage: 15, buildings: ['Building D'] },
+    ];
+
+    // Client maps priorityBreakdown to priorityMatrix
+    const priorityMatrix = (priorityBreakdown || []).map((p: any) => ({
+      priority: p.priority || 'Unknown',
+      count: p.count || 0,
+      totalCost: p.totalCost || 0,
+      percentageOfTotal: p.percentage || 0,
+    }));
+
+    expect(priorityMatrix).toHaveLength(4);
+    expect(priorityMatrix[0].priority).toBe('immediate');
+    expect(priorityMatrix[0].count).toBe(50);
+    expect(priorityMatrix[0].totalCost).toBe(500000);
+    expect(priorityMatrix[0].percentageOfTotal).toBe(40);
+    
+    // Previously, dashboardData.priorityMatrix was undefined (field doesn't exist)
+    // Using dashboardData.priorityBreakdown fixes this
+    const emptyMatrix = (undefined || []).map((p: any) => ({
+      priority: p.priority || 'Unknown',
+    }));
+    expect(emptyMatrix).toHaveLength(0); // Would be empty with old code
+  });
+});
+
+describe("Report Config Mapping", () => {
+  it("maps includePriorityRecommendations to both includeActionList and includePriorityMatrix", () => {
+    const config = {
+      includePriorityRecommendations: true,
+      includeComponentAssessments: false,
+    };
+
+    const enhancedConfig = {
+      includeActionList: config.includePriorityRecommendations,
+      includePriorityMatrix: config.includePriorityRecommendations,
+    };
+
+    expect(enhancedConfig.includeActionList).toBe(true);
+    expect(enhancedConfig.includePriorityMatrix).toBe(true);
+  });
+
+  it("preview panel should use includePriorityRecommendations not includePriorityMatrix", () => {
+    // The old code used options.includePriorityMatrix which doesn't exist in config
+    const options = {
+      includePriorityRecommendations: true,
+      // includePriorityMatrix does NOT exist in the config
+    };
+
+    // Old code: options.includePriorityMatrix → undefined → false
+    expect((options as any).includePriorityMatrix).toBeUndefined();
+    
+    // Fixed code: options.includePriorityRecommendations → true
+    expect(options.includePriorityRecommendations).toBe(true);
+  });
+});

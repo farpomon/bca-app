@@ -930,6 +930,75 @@ export async function generateEnhancedPDF(
     });
   }
 
+  // ============================================
+  // PRIORITY MATRIX
+  // ============================================
+  if (config.includePriorityMatrix && data.priorityMatrix.length > 0) {
+    doc.addPage();
+    addHeader();
+    addSectionTitle('Priority Matrix');
+
+    const priorityTableData = data.priorityMatrix.map(p => [
+      getPriorityLabel(p.priority),
+      p.count.toString(),
+      formatCurrency(p.totalCost),
+      formatPercentage(p.percentageOfTotal)
+    ]);
+
+    // Add total row
+    const totalCount = data.priorityMatrix.reduce((sum, p) => sum + p.count, 0);
+    const totalCostSum = data.priorityMatrix.reduce((sum, p) => sum + p.totalCost, 0);
+    priorityTableData.push([
+      'TOTAL',
+      totalCount.toString(),
+      formatCurrency(totalCostSum),
+      '100%'
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Priority Level', 'Deficiency Count', 'Estimated Cost', '% of Total']],
+      body: priorityTableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: colors.primary,
+        textColor: colors.white,
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { halign: 'center' },
+        2: { halign: 'right' },
+        3: { halign: 'right' }
+      },
+      didParseCell: (hookData: any) => {
+        // Bold the total row
+        if (hookData.row.index === priorityTableData.length - 1) {
+          hookData.cell.styles.fontStyle = 'bold';
+          hookData.cell.styles.fillColor = [220, 230, 241];
+        }
+      },
+      margin: { left: margin, right: margin }
+    });
+
+    // Add a summary paragraph below the table
+    const finalY = (doc as any).lastAutoTable?.finalY || yPos + 80;
+    yPos = finalY + 10;
+    
+    if (yPos < pageHeight - 40) {
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.text);
+      doc.setFont('helvetica', 'normal');
+      const summaryText = `This priority matrix summarizes ${totalCount} identified deficiencies with a total estimated remediation cost of ${formatCurrency(totalCostSum)}. Items are categorized by urgency to support capital planning and budget allocation.`;
+      const summaryLines = doc.splitTextToSize(summaryText, contentWidth);
+      doc.text(summaryLines, margin, yPos);
+    }
+  }
+
   // Add footers to all pages
   addFooter();
 

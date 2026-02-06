@@ -5575,3 +5575,13 @@ Deployment is allowed only when:
 - [x] Fix cost sort order: include estimatedRepairCost fallback in ORDER BY clause
 - [x] Applied fixes to both BRANCH 1 (super admin) and BRANCH 2 (filtered) SQL queries in getComponentAssessmentsForPDF
 - [x] Added unit tests for FCI calculations, condition mapping, and display conversion
+
+## 🔥 Report Page Count Issue (Feb 6, 2026)
+
+- [x] Investigate why PDF report now only has 6 pages instead of expected number
+- [x] Fix actionList always empty - now populated from component assessments (filtering out 'monitor' and 'none' actions)
+- [x] Fix priorityMatrix using wrong field name (dashboardData.priorityMatrix → dashboardData.priorityBreakdown)
+- [x] Add Priority Matrix rendering section to PDF generator (was counted in estimatePageCount but never rendered)
+- [x] Fix preview panel config mapping (options.includePriorityMatrix → options.includePriorityRecommendations)
+- [x] Add standalone action list fetch when component assessments are disabled but action list is enabled
+- [x] All 14 unit tests pass
