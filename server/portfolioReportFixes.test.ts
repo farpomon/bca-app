@@ -249,3 +249,156 @@ describe("Report Config Mapping", () => {
     expect(options.includePriorityRecommendations).toBe(true);
   });
 });
+
+describe("Single Asset Mode - UNIFORMAT Summary Rebuild", () => {
+  it("builds UNIFORMAT summary from single asset's component data", () => {
+    const UNIFORMAT_NAMES: Record<string, string> = {
+      'A': 'Substructure', 'B': 'Shell', 'C': 'Interiors', 'D': 'Services',
+      'E': 'Equipment & Furnishings', 'F': 'Special Construction', 'G': 'Building Sitework', 'Z': 'General',
+    };
+
+    const assetComponents = [
+      { uniformatCode: 'A1010', repairCost: 50000, replacementCost: 200000, conditionPercentage: 60 },
+      { uniformatCode: 'A2010', repairCost: 30000, replacementCost: 150000, conditionPercentage: 80 },
+      { uniformatCode: 'B1010', repairCost: 100000, replacementCost: 500000, conditionPercentage: 35 },
+      { uniformatCode: 'D3040', repairCost: 25000, replacementCost: 100000, conditionPercentage: 65 },
+    ];
+
+    const uniformatMap = new Map<string, { code: string; name: string; count: number; repairCost: number; replacementCost: number; conditionScores: number[] }>();
+    for (const c of assetComponents) {
+      const code = (c.uniformatCode || 'Z').substring(0, 1).toUpperCase();
+      const existing = uniformatMap.get(code) || { code, name: UNIFORMAT_NAMES[code] || 'Other', count: 0, repairCost: 0, replacementCost: 0, conditionScores: [] };
+      existing.count++;
+      existing.repairCost += Number(c.repairCost || 0);
+      existing.replacementCost += Number(c.replacementCost || 0);
+      if (c.conditionPercentage != null) existing.conditionScores.push(Number(c.conditionPercentage));
+      uniformatMap.set(code, existing);
+    }
+
+    const result = Array.from(uniformatMap.values());
+
+    expect(result).toHaveLength(3); // A, B, D
+    
+    const groupA = result.find(u => u.code === 'A');
+    expect(groupA).toBeDefined();
+    expect(groupA!.count).toBe(2);
+    expect(groupA!.repairCost).toBe(80000); // 50000 + 30000
+    expect(groupA!.replacementCost).toBe(350000); // 200000 + 150000
+    expect(groupA!.conditionScores).toEqual([60, 80]);
+
+    const groupB = result.find(u => u.code === 'B');
+    expect(groupB!.count).toBe(1);
+    expect(groupB!.repairCost).toBe(100000);
+  });
+});
+
+describe("Single Asset Mode - Priority Matrix Rebuild", () => {
+  it("builds priority matrix from single asset's component data", () => {
+    const assetComponents = [
+      { priority: 'immediate', totalCost: 50000 },
+      { priority: 'immediate', totalCost: 30000 },
+      { priority: 'short_term', totalCost: 25000 },
+      { priority: 'medium_term', totalCost: 15000 },
+      { priority: 'medium_term', totalCost: 10000 },
+    ];
+
+    const priorityMap = new Map<string, { count: number; totalCost: number }>();
+    for (const c of assetComponents) {
+      const priority = c.priority || 'long_term';
+      const cost = Number(c.totalCost || 0);
+      const existing = priorityMap.get(priority) || { count: 0, totalCost: 0 };
+      existing.count++;
+      existing.totalCost += cost;
+      priorityMap.set(priority, existing);
+    }
+
+    const totalPriorityCost = Array.from(priorityMap.values()).reduce((sum, p) => sum + p.totalCost, 0);
+    expect(totalPriorityCost).toBe(130000);
+
+    const priorityOrder = ['immediate', 'short_term', 'medium_term', 'long_term'];
+    const priorityMatrix = priorityOrder
+      .filter(p => priorityMap.has(p))
+      .map(p => {
+        const data = priorityMap.get(p)!;
+        return {
+          priority: p,
+          count: data.count,
+          totalCost: data.totalCost,
+          percentageOfTotal: totalPriorityCost > 0 ? Math.round((data.totalCost / totalPriorityCost) * 100) : 0,
+        };
+      });
+
+    expect(priorityMatrix).toHaveLength(3); // immediate, short_term, medium_term (no long_term)
+    expect(priorityMatrix[0].priority).toBe('immediate');
+    expect(priorityMatrix[0].count).toBe(2);
+    expect(priorityMatrix[0].totalCost).toBe(80000);
+    expect(priorityMatrix[0].percentageOfTotal).toBe(62); // 80000/130000 = 61.5% → 62%
+    expect(priorityMatrix[1].priority).toBe('short_term');
+    expect(priorityMatrix[1].count).toBe(1);
+  });
+});
+
+describe("Single Asset Mode - Capital Forecast Rebuild", () => {
+  it("builds capital forecast from single asset's needs breakdown", () => {
+    const selectedAsset = {
+      immediateNeeds: 100000,
+      shortTermNeeds: 200000,
+      mediumTermNeeds: 150000,
+      longTermNeeds: 50000,
+    };
+
+    const distributions = [
+      { immediate: 1.0, shortTerm: 0.2, mediumTerm: 0.0, longTerm: 0.0 },
+      { immediate: 0.0, shortTerm: 0.4, mediumTerm: 0.1, longTerm: 0.0 },
+      { immediate: 0.0, shortTerm: 0.4, mediumTerm: 0.3, longTerm: 0.0 },
+      { immediate: 0.0, shortTerm: 0.0, mediumTerm: 0.3, longTerm: 0.2 },
+      { immediate: 0.0, shortTerm: 0.0, mediumTerm: 0.3, longTerm: 0.3 },
+    ];
+
+    const currentYear = 2026;
+    const forecastYears = 5;
+    let cumulativeCost = 0;
+    const forecast = [];
+
+    for (let i = 0; i < forecastYears; i++) {
+      const dist = distributions[Math.min(i, distributions.length - 1)];
+      const yearImmediate = selectedAsset.immediateNeeds * dist.immediate;
+      const yearShortTerm = selectedAsset.shortTermNeeds * dist.shortTerm;
+      const yearMediumTerm = selectedAsset.mediumTermNeeds * dist.mediumTerm;
+      const yearLongTerm = selectedAsset.longTermNeeds * dist.longTerm;
+      const yearTotal = yearImmediate + yearShortTerm + yearMediumTerm + yearLongTerm;
+      cumulativeCost += yearTotal;
+      forecast.push({
+        year: currentYear + i,
+        immediateNeeds: Math.round(yearImmediate),
+        shortTermNeeds: Math.round(yearShortTerm),
+        mediumTermNeeds: Math.round(yearMediumTerm),
+        longTermNeeds: Math.round(yearLongTerm),
+        totalProjectedCost: Math.round(yearTotal),
+        cumulativeCost: Math.round(cumulativeCost),
+      });
+    }
+
+    expect(forecast).toHaveLength(5);
+    
+    // Year 1: 100% immediate + 20% short term
+    expect(forecast[0].year).toBe(2026);
+    expect(forecast[0].immediateNeeds).toBe(100000);
+    expect(forecast[0].shortTermNeeds).toBe(40000); // 200000 * 0.2
+    expect(forecast[0].totalProjectedCost).toBe(140000);
+
+    // Year 2: 40% short term + 10% medium term
+    expect(forecast[1].year).toBe(2027);
+    expect(forecast[1].immediateNeeds).toBe(0);
+    expect(forecast[1].shortTermNeeds).toBe(80000); // 200000 * 0.4
+    expect(forecast[1].mediumTermNeeds).toBe(15000); // 150000 * 0.1
+    expect(forecast[1].totalProjectedCost).toBe(95000);
+
+    // Cumulative should be sum of all previous years
+    expect(forecast[1].cumulativeCost).toBe(235000); // 140000 + 95000
+
+    // All forecast values should use single asset's data, not portfolio totals
+    const totalForecast = forecast.reduce((sum, f) => sum + f.totalProjectedCost, 0);
+    expect(totalForecast).toBeLessThanOrEqual(500000); // Sum of all needs
+  });
+});

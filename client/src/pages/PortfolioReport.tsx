@@ -487,7 +487,9 @@ export default function PortfolioReport() {
         })),
         components: [], // Will be populated below if component assessments are included
         actionList: [], // Will be populated if action list is included
-        uniformatSummary: (dashboardData.categoryCostBreakdown || []).map((c: any) => ({
+        // For single asset mode, these will be rebuilt from component data after fetch
+        // For portfolio mode, use the dashboard-wide data
+        uniformatSummary: isSingleAsset ? [] : (dashboardData.categoryCostBreakdown || []).map((c: any) => ({
           groupCode: c.categoryCode || 'Z',
           groupName: c.categoryName || c.category || 'General',
           componentCount: c.assessmentCount || c.count || 0,
@@ -496,7 +498,7 @@ export default function PortfolioReport() {
           avgConditionPercentage: c.avgConditionScore || 0,
           conditionDistribution: { good: 0, fair: 0, poor: 0, failed: 0 },
         })),
-        capitalForecast: (dashboardData.capitalForecast || []).map((f: any) => ({
+        capitalForecast: isSingleAsset ? [] : (dashboardData.capitalForecast || []).map((f: any) => ({
           year: f.year,
           immediateNeeds: Number(f.immediateNeeds || 0),
           shortTermNeeds: Number(f.shortTermNeeds || 0),
@@ -505,7 +507,7 @@ export default function PortfolioReport() {
           totalProjectedCost: Number(f.totalProjectedCost || f.total || 0),
           cumulativeCost: Number(f.cumulativeCost || f.cumulative || 0),
         })),
-        priorityMatrix: (dashboardData.priorityBreakdown || []).map((p: any) => ({
+        priorityMatrix: isSingleAsset ? [] : (dashboardData.priorityBreakdown || []).map((p: any) => ({
           priority: p.priority || 'Unknown',
           count: p.count || 0,
           totalCost: p.totalCost || 0,
@@ -640,6 +642,115 @@ export default function PortfolioReport() {
         } catch (actionError) {
           console.error('Failed to fetch action list data:', actionError);
         }
+      }
+
+      // For single asset mode, rebuild uniformatSummary, capitalForecast, and priorityMatrix from component data
+      if (isSingleAsset) {
+        setPdfGenerationStage('Building asset-specific report sections...');
+        setGenerationProgress(35);
+
+        // Fetch component data for this asset if not already fetched
+        let assetComponents = reportData.components;
+        if (assetComponents.length === 0) {
+          try {
+            const componentData = await trpcUtils.portfolioAnalytics.getComponentAssessments.fetch({
+              assetIds: config.selectedAssetId ? [config.selectedAssetId] : undefined,
+              includePhotos: false,
+              maxPhotosPerComponent: 0,
+              sortBy: 'uniformat',
+            });
+            assetComponents = componentData || [];
+          } catch (err) {
+            console.error('Failed to fetch component data for single asset sections:', err);
+          }
+        }
+
+        // Build UNIFORMAT summary from this asset's components
+        const uniformatMap = new Map<string, { code: string; name: string; count: number; repairCost: number; replacementCost: number; conditionScores: number[] }>();
+        const UNIFORMAT_NAMES: Record<string, string> = {
+          'A': 'Substructure', 'B': 'Shell', 'C': 'Interiors', 'D': 'Services',
+          'E': 'Equipment & Furnishings', 'F': 'Special Construction', 'G': 'Building Sitework', 'Z': 'General',
+        };
+        for (const c of assetComponents) {
+          const code = ((c as any).uniformatCode || (c as any).uniformatLevel1 || 'Z').substring(0, 1).toUpperCase();
+          const existing = uniformatMap.get(code) || { code, name: UNIFORMAT_NAMES[code] || 'Other', count: 0, repairCost: 0, replacementCost: 0, conditionScores: [] };
+          existing.count++;
+          existing.repairCost += Number((c as any).repairCost || (c as any).estimatedRepairCost || (c as any).totalCost || 0);
+          existing.replacementCost += Number((c as any).replacementCost || 0);
+          const condPct = (c as any).conditionPercentage;
+          if (condPct != null) existing.conditionScores.push(Number(condPct));
+          uniformatMap.set(code, existing);
+        }
+        reportData.uniformatSummary = Array.from(uniformatMap.values()).map(u => ({
+          groupCode: u.code,
+          groupName: u.name,
+          componentCount: u.count,
+          totalRepairCost: u.repairCost,
+          totalReplacementCost: u.replacementCost,
+          avgConditionPercentage: u.conditionScores.length > 0 ? Math.round(u.conditionScores.reduce((a, b) => a + b, 0) / u.conditionScores.length) : 0,
+          conditionDistribution: { good: 0, fair: 0, poor: 0, failed: 0 },
+        }));
+
+        // Build priority matrix from this asset's components (using action items)
+        const priorityMap = new Map<string, { count: number; totalCost: number }>();
+        for (const c of assetComponents) {
+          const priority = (c as any).priority || 'long_term';
+          const cost = Number((c as any).totalCost || (c as any).repairCost || (c as any).estimatedRepairCost || 0);
+          const existing = priorityMap.get(priority) || { count: 0, totalCost: 0 };
+          existing.count++;
+          existing.totalCost += cost;
+          priorityMap.set(priority, existing);
+        }
+        const totalPriorityCost = Array.from(priorityMap.values()).reduce((sum, p) => sum + p.totalCost, 0);
+        const priorityOrder = ['immediate', 'short_term', 'medium_term', 'long_term'];
+        reportData.priorityMatrix = priorityOrder
+          .filter(p => priorityMap.has(p))
+          .map(p => {
+            const data = priorityMap.get(p)!;
+            return {
+              priority: p,
+              count: data.count,
+              totalCost: data.totalCost,
+              percentageOfTotal: totalPriorityCost > 0 ? Math.round((data.totalCost / totalPriorityCost) * 100) : 0,
+            };
+          });
+
+        // Build capital forecast from this asset's needs breakdown
+        const assetImmediate = Number(selectedAsset?.immediateNeeds || 0);
+        const assetShortTerm = Number(selectedAsset?.shortTermNeeds || 0);
+        const assetMediumTerm = Number(selectedAsset?.mediumTermNeeds || 0);
+        const assetLongTerm = Number(selectedAsset?.longTermNeeds || 0);
+        const currentYear = new Date().getFullYear();
+        const forecastYears = config.capitalPlanningHorizon || 5;
+        const distributions = [
+          { immediate: 1.0, shortTerm: 0.2, mediumTerm: 0.0, longTerm: 0.0 },
+          { immediate: 0.0, shortTerm: 0.4, mediumTerm: 0.1, longTerm: 0.0 },
+          { immediate: 0.0, shortTerm: 0.4, mediumTerm: 0.3, longTerm: 0.0 },
+          { immediate: 0.0, shortTerm: 0.0, mediumTerm: 0.3, longTerm: 0.2 },
+          { immediate: 0.0, shortTerm: 0.0, mediumTerm: 0.3, longTerm: 0.3 },
+        ];
+        let cumulativeCost = 0;
+        reportData.capitalForecast = [];
+        for (let i = 0; i < forecastYears; i++) {
+          const dist = distributions[Math.min(i, distributions.length - 1)];
+          const yearImmediate = assetImmediate * dist.immediate;
+          const yearShortTerm = assetShortTerm * dist.shortTerm;
+          const yearMediumTerm = assetMediumTerm * dist.mediumTerm;
+          const yearLongTerm = assetLongTerm * dist.longTerm;
+          const yearTotal = yearImmediate + yearShortTerm + yearMediumTerm + yearLongTerm;
+          cumulativeCost += yearTotal;
+          reportData.capitalForecast.push({
+            year: currentYear + i,
+            immediateNeeds: Math.round(yearImmediate),
+            shortTermNeeds: Math.round(yearShortTerm),
+            mediumTermNeeds: Math.round(yearMediumTerm),
+            longTermNeeds: Math.round(yearLongTerm),
+            totalProjectedCost: Math.round(yearTotal),
+            cumulativeCost: Math.round(cumulativeCost),
+          });
+        }
+
+        console.log(`[PDF] Single asset mode: built ${reportData.uniformatSummary.length} UNIFORMAT groups, ${reportData.priorityMatrix.length} priority categories, ${reportData.capitalForecast.length} forecast years`);
       }
 
       // Generate the PDF with progress callback

@@ -5585,3 +5585,16 @@ Deployment is allowed only when:
 - [x] Fix preview panel config mapping (options.includePriorityMatrix → options.includePriorityRecommendations)
 - [x] Add standalone action list fetch when component assessments are disabled but action list is enabled
 - [x] All 14 unit tests pass
+
+## 🔥 Single Asset Report Shows Portfolio-Wide Data (Feb 7, 2026)
+
+- [x] Investigate how single asset mode filters data in handleExportPDF
+- [x] Fix PDF to show only selected asset's data when in single asset mode
+- [x] Report title/cover already correctly reflected single asset name
+- [x] Component assessments already filtered to selected asset via assetIds param
+- [x] Action list already filtered to selected asset via component data
+- [x] Fix capital forecast - rebuild from single asset's needs breakdown instead of portfolio-wide data
+- [x] Fix priority matrix - rebuild from single asset's component data instead of portfolio-wide priorityBreakdown
+- [x] Fix UNIFORMAT breakdown - rebuild from single asset's component data instead of portfolio-wide categoryCostBreakdown
+- [x] Executive summary metrics already correctly scoped to single asset
+- [x] All 17 unit tests pass
