@@ -420,14 +420,13 @@ export async function generateEnhancedPDF(
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
+  const isSingleAsset = data.summary.totalAssets === 1;
   const projectDetails = [
     ['Prepared For:', config.preparedFor || config.clientName || 'N/A'],
     ['Prepared By:', config.preparedBy || 'B3NMA'],
     ['Client Address:', config.clientAddress || 'N/A'],
-    ['Report Date:', config.reportDate || new Date().toLocaleDateString('en-CA', { 
-      year: 'numeric', month: 'long', day: 'numeric' 
-    })],
-    ['Total Assets:', data.summary.totalAssets.toString()],
+    ['Report Date:', config.reportDate ? new Date(config.reportDate).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })],
+    [isSingleAsset ? 'Asset:' : 'Total Assets:', isSingleAsset ? (data.assetMetrics[0]?.assetName || data.summary.totalAssets.toString()) : data.summary.totalAssets.toString()],
   ];
   
   let detailY = yPos + 20;
@@ -448,12 +447,12 @@ export async function generateEnhancedPDF(
   
   yPos += 10;
   const summaryMetrics = [
-    { label: 'Portfolio FCI', value: formatPercentage(data.summary.portfolioFCI, 2), color: getFCIColor(data.summary.portfolioFCI) },
+    { label: isSingleAsset ? 'Asset FCI' : 'Portfolio FCI', value: formatPercentage(data.summary.portfolioFCI, 2), color: getFCIColor(data.summary.portfolioFCI) },
     { label: 'Condition Rating', value: data.summary.portfolioFCIRating },
-    { label: 'Total CRV', value: formatCurrency(data.summary.totalCurrentReplacementValue) },
+    { label: isSingleAsset ? 'CRV' : 'Total CRV', value: formatCurrency(data.summary.totalCurrentReplacementValue) },
     { label: 'Deferred Maintenance', value: formatCurrency(data.summary.totalDeferredMaintenanceCost) },
     { label: 'Funding Gap', value: formatCurrency(data.summary.fundingGap) },
-    { label: 'Total Assessments', value: data.summary.totalAssessments.toString() },
+    { label: isSingleAsset ? 'Components' : 'Total Assessments', value: data.summary.totalAssessments.toString() },
   ];
 
   const metricBoxWidth = (contentWidth - 10) / 3;
@@ -491,41 +490,79 @@ export async function generateEnhancedPDF(
   if (config.includeAssetOverview && data.assetMetrics.length > 0) {
     doc.addPage();
     addHeader();
-    addSectionTitle('Asset Portfolio Overview');
+    addSectionTitle(isSingleAsset ? 'Asset Overview' : 'Asset Portfolio Overview');
 
-    const assetTableData = data.assetMetrics.map(asset => [
-      asset.assetName.substring(0, 25) + (asset.assetName.length > 25 ? '...' : ''),
-      formatCurrency(asset.currentReplacementValue),
-      formatCurrency(asset.deferredMaintenanceCost),
-      formatPercentage(asset.fci, 1),
-      asset.fciRating,
-      asset.priorityScore.toString()
-    ]);
+    if (isSingleAsset && data.assetMetrics.length === 1) {
+      // Single asset: show detailed building info instead of a table
+      const asset = data.assetMetrics[0];
+      const detailPairs = [
+        ['Building Name', asset.assetName],
+        ['Address', asset.address || 'N/A'],
+        ['Year Built', asset.yearBuilt?.toString() || 'N/A'],
+        ['Gross Floor Area', asset.grossFloorArea ? `${asset.grossFloorArea.toLocaleString()} sq ft` : 'N/A'],
+        ['Current Replacement Value', formatCurrency(asset.currentReplacementValue)],
+        ['Deferred Maintenance Cost', formatCurrency(asset.deferredMaintenanceCost)],
+        ['Facility Condition Index', `${formatPercentage(asset.fci, 1)} (${asset.fciRating})`],
+        ['Overall Condition', `${asset.conditionRating} (${asset.conditionScore}%)`],
+        ['Components Assessed', asset.assessmentCount.toString()],
+        ['Deficiencies', asset.deficiencyCount.toString()],
+        ['Average Remaining Life', `${asset.averageRemainingLife} years`],
+        ['Immediate Needs', formatCurrency(asset.immediateNeeds)],
+        ['Short-Term Needs (1-3 yr)', formatCurrency(asset.shortTermNeeds)],
+        ['Medium-Term Needs (3-7 yr)', formatCurrency(asset.mediumTermNeeds)],
+        ['Long-Term Needs (7+ yr)', formatCurrency(asset.longTermNeeds)],
+      ];
 
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Asset Name', 'CRV', 'Deferred Maint.', 'FCI', 'Rating', 'Priority']],
-      body: assetTableData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: colors.primary,
-        textColor: colors.white,
-        fontStyle: 'bold',
-        fontSize: 9
-      },
-      bodyStyles: {
-        fontSize: 8
-      },
-      columnStyles: {
-        0: { cellWidth: 50 },
-        1: { halign: 'right' },
-        2: { halign: 'right' },
-        3: { halign: 'right' },
-        4: { halign: 'center' },
-        5: { halign: 'center' }
-      },
-      margin: { left: margin, right: margin }
-    });
+      autoTable(doc, {
+        startY: yPos,
+        body: detailPairs.map(([label, value]) => [label, value]),
+        theme: 'plain',
+        bodyStyles: {
+          fontSize: 9
+        },
+        columnStyles: {
+          0: { cellWidth: 60, fontStyle: 'bold', textColor: colors.secondary },
+          1: { cellWidth: contentWidth - 60 }
+        },
+        margin: { left: margin, right: margin },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+      });
+    } else {
+      // Portfolio: show summary table
+      const assetTableData = data.assetMetrics.map(asset => [
+        asset.assetName.substring(0, 25) + (asset.assetName.length > 25 ? '...' : ''),
+        formatCurrency(asset.currentReplacementValue),
+        formatCurrency(asset.deferredMaintenanceCost),
+        formatPercentage(asset.fci, 1),
+        asset.fciRating,
+        asset.priorityScore.toString()
+      ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Asset Name', 'CRV', 'Deferred Maint.', 'FCI', 'Rating', 'Priority']],
+        body: assetTableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: colors.primary,
+          textColor: colors.white,
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8
+        },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          1: { halign: 'right' },
+          2: { halign: 'right' },
+          3: { halign: 'right' },
+          4: { halign: 'center' },
+          5: { halign: 'center' }
+        },
+        margin: { left: margin, right: margin }
+      });
+    }
   }
 
   onProgress?.('Generating component assessments...', 50);
@@ -547,18 +584,21 @@ export async function generateEnhancedPDF(
       groupedComponents.set(groupKey, existing);
     }
 
-    // Sort groups by UNIFORMAT order
+    // Sort groups by UNIFORMAT order (groupKey may be full string like 'A - Substructure' or just 'A')
     const sortedGroups = Array.from(groupedComponents.entries()).sort((a, b) => {
-      const orderA = 'ABCDEFG'.indexOf(a[0]);
-      const orderB = 'ABCDEFG'.indexOf(b[0]);
+      const letterA = a[0].charAt(0).toUpperCase();
+      const letterB = b[0].charAt(0).toUpperCase();
+      const orderA = 'ABCDEFG'.indexOf(letterA);
+      const orderB = 'ABCDEFG'.indexOf(letterB);
       return orderA - orderB;
     });
 
     let componentIndex = 0;
     const totalComponents = data.components.length;
 
-    for (const [groupCode, components] of sortedGroups) {
-      const groupName = UNIFORMAT_GROUPS[groupCode] || 'OTHER';
+    for (const [groupKey, components] of sortedGroups) {
+      const groupLetter = groupKey.charAt(0).toUpperCase();
+      const groupName = UNIFORMAT_GROUPS[groupLetter] || groupKey;
       
       // Group header
       checkPageBreak(30);
@@ -567,7 +607,7 @@ export async function generateEnhancedPDF(
       doc.setTextColor(...colors.white);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${groupCode} - ${groupName}`, margin + 3, yPos + 6);
+      doc.text(`${groupLetter} - ${groupName}`, margin + 3, yPos + 6);
       yPos += 12;
 
       // Components in this group
@@ -846,7 +886,7 @@ export async function generateEnhancedPDF(
   if (config.includeCapitalForecast && data.capitalForecast.length > 0) {
     doc.addPage();
     addHeader();
-    addSectionTitle('5-Year Capital Renewal Forecast');
+    addSectionTitle(`${data.capitalForecast.length}-Year Capital Renewal Forecast`);
 
     const forecastTableData = data.capitalForecast.map(year => [
       year.year.toString(),

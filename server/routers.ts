@@ -43,6 +43,7 @@ import { undoRouter } from "./routers/undoRouter";
 import { portfolioReportRouter } from "./routers/portfolioReport.router";
 import { portfolioAnalyticsRouter } from "./routers/portfolioAnalytics.router";
 import { portfolioAnalyticsEnhancedRouter } from "./routers/portfolioAnalyticsEnhanced.router";
+import { singleAssetReportRouter } from "./routers/singleAssetReport.router";
 import { backupRouter } from "./routers/backup.router";
 import { economicIndicatorsRouter } from "./economicIndicatorsRouter";
 import { rsmeansRouter } from "./rsmeansRouter";
@@ -107,6 +108,7 @@ export const appRouter = router({
   portfolioReport: portfolioReportRouter,
   portfolioAnalytics: portfolioAnalyticsRouter,
   portfolioAnalyticsEnhanced: portfolioAnalyticsEnhancedRouter,
+  singleAssetReport: singleAssetReportRouter,
   economicIndicators: economicIndicatorsRouter,
   rsmeans: rsmeansRouter,
   portfolioTargets: portfolioTargetsRouter,

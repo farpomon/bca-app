@@ -5617,3 +5617,17 @@ Deployment is allowed only when:
 - [x] Cover page, executive summary, asset table already correctly scoped
 - [x] Components, action list, capital forecast, UNIFORMAT, priority matrix now correctly filtered via assetIds
 - [x] All 17 unit tests pass
+
+## 🔥 Single Asset Report PDF Not Generating (Feb 7, 2026)
+- [x] Diagnose why Download PDF button does nothing - no errors, no output
+- [x] Root cause: TypeScript error in enhancedPdfGenerator.ts - `isSingleAsset` variable used before declaration (line 428 uses it, declared on line 448)
+- [x] This caused the entire PDF generator module to fail to load silently, making the button click handler a no-op
+- [x] Fix: Moved `const isSingleAsset = data.summary.totalAssets === 1` declaration before its first usage
+- [x] Fix: Capital forecast now distributes costs by priority when actionYear is null (critical=year1, high=years2-3, medium=years4-5, low=years6-7)
+- [x] Fix: Needs breakdown also uses priority-based distribution when actionYear is null
+- [x] Verified PDF generates successfully with correct data for Fire Station No. 1
+- [x] Cover page shows "Asset:" label, formatted date, Asset FCI, Components count
+- [x] Asset Overview shows detailed building info table with needs breakdown
+- [x] Capital forecast shows 20-year horizon with costs properly distributed across years
+- [x] UNIFORMAT breakdown shows A-G categories with proper codes and names
+- [x] Priority matrix shows correct counts and costs per priority level
