@@ -150,7 +150,11 @@ interface ValidationErrors {
   preparedFor?: string;
 }
 
-export default function PortfolioReport() {
+interface PortfolioReportProps {
+  fixedScope?: 'single_asset' | 'portfolio';
+}
+
+export default function PortfolioReport({ fixedScope }: PortfolioReportProps = {}) {
   const { user, loading: authLoading } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -186,7 +190,7 @@ export default function PortfolioReport() {
     includeGlossary: false,
     includeMethodology: false,
     // Metadata
-    reportTitle: "Portfolio Condition Assessment Report",
+    reportTitle: fixedScope === 'single_asset' ? 'Building Condition Assessment Report' : 'Portfolio Condition Assessment Report',
     preparedBy: user?.name || "B3NMA",
     preparedFor: "",
     additionalNotes: "",
@@ -194,7 +198,7 @@ export default function PortfolioReport() {
     clientLogo: null,
     footerText: "CONFIDENTIAL - For internal use only",
     // Report Scope
-    reportScope: 'portfolio' as const,
+    reportScope: (fixedScope || 'portfolio') as 'single_asset' | 'portfolio',
     selectedAssetId: undefined,
     // Capital Planning
     capitalPlanningHorizon: 20,
@@ -909,9 +913,14 @@ export default function PortfolioReport() {
                   </Link>
                   <Separator orientation="vertical" className="h-6" />
                   <div>
-                    <h1 className="text-xl font-semibold">Generate Portfolio Report</h1>
+                    <h1 className="text-xl font-semibold">
+                      {fixedScope === 'single_asset' ? 'Generate Single Asset Report' : fixedScope === 'portfolio' ? 'Generate Portfolio-Wide Report' : 'Generate Report'}
+                    </h1>
                     <p className="text-sm text-muted-foreground">
-                      Create a professional portfolio condition assessment report (PDF)
+                      {fixedScope === 'single_asset' 
+                        ? 'Create a detailed BCA report for a specific building (PDF)'
+                        : 'Create a professional portfolio condition assessment report (PDF)'
+                      }
                     </p>
                   </div>
                 </div>
@@ -984,77 +993,91 @@ export default function PortfolioReport() {
               );
             })()}
 
-            {/* Report Scope Selection */}
+            {/* Report Configuration */}
             <Card className="mb-6">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
                   <div>
-                    <CardTitle>Report Scope</CardTitle>
-                    <CardDescription>Choose what to include in your report</CardDescription>
+                    <CardTitle>
+                      {fixedScope === 'single_asset' ? 'Asset Selection' : fixedScope === 'portfolio' ? 'Report Settings' : 'Report Scope'}
+                    </CardTitle>
+                    <CardDescription>
+                      {fixedScope === 'single_asset' 
+                        ? 'Select the building to generate a detailed BCA report for'
+                        : fixedScope === 'portfolio'
+                          ? 'Configure your portfolio-wide report settings'
+                          : 'Choose what to include in your report'
+                      }
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Single Asset Report */}
-                  <div 
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      config.reportScope === 'single_asset' 
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => setConfig({ ...config, reportScope: 'single_asset' })}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-full ${config.reportScope === 'single_asset' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                        <Building2 className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Single Asset Report</h4>
-                        <p className="text-sm text-muted-foreground">Generate a detailed BCA report for one specific building</p>
-                      </div>
-                    </div>
-                    {config.reportScope === 'single_asset' && (
-                      <div className="mt-4 pt-4 border-t">
-                        <Label className="text-sm font-medium">Select Asset</Label>
-                        <select
-                          className="w-full mt-2 p-2 border rounded-md bg-background"
-                          value={config.selectedAssetId || ''}
-                          onChange={(e) => setConfig({ ...config, selectedAssetId: e.target.value ? Number(e.target.value) : undefined })}
-                        >
-                          <option value="">Choose an asset...</option>
-                          {(dashboardData?.buildingComparison || []).map((building: any) => (
-                            <option key={building.assetId} value={building.assetId}>
-                              {building.assetName}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                {/* Asset Selector for Single Asset mode */}
+                {config.reportScope === 'single_asset' && (
+                  <div className="mb-6">
+                    <Label className="text-sm font-medium">Select Asset <span className="text-destructive">*</span></Label>
+                    <select
+                      className="w-full mt-2 p-2.5 border rounded-md bg-background text-sm"
+                      value={config.selectedAssetId || ''}
+                      onChange={(e) => setConfig({ ...config, selectedAssetId: e.target.value ? Number(e.target.value) : undefined })}
+                    >
+                      <option value="">Choose an asset...</option>
+                      {(dashboardData?.buildingComparison || []).map((building: any) => (
+                        <option key={building.assetId} value={building.assetId}>
+                          {building.assetName}
+                        </option>
+                      ))}
+                    </select>
+                    {!config.selectedAssetId && (
+                      <p className="text-xs text-destructive mt-1">Please select an asset to generate the report</p>
                     )}
                   </div>
-                  
-                  {/* Portfolio-Wide Report */}
-                  <div 
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      config.reportScope === 'portfolio' 
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => setConfig({ ...config, reportScope: 'portfolio', selectedAssetId: undefined })}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-full ${config.reportScope === 'portfolio' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                        <Layers className="h-5 w-5" />
+                )}
+
+                {/* Scope toggle only shown when no fixedScope */}
+                {!fixedScope && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div 
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        config.reportScope === 'single_asset' 
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setConfig({ ...config, reportScope: 'single_asset' })}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${config.reportScope === 'single_asset' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                          <Building2 className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">Single Asset Report</h4>
+                          <p className="text-sm text-muted-foreground">Generate a detailed BCA report for one specific building</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-semibold">Portfolio-Wide Report</h4>
-                        <p className="text-sm text-muted-foreground">Generate a comprehensive report covering all assets in your portfolio</p>
+                    </div>
+                    <div 
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        config.reportScope === 'portfolio' 
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => setConfig({ ...config, reportScope: 'portfolio', selectedAssetId: undefined })}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${config.reportScope === 'portfolio' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                          <Layers className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">Portfolio-Wide Report</h4>
+                          <p className="text-sm text-muted-foreground">Generate a comprehensive report covering all assets in your portfolio</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                
+                )}
+
                 {/* Capital Planning Horizon */}
                 <div className="mt-6 pt-4 border-t">
                   <div className="flex items-center justify-between">

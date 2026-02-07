@@ -282,7 +282,7 @@ export default function PortfolioAnalytics() {
               <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Link href="/portfolio-report">
+            <Link href="/portfolio-wide-report">
               <Button>
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Report

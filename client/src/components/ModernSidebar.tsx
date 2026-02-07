@@ -67,7 +67,8 @@ export function ModernSidebar() {
         { icon: LineChart, label: "Predictions", path: "/predictions" },
         { icon: Target, label: "Prioritization", path: "/prioritization" },
         { icon: Calculator, label: "Capital Budget", path: "/capital-budget" },
-        { icon: FileCheck, label: "Portfolio Report", path: "/portfolio-report" },
+        { icon: Building2, label: "Single Asset Report", path: "/single-asset-report" },
+        { icon: FileCheck, label: "Portfolio-Wide Report", path: "/portfolio-wide-report" },
       ],
     },
     {

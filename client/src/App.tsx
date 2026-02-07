@@ -29,6 +29,8 @@ import PortfolioAnalytics from "./pages/PortfolioAnalytics";
 import PortfolioAnalyticsEnhanced from "./pages/PortfolioAnalyticsEnhanced";
 import PortfolioMapPage from "./pages/PortfolioMapPage";
 import PortfolioReport from "./pages/PortfolioReport";
+import SingleAssetReport from "./pages/SingleAssetReport";
+import PortfolioWideReport from "./pages/PortfolioWideReport";
 import Admin from "./pages/Admin";
 import AdminGovernance from "./pages/AdminGovernance";
 import EconomicIndicators from "./pages/EconomicIndicators";
@@ -111,6 +113,8 @@ function Router() {
       <Route path={"/portfolio-analytics-enhanced"} component={PortfolioAnalyticsEnhanced} />
       <Route path={"/portfolio-map"} component={PortfolioMapPage} />
       <Route path={"/portfolio-report"} component={PortfolioReport} />
+      <Route path={"/single-asset-report"} component={SingleAssetReport} />
+      <Route path={"/portfolio-wide-report"} component={PortfolioWideReport} />
       <Route path={"/admin/compliance"} component={ComplianceDashboard} />
       <Route path={"/admin/data-security"} component={DataSecurity} />
       <Route path={"/admin/economic-indicators"} component={EconomicIndicators} />

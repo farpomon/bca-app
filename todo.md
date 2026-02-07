@@ -5598,3 +5598,14 @@ Deployment is allowed only when:
 - [x] Fix UNIFORMAT breakdown - rebuild from single asset's component data instead of portfolio-wide categoryCostBreakdown
 - [x] Executive summary metrics already correctly scoped to single asset
 - [x] All 17 unit tests pass
+
+## 🔧 Split Report Page into Two Separate Pages (Feb 7, 2026)
+- [x] Create dedicated Single Asset Report page at /single-asset-report
+- [x] Create dedicated Portfolio-Wide Report page at /portfolio-wide-report
+- [x] Add both as separate dropdown items under Reporting & Analytics navigation
+- [x] Scope toggle hidden when fixedScope prop is set; shown only on legacy /portfolio-report route
+- [x] Single Asset Report page shows asset selector with mandatory field highlighting
+- [x] Portfolio-Wide Report page shows report settings without asset selector
+- [x] Update routing in App.tsx with new routes
+- [x] Update DashboardLayout and ModernSidebar navigation items
+- [x] Update PortfolioAnalytics link to point to /portfolio-wide-report
