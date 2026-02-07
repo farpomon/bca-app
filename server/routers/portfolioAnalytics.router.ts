@@ -206,12 +206,19 @@ export const portfolioAnalyticsRouter = router({
         return [];
       }
       
-      console.log('[getComponentAssessments] Running direct SQL query...');
+      const assetIds = input?.assetIds;
+      console.log('[getComponentAssessments] Running direct SQL query...', assetIds ? `filtering by ${assetIds.length} asset(s)` : 'all assets');
+      
+      // Build the asset filter condition
+      const assetFilter = assetIds && assetIds.length > 0
+        ? sql`AND a.id IN (${sql.raw(assetIds.join(','))})`
+        : sql``;
       
       // Execute the main query
       // FIXED: Use conditionRating (1-5 scale) instead of condition (mostly NULL)
       // FIXED: Use estimatedRepairCost instead of repairCost/renewCost (both NULL)
       // FIXED: Derive conditionPercentage from conditionRating when conditionPercentage is NULL
+      // FIXED: Filter by assetIds when provided (for single asset reports)
       const result = await db.execute(sql`
         SELECT 
           ass.id,
@@ -290,6 +297,7 @@ export const portfolioAnalyticsRouter = router({
         WHERE p.deletedAt IS NULL
           AND ass.deletedAt IS NULL
           AND (ass.hidden = 0 OR ass.hidden IS NULL)
+          ${assetFilter}
         ORDER BY ass.componentCode ASC, a.name ASC
       `);
       

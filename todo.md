@@ -5609,3 +5609,11 @@ Deployment is allowed only when:
 - [x] Update routing in App.tsx with new routes
 - [x] Update DashboardLayout and ModernSidebar navigation items
 - [x] Update PortfolioAnalytics link to point to /portfolio-wide-report
+
+## 🔥 Single Asset Report Still Shows Portfolio Data (Feb 7, 2026)
+- [x] Investigate why single asset report PDF still contains portfolio-wide data
+- [x] Root cause: getComponentAssessments SQL query accepted assetIds parameter but NEVER used it in WHERE clause
+- [x] Fix: Added dynamic asset filter `AND a.id IN (...)` to the SQL query when assetIds are provided
+- [x] Cover page, executive summary, asset table already correctly scoped
+- [x] Components, action list, capital forecast, UNIFORMAT, priority matrix now correctly filtered via assetIds
+- [x] All 17 unit tests pass
