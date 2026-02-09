@@ -189,13 +189,14 @@ export async function calculateTrends(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const dateFormat = periodType === "month" ? "%Y-%m" 
-    : periodType === "quarter" ? "CONCAT(YEAR(me.dateCompleted), '-Q', QUARTER(me.dateCompleted))"
-    : "%Y";
+  const dateFormat = periodType === "month" ? "%Y-%m" : "%Y";
+  const periodExpr = periodType === "quarter" 
+    ? "CONCAT(YEAR(me.dateCompleted), '-Q', QUARTER(me.dateCompleted))" 
+    : `DATE_FORMAT(me.dateCompleted, '${dateFormat}')`;
 
   const result = await db.execute(sql.raw(`
     SELECT 
-      DATE_FORMAT(me.dateCompleted, '${dateFormat}') as period,
+      ${periodExpr} as period,
       SUM(me.actualCost) as totalCosts,
       SUM(CASE WHEN me.actionType IN ('repair', 'rehabilitate', 'preventive') THEN me.actualCost ELSE 0 END) as maintenanceCosts,
       SUM(CASE WHEN me.actionType IN ('replace', 'upgrade') THEN me.actualCost ELSE 0 END) as capitalCosts

@@ -259,3 +259,16 @@ export async function auditDelete<T>(
     throw error;
   }
 }
+
+/**
+ * Convenience wrapper for logging audit events.
+ * Returns { success: true } on success, { success: false, error } on failure.
+ */
+export async function logAuditEvent(params: AuditLogParams): Promise<{ success: boolean; error?: string }> {
+  try {
+    await createAuditLog(params);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}

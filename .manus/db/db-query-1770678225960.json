@@ -1,0 +1,382 @@
+{
+  "query": "SELECT COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'projects' ORDER BY ORDINAL_POSITION",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'projects' ORDER BY ORDINAL_POSITION",
+  "rows": [
+    {
+      "COLUMN_NAME": "id",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "municipalityId",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "name",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "description",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "text"
+    },
+    {
+      "COLUMN_NAME": "projectNumber",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(100)"
+    },
+    {
+      "COLUMN_NAME": "status",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "draft",
+      "COLUMN_TYPE": "enum('draft','in_progress','under_review','completed','archived','deleted')"
+    },
+    {
+      "COLUMN_NAME": "priority",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "medium",
+      "COLUMN_TYPE": "enum('low','medium','high','critical')"
+    },
+    {
+      "COLUMN_NAME": "startDate",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "endDate",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "dueDate",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "budget",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(15,2)"
+    },
+    {
+      "COLUMN_NAME": "actualCost",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(15,2)"
+    },
+    {
+      "COLUMN_NAME": "projectManagerId",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "clientContact",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "clientEmail",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(320)"
+    },
+    {
+      "COLUMN_NAME": "clientPhone",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(50)"
+    },
+    {
+      "COLUMN_NAME": "notes",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "text"
+    },
+    {
+      "COLUMN_NAME": "tags",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "json"
+    },
+    {
+      "COLUMN_NAME": "createdById",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "createdAt",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "updatedAt",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "company",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "uniqueId",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(50)"
+    },
+    {
+      "COLUMN_NAME": "streetNumber",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(20)"
+    },
+    {
+      "COLUMN_NAME": "streetAddress",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "unitNumber",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(50)"
+    },
+    {
+      "COLUMN_NAME": "city",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "postalCode",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(20)"
+    },
+    {
+      "COLUMN_NAME": "province",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(100)"
+    },
+    {
+      "COLUMN_NAME": "latitude",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(10,7)"
+    },
+    {
+      "COLUMN_NAME": "longitude",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(10,7)"
+    },
+    {
+      "COLUMN_NAME": "deletedAt",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "deletedBy",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "buildingCodeId",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "userId",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "1",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "address",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "text"
+    },
+    {
+      "COLUMN_NAME": "clientName",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "propertyType",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(100)"
+    },
+    {
+      "COLUMN_NAME": "constructionType",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(100)"
+    },
+    {
+      "COLUMN_NAME": "yearBuilt",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "numberOfUnits",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "numberOfStories",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "buildingCode",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(100)"
+    },
+    {
+      "COLUMN_NAME": "assessmentDate",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "observations",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "text"
+    },
+    {
+      "COLUMN_NAME": "overallConditionScore",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "overallFciScore",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "overallConditionRating",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(50)"
+    },
+    {
+      "COLUMN_NAME": "ci",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(5,2)"
+    },
+    {
+      "COLUMN_NAME": "fci",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(5,4)"
+    },
+    {
+      "COLUMN_NAME": "deferredMaintenanceCost",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(15,2)"
+    },
+    {
+      "COLUMN_NAME": "currentReplacementValue",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "decimal(15,2)"
+    },
+    {
+      "COLUMN_NAME": "lastCalculatedAt",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "designLife",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "int(11)"
+    },
+    {
+      "COLUMN_NAME": "endOfLifeDate",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    },
+    {
+      "COLUMN_NAME": "holdingDepartment",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "propertyManager",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(255)"
+    },
+    {
+      "COLUMN_NAME": "managerEmail",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(320)"
+    },
+    {
+      "COLUMN_NAME": "managerPhone",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(50)"
+    },
+    {
+      "COLUMN_NAME": "facilityType",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "varchar(100)"
+    },
+    {
+      "COLUMN_NAME": "occupancyStatus",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "enum('occupied','vacant','partial')"
+    },
+    {
+      "COLUMN_NAME": "criticalityLevel",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "COLUMN_TYPE": "enum('critical','important','standard')"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\tIS_NULLABLE\tCOLUMN_DEFAULT\tCOLUMN_TYPE\nid\tNO\tNULL\tint(11)\nmunicipalityId\tNO\tNULL\tint(11)\nname\tNO\tNULL\tvarchar(255)\ndescription\tYES\tNULL\ttext\nprojectNumber\tNO\tNULL\tvarchar(100)\nstatus\tNO\tdraft\tenum('draft','in_progress','under_review','completed','archived','deleted')\npriority\tYES\tmedium\tenum('low','medium','high','critical')\nstartDate\tYES\tNULL\ttimestamp\nendDate\tYES\tNULL\ttimestamp\ndueDate\tYES\tNULL\ttimestamp\nbudget\tYES\tNULL\tdecimal(15,2)\nactualCost\tYES\tNULL\tdecimal(15,2)\nprojectManagerId\tYES\tNULL\tint(11)\nclientContact\tYES\tNULL\tvarchar(255)\nclientEmail\tYES\tNULL\tvarchar(320)\nclientPhone\tYES\tNULL\tvarchar(50)\nnotes\tYES\tNULL\ttext\ntags\tYES\tNULL\tjson\ncreatedById\tYES\tNULL\tint(11)\ncreatedAt\tNO\tCURRENT_TIMESTAMP\ttimestamp\nupdatedAt\tNO\tCURRENT_TIMESTAMP\ttimestamp\ncompany\tYES\tNULL\tvarchar(255)\nuniqueId\tYES\tNULL\tvarchar(50)\nstreetNumber\tYES\tNULL\tvarchar(20)\nstreetAddress\tYES\tNULL\tvarchar(255)\nunitNumber\tYES\tNULL\tvarchar(50)\ncity\tYES\tNULL\tvarchar(255)\npostalCode\tYES\tNULL\tvarchar(20)\nprovince\tYES\tNULL\tvarchar(100)\nlatitude\tYES\tNULL\tdecimal(10,7)\nlongitude\tYES\tNULL\tdecimal(10,7)\ndeletedAt\tYES\tNULL\ttimestamp\ndeletedBy\tYES\tNULL\tint(11)\nbuildingCodeId\tYES\tNULL\tint(11)\nuserId\tNO\t1\tint(11)\naddress\tYES\tNULL\ttext\nclientName\tYES\tNULL\tvarchar(255)\npropertyType\tYES\tNULL\tvarchar(100)\nconstructionType\tYES\tNULL\tvarchar(100)\nyearBuilt\tYES\tNULL\tint(11)\nnumberOfUnits\tYES\tNULL\tint(11)\nnumberOfStories\tYES\tNULL\tint(11)\nbuildingCode\tYES\tNULL\tvarchar(100)\nassessmentDate\tYES\tNULL\ttimestamp\nobservations\tYES\tNULL\ttext\noverallConditionScore\tYES\tNULL\tint(11)\noverallFciScore\tYES\tNULL\tint(11)\noverallConditionRating\tYES\tNULL\tvarchar(50)\nci\tYES\tNULL\tdecimal(5,2)\nfci\tYES\tNULL\tdecimal(5,4)\ndeferredMaintenanceCost\tYES\tNULL\tdecimal(15,2)\ncurrentReplacementValue\tYES\tNULL\tdecimal(15,2)\nlastCalculatedAt\tYES\tNULL\ttimestamp\ndesignLife\tYES\tNULL\tint(11)\nendOfLifeDate\tYES\tNULL\ttimestamp\nholdingDepartment\tYES\tNULL\tvarchar(255)\npropertyManager\tYES\tNULL\tvarchar(255)\nmanagerEmail\tYES\tNULL\tvarchar(320)\nmanagerPhone\tYES\tNULL\tvarchar(50)\nfacilityType\tYES\tNULL\tvarchar(100)\noccupancyStatus\tYES\tNULL\tenum('occupied','vacant','partial')\ncriticalityLevel\tYES\tNULL\tenum('critical','important','standard')\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

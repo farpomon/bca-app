@@ -1,0 +1,457 @@
+{
+  "query": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME",
+  "rows": [
+    {
+      "TABLE_NAME": "__drizzle_migrations"
+    },
+    {
+      "TABLE_NAME": "access_requests"
+    },
+    {
+      "TABLE_NAME": "action_templates"
+    },
+    {
+      "TABLE_NAME": "activityLog"
+    },
+    {
+      "TABLE_NAME": "assessmentComponents"
+    },
+    {
+      "TABLE_NAME": "assessment_actions"
+    },
+    {
+      "TABLE_NAME": "assessment_deletion_log"
+    },
+    {
+      "TABLE_NAME": "assessment_documents"
+    },
+    {
+      "TABLE_NAME": "assessment_versions"
+    },
+    {
+      "TABLE_NAME": "assessments"
+    },
+    {
+      "TABLE_NAME": "assetCategories"
+    },
+    {
+      "TABLE_NAME": "asset_documents"
+    },
+    {
+      "TABLE_NAME": "asset_ratings"
+    },
+    {
+      "TABLE_NAME": "asset_timeline_events"
+    },
+    {
+      "TABLE_NAME": "assets"
+    },
+    {
+      "TABLE_NAME": "audit_log"
+    },
+    {
+      "TABLE_NAME": "audit_logs"
+    },
+    {
+      "TABLE_NAME": "backup_schedules"
+    },
+    {
+      "TABLE_NAME": "benchmark_data"
+    },
+    {
+      "TABLE_NAME": "budget_allocations"
+    },
+    {
+      "TABLE_NAME": "building_codes"
+    },
+    {
+      "TABLE_NAME": "building_components"
+    },
+    {
+      "TABLE_NAME": "building_performance_factors"
+    },
+    {
+      "TABLE_NAME": "building_sections"
+    },
+    {
+      "TABLE_NAME": "building_type_templates"
+    },
+    {
+      "TABLE_NAME": "bulk_operation_history"
+    },
+    {
+      "TABLE_NAME": "bulk_operation_snapshots"
+    },
+    {
+      "TABLE_NAME": "bulk_service_life_updates"
+    },
+    {
+      "TABLE_NAME": "bulk_update_affected_items"
+    },
+    {
+      "TABLE_NAME": "canadian_grid_carbon_data"
+    },
+    {
+      "TABLE_NAME": "capitalProjects"
+    },
+    {
+      "TABLE_NAME": "capital_budget_cycles"
+    },
+    {
+      "TABLE_NAME": "cash_flow_projections"
+    },
+    {
+      "TABLE_NAME": "chat_context_cache"
+    },
+    {
+      "TABLE_NAME": "chat_messages"
+    },
+    {
+      "TABLE_NAME": "chat_sessions"
+    },
+    {
+      "TABLE_NAME": "chatbot_feedback"
+    },
+    {
+      "TABLE_NAME": "chatbot_sessions"
+    },
+    {
+      "TABLE_NAME": "ci_fci_snapshots"
+    },
+    {
+      "TABLE_NAME": "city_cost_factors"
+    },
+    {
+      "TABLE_NAME": "cleanup_reports"
+    },
+    {
+      "TABLE_NAME": "cof_factors"
+    },
+    {
+      "TABLE_NAME": "comments"
+    },
+    {
+      "TABLE_NAME": "companies"
+    },
+    {
+      "TABLE_NAME": "company_access_codes"
+    },
+    {
+      "TABLE_NAME": "company_page_visibility"
+    },
+    {
+      "TABLE_NAME": "company_users"
+    },
+    {
+      "TABLE_NAME": "component_deterioration_config"
+    },
+    {
+      "TABLE_NAME": "component_history"
+    },
+    {
+      "TABLE_NAME": "consultant_submissions"
+    },
+    {
+      "TABLE_NAME": "conversations"
+    },
+    {
+      "TABLE_NAME": "cost_estimates"
+    },
+    {
+      "TABLE_NAME": "criteria_audit_log"
+    },
+    {
+      "TABLE_NAME": "criteria_objective_links"
+    },
+    {
+      "TABLE_NAME": "criteria_presets"
+    },
+    {
+      "TABLE_NAME": "critical_equipment"
+    },
+    {
+      "TABLE_NAME": "custom_components"
+    },
+    {
+      "TABLE_NAME": "custom_vocabulary"
+    },
+    {
+      "TABLE_NAME": "dashboard_configs"
+    },
+    {
+      "TABLE_NAME": "data_access_requests"
+    },
+    {
+      "TABLE_NAME": "data_disposal_requests"
+    },
+    {
+      "TABLE_NAME": "data_integrity_metrics"
+    },
+    {
+      "TABLE_NAME": "data_residency_settings"
+    },
+    {
+      "TABLE_NAME": "data_retention_policies"
+    },
+    {
+      "TABLE_NAME": "database_backups"
+    },
+    {
+      "TABLE_NAME": "deficiencies"
+    },
+    {
+      "TABLE_NAME": "deficiency_versions"
+    },
+    {
+      "TABLE_NAME": "design_service_life_values"
+    },
+    {
+      "TABLE_NAME": "deterioration_curves"
+    },
+    {
+      "TABLE_NAME": "documents"
+    },
+    {
+      "TABLE_NAME": "economic_indicators"
+    },
+    {
+      "TABLE_NAME": "email_delivery_log"
+    },
+    {
+      "TABLE_NAME": "embodied_carbon_materials"
+    },
+    {
+      "TABLE_NAME": "emissions_data"
+    },
+    {
+      "TABLE_NAME": "encryption_key_metadata"
+    },
+    {
+      "TABLE_NAME": "esg_metrics_history"
+    },
+    {
+      "TABLE_NAME": "esg_rating_thresholds"
+    },
+    {
+      "TABLE_NAME": "esg_scores"
+    },
+    {
+      "TABLE_NAME": "facility_models"
+    },
+    {
+      "TABLE_NAME": "financial_forecasts"
+    },
+    {
+      "TABLE_NAME": "generated_report_sections"
+    },
+    {
+      "TABLE_NAME": "generated_reports"
+    },
+    {
+      "TABLE_NAME": "green_upgrades"
+    },
+    {
+      "TABLE_NAME": "grid_carbon_intensity"
+    },
+    {
+      "TABLE_NAME": "hierarchy_templates"
+    },
+    {
+      "TABLE_NAME": "import_validation_results"
+    },
+    {
+      "TABLE_NAME": "integration_runs"
+    },
+    {
+      "TABLE_NAME": "investment_analysis"
+    },
+    {
+      "TABLE_NAME": "kpi_snapshots"
+    },
+    {
+      "TABLE_NAME": "leed_credits"
+    },
+    {
+      "TABLE_NAME": "maintenance_entries"
+    },
+    {
+      "TABLE_NAME": "mfa_audit_log"
+    },
+    {
+      "TABLE_NAME": "mfa_method_switch_requests"
+    },
+    {
+      "TABLE_NAME": "mfa_recovery_requests"
+    },
+    {
+      "TABLE_NAME": "mfa_time_restrictions"
+    },
+    {
+      "TABLE_NAME": "model_annotations"
+    },
+    {
+      "TABLE_NAME": "model_viewpoints"
+    },
+    {
+      "TABLE_NAME": "municipalities"
+    },
+    {
+      "TABLE_NAME": "operational_carbon_tracking"
+    },
+    {
+      "TABLE_NAME": "optimization_scenarios"
+    },
+    {
+      "TABLE_NAME": "photos"
+    },
+    {
+      "TABLE_NAME": "pof_factors"
+    },
+    {
+      "TABLE_NAME": "portfolio_esg_ratings"
+    },
+    {
+      "TABLE_NAME": "portfolio_metrics_history"
+    },
+    {
+      "TABLE_NAME": "portfolio_targets"
+    },
+    {
+      "TABLE_NAME": "prediction_history"
+    },
+    {
+      "TABLE_NAME": "prioritization_criteria"
+    },
+    {
+      "TABLE_NAME": "project_deficiencies"
+    },
+    {
+      "TABLE_NAME": "project_documents"
+    },
+    {
+      "TABLE_NAME": "project_embodied_carbon"
+    },
+    {
+      "TABLE_NAME": "project_esg_ratings"
+    },
+    {
+      "TABLE_NAME": "project_hierarchy_config"
+    },
+    {
+      "TABLE_NAME": "project_leed_tracking"
+    },
+    {
+      "TABLE_NAME": "project_material_quantities"
+    },
+    {
+      "TABLE_NAME": "project_permissions"
+    },
+    {
+      "TABLE_NAME": "project_priority_scores"
+    },
+    {
+      "TABLE_NAME": "project_rating_config"
+    },
+    {
+      "TABLE_NAME": "project_ratings"
+    },
+    {
+      "TABLE_NAME": "project_scores"
+    },
+    {
+      "TABLE_NAME": "project_status_history"
+    },
+    {
+      "TABLE_NAME": "project_versions"
+    },
+    {
+      "TABLE_NAME": "projects"
+    },
+    {
+      "TABLE_NAME": "rating_history"
+    },
+    {
+      "TABLE_NAME": "rating_scale_configs"
+    },
+    {
+      "TABLE_NAME": "rating_scales"
+    },
+    {
+      "TABLE_NAME": "refrigerant_inventory"
+    },
+    {
+      "TABLE_NAME": "renovation_costs"
+    },
+    {
+      "TABLE_NAME": "report_configurations"
+    },
+    {
+      "TABLE_NAME": "report_history"
+    },
+    {
+      "TABLE_NAME": "report_schedules"
+    },
+    {
+      "TABLE_NAME": "report_sections"
+    },
+    {
+      "TABLE_NAME": "report_templates"
+    },
+    {
+      "TABLE_NAME": "risk_assessments"
+    },
+    {
+      "TABLE_NAME": "risk_mitigation_actions"
+    },
+    {
+      "TABLE_NAME": "scenario_strategies"
+    },
+    {
+      "TABLE_NAME": "sms_verification_codes"
+    },
+    {
+      "TABLE_NAME": "strategic_objectives"
+    },
+    {
+      "TABLE_NAME": "submission_items"
+    },
+    {
+      "TABLE_NAME": "submission_photos"
+    },
+    {
+      "TABLE_NAME": "sustainability_goals"
+    },
+    {
+      "TABLE_NAME": "template_systems"
+    },
+    {
+      "TABLE_NAME": "trusted_devices"
+    },
+    {
+      "TABLE_NAME": "user_consents"
+    },
+    {
+      "TABLE_NAME": "user_mfa_settings"
+    },
+    {
+      "TABLE_NAME": "users"
+    },
+    {
+      "TABLE_NAME": "utility_consumption"
+    },
+    {
+      "TABLE_NAME": "validation_overrides"
+    },
+    {
+      "TABLE_NAME": "validation_rules"
+    },
+    {
+      "TABLE_NAME": "waste_tracking"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\n__drizzle_migrations\naccess_requests\naction_templates\nactivityLog\nassessmentComponents\nassessment_actions\nassessment_deletion_log\nassessment_documents\nassessment_versions\nassessments\nassetCategories\nasset_documents\nasset_ratings\nasset_timeline_events\nassets\naudit_log\naudit_logs\nbackup_schedules\nbenchmark_data\nbudget_allocations\nbuilding_codes\nbuilding_components\nbuilding_performance_factors\nbuilding_sections\nbuilding_type_templates\nbulk_operation_history\nbulk_operation_snapshots\nbulk_service_life_updates\nbulk_update_affected_items\ncanadian_grid_carbon_data\ncapitalProjects\ncapital_budget_cycles\ncash_flow_projections\nchat_context_cache\nchat_messages\nchat_sessions\nchatbot_feedback\nchatbot_sessions\nci_fci_snapshots\ncity_cost_factors\ncleanup_reports\ncof_factors\ncomments\ncompanies\ncompany_access_codes\ncompany_page_visibility\ncompany_users\ncomponent_deterioration_config\ncomponent_history\nconsultant_submissions\nconversations\ncost_estimates\ncriteria_audit_log\ncriteria_objective_links\ncriteria_presets\ncritical_equipment\ncustom_components\ncustom_vocabulary\ndashboard_configs\ndata_access_requests\ndata_disposal_requests\ndata_integrity_metrics\ndata_residency_settings\ndata_retention_policies\ndatabase_backups\ndeficiencies\ndeficiency_versions\ndesign_service_life_values\ndeterioration_curves\ndocuments\neconomic_indicators\nemail_delivery_log\nembodied_carbon_materials\nemissions_data\nencryption_key_metadata\nesg_metrics_history\nesg_rating_thresholds\nesg_scores\nfacility_models\nfinancial_forecasts\ngenerated_report_sections\ngenerated_reports\ngreen_upgrades\ngrid_carbon_intensity\nhierarchy_templates\nimport_validation_results\nintegration_runs\ninvestment_analysis\nkpi_snapshots\nleed_credits\nmaintenance_entries\nmfa_audit_log\nmfa_method_switch_requests\nmfa_recovery_requests\nmfa_time_restrictions\nmodel_annotations\nmodel_viewpoints\nmunicipalities\noperational_carbon_tracking\noptimization_scenarios\nphotos\npof_factors\nportfolio_esg_ratings\nportfolio_metrics_history\nportfolio_targets\nprediction_history\nprioritization_criteria\nproject_deficiencies\nproject_documents\nproject_embodied_carbon\nproject_esg_ratings\nproject_hierarchy_config\nproject_leed_tracking\nproject_material_quantities\nproject_permissions\nproject_priority_scores\nproject_rating_config\nproject_ratings\nproject_scores\nproject_status_history\nproject_versions\nprojects\nrating_history\nrating_scale_configs\nrating_scales\nrefrigerant_inventory\nrenovation_costs\nreport_configurations\nreport_history\nreport_schedules\nreport_sections\nreport_templates\nrisk_assessments\nrisk_mitigation_actions\nscenario_strategies\nsms_verification_codes\nstrategic_objectives\nsubmission_items\nsubmission_photos\nsustainability_goals\ntemplate_systems\ntrusted_devices\nuser_consents\nuser_mfa_settings\nusers\nutility_consumption\nvalidation_overrides\nvalidation_rules\nwaste_tracking\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

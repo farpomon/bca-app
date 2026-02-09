@@ -1568,9 +1568,11 @@ export const projectVersions = mysqlTable("project_versions", {
 
 export const projects = mysqlTable("projects", {
 	id: int().autoincrement().notNull(),
+	municipalityId: int(),
 	uniqueId: varchar({ length: 50 }).unique(),
 	userId: int().notNull(),
 	name: varchar({ length: 255 }).notNull(),
+	projectNumber: varchar({ length: 100 }),
 	address: text(),
 	clientName: varchar({ length: 255 }),
 	propertyType: varchar({ length: 100 }),

@@ -1,0 +1,13 @@
+{
+  "query": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('building_components', 'building_sections', 'project_deficiencies', 'buildingComponents')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('building_components', 'building_sections', 'project_deficiencies', 'buildingComponents')",
+  "rows": [
+    {
+      "TABLE_NAME": "building_components"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\nbuilding_components\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

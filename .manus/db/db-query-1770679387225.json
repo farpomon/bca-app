@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `cycle_analytics_cache` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `cycleId` int NOT NULL,\n  `analyticsType` enum('backlog','risk','trend','unfunded_critical') NOT NULL,\n  `data` text NOT NULL,\n  `calculatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `expiresAt` timestamp NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `idx_cycle_analytics` (`cycleId`, `analyticsType`),\n  KEY `idx_analytics_expiry` (`expiresAt`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute CREATE TABLE IF NOT EXISTS `cycle_analytics_cache` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `cycleId` int NOT NULL,\n  `analyticsType` enum('backlog','risk','trend','unfunded_critical') NOT NULL,\n  `data` text NOT NULL,\n  `calculatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `expiresAt` timestamp NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `idx_cycle_analytics` (`cycleId`, `analyticsType`),\n  KEY `idx_analytics_expiry` (`expiresAt`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 228
+}

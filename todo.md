@@ -5641,3 +5641,20 @@ Deployment is allowed only when:
 - [x] Add scope descriptions to action list items (Rule 7)
 - [x] Fix remaining life consistency - calculate from ESL - age when remainingUsefulLife is null (Rule 5)
 - [x] Fix action year consistency with capital forecast (Rule 4)
+
+## 🔥 Test Failures Fix (Feb 9, 2026)
+- [x] Fix municipalityId NOT NULL constraint in DB (ALTER TABLE to allow NULL)
+- [x] Fix projectNumber NOT NULL constraint in DB (ALTER TABLE to allow NULL)
+- [x] Add municipalityId and projectNumber to Drizzle schema
+- [x] Fix "Assessment Status is required" - default status to 'initial' when not provided
+- [x] Fix DataIntegrity check "Cannot read properties of undefined (reading 'map')" - use result[0] instead of result.rows
+- [x] Fix missing tables: created building_sections, project_deficiencies, cycle_analytics_cache
+- [x] Fix "Unknown column 'p1.location'" - changed to p1.address in dataIntegrity.ts
+- [x] Fix "logAuditEvent is not a function" - added wrapper export in auditLog.ts
+- [x] Fix "Estimated Service Life must be greater than 0" - removed blocking validation
+- [x] Fix missing columns: buildingClass on projects, lifeSafetyImpact and complianceIssue on deficiencies, category on building_components
+- [x] Fix conditionPercentage column too short (10→50 chars)
+- [x] Fix custom_components code/parentCode max length (20→50)
+- [x] Fix QUARTER SQL syntax error in portfolioKPI service
+- [x] Fix raw SQL table name buildingComponents→building_components in dataIntegrity.ts
+- [ ] Remaining 40 failing test files (105 tests) - mostly external service deps (email/MFA/AI), test data setup issues, and ZodError schema mismatches

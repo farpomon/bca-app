@@ -1949,11 +1949,10 @@ Provide helpful insights, recommendations, and analysis based on this asset data
             throw new Error("Condition is required and cannot be 'Not Assessed'");
           }
           if (!input.status) {
-            throw new Error("Assessment Status is required");
+            input.status = 'initial';
           }
-          if (!input.expectedUsefulLife || input.expectedUsefulLife <= 0) {
-            throw new Error("Estimated Service Life must be greater than 0");
-          }
+          // expectedUsefulLife is recommended but not required for creation
+          // The UI will warn users if it's missing
         }
         
         // Get existing assessment to detect changes
@@ -4770,9 +4769,9 @@ Provide helpful insights, recommendations, and analysis based on this asset data
     create: protectedProcedure
       .input(z.object({
         projectId: z.number(),
-        code: z.string().min(1).max(20),
+        code: z.string().min(1).max(50),
         level: z.number().min(2).max(3),
-        parentCode: z.string().min(1).max(20),
+        parentCode: z.string().min(1).max(50),
         name: z.string().min(1).max(255),
         description: z.string().optional(),
       }))

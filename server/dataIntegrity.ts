@@ -96,7 +96,8 @@ export async function checkOrphanedAssessments(): Promise<IntegrityCheckResult> 
     LIMIT 1000
   `);
 
-  const orphanedIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const orphanedIds = (rows as any[]).map((row: any) => row.id);
   const count = orphanedIds.length;
 
   return {
@@ -130,7 +131,8 @@ export async function checkOrphanedDeficiencies(): Promise<IntegrityCheckResult>
     LIMIT 1000
   `);
 
-  const orphanedIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const orphanedIds = (rows as any[]).map((row: any) => row.id);
   const count = orphanedIds.length;
 
   return {
@@ -164,7 +166,8 @@ export async function checkOrphanedPhotos(): Promise<IntegrityCheckResult> {
     LIMIT 1000
   `);
 
-  const orphanedIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const orphanedIds = (rows as any[]).map((row: any) => row.id);
   const count = orphanedIds.length;
 
   return {
@@ -194,16 +197,17 @@ export async function checkDuplicateProjects(): Promise<IntegrityCheckResult> {
     SELECT 
       p1.id,
       p1.name,
-      p1.location
+      p1.address
     FROM projects p1
     INNER JOIN projects p2 ON 
       LOWER(TRIM(p1.name)) = LOWER(TRIM(p2.name)) AND
-      LOWER(TRIM(COALESCE(p1.location, ''))) = LOWER(TRIM(COALESCE(p2.location, ''))) AND
+      LOWER(TRIM(COALESCE(p1.address, ''))) = LOWER(TRIM(COALESCE(p2.address, ''))) AND
       p1.id < p2.id
     LIMIT 1000
   `);
 
-  const duplicateIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const duplicateIds = (rows as any[]).map((row: any) => row.id);
   const count = duplicateIds.length;
 
   return {
@@ -242,7 +246,8 @@ export async function checkDuplicateAssets(): Promise<IntegrityCheckResult> {
     LIMIT 1000
   `);
 
-  const duplicateIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const duplicateIds = (rows as any[]).map((row: any) => row.id);
   const count = duplicateIds.length;
 
   return {
@@ -276,7 +281,8 @@ export async function checkBrokenAssetReferences(): Promise<IntegrityCheckResult
     LIMIT 1000
   `);
 
-  const brokenIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const brokenIds = (rows as any[]).map((row: any) => row.id);
   const count = brokenIds.length;
 
   return {
@@ -305,12 +311,13 @@ export async function checkMissingComponentReferences(): Promise<IntegrityCheckR
   const result = await db.execute(sql`
     SELECT a.id
     FROM assessments a
-    LEFT JOIN buildingComponents bc ON a.componentId = bc.id
+    LEFT JOIN building_components bc ON a.componentId = bc.id
     WHERE a.componentId IS NOT NULL AND bc.id IS NULL
     LIMIT 1000
   `);
 
-  const missingIds = result.rows.map((row: any) => row.id);
+  const rows = Array.isArray(result) ? result[0] : (result.rows ?? result);
+  const missingIds = (rows as any[]).map((row: any) => row.id);
   const count = missingIds.length;
 
   return {
@@ -389,10 +396,11 @@ export async function getIntegrityMetricsSummary() {
     critical: 0,
     warning: 0,
     info: 0,
-    metrics: metrics.rows,
+    metrics: Array.isArray(metrics) ? metrics[0] : (metrics.rows ?? metrics),
   };
 
-  for (const metric of metrics.rows as any[]) {
+  const metricRows = Array.isArray(metrics) ? metrics[0] : (metrics.rows ?? metrics);
+  for (const metric of metricRows as any[]) {
     if (metric.severity === 'critical') summary.critical++;
     else if (metric.severity === 'warning') summary.warning++;
     else summary.info++;
