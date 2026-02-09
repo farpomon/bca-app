@@ -444,8 +444,16 @@ export const singleAssetReportRouter = router({
           }
         }
       }
-      const rlComps = components.filter(c => c.remainingUsefulLife != null);
-      const avgRemainingLife = rlComps.length > 0 ? rlComps.reduce((s, c) => s + (c.remainingUsefulLife || 0), 0) / rlComps.length : 0;
+      // Calculate average remaining life - use remainingUsefulLife if available,
+      // otherwise estimate from estimatedServiceLife and asset age (Rule 5)
+      const rlComps = components.map(c => {
+        if (c.remainingUsefulLife != null && c.remainingUsefulLife > 0) return c.remainingUsefulLife;
+        if (c.estimatedServiceLife != null && c.estimatedServiceLife > 0 && assetAge > 0) {
+          return Math.max(0, c.estimatedServiceLife - assetAge);
+        }
+        return null;
+      }).filter((v): v is number => v !== null);
+      const avgRemainingLife = rlComps.length > 0 ? rlComps.reduce((a, b) => a + b, 0) / rlComps.length : 0;
 
       return {
         asset: {

@@ -5631,3 +5631,13 @@ Deployment is allowed only when:
 - [x] Capital forecast shows 20-year horizon with costs properly distributed across years
 - [x] UNIFORMAT breakdown shows A-G categories with proper codes and names
 - [x] Priority matrix shows correct counts and costs per priority level
+
+## 🔥 PDF Report QA Rules Implementation (Feb 9, 2026)
+- [x] Strip HTML tags from observations and recommendations text in PDF (Rule 6)
+- [x] Add Executive Summary narrative section with top cost drivers, highest-risk items, key planning assumptions (Rule 8)
+- [x] Add Methodology section with inspection level, limitations, UNIFORMAT II structure, ASTM E2018 reference (Rule 9)
+- [x] Capitalize priority labels (routine→Routine, medium→Medium, low→Low, high→High) (cosmetic)
+- [x] Fix deficiency/component terminology consistency - Priority Matrix says "components" and Asset Overview says "Components Requiring Action" (Rule 1)
+- [x] Add scope descriptions to action list items (Rule 7)
+- [x] Fix remaining life consistency - calculate from ESL - age when remainingUsefulLife is null (Rule 5)
+- [x] Fix action year consistency with capital forecast (Rule 4)

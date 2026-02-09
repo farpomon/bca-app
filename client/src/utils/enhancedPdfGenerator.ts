@@ -219,6 +219,24 @@ const getFCIColor = (fci: number): [number, number, number] => {
   return colors.danger;
 };
 
+// Strip HTML tags from text (Rule 6 - Export Cleanliness)
+const stripHtmlTags = (text: string | null): string | null => {
+  if (!text) return text;
+  return text
+    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+};
+
+// Capitalize first letter of a string
+const capitalize = (s: string): string => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
 // Priority labels
 const getPriorityLabel = (priority: string): string => {
   switch (priority?.toLowerCase()) {
@@ -230,7 +248,11 @@ const getPriorityLabel = (priority: string): string => {
     case 'short_term': return 'Short Term (1-3 years)';
     case 'medium_term': return 'Medium Term (3-5 years)';
     case 'long_term': return 'Long Term (5+ years)';
-    default: return priority || 'N/A';
+    case 'routine': return 'Routine';
+    case 'low': return 'Low';
+    case 'medium': return 'Medium';
+    case 'high': return 'High';
+    default: return capitalize(priority) || 'N/A';
   }
 };
 
@@ -482,6 +504,132 @@ export async function generateEnhancedPDF(
     doc.text(metric.value, x + 3, y + 19);
   });
 
+  // ============================================
+  // EXECUTIVE SUMMARY NARRATIVE (Rule 8)
+  // ============================================
+  // Generate narrative on a new page after cover
+  doc.addPage();
+  addHeader();
+  addSectionTitle('Executive Summary');
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.text);
+
+  // Build narrative paragraphs
+  const assetLabel = isSingleAsset ? (data.assetMetrics[0]?.assetName || 'the asset') : `the portfolio of ${data.summary.totalAssets} assets`;
+  const fciValue = data.summary.portfolioFCI;
+  const fciRating = data.summary.portfolioFCIRating;
+  const totalDM = data.summary.totalDeferredMaintenanceCost;
+  const totalCRV = data.summary.totalCurrentReplacementValue;
+  const totalComponents = data.summary.totalAssessments;
+
+  // Paragraph 1: Overview
+  const overviewText = `This Building Condition Assessment (BCA) report presents the findings of a visual, non-invasive assessment of ${assetLabel}. The assessment evaluated ${totalComponents} building components organized according to the UNIFORMAT II classification system (ASTM E1557). The Facility Condition Index (FCI) for ${isSingleAsset ? 'this asset' : 'the portfolio'} is ${formatPercentage(fciValue, 2)}, indicating a "${fciRating}" overall condition. The total Current Replacement Value (CRV) is ${formatCurrency(totalCRV)}, with a total Deferred Maintenance backlog of ${formatCurrency(totalDM)}, representing a funding gap of ${formatCurrency(data.summary.fundingGap)}.`;
+  const overviewLines = doc.splitTextToSize(overviewText, contentWidth);
+  doc.text(overviewLines, margin, yPos);
+  yPos += overviewLines.length * 4 + 4;
+
+  // Paragraph 2: Top cost drivers
+  // Sort components by totalCost descending to find top cost drivers
+  const sortedByRepairCost = [...data.components].sort((a, b) => (b.totalCost || 0) - (a.totalCost || 0));
+  const topDrivers = sortedByRepairCost.slice(0, 3);
+  if (topDrivers.length > 0) {
+    checkPageBreak(30);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Top Cost Drivers', margin, yPos);
+    yPos += 5;
+    doc.setFont('helvetica', 'normal');
+    const driversText = `The highest-cost items identified are: ${topDrivers.map((c, i) => `(${i + 1}) ${c.uniformatCode} - ${c.componentName} at ${formatCurrency(c.totalCost)}`).join('; ')}. Together, these represent ${formatCurrency(topDrivers.reduce((s, c) => s + (c.totalCost || 0), 0))} of the total deferred maintenance.`;
+    const driversLines = doc.splitTextToSize(driversText, contentWidth);
+    doc.text(driversLines, margin, yPos);
+    yPos += driversLines.length * 4 + 4;
+  }
+
+  // Paragraph 3: Highest-risk items
+  const highPriorityComponents = data.components.filter(c => ['critical', 'high', 'immediate'].includes(c.priority?.toLowerCase()));
+  if (highPriorityComponents.length > 0) {
+    checkPageBreak(30);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Highest-Risk Items', margin, yPos);
+    yPos += 5;
+    doc.setFont('helvetica', 'normal');
+    const highRiskCost = highPriorityComponents.reduce((s, c) => s + (c.totalCost || 0), 0);
+    const riskText = `${highPriorityComponents.length} component(s) have been identified as high priority or critical, representing ${formatCurrency(highRiskCost)} in remediation costs. These items may involve life safety risks, code compliance concerns, imminent end-of-life conditions, or risk of collateral damage to adjacent systems and should be addressed within the near term.`;
+    const riskLines = doc.splitTextToSize(riskText, contentWidth);
+    doc.text(riskLines, margin, yPos);
+    yPos += riskLines.length * 4 + 4;
+  }
+
+  // Paragraph 4: Key planning assumptions
+  checkPageBreak(30);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Key Planning Assumptions', margin, yPos);
+  yPos += 5;
+  doc.setFont('helvetica', 'normal');
+  const planningText = `Cost estimates are based on current market conditions and do not include escalation factors, design fees, or contingencies unless otherwise noted. The capital renewal forecast distributes costs based on assigned priority levels: high-priority items are scheduled in the near term (years 1-2), medium-priority items in the mid-term (years 3-5), and low-priority items in the long term (years 6+). All costs are expressed in current Canadian dollars. The FCI is calculated as the ratio of Deferred Maintenance to Current Replacement Value.`;
+  const planningLines = doc.splitTextToSize(planningText, contentWidth);
+  doc.text(planningLines, margin, yPos);
+  yPos += planningLines.length * 4 + 4;
+
+  // ============================================
+  // METHODOLOGY SECTION (Rule 9)
+  // ============================================
+  checkPageBreak(80);
+  if (yPos > 60) {
+    // If not enough space on current page, start a new one
+    doc.addPage();
+    addHeader();
+  }
+  addSectionTitle('Assessment Methodology');
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.text);
+
+  // Inspection Level
+  doc.setFont('helvetica', 'bold');
+  doc.text('Inspection Level', margin, yPos);
+  yPos += 5;
+  doc.setFont('helvetica', 'normal');
+  const inspectionText = `This assessment was conducted as a Level 2 Walk-Through Survey in general accordance with ASTM E2018 - Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process. The assessment consisted of a visual, non-invasive inspection of accessible building components and systems. No destructive testing, laboratory analysis, or removal of finishes was performed.`;
+  const inspectionLines = doc.splitTextToSize(inspectionText, contentWidth);
+  doc.text(inspectionLines, margin, yPos);
+  yPos += inspectionLines.length * 4 + 4;
+
+  // Limitations
+  checkPageBreak(30);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Limitations', margin, yPos);
+  yPos += 5;
+  doc.setFont('helvetica', 'normal');
+  const limitationsText = `The assessment is limited to visually accessible areas and conditions observable at the time of inspection. Concealed conditions, latent defects, and areas not accessible during the site visit are excluded from this report. Cost estimates are order-of-magnitude and intended for capital planning purposes only; they are not construction-ready estimates and do not include professional fees, permits, escalation, or contingencies unless stated otherwise.`;
+  const limitationsLines = doc.splitTextToSize(limitationsText, contentWidth);
+  doc.text(limitationsLines, margin, yPos);
+  yPos += limitationsLines.length * 4 + 4;
+
+  // UNIFORMAT II Classification
+  checkPageBreak(40);
+  doc.setFont('helvetica', 'bold');
+  doc.text('UNIFORMAT II Classification', margin, yPos);
+  yPos += 5;
+  doc.setFont('helvetica', 'normal');
+  const uniformatText = `Building components are organized using the UNIFORMAT II classification system (ASTM E1557 - Standard Classification for Building Elements and Related Sitework). This hierarchical system groups building elements into seven major categories: A - Substructure, B - Shell, C - Interiors, D - Services, E - Equipment & Furnishings, F - Special Construction, and G - Building Sitework. Each component is assessed at Level 2 or Level 3 detail as appropriate.`;
+  const uniformatLines = doc.splitTextToSize(uniformatText, contentWidth);
+  doc.text(uniformatLines, margin, yPos);
+  yPos += uniformatLines.length * 4 + 4;
+
+  // Condition Rating Scale
+  checkPageBreak(40);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Condition Rating Scale', margin, yPos);
+  yPos += 5;
+  doc.setFont('helvetica', 'normal');
+  const conditionScaleText = `Component conditions are rated on a percentage scale: Good (70-100%) indicates the component is performing as intended with only minor wear; Fair (40-69%) indicates moderate deterioration with some functional impairment; Poor (10-39%) indicates significant deterioration requiring near-term intervention; Failed (0-9%) indicates the component has reached or exceeded its useful life and requires immediate replacement or major repair.`;
+  const conditionLines = doc.splitTextToSize(conditionScaleText, contentWidth);
+  doc.text(conditionLines, margin, yPos);
+  yPos += conditionLines.length * 4 + 4;
+
   onProgress?.('Generating asset overview...', 40);
 
   // ============================================
@@ -505,8 +653,8 @@ export async function generateEnhancedPDF(
         ['Facility Condition Index', `${formatPercentage(asset.fci, 1)} (${asset.fciRating})`],
         ['Overall Condition', `${asset.conditionRating} (${asset.conditionScore}%)`],
         ['Components Assessed', asset.assessmentCount.toString()],
-        ['Deficiencies', asset.deficiencyCount.toString()],
-        ['Average Remaining Life', `${asset.averageRemainingLife} years`],
+        ['Components Requiring Action', asset.deficiencyCount > 0 ? asset.deficiencyCount.toString() : 'None identified'],
+        ['Average Remaining Life', asset.averageRemainingLife > 0 ? `${asset.averageRemainingLife} years` : 'N/A'],
         ['Immediate Needs', formatCurrency(asset.immediateNeeds)],
         ['Short-Term Needs (1-3 yr)', formatCurrency(asset.shortTermNeeds)],
         ['Medium-Term Needs (3-7 yr)', formatCurrency(asset.mediumTermNeeds)],
@@ -707,8 +855,9 @@ export async function generateEnhancedPDF(
 
         yPos = Math.max(leftY, rightY) + 3;
 
-        // OBSERVATIONS section - always show if available
-        if (component.observations) {
+        // OBSERVATIONS section - always show if available (Rule 6: strip HTML tags)
+        const cleanObservations = stripHtmlTags(component.observations);
+        if (cleanObservations) {
           checkPageBreak(20);
           doc.setFillColor(245, 247, 250);
           doc.rect(margin, yPos - 1, contentWidth, 4, 'F');
@@ -720,7 +869,7 @@ export async function generateEnhancedPDF(
           
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(...colors.text);
-          const obsLines = doc.splitTextToSize(component.observations, contentWidth - 4);
+          const obsLines = doc.splitTextToSize(cleanObservations, contentWidth - 4);
           const maxObsLines = Math.min(obsLines.length, 4); // Limit to 4 lines
           for (let i = 0; i < maxObsLines; i++) {
             doc.text(obsLines[i], margin + 2, yPos);
@@ -734,8 +883,9 @@ export async function generateEnhancedPDF(
           yPos += 2;
         }
 
-        // RECOMMENDATIONS section - always show if available
-        if (component.recommendations) {
+        // RECOMMENDATIONS section - always show if available (Rule 6: strip HTML tags)
+        const cleanRecommendations = stripHtmlTags(component.recommendations);
+        if (cleanRecommendations) {
           checkPageBreak(20);
           doc.setFillColor(240, 253, 244);
           doc.rect(margin, yPos - 1, contentWidth, 4, 'F');
@@ -747,7 +897,7 @@ export async function generateEnhancedPDF(
           
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(...colors.text);
-          const recLines = doc.splitTextToSize(component.recommendations, contentWidth - 4);
+          const recLines = doc.splitTextToSize(cleanRecommendations, contentWidth - 4);
           const maxRecLines = Math.min(recLines.length, 4); // Limit to 4 lines
           for (let i = 0; i < maxRecLines; i++) {
             doc.text(recLines[i], margin + 2, yPos);
@@ -834,19 +984,28 @@ export async function generateEnhancedPDF(
     addHeader();
     addSectionTitle('Action List Summary');
 
+    // Build action description with scope (Rule 7)
+    const getActionScope = (action: ActionListItem): string => {
+      const cleanDesc = stripHtmlTags(action.description);
+      if (cleanDesc && cleanDesc.length > 5) {
+        return cleanDesc.substring(0, 50) + (cleanDesc.length > 50 ? '...' : '');
+      }
+      // Fallback: use action name with UNIFORMAT group for context
+      return action.actionName.substring(0, 40);
+    };
+
     const actionTableData = data.actionList.slice(0, 50).map(action => [
       action.itemId,
-      action.actionName.substring(0, 30),
-      action.assetName.substring(0, 20),
+      getActionScope(action),
       action.uniformatCode,
       action.actionYear?.toString() || '-',
       formatCurrency(action.actionCost),
-      action.priority.substring(0, 10)
+      capitalize(action.priority)
     ]);
 
     autoTable(doc, {
       startY: yPos,
-      head: [['ID', 'Action', 'Asset', 'Code', 'Year', 'Cost', 'Priority']],
+      head: [['ID', 'Action / Scope', 'Code', 'Year', 'Cost', 'Priority']],
       body: actionTableData,
       theme: 'striped',
       headStyles: {
@@ -860,12 +1019,11 @@ export async function generateEnhancedPDF(
       },
       columnStyles: {
         0: { cellWidth: 15 },
-        1: { cellWidth: 45 },
-        2: { cellWidth: 30 },
-        3: { cellWidth: 15 },
-        4: { cellWidth: 15, halign: 'center' },
-        5: { cellWidth: 25, halign: 'right' },
-        6: { cellWidth: 20 }
+        1: { cellWidth: 70 },
+        2: { cellWidth: 15 },
+        3: { cellWidth: 15, halign: 'center' },
+        4: { cellWidth: 25, halign: 'right' },
+        5: { cellWidth: 20 }
       },
       margin: { left: margin, right: margin }
     });
@@ -997,7 +1155,7 @@ export async function generateEnhancedPDF(
 
     autoTable(doc, {
       startY: yPos,
-      head: [['Priority Level', 'Deficiency Count', 'Estimated Cost', '% of Total']],
+      head: [['Priority Level', 'Component Count', 'Estimated Cost', '% of Total']],
       body: priorityTableData,
       theme: 'striped',
       headStyles: {
@@ -1033,7 +1191,7 @@ export async function generateEnhancedPDF(
       doc.setFontSize(9);
       doc.setTextColor(...colors.text);
       doc.setFont('helvetica', 'normal');
-      const summaryText = `This priority matrix summarizes ${totalCount} identified deficiencies with a total estimated remediation cost of ${formatCurrency(totalCostSum)}. Items are categorized by urgency to support capital planning and budget allocation.`;
+      const summaryText = `This priority matrix summarizes ${totalCount} assessed components with a total estimated remediation cost of ${formatCurrency(totalCostSum)}. Items are categorized by urgency to support capital planning and budget allocation.`;
       const summaryLines = doc.splitTextToSize(summaryText, contentWidth);
       doc.text(summaryLines, margin, yPos);
     }
