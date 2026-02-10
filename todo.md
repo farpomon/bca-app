@@ -5684,3 +5684,27 @@ Deployment is allowed only when:
 - [x] Identify all projects and their cities/locations
 - [x] Delete all projects NOT from Edmonton (and their related data)
 - [x] Verify only Edmonton projects remain
+
+## Consolidate Duplicate Edmonton Projects
+- [x] Investigate assets and data in both project 13 and 14
+- [x] Merge project 13 data into project 14 (14 had more data)
+- [x] Delete duplicate project 13
+- [x] Verify consolidated project has all data
+
+## Fix netpresentvalue Column Error
+- [x] Identify which table is missing the netpresentvalue column (investment_analysis)
+- [x] Add netPresentValue, internalRateOfReturn, returnOnInvestment, confidenceLevel columns
+- [x] Updated recommendation enum to include all values
+- [x] Verify the error is resolved
+
+## Re-seed Demo Data for Edmonton Portfolio
+- [x] Removed non-Edmonton asset (VineRidge Towns)
+- [x] 509 assessments already exist across 20 assets
+- [x] Generated 108 deficiencies with various severities
+- [x] Generated 48 building sections for all assets
+- [x] Generated 112 timeline events
+- [x] Generated 122 maintenance entries
+- [x] Generated 32 renovation cost entries (capital planning)
+- [x] Generated 108 cost estimates for deficiencies
+- [x] Generated 228 CI/FCI snapshots (2020-2025 trend data)
+- [x] Updated all 20 assets with replacement values and Edmonton addresses
