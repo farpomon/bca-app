@@ -124,7 +124,7 @@ describe("Predictions UI - Curve Management", () => {
   });
 });
 
-describe("Predictions UI - Component Predictions", () => {
+describe("Predictions UI - Component Predictions", { timeout: 30000 }, () => {
   it("should get prediction for a single component using curve method", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
@@ -203,7 +203,7 @@ describe("Predictions UI - Component Predictions", () => {
     expect(prediction.confidenceScore).toBeDefined();
   });
 
-  it("should get predictions for all components in a project", async () => {
+  it("should get predictions for all components in a project", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 

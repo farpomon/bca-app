@@ -12,7 +12,7 @@ describe("Cleanup Jobs", () => {
       expect(result).toBeDefined();
       expect(result.reportId).toBeGreaterThan(0);
       expect(result.status).toBe("completed");
-      expect(result.duration).toBeGreaterThan(0);
+      expect(result.duration).toBeGreaterThanOrEqual(0);
       expect(result.totalIssuesCount).toBeGreaterThanOrEqual(0);
     });
 

@@ -330,6 +330,7 @@ export const assets = mysqlTable("assets", {
 	status: mysqlEnum(['active','inactive','pending_demolition','under_construction','renovating']).default('active'),
 	overallCondition: mysqlEnum(['excellent','good','fair','poor','critical']),
 	fciScore: decimal({ precision: 5, scale: 4 }),
+	uniqueId: varchar({ length: 50 }),
 	metadata: json(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),

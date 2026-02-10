@@ -5658,3 +5658,24 @@ Deployment is allowed only when:
 - [x] Fix QUARTER SQL syntax error in portfolioKPI service
 - [x] Fix raw SQL table name buildingComponents→building_components in dataIntegrity.ts
 - [ ] Remaining 40 failing test files (105 tests) - mostly external service deps (email/MFA/AI), test data setup issues, and ZodError schema mismatches
+
+## Test Suite Fixes (Feb 2026)
+- [x] Fix weight normalization test assertions for concurrent test execution
+- [x] Fix composite score calculation tests to not modify global criteria state
+- [x] Fix composite score display test timeout (increased to 60s)
+- [x] Fix criteriaManagement "last active criterion" test for parallel execution
+- [x] Fix criteriaManagement "normalize weights after removal" test assertions
+- [x] Fix criteriaManagement "distribute weights equally" test assertions
+- [x] Fix criteriaManagement "maintain weights" test assertions
+- [x] Fix criteriaManagement "delete criterion" test to be self-contained
+- [x] Fix criteriaManagement "audit log" test to be self-contained
+- [x] Fix prioritization dashboard "recalculate scores" race condition (project count tolerance)
+- [x] Fix prioritization dashboard "normalize weights" assertion for concurrent tests
+- [x] Fix prioritization test "composite score" assertion for concurrent tests
+- [x] Fix offlineSync test condition mapping (COALESCE condition column)
+- [x] Fix cleanupJobs test duration assertion (accept >= 0)
+- [x] Fix new-features test uniqueId column (added to assets table)
+- [x] Fix predictions-ui test timeout
+- [x] Fix dataIntegrity test timeout
+- [x] Add global testTimeout and hookTimeout to vitest config
+- [x] Clean up 700+ orphaned test criteria from database

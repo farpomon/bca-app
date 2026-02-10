@@ -603,12 +603,12 @@ export async function getProjectAssessments(projectId: number) {
       COALESCE(a.componentCode, bc.code) as componentCode,
       COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
-      CASE 
+      COALESCE(a.condition, CASE 
         WHEN a.conditionRating IN ('1', '2') THEN 'good'
         WHEN a.conditionRating = '3' THEN 'fair'
         WHEN a.conditionRating IN ('4', '5') THEN 'poor'
-        ELSE COALESCE(a.condition, 'not_assessed')
-      END as condition,
+        ELSE 'not_assessed'
+      END) as condition,
       a.conditionNotes,
       a.conditionPercentage,
       a.observations,
@@ -653,12 +653,12 @@ export async function getAssetAssessments(assetId: number) {
       COALESCE(a.componentCode, bc.code) as componentCode,
       COALESCE(a.componentName, bc.name) as componentName,
       a.conditionRating,
-      CASE 
+      COALESCE(a.condition, CASE 
         WHEN a.conditionRating IN ('1', '2') THEN 'good'
         WHEN a.conditionRating = '3' THEN 'fair'
         WHEN a.conditionRating IN ('4', '5') THEN 'poor'
         ELSE 'not_assessed'
-      END as condition,
+      END) as condition,
       COALESCE(a.observations, a.conditionNotes) as observations,
       CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
       a.replacementValue,

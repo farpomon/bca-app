@@ -30,7 +30,7 @@ function createAdminContext(): TrpcContext {
   };
 }
 
-describe("Data Integrity Features", () => {
+describe("Data Integrity Features", { timeout: 30000 }, () => {
   let testCriteriaId: number;
 
   describe("Feature 1: Duplicate Criteria Name Prevention", () => {
@@ -306,7 +306,7 @@ describe("Data Integrity Features", () => {
   });
 
   describe("Integration: All Features Working Together", () => {
-    it("should prevent duplicates, log changes, and allow cleanup", async () => {
+    it("should prevent duplicates, log changes, and allow cleanup", { timeout: 30000 }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 

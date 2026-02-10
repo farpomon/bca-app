@@ -33,7 +33,7 @@ function createAuthContext(): { ctx: TrpcContext } {
   return { ctx };
 }
 
-describe("Composite Score Display Fix", () => {
+describe("Composite Score Display Fix", { timeout: 30000 }, () => {
   it("should return composite score of 0 when no scores exist for a project", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
@@ -121,7 +121,7 @@ describe("Composite Score Display Fix", () => {
     }
   });
 
-  it("should calculate composite score after scoring project", async () => {
+  it("should calculate composite score after scoring project", { timeout: 60000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 

@@ -1,0 +1,150 @@
+{
+  "query": "SELECT id, name, weight, isActive, status FROM prioritization_criteria WHERE isActive = 1 AND status = 'active' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, weight, isActive, status FROM prioritization_criteria WHERE isActive = 1 AND status = 'active' LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Urgency",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "2",
+      "name": "Mission Criticality",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "3",
+      "name": "Safety",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "4",
+      "name": "Code Compliance",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "name": "Energy Savings",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "name": "Accessibility",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "7",
+      "name": "Environmental Impact",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "8",
+      "name": "Operational Efficiency",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260002",
+      "name": "Duplicate Test 1768098105744",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260003",
+      "name": "Criteria One 1768098105780",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260004",
+      "name": "Criteria Two 1768098105780",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260005",
+      "name": "Same Name Test 1768098105838",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260006",
+      "name": "Audit Test Create 1768098105976",
+      "weight": "7.61",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260007",
+      "name": "Audit Test Update 1768098106010 Updated",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260008",
+      "name": "Audit Test Deactivate 1768098106071",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260009",
+      "name": "Audit Test User 1768098106143",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260010",
+      "name": "Audit Test Timestamp 1768098106173",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260011",
+      "name": "Integration Test 1768098106213",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260013",
+      "name": "Duplicate Test 1768098140543",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    },
+    {
+      "id": "1260014",
+      "name": "Criteria One 1768098140574",
+      "weight": "0.00",
+      "isActive": "1",
+      "status": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tweight\tisActive\tstatus\n1\tUrgency\t0.00\t1\tactive\n2\tMission Criticality\t0.00\t1\tactive\n3\tSafety\t0.00\t1\tactive\n4\tCode Compliance\t0.00\t1\tactive\n5\tEnergy Savings\t0.00\t1\tactive\n6\tAccessibility\t0.00\t1\tactive\n7\tEnvironmental Impact\t0.00\t1\tactive\n8\tOperational Efficiency\t0.00\t1\tactive\n1260002\tDuplicate Test 1768098105744\t0.00\t1\tactive\n1260003\tCriteria One 1768098105780\t0.00\t1\tactive\n1260004\tCriteria Two 1768098105780\t0.00\t1\tactive\n1260005\tSame Name Test 1768098105838\t0.00\t1\tactive\n1260006\tAudit Test Create 1768098105976\t7.61\t1\tactive\n1260007\tAudit Test Update 1768098106010 Updated\t0.00\t1\tactive\n1260008\tAudit Test Deactivate 1768098106071\t0.00\t1\tactive\n1260009\tAudit Test User 1768098106143\t0.00\t1\tactive\n1260010\tAudit Test Timestamp 1768098106173\t0.00\t1\tactive\n1260011\tIntegration Test 1768098106213\t0.00\t1\tactive\n1260013\tDuplicate Test 1768098140543\t0.00\t1\tactive\n1260014\tCriteria One 1768098140574\t0.00\t1\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}
