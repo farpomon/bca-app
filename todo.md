@@ -5725,3 +5725,28 @@ Deployment is allowed only when:
 - [x] Identified 2 Luis Faria accounts (ID 18000035 and 18060558)
 - [x] Deleted 482 non-Luis users from the database
 - [x] Verified only 2 Luis Faria accounts remain (both admin role)
+
+## BCA Asset Report Enhancement
+- [x] Add Table of Contents with page numbers and dotted leaders
+- [x] Add Introduction section (work scope, objectives, building description)
+- [x] Add ASTM E2018 Standard explanation section (assessment levels, UNIFORMAT II)
+- [x] Add Observations & Recommendations narrative section (grouped by UNIFORMAT)
+- [x] Add Component Action Types description table (Replace, Repair, Maintain, Monitor, etc.)
+- [x] Add Component Priority Levels table (Critical, Necessary, Recommended, Routine)
+- [x] Add Component Condition Ratings table (Good, Fair, Poor, Failed with score ranges)
+- [x] Add FCI Explanation section with formula box and rating scale table
+- [x] Expand Limitations & Disclosure into full section (limitations, disclosure, assumptions)
+- [x] Add Dashboard page with visual charts (condition bar, cost by system, priority distribution)
+- [x] Prevent duplicate photos in component assessments (URL-based deduplication)
+- [x] Improve section ordering to match professional BCA report structure
+
+## BCA Report PDF Bug Fixes
+- [x] Fix priority labels: map High/Medium/Low → Critical/Necessary/Recommended/Routine
+- [x] Fix action type display: replace underscores with spaces (preventive_maintenance → Preventive Maintenance)
+- [x] Fix component ordering: push unknown categories (T-test) to end instead of beginning
+- [x] Fix UNIFORMAT breakdown: filter out test categories, sort A→G
+- [x] Fix priority matrix: merge entries into BCA categories (Critical/Necessary/Recommended/Routine)
+- [x] Fix priority distribution chart: merge entries into BCA categories
+- [x] Fix highest-risk items filter to include 'necessary' priority
+- [x] Add Preventive Maintenance to action types reference table
+- [x] Update Priority Levels reference table with BCA terminology
