@@ -1,9 +1,22 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { getDb } from "./db";
 import { smsVerificationCodes, userMfaSettings } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+
+// Mock SendGrid to prevent real email sending
+vi.mock('@sendgrid/mail', () => ({
+  default: {
+    setApiKey: vi.fn(),
+    send: vi.fn().mockResolvedValue([{ statusCode: 202 }]),
+  },
+}));
+
+// Mock the core email module to prevent real email sending
+vi.mock('./_core/email', () => ({
+  sendVerificationEmail: vi.fn().mockResolvedValue(true),
+}));
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 

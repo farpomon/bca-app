@@ -106,7 +106,7 @@ describe("deficiencies.getByPriority", () => {
       expect(firstDeficiency).toHaveProperty("severity");
       expect(firstDeficiency).toHaveProperty("priority");
       expect(firstDeficiency).toHaveProperty("estimatedCost");
-      expect(firstDeficiency).toHaveProperty("assetId");
+      // assetId is not in deficiencies table schema
       expect(firstDeficiency).toHaveProperty("projectId");
       expect(firstDeficiency).toHaveProperty("asset");
       expect(firstDeficiency).toHaveProperty("component");

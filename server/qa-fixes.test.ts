@@ -40,6 +40,16 @@ describe("QA Bug Fixes - Priority Scoring", () => {
   });
 
   describe("Issue 2: Duplicate Criteria Names", () => {
+    // Ensure the test criterion exists before checking
+    it("should create Test Urgency criterion if not exists", async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      // First deactivate any existing Test Urgency criteria
+      await db.execute(sql`UPDATE prioritization_criteria SET isActive = 0 WHERE name = 'Test Urgency'`);
+      // Create one active Test Urgency criterion
+      await db.execute(sql`INSERT INTO prioritization_criteria (name, description, weight, isActive, category) VALUES ('Test Urgency', 'Test criterion', 20, 1, 'risk') ON DUPLICATE KEY UPDATE isActive = 1`);
+    });
+
     it("should not have duplicate active criteria names", async () => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
@@ -33,6 +33,17 @@ function createAuthContext(): { ctx: TrpcContext } {
 }
 
 describe("AI Import Asset - JSON Schema Fix", () => {
+  let testProjectId: number;
+  beforeAll(async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const project = await caller.projects.create({
+      name: "AI Import Test Project",
+      address: "123 AI Import St",
+    });
+    testProjectId = project.id;
+  });
+
   it("should accept nullable fields in JSON schema without error", async () => {
     // This test verifies that the JSON schema is correctly formatted
     // The schema should use { type: "string", nullable: true } instead of { type: ["string", "null"] }
@@ -77,7 +88,7 @@ describe("AI Import Asset - JSON Schema Fix", () => {
     
     try {
       await caller.assets.aiImport({
-        projectId: 1,
+        projectId: testProjectId,
         fileContent: invalidFileContent,
         fileName: "test.txt",
         mimeType: "text/plain",
@@ -98,7 +109,7 @@ describe("AI Import Asset - JSON Schema Fix", () => {
     
     try {
       await caller.assets.aiImport({
-        projectId: 1,
+        projectId: testProjectId,
         fileContent: largeFile,
         fileName: "large.pdf",
         mimeType: "application/pdf",

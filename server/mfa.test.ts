@@ -134,7 +134,7 @@ describe("MFA tRPC Endpoints", () => {
   });
 
   it("should allow user to setup MFA", async () => {
-    const ctx = createAuthContext(999); // Use unique user ID
+    const ctx = createAuthContext(Math.floor(Math.random() * 900000) + 100000); // Use truly unique user ID
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.mfa.setup();

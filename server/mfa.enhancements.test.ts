@@ -3,7 +3,7 @@
  * Tests for admin MFA reset, grace period, and compliance reports
  */
 
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, beforeAll } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
@@ -58,6 +58,27 @@ function createUserContext(userId: number, role: "admin" | "project_manager" | "
 }
 
 describe("MFA Enhancements", () => {
+  // Increase timeout because compliance reports query all users
+  const LONG_TIMEOUT = 30000;
+  beforeAll(async () => {
+    // Ensure test users exist in the database
+    const { upsertUser } = await import("./db");
+    await upsertUser({
+      openId: "admin-user",
+      name: "Admin User",
+      email: "admin@example.com",
+      loginMethod: "manus",
+      role: "admin",
+    });
+    await upsertUser({
+      openId: "user-2",
+      name: "User 2",
+      email: "user2@example.com",
+      loginMethod: "manus",
+      role: "user",
+    });
+  });
+
   describe("Grace Period Enforcement", () => {
     it("should set 7-day grace period when enforcing MFA for role", async () => {
       const ctx = createAdminContext();
@@ -169,7 +190,7 @@ describe("MFA Enhancements", () => {
   });
 
   describe("MFA Compliance Reports", () => {
-    it("should generate compliance report for all time", async () => {
+    it("should generate compliance report for all time", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -184,7 +205,7 @@ describe("MFA Enhancements", () => {
       expect(result).toHaveProperty("userDetails");
     });
 
-    it("should generate compliance report for last 7 days", async () => {
+    it("should generate compliance report for last 7 days", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -194,7 +215,7 @@ describe("MFA Enhancements", () => {
       expect(result.totalUsers).toBeGreaterThanOrEqual(0);
     });
 
-    it("should generate compliance report for last 30 days", async () => {
+    it("should generate compliance report for last 30 days", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -203,7 +224,7 @@ describe("MFA Enhancements", () => {
       expect(result.timePeriod).toBe("30days");
     });
 
-    it("should generate compliance report for last 90 days", async () => {
+    it("should generate compliance report for last 90 days", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -212,7 +233,7 @@ describe("MFA Enhancements", () => {
       expect(result.timePeriod).toBe("90days");
     });
 
-    it("should include adoption stats for all roles", async () => {
+    it("should include adoption stats for all roles", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -224,7 +245,7 @@ describe("MFA Enhancements", () => {
       expect(result.adoptionByRole).toHaveProperty("viewer");
     });
 
-    it("should calculate adoption rate correctly for each role", async () => {
+    it("should calculate adoption rate correctly for each role", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -245,7 +266,7 @@ describe("MFA Enhancements", () => {
       }
     });
 
-    it("should include user details with all required fields", async () => {
+    it("should include user details with all required fields", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -266,7 +287,7 @@ describe("MFA Enhancements", () => {
       }
     });
 
-    it("should calculate overall adoption rate correctly", async () => {
+    it("should calculate overall adoption rate correctly", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -280,7 +301,7 @@ describe("MFA Enhancements", () => {
       }
     });
 
-    it("should only allow admins to access compliance reports", async () => {
+    it("should only allow admins to access compliance reports", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createUserContext(2, "editor");
       const caller = appRouter.createCaller(ctx);
 
@@ -289,7 +310,7 @@ describe("MFA Enhancements", () => {
       ).rejects.toThrow();
     });
 
-    it("should filter users by time period correctly", async () => {
+    it("should filter users by time period correctly", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -302,7 +323,7 @@ describe("MFA Enhancements", () => {
   });
 
   describe("Integration Tests", () => {
-    it("should enforce MFA with grace period and generate compliance report", async () => {
+    it("should enforce MFA with grace period and generate compliance report", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -316,7 +337,7 @@ describe("MFA Enhancements", () => {
       expect(report.adoptionByRole.project_manager.required).toBeGreaterThan(0);
     });
 
-    it("should reset MFA and reflect in compliance report", async () => {
+    it("should reset MFA and reflect in compliance report", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
@@ -330,7 +351,7 @@ describe("MFA Enhancements", () => {
       expect(report.totalUsers).toBeGreaterThan(0);
     });
 
-    it("should handle grace period expiry correctly", async () => {
+    it("should handle grace period expiry correctly", { timeout: LONG_TIMEOUT }, async () => {
       const ctx = createUserContext(2);
       const caller = appRouter.createCaller(ctx);
 

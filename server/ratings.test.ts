@@ -13,6 +13,8 @@ function createAdminContext(): TrpcContext {
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -36,6 +38,8 @@ function createUserContext(): TrpcContext {
     name: "Regular User",
     loginMethod: "manus",
     role: "user",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -130,10 +134,18 @@ describe("Rating Scales System", () => {
       totalArea: 10000,
     });
 
+    // Create an asset for the project
+    const { createAsset } = await import("./db-assets");
+    const assetId = await createAsset({
+      projectId,
+      name: "Test Building Asset",
+      status: "active",
+    });
+
     // Add some assessments
     await db.upsertAssessment({
       projectId,
-      assetId: 1,
+      assetId,
       componentCode: "B2010",
       condition: "good",
       notes: "Test assessment 1",
@@ -142,7 +154,7 @@ describe("Rating Scales System", () => {
 
     await db.upsertAssessment({
       projectId,
-      assetId: 1,
+      assetId,
       componentCode: "B2020",
       condition: "fair",
       notes: "Test assessment 2",

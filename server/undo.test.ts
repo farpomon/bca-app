@@ -3,7 +3,7 @@ import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { getDb } from "./db";
 import { users, bulkOperationHistory, bulkOperationSnapshots } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -41,28 +41,24 @@ describe("Undo Functionality", () => {
     const database = await getDb();
     if (!database) throw new Error("Database not available");
 
-    // Create test users
-    const testUsers = await database
-      .insert(users)
-      .values([
-        {
-          openId: "test-user-1",
-          name: "Test User 1",
-          email: "test1@example.com",
-          role: "user",
-          accountStatus: "active",
-        },
-        {
-          openId: "test-user-2",
-          name: "Test User 2",
-          email: "test2@example.com",
-          role: "user",
-          accountStatus: "active",
-        },
-      ]);
-
-    const userId1 = testUsers[0].insertId;
-    const userId2 = testUsers[0].insertId + 1;
+    // Create test users with unique openIds
+    const ts = Date.now();
+    const testUser1 = await database.insert(users).values({
+      openId: `test-undo-${ts}-1`,
+      name: "Test User 1",
+      email: `test-undo-${ts}-1@example.com`,
+      role: "user",
+      accountStatus: "active",
+    });
+    const userId1 = testUser1[0].insertId;
+    const testUser2 = await database.insert(users).values({
+      openId: `test-undo-${ts}-2`,
+      name: "Test User 2",
+      email: `test-undo-${ts}-2@example.com`,
+      role: "user",
+      accountStatus: "active",
+    });
+    const userId2 = testUser2[0].insertId;
 
     // Perform bulk delete
     const deleteResult = await caller.admin.bulkDeleteUsers({
@@ -124,7 +120,7 @@ describe("Undo Functionality", () => {
 
     // Create test user
     const testUser = await database.insert(users).values({
-      openId: "test-user-undo-twice",
+      openId: `test-user-undo-twice-${Date.now()}`,
       name: "Test User",
       email: "test@example.com",
       role: "user",
@@ -173,7 +169,7 @@ describe("Undo Functionality", () => {
 
     // Create test user
     const testUser = await database.insert(users).values({
-      openId: "test-user-suspend",
+      openId: `test-user-suspend-${Date.now()}`,
       name: "Test User Suspend",
       email: "suspend@example.com",
       role: "user",

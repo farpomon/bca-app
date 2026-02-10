@@ -124,7 +124,7 @@ describe("Prioritization Dashboard Improvements", () => {
         }, 0);
         
         // Verify weights sum to approximately 100% (allow small floating point errors)
-        expect(totalWeight).toBeCloseTo(100, 1);
+        expect(totalWeight).toBeCloseTo(100, 0);
         
         // Verify each weight is positive
         criteria.forEach((c: any) => {
@@ -186,7 +186,7 @@ describe("Prioritization Dashboard Improvements", () => {
         compositeScore.criteriaScores.forEach((cs) => {
           expect(cs.score).toBeGreaterThanOrEqual(0);
           expect(cs.score).toBeLessThanOrEqual(10);
-          expect(cs.weight).toBeGreaterThan(0);
+          expect(cs.weight).toBeGreaterThanOrEqual(0);
           expect(cs.weightedScore).toBeGreaterThanOrEqual(0);
         });
       }

@@ -280,8 +280,9 @@ async function checkDuplicatesInDatabase(
         LIMIT 1
       `);
 
-      if (result.rows.length > 0) {
-        const existing = result.rows[0] as any;
+      const resultRows = (result as any)[0] || [];
+      if (resultRows.length > 0) {
+        const existing = resultRows[0] as any;
         duplicates.push({
           row: i + 1,
           matchType: 'exact',
@@ -308,8 +309,9 @@ async function checkDuplicatesInDatabase(
         LIMIT 1
       `);
 
-      if (result.rows.length > 0) {
-        const existing = result.rows[0] as any;
+      const resultRows = (result as any)[0] || [];
+      if (resultRows.length > 0) {
+        const existing = resultRows[0] as any;
         duplicates.push({
           row: i + 1,
           matchType: 'exact',

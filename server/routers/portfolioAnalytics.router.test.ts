@@ -358,7 +358,7 @@ describe("portfolioAnalytics router", () => {
       const result = await caller.portfolioAnalytics.getDeficiencyTrends();
 
       expect(result).toEqual(mockTrends);
-      expect(getDeficiencyTrends).toHaveBeenCalledWith(1, "test-company", false, 12);
+      expect(getDeficiencyTrends).toHaveBeenCalledWith(1, "test-company", false, 12, "monthly");
     });
 
     it("accepts custom months parameter", async () => {
@@ -369,7 +369,7 @@ describe("portfolioAnalytics router", () => {
 
       await caller.portfolioAnalytics.getDeficiencyTrends({ months: 6 });
 
-      expect(getDeficiencyTrends).toHaveBeenCalledWith(1, "test-company", false, 6);
+      expect(getDeficiencyTrends).toHaveBeenCalledWith(1, "test-company", false, 6, "monthly");
     });
   });
 

@@ -12,6 +12,8 @@ function createAuthContext(): TrpcContext {
     name: "Test User",
     loginMethod: "manus",
     role: "user",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -99,8 +101,8 @@ describe("FCI Calculation", () => {
     expect(fci).toBeDefined();
     expect(fci?.totalRepairCost).toBe(15000);
     expect(fci?.totalReplacementValue).toBe(150000);
-    expect(fci?.fci).toBe(10); // (15000 / 150000) * 100 = 10%
-    expect(fci?.rating).toBe("fair"); // 10% falls in Fair range (5-10%)
+    expect(fci?.fci).toBe(0.1); // 15000 / 150000 = 0.1
+    expect(fci?.rating).toBe("fair"); // 0.1 falls in Fair range (0.05-0.10)
   });
 
   it("should rate FCI as good when FCI <= 5%", async () => {
@@ -122,7 +124,7 @@ describe("FCI Calculation", () => {
 
     const fci = await caller.projects.fci({ projectId });
 
-    expect(fci?.fci).toBe(2); // 2%
+    expect(fci?.fci).toBe(0.02); // 2000 / 100000 = 0.02
     expect(fci?.rating).toBe("good");
   });
 
@@ -145,7 +147,7 @@ describe("FCI Calculation", () => {
 
     const fci = await caller.projects.fci({ projectId });
 
-    expect(fci?.fci).toBe(20); // 20%
+    expect(fci?.fci).toBe(0.2); // 20000 / 100000 = 0.2
     expect(fci?.rating).toBe("poor");
   });
 
@@ -168,7 +170,7 @@ describe("FCI Calculation", () => {
 
     const fci = await caller.projects.fci({ projectId });
 
-    expect(fci?.fci).toBe(40); // 40%
+    expect(fci?.fci).toBe(0.4); // 40000 / 100000 = 0.4
     expect(fci?.rating).toBe("critical");
   });
 

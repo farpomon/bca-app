@@ -35,20 +35,23 @@ describe("Composite Score Calculation Fix", () => {
   let criteriaIds: number[];
 
   beforeAll(async () => {
-    // Get an existing test project
-    const projects = await caller.projects.list();
-    if (projects.length === 0) {
-      throw new Error("No projects found. Please create at least one project for testing.");
-    }
-    testProjectId = projects[0].id;
+    // Create a test project
+    const project = await caller.projects.create({
+      name: "Composite Score Fix Test Project",
+      address: "123 Test St",
+    });
+    testProjectId = project.id;
 
-    // Get active criteria
-    const criteria = await caller.prioritization.getCriteria();
-    criteriaIds = criteria.map((c: any) => c.id);
-
-    // Ensure we have at least 3 criteria for testing
-    if (criteriaIds.length < 3) {
-      throw new Error("Need at least 3 criteria for testing. Please seed the database.");
+    // Create test criteria
+    const criteriaNames = ["CSF Urgency", "CSF Safety", "CSF Compliance"];
+    criteriaIds = [];
+    for (const name of criteriaNames) {
+      const result = await caller.prioritization.addCriterion({
+        name,
+        category: "risk",
+        weight: 33,
+      });
+      criteriaIds.push(result.id);
     }
   });
 

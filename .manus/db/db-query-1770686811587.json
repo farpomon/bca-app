@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, openId, name, role FROM users ORDER BY id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, openId, name, role FROM users ORDER BY id LIMIT 10;",
+  "rows": [
+    {
+      "id": "18000035",
+      "openId": "ESRHrBZ3Vx5uZhTJeMRt2b",
+      "name": "Luis Faria",
+      "role": "admin"
+    },
+    {
+      "id": "18060558",
+      "openId": "lfaria@yahoo.com.br",
+      "name": "Luis Faria",
+      "role": "admin"
+    },
+    {
+      "id": "18182152",
+      "openId": "biacasfer@gmail.com",
+      "name": "beatriz faria",
+      "role": "admin"
+    },
+    {
+      "id": "18330030",
+      "openId": "test-user-empty-1768024242780",
+      "name": "Empty Access User",
+      "role": "viewer"
+    },
+    {
+      "id": "18330031",
+      "openId": "test-user-buildings-1768024243579",
+      "name": "Multi Building User",
+      "role": "editor"
+    },
+    {
+      "id": "18330032",
+      "openId": "test-user-update-1768024244472",
+      "name": "Update User",
+      "role": "viewer"
+    },
+    {
+      "id": "18330033",
+      "openId": "test-user-update-1768024244472-upgrade",
+      "name": "Update User",
+      "role": "editor"
+    },
+    {
+      "id": "18330034",
+      "openId": "basic-tier-1768024247031",
+      "name": "Basic Tier User",
+      "role": "viewer"
+    },
+    {
+      "id": "18330035",
+      "openId": "pro-tier-1768024247848",
+      "name": "Pro Tier User",
+      "role": "editor"
+    },
+    {
+      "id": "18330036",
+      "openId": "enterprise-tier-1768024248871",
+      "name": "Enterprise Tier User",
+      "role": "project_manager"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\trole\n18000035\tESRHrBZ3Vx5uZhTJeMRt2b\tLuis Faria\tadmin\n18060558\tlfaria@yahoo.com.br\tLuis Faria\tadmin\n18182152\tbiacasfer@gmail.com\tbeatriz faria\tadmin\n18330030\ttest-user-empty-1768024242780\tEmpty Access User\tviewer\n18330031\ttest-user-buildings-1768024243579\tMulti Building User\teditor\n18330032\ttest-user-update-1768024244472\tUpdate User\tviewer\n18330033\ttest-user-update-1768024244472-upgrade\tUpdate User\teditor\n18330034\tbasic-tier-1768024247031\tBasic Tier User\tviewer\n18330035\tpro-tier-1768024247848\tPro Tier User\teditor\n18330036\tenterprise-tier-1768024248871\tEnterprise Tier User\tproject_manager\n",
+  "stderr": "",
+  "execution_time_ms": 116
+}

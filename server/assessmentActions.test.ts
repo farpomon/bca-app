@@ -7,6 +7,7 @@ vi.mock("./db", async (importOriginal) => {
   const actual = await importOriginal() as any;
   return {
     ...actual,
+    getProjectById: vi.fn().mockResolvedValue({ id: 1, name: "Test Project", userId: 1, company: "test-company" }),
     getAssessmentActions: vi.fn(),
     bulkUpsertAssessmentActions: vi.fn(),
   };
@@ -24,6 +25,8 @@ function createAuthContext(): TrpcContext {
     name: "Test User",
     loginMethod: "manus",
     role: "user",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),

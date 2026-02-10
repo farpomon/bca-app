@@ -1,6 +1,6 @@
 import { getDb } from "../db";
 import { assessments, buildingComponents } from "../../drizzle/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, isNotNull } from "drizzle-orm";
 
 /**
  * Strategy types for component maintenance
@@ -207,25 +207,24 @@ export async function generateStrategyOptions(
   if (!db) throw new Error("Database not available");
 
   // Get component details and latest assessment
+  // First try to find the component in the assessments table directly
   const componentData = await db
     .select({
-      code: buildingComponents.code,
-      name: buildingComponents.name,
+      code: assessments.componentCode,
+      name: assessments.componentCode,
       expectedUsefulLife: assessments.expectedUsefulLife,
       condition: assessments.condition,
       estimatedRepairCost: assessments.estimatedRepairCost,
       replacementValue: assessments.replacementValue,
       actionYear: assessments.actionYear,
     })
-    .from(buildingComponents)
-    .leftJoin(
-      assessments,
+    .from(assessments)
+    .where(
       and(
-        eq(assessments.componentCode, buildingComponents.code),
+        eq(assessments.componentCode, componentCode),
         eq(assessments.projectId, projectId)
       )
     )
-    .where(eq(buildingComponents.code, componentCode))
     .limit(1);
 
   if (!componentData.length || !componentData[0]) {
@@ -240,8 +239,8 @@ export async function generateStrategyOptions(
   else if (component.condition === "fair") condition = 65;
   else if (component.condition === "poor") condition = 30;
   else if (component.condition === "not_assessed") condition = 50;
-  const repairCost = component.estimatedRepairCost || 10000;
-  const replacementValue = component.replacementValue || 0;
+  const repairCost = Number(component.estimatedRepairCost) || 10000;
+  const replacementValue = Number(component.replacementValue) || 0;
   const esl = component.expectedUsefulLife || 25;
   const actionYear = component.actionYear || currentYear + 1;
 
@@ -465,18 +464,17 @@ export async function optimizePortfolio(
   // Get all components with assessments for this project
   const components = await db
     .select({
-      code: buildingComponents.code,
-      name: buildingComponents.name,
+      code: assessments.componentCode,
+      name: assessments.componentCode,
       condition: assessments.condition,
       estimatedRepairCost: assessments.estimatedRepairCost,
       replacementValue: assessments.replacementValue,
     })
-    .from(buildingComponents)
-    .innerJoin(
-      assessments,
+    .from(assessments)
+    .where(
       and(
-        eq(assessments.componentCode, buildingComponents.code),
-        eq(assessments.projectId, projectId)
+        eq(assessments.projectId, projectId),
+        isNotNull(assessments.componentCode)
       )
     );
 
@@ -566,11 +564,11 @@ export async function optimizePortfolio(
     selectedStrategies.length;
 
   const totalReplacementValue = components.reduce(
-    (sum, c) => sum + (c.replacementValue || 10000),
+    (sum, c) => sum + (Number(c.replacementValue) || 10000),
     0
   );
   const totalRepairCost = components.reduce(
-    (sum, c) => sum + (c.estimatedRepairCost || 0),
+    (sum, c) => sum + (Number(c.estimatedRepairCost) || 0),
     0
   );
 

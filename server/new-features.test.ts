@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { generateProjectUniqueId, generateAssetUniqueId, isValidProjectUniqueId, isValidAssetUniqueId } from "./utils/uniqueId";
@@ -15,6 +15,8 @@ function createAuthContext(): { ctx: TrpcContext } {
     name: "Test User",
     loginMethod: "manus",
     role: "admin",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -35,6 +37,27 @@ function createAuthContext(): { ctx: TrpcContext } {
 }
 
 describe("New Features: Building Codes, Unique IDs, and Compliance Explanations", () => {
+  beforeAll(async () => {
+    // Seed required building codes
+    const { upsertBuildingCode } = await import("./db-building-codes");
+    await upsertBuildingCode({
+      code: "NFC_2020",
+      title: "National Fire Code of Canada 2020",
+      edition: "2020",
+      jurisdiction: "Canada",
+      year: 2020,
+      isActive: 1,
+    });
+    await upsertBuildingCode({
+      code: "NPC_2020",
+      title: "National Plumbing Code of Canada 2020",
+      edition: "2020",
+      jurisdiction: "Canada",
+      year: 2020,
+      isActive: 1,
+    });
+  });
+
   describe("Building Codes - National Fire Code and Plumbing Code", () => {
     it("should include National Fire Code of Canada 2020 in building codes list", async () => {
       const { ctx } = createAuthContext();

@@ -15,7 +15,15 @@ const mockGetDb = vi.mocked(getDb);
 function createMockDb(projectData: any, financialData: any[] = [], componentStats: any = null, deficiencyStats: any = null, assessmentActivity: any = null, snapshots: any[] = []) {
   return {
     execute: vi.fn().mockImplementation((query: any) => {
-      const queryStr = query?.sql?.toString() || query?.toString() || "";
+      // Extract SQL text from drizzle's sql tagged template
+      let queryStr = "";
+      if (query?.queryChunks) {
+        queryStr = query.queryChunks.map((c: any) => c.value ? c.value.join('') : '').join('');
+      } else if (query?.sql) {
+        queryStr = query.sql.toString();
+      } else {
+        queryStr = query?.toString() || "";
+      }
       
       // Project query
       if (queryStr.includes("FROM projects") || queryStr.includes("from projects")) {

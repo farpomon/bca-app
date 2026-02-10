@@ -22,10 +22,10 @@ import {
 
 describe("FCI Calculations", () => {
   it("calculates FCI correctly", () => {
-    // FCI = (Deferred Maintenance / CRV) * 100
-    expect(calculateFCI(50000, 1000000)).toBe(5);
-    expect(calculateFCI(100000, 1000000)).toBe(10);
-    expect(calculateFCI(300000, 1000000)).toBe(30);
+    // FCI = Deferred Maintenance / CRV (decimal ratio)
+    expect(calculateFCI(50000, 1000000)).toBe(0.05);
+    expect(calculateFCI(100000, 1000000)).toBe(0.1);
+    expect(calculateFCI(300000, 1000000)).toBe(0.3);
     expect(calculateFCI(0, 1000000)).toBe(0);
   });
 
@@ -35,14 +35,14 @@ describe("FCI Calculations", () => {
   });
 
   it("returns correct FCI rating", () => {
-    expect(getFCIRating(3)).toBe("Good");
-    expect(getFCIRating(5)).toBe("Good");
-    expect(getFCIRating(7)).toBe("Fair");
-    expect(getFCIRating(10)).toBe("Fair");
-    expect(getFCIRating(15)).toBe("Poor");
-    expect(getFCIRating(30)).toBe("Poor");
-    expect(getFCIRating(35)).toBe("Critical");
-    expect(getFCIRating(50)).toBe("Critical");
+    expect(getFCIRating(0.03)).toBe("Good");
+    expect(getFCIRating(0.05)).toBe("Good");
+    expect(getFCIRating(0.07)).toBe("Fair");
+    expect(getFCIRating(0.10)).toBe("Fair");
+    expect(getFCIRating(0.15)).toBe("Poor");
+    expect(getFCIRating(0.30)).toBe("Poor");
+    expect(getFCIRating(0.35)).toBe("Critical");
+    expect(getFCIRating(0.50)).toBe("Critical");
   });
 });
 
@@ -169,7 +169,7 @@ describe("Portfolio Metrics Aggregation", () => {
       yearBuilt: 2000,
       currentReplacementValue: 1000000,
       deferredMaintenanceCost: 50000,
-      fci: 5,
+      fci: 0.05,
       fciRating: "Good",
       conditionScore: 85,
       conditionRating: "Good",
@@ -188,7 +188,7 @@ describe("Portfolio Metrics Aggregation", () => {
       yearBuilt: 1990,
       currentReplacementValue: 2000000,
       deferredMaintenanceCost: 200000,
-      fci: 10,
+      fci: 0.10,
       fciRating: "Fair",
       conditionScore: 65,
       conditionRating: "Fair",
@@ -214,8 +214,8 @@ describe("Portfolio Metrics Aggregation", () => {
 
   it("calculates portfolio FCI correctly", () => {
     const summary = aggregatePortfolioMetrics(sampleAssets);
-    // FCI = (250000 / 3000000) * 100 = 8.33%
-    expect(summary.portfolioFCI).toBeCloseTo(8.33, 1);
+    // FCI = 250000 / 3000000 = 0.0833 (decimal ratio)
+    expect(summary.portfolioFCI).toBeCloseTo(0.0833, 3);
     expect(summary.portfolioFCIRating).toBe("Fair");
   });
 
@@ -281,8 +281,8 @@ describe("Category Grouping", () => {
     const breakdown = groupByCategory(sampleAssessments);
     
     const categoryA = breakdown.find(c => c.categoryCode === "A");
-    // FCI = (25000 / 250000) * 100 = 10%
-    expect(categoryA?.fci).toBe(10);
+    // FCI = 25000 / 250000 = 0.1 (decimal ratio)
+    expect(categoryA?.fci).toBe(0.1);
   });
 
   it("calculates average condition per category", () => {

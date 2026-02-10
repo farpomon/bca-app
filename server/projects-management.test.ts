@@ -75,12 +75,14 @@ describe("Project Management Features", () => {
       // Try to delete with wrong user context
       const otherUserCtx = {
         ...ctx,
-        user: { ...ctx.user, id: 999 },
+        user: { ...ctx.user, id: 999, company: "other-company", companyId: 999, role: "user" as const },
       };
       const otherCaller = appRouter.createCaller(otherUserCtx);
 
-      // Should not throw, but also shouldn't delete anything
-      await otherCaller.projects.bulkDelete({ ids: [project.id] });
+      // Should throw because the other user doesn't own the project
+      await expect(
+        otherCaller.projects.bulkDelete({ ids: [project.id] })
+      ).rejects.toThrow();
 
       // Verify project still exists for original user
       const projects = await db.getUserProjects(ctx.user.id, false, ctx.user.company, ctx.user.role === "admin");

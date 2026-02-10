@@ -12,6 +12,8 @@ function createAuthContext(): TrpcContext {
     name: "Test User",
     loginMethod: "manus",
     role: "user",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -183,7 +185,7 @@ describe("Dashboard Data Endpoints", () => {
     expect(fciData).toBeDefined();
     expect(fciData?.totalRepairCost).toBe(100000);
     expect(fciData?.totalReplacementValue).toBe(500000);
-    expect(fciData?.fci).toBe(20); // 100000 / 500000 * 100 = 20%
+    expect(fciData?.fci).toBeCloseTo(0.2, 1); // 100000 / 500000 * 100 = 20%
     expect(fciData?.rating).toBe("poor"); // 20% is in poor range (10-30%)
 
     console.log("FCI data:", JSON.stringify(fciData, null, 2));

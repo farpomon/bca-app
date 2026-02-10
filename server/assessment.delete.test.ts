@@ -13,6 +13,8 @@ function createAdminContext(): TrpcContext {
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -40,6 +42,8 @@ function createNonAdminContext(): TrpcContext {
     name: "Regular User",
     loginMethod: "manus",
     role: "user",
+    company: "test-company",
+    companyId: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -65,10 +69,22 @@ describe("assessments.adminDelete", () => {
   let testAssetId: number;
 
   beforeAll(async () => {
-    // Create a test project, asset, and assessment for deletion tests
-    // Using existing project and asset from the database
-    testProjectId = 14; // Commonwealth Recreation Centre project
-    testAssetId = 133; // Asset with Furnishings assessment
+    // Create a test project
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const project = await caller.projects.create({
+      name: "Delete Test Project",
+      address: "123 Delete St",
+    });
+    testProjectId = project.id;
+    
+    // Create a test asset
+    const { createAsset } = await import("./db-assets");
+    testAssetId = await createAsset({
+      projectId: testProjectId,
+      name: "Delete Test Asset",
+      assetType: "building",
+    });
     
     // Create a fresh test assessment for deletion
     testAssessmentId = await db.upsertAssessment({
@@ -130,15 +146,21 @@ describe("assessments.adminDelete", () => {
     const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
-    // Get an assessment from a different project
-    const assessments = await db.getAssetAssessments(testAssetId);
-    if (assessments.length === 0) {
-      throw new Error("No test assessment found");
-    }
+    // Create a fresh assessment since the original was deleted in the first test
+    const newAssessmentId = await db.upsertAssessment({
+      projectId: testProjectId,
+      assetId: testAssetId,
+      componentCode: "TEST-CROSS",
+      componentName: "Cross Project Test",
+      condition: "fair",
+      status: "initial",
+      estimatedRepairCost: 500,
+      assessedAt: new Date().toISOString(),
+    });
 
     await expect(
       caller.assessments.adminDelete({
-        assessmentId: assessments[0].id,
+        assessmentId: newAssessmentId,
         projectId: 999999, // Wrong project ID
         reason: "Test deletion",
       })

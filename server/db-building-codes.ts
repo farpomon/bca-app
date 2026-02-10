@@ -24,7 +24,7 @@ export async function getActiveBuildingCodes() {
   
   for (const code of allCodes) {
     // Create a unique key based on jurisdiction and year
-    const key = `${code.jurisdiction || 'unknown'}_${code.year || 'unknown'}`;
+    const key = `${code.code || code.title || 'unknown'}_${code.jurisdiction || 'unknown'}_${code.year || 'unknown'}`;
     const existing = uniqueCodes.get(key);
     
     // If no existing entry, or existing has no documentUrl but current does, use current

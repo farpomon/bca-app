@@ -57,19 +57,26 @@ export async function getFinancialPlanningData(projectId: number): Promise<Finan
   // Use raw SQL to join through assets table since actual DB doesn't have projectId in assessments
   const results = await db.execute(sql`
     SELECT 
-      bc.code as componentCode,
-      CASE 
-        WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
-        THEN YEAR(CURDATE()) + a.remainingLifeYears 
-        ELSE NULL 
-      END as actionYear,
+      COALESCE(bc.code, a.componentCode) as componentCode,
+      COALESCE(
+        a.actionYear,
+        CASE 
+          WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
+          THEN YEAR(CURDATE()) + a.remainingLifeYears 
+          ELSE NULL 
+        END
+      ) as actionYear,
       CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
+    LEFT JOIN assets ast ON a.assetId = ast.id
     LEFT JOIN building_components bc ON a.componentId = bc.id
-    WHERE ast.projectId = ${projectId}
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
   `);
-  const projectAssessments = ((results as any)[0] || []) as Array<{componentCode: string | null, actionYear: number | null, estimatedRepairCost: number}>;
+  const projectAssessments = ((results as any)[0] || []).map((row: any) => ({
+    componentCode: row.componentCode,
+    actionYear: row.actionYear != null ? Number(row.actionYear) : null,
+    estimatedRepairCost: Number(row.estimatedRepairCost) || 0,
+  })) as Array<{componentCode: string | null, actionYear: number | null, estimatedRepairCost: number}>;
 
   // Group by UNIFORMAT Level 1 (first letter of component code)
   const groups = Object.entries(UNIFORMAT_GROUPS).map(([code, name]) => {
@@ -124,8 +131,8 @@ export async function getConditionMatrixData(projectId: number): Promise<Conditi
       a.condition,
       a.estimatedRepairCost
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
   `);
   const projectAssessments = (results as any)[0] || [];
 
@@ -158,7 +165,7 @@ export async function getConditionMatrixData(projectId: number): Promise<Conditi
     }
 
     const totalCost = systemAssessments.reduce(
-      (sum, a) => sum + (a.estimatedRepairCost || 0),
+      (sum: number, a: any) => sum + (Number(a.estimatedRepairCost) || 0),
       0
     );
 
@@ -191,8 +198,8 @@ export async function getAnnualCostBreakdown(projectId: number, years: number = 
       a.actionYear,
       a.estimatedRepairCost
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
   `);
   const projectAssessments = (results as any)[0] || [];
 

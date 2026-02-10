@@ -140,7 +140,7 @@ describe("Audit Trail System", () => {
 
   it("should prevent non-admins from viewing all audit logs", async () => {
     try {
-      await userCaller.audit.allLogs({ limit: 10 });
+      await userCaller.audit.list({ limit: 10 });
       // If we get here without error, the test should check if result is restricted
       expect(true).toBe(true); // Implementation may vary
     } catch (error: any) {

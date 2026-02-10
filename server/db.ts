@@ -628,9 +628,9 @@ export async function getProjectAssessments(projectId: number) {
       a.createdAt,
       a.updatedAt
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
+    LEFT JOIN assets ast ON a.assetId = ast.id
     LEFT JOIN building_components bc ON a.componentId = bc.id
-    WHERE ast.projectId = ${projectId}
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
       AND a.deletedAt IS NULL
     ORDER BY COALESCE(a.assessedAt, a.assessmentDate) DESC
   `);
@@ -659,14 +659,14 @@ export async function getAssetAssessments(assetId: number) {
         WHEN a.conditionRating IN ('4', '5') THEN 'poor'
         ELSE 'not_assessed'
       END as condition,
-      a.conditionNotes as observations,
+      COALESCE(a.observations, a.conditionNotes) as observations,
       CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
       a.replacementValue,
-      a.remainingLifeYears as remainingUsefulLife,
+      COALESCE(a.remainingUsefulLife, a.remainingLifeYears) as remainingUsefulLife,
       15 as expectedUsefulLife,
       CASE 
-        WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
-        THEN YEAR(CURDATE()) + a.remainingLifeYears 
+        WHEN COALESCE(a.remainingUsefulLife, a.remainingLifeYears) IS NOT NULL AND COALESCE(a.remainingUsefulLife, a.remainingLifeYears) > 0 
+        THEN YEAR(CURDATE()) + COALESCE(a.remainingUsefulLife, a.remainingLifeYears) 
         ELSE NULL 
       END as actionYear,
       a.priorityLevel,
@@ -694,27 +694,39 @@ export async function getAssessmentByComponent(projectId: number, componentCode:
   const db = await getDb();
   if (!db) return undefined;
   
-  // Use raw SQL with join through assets table
+  // Use raw SQL - handle both asset-linked and direct projectId assessments
   const results = await db.execute(sql`
     SELECT 
       a.id,
       a.assetId,
       a.componentId,
       a.componentCode,
+      a.componentName,
+      a.componentLocation,
       a.conditionRating,
       a.conditionNotes,
       a.estimatedRepairCost,
+      a.replacementValue,
       a.priorityLevel,
       a.remainingLifeYears,
+      a.remainingUsefulLife,
+      a.expectedUsefulLife,
       a.location,
       a.status,
+      a.condition,
+      a.observations,
+      a.recommendations,
       a.assessmentDate as assessedAt,
+      a.hasValidationOverrides,
+      a.validationWarnings,
       a.createdAt,
       a.updatedAt
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
       AND a.componentCode = ${componentCode}
+      AND (a.hidden = 0 OR a.hidden IS NULL)
+      AND a.deletedAt IS NULL
     LIMIT 1
   `);
   
@@ -1167,17 +1179,16 @@ export async function getProjectStats(projectId: number) {
   const assessmentCountResult = await db.execute(sql`
     SELECT COUNT(*) as count
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
   `);
   const assessmentCount = { count: (assessmentCountResult as any)?.[0]?.[0]?.count || 0 };
   
-  // Count photos via assets (photos don't have projectId directly)
+  // Count photos directly by projectId
   const photoCountResult = await db.execute(sql`
     SELECT COUNT(*) as count
     FROM photos p
-    INNER JOIN assets ast ON p.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    WHERE p.projectId = ${projectId}
   `);
   const photoCount = { count: (photoCountResult as any)?.[0]?.[0]?.count || 0 };
   
@@ -1191,8 +1202,8 @@ export async function getProjectStats(projectId: number) {
   const [assessmentCost] = await db.execute(sql`
     SELECT COALESCE(SUM(a.estimatedRepairCost), 0) as total
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
   `);
   
   // Use assessment repair costs if available, otherwise use deficiency costs
@@ -1227,15 +1238,21 @@ export async function getProjectFCI(projectId: number) {
   const db = await getDb();
   if (!db) return null;
   
-  // Use raw SQL to join through assets table since actual DB doesn't have projectId in assessments
-  // Also get replacement value from assets table since assessments don't have it
+  // Get FCI data from assessments - handle both asset-linked and direct projectId assessments
   const results = await db.execute(sql`
     SELECT 
-      COALESCE(SUM(CAST(a.estimatedRepairCost AS SIGNED)), 0) as totalRepairCost,
-      COALESCE(SUM(CAST(ast.replacementValue AS SIGNED)), 0) as totalReplacementValue
-    FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+      COALESCE(SUM(totalRepairCost), 0) as totalRepairCost,
+      COALESCE(SUM(totalReplacementValue), 0) as totalReplacementValue
+    FROM (
+      SELECT 
+        CAST(a.estimatedRepairCost AS DECIMAL(15,2)) as totalRepairCost,
+        COALESCE(CAST(a.replacementValue AS DECIMAL(15,2)), CAST(ast.replacementValue AS DECIMAL(15,2)), 0) as totalReplacementValue
+      FROM assessments a
+      LEFT JOIN assets ast ON a.assetId = ast.id
+      WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
+        AND (a.hidden = 0 OR a.hidden IS NULL)
+        AND a.deletedAt IS NULL
+    ) combined
   `);
   
   const costSums = (results as any)[0]?.[0];
@@ -1774,25 +1791,25 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         COALESCE(a.componentCode, bc.code) as componentCode,
         COALESCE(a.componentName, bc.name) as componentName,
         a.conditionRating,
-        CASE 
+        COALESCE(a.condition, CASE 
           WHEN a.conditionRating IN ('1', '2') THEN 'good'
           WHEN a.conditionRating = '3' THEN 'fair'
           WHEN a.conditionRating IN ('4', '5') THEN 'poor'
           ELSE 'not_assessed'
-        END as condition,
-        a.conditionNotes as observations,
-        '' as recommendations,
+        END) as condition,
+        COALESCE(a.observations, a.conditionNotes) as observations,
+        COALESCE(a.recommendations, a.recommendedAction, '') as recommendations,
         CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
         a.replacementValue,
-        a.remainingLifeYears as remainingUsefulLife,
+        COALESCE(a.remainingUsefulLife, a.remainingLifeYears) as remainingUsefulLife,
         15 as expectedUsefulLife,
         YEAR(CURDATE()) as reviewYear,
         NULL as lastTimeAction,
-        CASE 
-          WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
-          THEN YEAR(CURDATE()) + a.remainingLifeYears 
+        COALESCE(a.actionYear, CASE 
+          WHEN COALESCE(a.remainingUsefulLife, a.remainingLifeYears) IS NOT NULL AND COALESCE(a.remainingUsefulLife, a.remainingLifeYears) > 0 
+          THEN YEAR(CURDATE()) + COALESCE(a.remainingUsefulLife, a.remainingLifeYears) 
           ELSE NULL 
-        END as actionYear,
+        END) as actionYear,
         a.priorityLevel,
         a.location as componentLocation,
         a.status,
@@ -1801,9 +1818,9 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.updatedAt,
         (SELECT COUNT(*) FROM photos p WHERE p.assessmentId = a.id AND p.deletedAt IS NULL) as photoCount
       FROM assessments a
-      INNER JOIN assets ast ON a.assetId = ast.id
+      LEFT JOIN assets ast ON a.assetId = ast.id
       LEFT JOIN building_components bc ON a.componentId = bc.id
-      WHERE ast.projectId = ${projectId}
+      WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
         AND a.status = ${status}
       ORDER BY a.updatedAt DESC
     `;
@@ -1816,25 +1833,25 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         COALESCE(a.componentCode, bc.code) as componentCode,
         COALESCE(a.componentName, bc.name) as componentName,
         a.conditionRating,
-        CASE 
+        COALESCE(a.condition, CASE 
           WHEN a.conditionRating IN ('1', '2') THEN 'good'
           WHEN a.conditionRating = '3' THEN 'fair'
           WHEN a.conditionRating IN ('4', '5') THEN 'poor'
           ELSE 'not_assessed'
-        END as condition,
-        a.conditionNotes as observations,
-        '' as recommendations,
+        END) as condition,
+        COALESCE(a.observations, a.conditionNotes) as observations,
+        COALESCE(a.recommendations, a.recommendedAction, '') as recommendations,
         CAST(COALESCE(a.estimatedRepairCost, 0) AS SIGNED) as estimatedRepairCost,
         a.replacementValue,
-        a.remainingLifeYears as remainingUsefulLife,
+        COALESCE(a.remainingUsefulLife, a.remainingLifeYears) as remainingUsefulLife,
         15 as expectedUsefulLife,
         YEAR(CURDATE()) as reviewYear,
         NULL as lastTimeAction,
-        CASE 
-          WHEN a.remainingLifeYears IS NOT NULL AND a.remainingLifeYears > 0 
-          THEN YEAR(CURDATE()) + a.remainingLifeYears 
+        COALESCE(a.actionYear, CASE 
+          WHEN COALESCE(a.remainingUsefulLife, a.remainingLifeYears) IS NOT NULL AND COALESCE(a.remainingUsefulLife, a.remainingLifeYears) > 0 
+          THEN YEAR(CURDATE()) + COALESCE(a.remainingUsefulLife, a.remainingLifeYears) 
           ELSE NULL 
-        END as actionYear,
+        END) as actionYear,
         a.priorityLevel,
         a.location as componentLocation,
         a.status,
@@ -1843,9 +1860,9 @@ export async function getProjectAssessmentsByStatus(projectId: number, status?: 
         a.updatedAt,
         (SELECT COUNT(*) FROM photos p WHERE p.assessmentId = a.id AND p.deletedAt IS NULL) as photoCount
       FROM assessments a
-      INNER JOIN assets ast ON a.assetId = ast.id
+      LEFT JOIN assets ast ON a.assetId = ast.id
       LEFT JOIN building_components bc ON a.componentId = bc.id
-      WHERE ast.projectId = ${projectId}
+      WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
       ORDER BY a.updatedAt DESC
     `;
   }
@@ -1863,8 +1880,8 @@ export async function getAssessmentStatusCounts(projectId: number) {
       a.status,
       COUNT(*) as count
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
     GROUP BY a.status
   `);
 
@@ -2537,28 +2554,19 @@ export async function getAssessmentsByProject(projectId: number) {
   const database = await getDb();
   if (!database) return [];
   
-  // Join through assets table since actual DB schema doesn't have projectId in assessments
-  return database
-    .select({
-      id: assessments.id,
-      assetId: assessments.assetId,
-      componentId: assessments.componentId,
-      conditionRating: assessments.conditionRating,
-      conditionNotes: assessments.conditionNotes,
-      estimatedRepairCost: assessments.estimatedRepairCost,
-      priorityLevel: assessments.priorityLevel,
-      remainingLifeYears: assessments.remainingLifeYears,
-      location: assessments.location,
-      status: assessments.status,
-      createdAt: assessments.createdAt,
-      updatedAt: assessments.updatedAt,
-    })
-    .from(assessments)
-    .innerJoin(assets, eq(assessments.assetId, assets.id))
-    .where(and(
-      eq(assets.projectId, projectId),
-      eq(assessments.hidden, 0)
-    ));
+  // Support both asset-linked and direct projectId assessments
+  const results = await database.execute(sql`
+    SELECT a.id, a.assetId, a.componentId, a.conditionRating, a.conditionNotes,
+           a.estimatedRepairCost, a.priorityLevel, a.remainingLifeYears,
+           a.location, a.status, a.createdAt, a.updatedAt,
+           a.componentCode, a.componentName, a.condition, a.observations,
+           a.recommendations, a.actionYear, a.replacementValue
+    FROM assessments a
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
+      AND (a.hidden = 0 OR a.hidden IS NULL)
+  `);
+  return (results as any)[0] || [];
 }
 
 export async function getDeficienciesByProject(projectId: number) {
@@ -2786,8 +2794,8 @@ export async function getProjectComponents(projectId: number) {
   const results = await database.execute(sql`
     SELECT DISTINCT a.componentCode
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
       AND a.componentCode IS NOT NULL
   `);
 
@@ -2837,8 +2845,8 @@ export async function getAssessmentsByComponent(projectId: number, componentCode
       a.createdAt,
       a.updatedAt
     FROM assessments a
-    INNER JOIN assets ast ON a.assetId = ast.id
-    WHERE ast.projectId = ${projectId}
+    LEFT JOIN assets ast ON a.assetId = ast.id
+    WHERE (ast.projectId = ${projectId} OR a.projectId = ${projectId})
       AND a.componentCode = ${componentCode}
       AND a.hidden = 0
     ORDER BY a.assessmentDate DESC

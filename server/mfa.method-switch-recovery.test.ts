@@ -3,12 +3,24 @@
  * Tests for both method switching and recovery flow features
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { getDb } from "./db";
 import { userMfaSettings, mfaMethodSwitchRequests, mfaRecoveryRequests } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { encryptSecret, getMfaEncryptionKey } from "./mfa";
+
+// Mock email sending
+vi.mock('@sendgrid/mail', () => ({
+  default: {
+    setApiKey: vi.fn(),
+    send: vi.fn().mockResolvedValue([{ statusCode: 202 }]),
+  },
+}));
+vi.mock('./_core/email', () => ({
+  sendVerificationEmail: vi.fn().mockResolvedValue(true),
+}));
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -51,11 +63,16 @@ describe("MFA Method Switching", () => {
     // Clean up any existing test data
     await db.delete(mfaMethodSwitchRequests).where(eq(mfaMethodSwitchRequests.userId, testUserId));
     await db.delete(userMfaSettings).where(eq(userMfaSettings.userId, testUserId));
+    // Also clean up the "no MFA" test user
+    await db.delete(mfaMethodSwitchRequests).where(eq(mfaMethodSwitchRequests.userId, testUserId + 1));
+    await db.delete(userMfaSettings).where(eq(userMfaSettings.userId, testUserId + 1));
 
-    // Create MFA settings for test user
+    // Create MFA settings for test user with properly encrypted secret
+    const encryptionKey = getMfaEncryptionKey();
+    const encryptedSecret = encryptSecret("TEST_SECRET", encryptionKey);
     await db.insert(userMfaSettings).values({
       userId: testUserId,
-      secret: "TEST_SECRET",
+      secret: encryptedSecret,
       enabled: 1,
       mfaMethod: "totp",
       backupCodes: JSON.stringify([]),
@@ -145,11 +162,16 @@ describe("MFA Recovery Flow", () => {
     // Clean up any existing test data
     await db.delete(mfaRecoveryRequests).where(eq(mfaRecoveryRequests.userId, testUserId));
     await db.delete(userMfaSettings).where(eq(userMfaSettings.userId, testUserId));
+    // Also clean up the "no MFA" test user
+    await db.delete(mfaRecoveryRequests).where(eq(mfaRecoveryRequests.userId, testUserId + 1));
+    await db.delete(userMfaSettings).where(eq(userMfaSettings.userId, testUserId + 1));
 
-    // Create MFA settings for test user
+    // Create MFA settings for test user with properly encrypted secret
+    const encryptionKey = getMfaEncryptionKey();
+    const encryptedSecret = encryptSecret("TEST_SECRET", encryptionKey);
     await db.insert(userMfaSettings).values({
       userId: testUserId,
-      secret: "TEST_SECRET",
+      secret: encryptedSecret,
       enabled: 1,
       mfaMethod: "totp",
       backupCodes: JSON.stringify([]),

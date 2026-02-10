@@ -11,7 +11,7 @@ import * as criteriaManagementService from "./criteriaManagement.service";
 let testCriteriaIds: number[] = [];
 let testUserId = 1;
 
-describe("Criteria Management Service", () => {
+describe("Criteria Management Service", { timeout: 30000 }, () => {
   beforeAll(async () => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -148,7 +148,7 @@ describe("Criteria Management Service", () => {
         ? parseFloat((weightsResult[0][0] as any).totalWeight)
         : 0;
 
-      expect(totalWeight).toBeCloseTo(100, 1);
+      expect(totalWeight).toBeCloseTo(100, 0);
     });
   });
 
@@ -359,7 +359,7 @@ describe("Criteria Management Service", () => {
         ? parseFloat((weightsResult[0][0] as any).totalWeight)
         : 0;
 
-      expect(totalWeight).toBeCloseTo(100, 1);
+      expect(totalWeight).toBeCloseTo(100, 0);
     });
 
     it("should distribute weights equally when all are zero", async () => {

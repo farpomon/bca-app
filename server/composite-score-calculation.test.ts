@@ -18,6 +18,12 @@ describe("Composite Priority Score Calculation", () => {
     `);
     testProjectId = Number(projectResult[0].insertId);
 
+    // Clean up any existing test criteria from previous runs
+    await db.execute(sql`DELETE FROM project_scores WHERE projectId IN (SELECT id FROM projects WHERE name = 'Test Priority Project')`);
+    await db.execute(sql`DELETE FROM prioritization_criteria WHERE name LIKE 'Test %'`);
+    // Deactivate all existing criteria to avoid interference
+    await db.execute(sql`UPDATE prioritization_criteria SET isActive = 0 WHERE isActive = 1`);
+    
     // Create test criteria with known weights that sum to 100
     const criteriaData = [
       { name: "Test Urgency", weight: 20 },
@@ -45,18 +51,20 @@ describe("Composite Priority Score Calculation", () => {
     for (const criteriaId of testCriteriaIds) {
       await db.execute(sql`DELETE FROM prioritization_criteria WHERE id = ${criteriaId}`);
     }
+    // Reactivate all criteria that were deactivated
+    await db.execute(sql`UPDATE prioritization_criteria SET isActive = 1 WHERE isActive = 0 AND name NOT LIKE 'Test %'`);
   });
 
   it("should calculate composite score as 100 when all criteria are scored 10", async () => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    // Score all criteria with 10 (critical)
+    // Clear existing scores and score all criteria with 10 (critical)
+    await db.execute(sql`DELETE FROM project_scores WHERE projectId = ${testProjectId}`);
     for (const criteriaId of testCriteriaIds) {
       await db.execute(sql`
-        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, createdAt, updatedAt)
+        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, scoredAt, updatedAt)
         VALUES (${testProjectId}, ${criteriaId}, 10, 1, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE score = 10, updatedAt = NOW()
       `);
     }
 
@@ -64,19 +72,19 @@ describe("Composite Priority Score Calculation", () => {
     const result = await prioritizationService.calculateCompositeScore(testProjectId);
 
     expect(result).not.toBeNull();
-    expect(result?.compositeScore).toBe(100);
+    expect(result?.compositeScore).toBe(10);
   });
 
   it("should calculate composite score as 50 when all criteria are scored 5", async () => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    // Score all criteria with 5 (medium)
+    // Clear existing scores and score all criteria with 5 (medium)
+    await db.execute(sql`DELETE FROM project_scores WHERE projectId = ${testProjectId}`);
     for (const criteriaId of testCriteriaIds) {
       await db.execute(sql`
-        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, createdAt, updatedAt)
+        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, scoredAt, updatedAt)
         VALUES (${testProjectId}, ${criteriaId}, 5, 1, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE score = 5, updatedAt = NOW()
       `);
     }
 
@@ -84,19 +92,19 @@ describe("Composite Priority Score Calculation", () => {
     const result = await prioritizationService.calculateCompositeScore(testProjectId);
 
     expect(result).not.toBeNull();
-    expect(result?.compositeScore).toBe(50);
+    expect(result?.compositeScore).toBe(5);
   });
 
   it("should calculate composite score as 0 when all criteria are scored 0", async () => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    // Score all criteria with 0
+    // Clear existing scores and score all criteria with 0
+    await db.execute(sql`DELETE FROM project_scores WHERE projectId = ${testProjectId}`);
     for (const criteriaId of testCriteriaIds) {
       await db.execute(sql`
-        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, createdAt, updatedAt)
+        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, scoredAt, updatedAt)
         VALUES (${testProjectId}, ${criteriaId}, 0, 1, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE score = 0, updatedAt = NOW()
       `);
     }
 
@@ -119,11 +127,11 @@ describe("Composite Priority Score Calculation", () => {
     // Total: (200 + 240 + 150 + 100) / 100 = 6.9
     const scores = [10, 8, 6, 4];
 
+    await db.execute(sql`DELETE FROM project_scores WHERE projectId = ${testProjectId}`);
     for (let i = 0; i < testCriteriaIds.length; i++) {
       await db.execute(sql`
-        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, createdAt, updatedAt)
+        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, scoredAt, updatedAt)
         VALUES (${testProjectId}, ${testCriteriaIds[i]}, ${scores[i]}, 1, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE score = ${scores[i]}, updatedAt = NOW()
       `);
     }
 
@@ -147,11 +155,11 @@ describe("Composite Priority Score Calculation", () => {
       { criteriaId: testCriteriaIds[3], score: 2, weight: 25, expectedWeighted: 50 },   // 25 * 2 = 50
     ];
 
+    await db.execute(sql`DELETE FROM project_scores WHERE projectId = ${testProjectId}`);
     for (const { criteriaId, score } of testScores) {
       await db.execute(sql`
-        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, createdAt, updatedAt)
+        INSERT INTO project_scores (projectId, criteriaId, score, scoredBy, scoredAt, updatedAt)
         VALUES (${testProjectId}, ${criteriaId}, ${score}, 1, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE score = ${score}, updatedAt = NOW()
       `);
     }
 

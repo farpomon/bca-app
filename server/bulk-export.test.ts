@@ -14,6 +14,7 @@ function createAuthContext(): { ctx: TrpcContext } {
     name: "Test User",
     loginMethod: "manus",
     role: "admin",
+    company: "Test Company",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -170,7 +171,7 @@ describe("Bulk Export Functionality", () => {
     // Create project as different user
     const otherUserCtx = {
       ...ctx,
-      user: { ...ctx.user, id: 999 },
+      user: { ...ctx.user, id: 999, company: "other-company", companyId: 999, role: "user" as const },
     };
     const otherCaller = appRouter.createCaller(otherUserCtx);
     const otherProject = await otherCaller.projects.create({

@@ -116,7 +116,7 @@ describe("Super Admin Access Control", () => {
       try {
         await caller.admin.assignUserToCompany({
           userId: 2,
-          companyId: 1,
+          companyName: "test-company",
         });
       } catch (error: any) {
         // Expected to fail due to database not being mocked

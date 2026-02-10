@@ -1,11 +1,24 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// Mock SendGrid before importing the module
+vi.mock('@sendgrid/mail', () => ({
+  default: {
+    setApiKey: vi.fn(),
+    send: vi.fn().mockResolvedValue([{ statusCode: 202 }]),
+  },
+}));
+
 import { sendEmail, sendAccessRequestNotification } from "./emailService";
 
 describe("Email Service", () => {
-  it("should have SMTP credentials configured", () => {
-    expect(process.env.SMTP_USER).toBeDefined();
-    expect(process.env.SMTP_PASSWORD).toBeDefined();
-    expect(process.env.SMTP_USER).toContain("@");
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "test-key";
+    process.env.SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "test@example.com";
+  });
+
+  it("should have SendGrid API key configured", () => {
+    expect(process.env.SENDGRID_API_KEY).toBeDefined();
   });
 
   it("should send test email successfully", async () => {
