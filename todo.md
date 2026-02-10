@@ -5708,3 +5708,20 @@ Deployment is allowed only when:
 - [x] Generated 108 cost estimates for deficiencies
 - [x] Generated 228 CI/FCI snapshots (2020-2025 trend data)
 - [x] Updated all 20 assets with replacement values and Edmonton addresses
+
+## Seed Investment Analysis Records
+- [x] Investigated investment_analysis table schema (29 columns)
+- [x] Seeded 22 realistic ROI/NPV/TCO/LCCA/BCA scenario records for Edmonton assets
+- [x] Verified investment analysis data
+
+## Create Budget Cycles Table and Seed Data
+- [x] capital_budget_cycles table already existed in DB
+- [x] Seeded 5 new budget cycles (FY2022-2024 completed, FY2025-2027 active, FY2028-2030 planning, FY2025 emergency, FY2026-2030 heritage)
+- [x] Seeded 32 budget allocations across all cycles
+- [x] Cleaned up 77 orphaned test budget cycles
+- [x] Verified budget data (7 total cycles including 2 pre-existing Luis-created ones)
+
+## User Cleanup
+- [x] Identified 2 Luis Faria accounts (ID 18000035 and 18060558)
+- [x] Deleted 482 non-Luis users from the database
+- [x] Verified only 2 Luis Faria accounts remain (both admin role)
