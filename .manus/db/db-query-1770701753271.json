@@ -1,0 +1,42 @@
+{
+  "query": "SELECT city, COUNT(*) as project_count FROM projects GROUP BY city ORDER BY project_count DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT city, COUNT(*) as project_count FROM projects GROUP BY city ORDER BY project_count DESC;",
+  "rows": [
+    {
+      "city": "NULL",
+      "project_count": "9581"
+    },
+    {
+      "city": "Assessment City",
+      "project_count": "58"
+    },
+    {
+      "city": "PDF City",
+      "project_count": "58"
+    },
+    {
+      "city": "Mobile City",
+      "project_count": "58"
+    },
+    {
+      "city": "Export City",
+      "project_count": "58"
+    },
+    {
+      "city": "Test City",
+      "project_count": "58"
+    },
+    {
+      "city": "Toronto",
+      "project_count": "3"
+    },
+    {
+      "city": "Edmonton",
+      "project_count": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "city\tproject_count\nNULL\t9581\nAssessment City\t58\nPDF City\t58\nMobile City\t58\nExport City\t58\nTest City\t58\nToronto\t3\nEdmonton\t2\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

@@ -5679,3 +5679,8 @@ Deployment is allowed only when:
 - [x] Fix dataIntegrity test timeout
 - [x] Add global testTimeout and hookTimeout to vitest config
 - [x] Clean up 700+ orphaned test criteria from database
+
+## Database Cleanup: Delete non-Edmonton projects
+- [x] Identify all projects and their cities/locations
+- [x] Delete all projects NOT from Edmonton (and their related data)
+- [x] Verify only Edmonton projects remain
