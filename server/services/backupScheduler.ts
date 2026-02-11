@@ -9,6 +9,10 @@ import { backupSchedules, databaseBackups } from '../../drizzle/schema';
 import { eq, and, lte, sql, desc } from 'drizzle-orm';
 import { encryptBackupString, calculateChecksum } from './backupEncryption';
 import { storagePut } from '../storage';
+import { gzip } from 'zlib';
+import { promisify } from 'util';
+
+const gzipAsync = promisify(gzip);
 import { sendBackupSuccessNotification, sendBackupFailureNotification } from './emailService';
 
 // Import tables for backup
@@ -270,12 +274,44 @@ export async function executeScheduledBackup(scheduleId: number): Promise<{
       };
     }
 
-    const fileSize = Buffer.byteLength(backupJson, 'utf8');
+    const uncompressedSize = Buffer.byteLength(backupJson, 'utf8');
 
-    // Upload to S3
-    const fileName = generateBackupFileName(schedule.encryptionEnabled === 1);
+    // Compress backup with gzip to reduce file size by 70-80%
+    const compressed = await gzipAsync(Buffer.from(backupJson, 'utf8'));
+    const fileSize = compressed.length;
+    const compressionRatio = ((1 - fileSize / uncompressedSize) * 100).toFixed(1);
+    
+    console.log(`[BackupScheduler] Compressed backup: ${(uncompressedSize / 1024 / 1024).toFixed(2)}MB → ${(fileSize / 1024 / 1024).toFixed(2)}MB (${compressionRatio}% reduction)`);
+
+    // Upload to S3 with retry logic
+    const fileName = generateBackupFileName(schedule.encryptionEnabled === 1).replace('.json', '.json.gz');
     const fileKey = `backups/scheduled/${fileName}`;
-    const { url } = await storagePut(fileKey, backupJson, 'application/json');
+    
+    let uploadError: Error | null = null;
+    let url: string | null = null;
+    
+    // Retry up to 3 times with exponential backoff
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const result = await storagePut(fileKey, compressed, 'application/gzip');
+        url = result.url;
+        uploadError = null;
+        break;
+      } catch (error) {
+        uploadError = error as Error;
+        console.warn(`[BackupScheduler] Upload attempt ${attempt}/3 failed:`, error);
+        
+        if (attempt < 3) {
+          // Exponential backoff: 2s, 4s
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    if (uploadError || !url) {
+      throw new Error(`Storage upload failed after 3 attempts: ${uploadError?.message || 'Unknown error'}`);
+    }
 
     // Update backup record with success
     await db
