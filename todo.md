@@ -5782,3 +5782,6 @@ Deployment is allowed only when:
 - [x] Identify all non-Edmonton projects and assets (166 projects, 18 assets)
 - [x] Delete non-Edmonton data and related records (415 total rows)
 - [x] Verify only Edmonton records remain (1 project, 20 assets)
+
+## Hide Reports Tab from Asset Dashboard
+- [x] Remove or hide the Reports tab from the individual asset dashboard navigation

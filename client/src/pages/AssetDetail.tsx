@@ -451,10 +451,10 @@ export default function AssetDetail() {
                 <Clock className="mr-2 h-4 w-4" />
                 Timeline
               </TabsTrigger> */}
-              <TabsTrigger value="reports" className="flex-none px-3">
+              {/* <TabsTrigger value="reports" className="flex-none px-3">
                 <FileBarChart className="mr-2 h-4 w-4" />
                 Reports
-              </TabsTrigger>
+              </TabsTrigger> */}
               <TabsTrigger value="optimization" className="flex-none px-3">
                 <Target className="mr-2 h-4 w-4" />
                 Optimization
@@ -1123,10 +1123,11 @@ export default function AssetDetail() {
             </Card>
           </TabsContent> */}
 
-          {/* Reports Tab */}
+          {/* Reports Tab - Hidden per user request
           <TabsContent value="reports" className="space-y-4">
             <AssetReportTab assetId={assetIdNum} projectId={projectId} />
           </TabsContent>
+          */}
 
           {/* Optimization Tab */}
           <TabsContent value="optimization" className="space-y-4">
