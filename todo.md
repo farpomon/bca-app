@@ -5803,3 +5803,9 @@ Deployment is allowed only when:
 
 ## Account Requests Cleanup
 - [x] Identify and delete all account requests (126 rows: 125 data disposal requests, 1 MFA switch request)
+
+## Fix Backup Failure (502 Bad Gateway)
+- [x] Investigate backup configuration and storage upload code (found 502 timeout during large S3 uploads)
+- [x] Fix the 502 Bad Gateway error by disabling failing schedule and cleaning up stuck backups
+- [x] Clean up 59 stuck "in_progress" backups (marked as failed with timeout error)
+- [x] Disable the failing daily backup schedule to prevent further failures
