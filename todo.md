@@ -5777,3 +5777,8 @@ Deployment is allowed only when:
 
 ## PDF Report Text Update
 - [x] Change "was retained to conduct" to "was the platform used to conduct" in introduction
+
+## Data Cleanup: Remove Non-Edmonton Records (Round 2)
+- [x] Identify all non-Edmonton projects and assets (166 projects, 18 assets)
+- [x] Delete non-Edmonton data and related records (415 total rows)
+- [x] Verify only Edmonton records remain (1 project, 20 assets)
