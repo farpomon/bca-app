@@ -5750,3 +5750,9 @@ Deployment is allowed only when:
 - [x] Fix highest-risk items filter to include 'necessary' priority
 - [x] Add Preventive Maintenance to action types reference table
 - [x] Update Priority Levels reference table with BCA terminology
+
+## Data Cleanup: Remove Non-Edmonton Records
+- [x] Identify all projects/assets not located in Edmonton
+- [x] Delete non-Edmonton assets and related data (assessments, deficiencies, photos, etc.)
+- [x] Delete non-Edmonton projects
+- [x] Verify only Edmonton records remain

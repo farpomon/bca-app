@@ -1,0 +1,1746 @@
+{
+  "query": "SELECT id, name, city, address, status FROM projects WHERE deletedAt IS NULL ORDER BY city, name",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT id, name, city, address, status FROM projects WHERE deletedAt IS NULL ORDER BY city, name",
+  "rows": [
+    {
+      "id": "60256",
+      "name": "AI Import Test Project",
+      "city": "NULL",
+      "address": "123 AI Import St",
+      "status": "draft"
+    },
+    {
+      "id": "60261",
+      "name": "AI Integration Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60049",
+      "name": "Assessment Export Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60144",
+      "name": "Assessment Export Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60264",
+      "name": "Assessment Status Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60204",
+      "name": "Assessment Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60242",
+      "name": "Audit Test Project",
+      "city": "NULL",
+      "address": "123 Audit St",
+      "status": "draft"
+    },
+    {
+      "id": "60241",
+      "name": "Building Sections Test Project",
+      "city": "NULL",
+      "address": "123 Section St",
+      "status": "draft"
+    },
+    {
+      "id": "60159",
+      "name": "Bulk Export Project 1",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60057",
+      "name": "Bulk Export Project 1",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60060",
+      "name": "Bulk Export Project 2",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60160",
+      "name": "Bulk Export Project 2",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60061",
+      "name": "Bulk Export Project 3",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60162",
+      "name": "Bulk Export Project 3",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60076",
+      "name": "Bulk Project 1",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60173",
+      "name": "Bulk Project 1",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60086",
+      "name": "Bulk Project 10",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60183",
+      "name": "Bulk Project 10",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60184",
+      "name": "Bulk Project 11",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60087",
+      "name": "Bulk Project 11",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60185",
+      "name": "Bulk Project 12",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60089",
+      "name": "Bulk Project 12",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60077",
+      "name": "Bulk Project 2",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60174",
+      "name": "Bulk Project 2",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60078",
+      "name": "Bulk Project 3",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60175",
+      "name": "Bulk Project 3",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60079",
+      "name": "Bulk Project 4",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60177",
+      "name": "Bulk Project 4",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60080",
+      "name": "Bulk Project 5",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60178",
+      "name": "Bulk Project 5",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60082",
+      "name": "Bulk Project 6",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60179",
+      "name": "Bulk Project 6",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60083",
+      "name": "Bulk Project 7",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60180",
+      "name": "Bulk Project 7",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60084",
+      "name": "Bulk Project 8",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60181",
+      "name": "Bulk Project 8",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60085",
+      "name": "Bulk Project 9",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60182",
+      "name": "Bulk Project 9",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60195",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60196",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60197",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60198",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60199",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60200",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60201",
+      "name": "CI/FCI Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60165",
+      "name": "CSV Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60069",
+      "name": "CSV Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60225",
+      "name": "Company 1 Project",
+      "city": "NULL",
+      "address": "100 Company St",
+      "status": "draft"
+    },
+    {
+      "id": "60148",
+      "name": "Complete Workflow Test",
+      "city": "NULL",
+      "address": "789 Integration Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60055",
+      "name": "Complete Workflow Test",
+      "city": "NULL",
+      "address": "789 Integration Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60219",
+      "name": "Composite Score Fix Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60218",
+      "name": "Condition Matrix Test",
+      "city": "NULL",
+      "address": "456 Test Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60118",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60100",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60115",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60013",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60014",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60015",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60016",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60114",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60012",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60011",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60010",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60009",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60113",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60112",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60111",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60110",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60109",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60108",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60107",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60004",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60106",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60105",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60104",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60103",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60005",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60102",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60101",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60023",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60022",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60021",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60020",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60019",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60018",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60116",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60017",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60119",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60006",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60007",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60117",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60003",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60099",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60008",
+      "name": "Consultant Upload Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60147",
+      "name": "Cost Export Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60054",
+      "name": "Cost Export Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60234",
+      "name": "Critical FCI Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60096",
+      "name": "Custom Components Test Project 1",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60192",
+      "name": "Custom Components Test Project 1",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60193",
+      "name": "Custom Components Test Project 2",
+      "city": "NULL",
+      "address": "456 Test Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60217",
+      "name": "Dashboard Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60067",
+      "name": "Data-Rich Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60164",
+      "name": "Data-Rich Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60169",
+      "name": "Deficiency CSV Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60081",
+      "name": "Deficiency CSV Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60206",
+      "name": "Deficiency Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60255",
+      "name": "Delete Test Project",
+      "city": "NULL",
+      "address": "123 Delete St",
+      "status": "draft"
+    },
+    {
+      "id": "60070",
+      "name": "Empty Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60172",
+      "name": "Empty Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60166",
+      "name": "Empty Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60088",
+      "name": "Empty Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60176",
+      "name": "Excel Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60090",
+      "name": "Excel Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60048",
+      "name": "Export Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60143",
+      "name": "Export Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60157",
+      "name": "Export Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60065",
+      "name": "Export Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60220",
+      "name": "FCI Integration Test",
+      "city": "NULL",
+      "address": "789 Test Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60231",
+      "name": "FCI Test Project",
+      "city": "NULL",
+      "address": "456 FCI Avenue",
+      "status": "draft"
+    },
+    {
+      "id": "60240",
+      "name": "Full Integration Test Building",
+      "city": "NULL",
+      "address": "789 Integration Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60224",
+      "name": "Geolocation Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60232",
+      "name": "Good FCI Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60237",
+      "name": "Hacked Name",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60124",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60040",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60039",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60228",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "400 History Ln",
+      "status": "in_progress"
+    },
+    {
+      "id": "60189",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "321 History Lane",
+      "status": "draft"
+    },
+    {
+      "id": "60133",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60134",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60135",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60136",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60034",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60127",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60038",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60126",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60035",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60036",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60123",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60037",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60056",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "321 History Lane",
+      "status": "draft"
+    },
+    {
+      "id": "60033",
+      "name": "History Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60207",
+      "name": "List Deficiencies Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60139",
+      "name": "ML Prediction Test",
+      "city": "NULL",
+      "address": "456 Test Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60043",
+      "name": "ML Prediction Test",
+      "city": "NULL",
+      "address": "456 Test Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60071",
+      "name": "Minimal Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60163",
+      "name": "Minimal Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60252",
+      "name": "Multi-Edit Test Project",
+      "city": "NULL",
+      "address": "456 Edit Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60188",
+      "name": "Multi-Sheet Project",
+      "city": "NULL",
+      "address": "789 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60091",
+      "name": "Multi-Sheet Project",
+      "city": "NULL",
+      "address": "789 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60092",
+      "name": "Multi-Sheet Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60186",
+      "name": "Multi-Sheet Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60093",
+      "name": "My Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60170",
+      "name": "My Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60074",
+      "name": "My Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60154",
+      "name": "My Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60187",
+      "name": "My Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60062",
+      "name": "My Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60227",
+      "name": "New Project",
+      "city": "NULL",
+      "address": "300 New Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60238",
+      "name": "No Value Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60229",
+      "name": "OCR Test Building",
+      "city": "NULL",
+      "address": "456 OCR Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60002",
+      "name": "Optimization Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60098",
+      "name": "Optimization Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60001",
+      "name": "Optimization Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60066",
+      "name": "Original Project",
+      "city": "NULL",
+      "address": "456 Original St",
+      "status": "draft"
+    },
+    {
+      "id": "60068",
+      "name": "Original Project",
+      "city": "NULL",
+      "address": "456 Original St",
+      "status": "draft"
+    },
+    {
+      "id": "60161",
+      "name": "Original Project",
+      "city": "NULL",
+      "address": "456 Original St",
+      "status": "draft"
+    },
+    {
+      "id": "60158",
+      "name": "Original Project",
+      "city": "NULL",
+      "address": "456 Original St",
+      "status": "draft"
+    },
+    {
+      "id": "60075",
+      "name": "Other User's Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60171",
+      "name": "Other User's Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60141",
+      "name": "Photo List Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60046",
+      "name": "Photo List Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60045",
+      "name": "Photo Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60140",
+      "name": "Photo Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60233",
+      "name": "Poor FCI Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60146",
+      "name": "Portfolio Prediction Test",
+      "city": "NULL",
+      "address": "789 Test Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60044",
+      "name": "Portfolio Prediction Test",
+      "city": "NULL",
+      "address": "789 Test Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60138",
+      "name": "Prediction Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60042",
+      "name": "Prediction Test Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60142",
+      "name": "Report Test Project",
+      "city": "NULL",
+      "address": "456 Report Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60047",
+      "name": "Report Test Project",
+      "city": "NULL",
+      "address": "456 Report Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60203",
+      "name": "Stats Test Project",
+      "city": "NULL",
+      "address": "456 Stats Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60167",
+      "name": "Summary Test 1",
+      "city": "NULL",
+      "address": "123 Main St",
+      "status": "draft"
+    },
+    {
+      "id": "60072",
+      "name": "Summary Test 1",
+      "city": "NULL",
+      "address": "123 Main St",
+      "status": "draft"
+    },
+    {
+      "id": "60073",
+      "name": "Summary Test 2",
+      "city": "NULL",
+      "address": "456 Oak Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60168",
+      "name": "Summary Test 2",
+      "city": "NULL",
+      "address": "456 Oak Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60131",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60028",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60031",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60032",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60030",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60128",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60132",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60129",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60029",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60130",
+      "name": "Test Allocation Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60202",
+      "name": "Test Building Assessment",
+      "city": "NULL",
+      "address": "123 Test Street",
+      "status": "draft"
+    },
+    {
+      "id": "60265",
+      "name": "Test Building with Photos",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60260",
+      "name": "Test Compliance Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60251",
+      "name": "Test Edit Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60230",
+      "name": "Test FCI Project",
+      "city": "NULL",
+      "address": "123 Test Street",
+      "status": "draft"
+    },
+    {
+      "id": "60262",
+      "name": "Test Photo Link Project",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60064",
+      "name": "Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60223",
+      "name": "Test Project",
+      "city": "NULL",
+      "address": "789 Test Blvd",
+      "status": "in_progress"
+    },
+    {
+      "id": "60155",
+      "name": "Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "archived"
+    },
+    {
+      "id": "60156",
+      "name": "Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60063",
+      "name": "Test Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "archived"
+    },
+    {
+      "id": "60221",
+      "name": "Test Project 1",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "in_progress"
+    },
+    {
+      "id": "60222",
+      "name": "Test Project 2",
+      "city": "NULL",
+      "address": "456 Test Ave",
+      "status": "in_progress"
+    },
+    {
+      "id": "60210",
+      "name": "Test Project Without Config",
+      "city": "NULL",
+      "address": "789 Test Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60246",
+      "name": "Test Project for Assessment Sync",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60051",
+      "name": "Test Project for Asset",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60150",
+      "name": "Test Project for Asset",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60257",
+      "name": "Test Project for Component Fields",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60209",
+      "name": "Test Project for Component Filtering",
+      "city": "NULL",
+      "address": "456 Test Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60211",
+      "name": "Test Project for Deletion",
+      "city": "NULL",
+      "address": "321 Test Ln",
+      "status": "draft"
+    },
+    {
+      "id": "60208",
+      "name": "Test Project for Hierarchy",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60243",
+      "name": "Test Project for Offline Sync",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60245",
+      "name": "Test Project for Offline Sync",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60244",
+      "name": "Test Project for Offline Sync",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60259",
+      "name": "Test Project for Optional Fields",
+      "city": "NULL",
+      "address": "789 Optional Rd",
+      "status": "draft"
+    },
+    {
+      "id": "60258",
+      "name": "Test Project for Update",
+      "city": "NULL",
+      "address": "456 Update Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60050",
+      "name": "Test Project with Auto ID",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60149",
+      "name": "Test Project with Auto ID",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60151",
+      "name": "Test Project with Custom ID",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60053",
+      "name": "Test Project with Custom ID",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60263",
+      "name": "Test Report Photos Project",
+      "city": "NULL",
+      "address": "456 Report Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60120",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60122",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60125",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60024",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60121",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60027",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60025",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60026",
+      "name": "Test Scoring Project",
+      "city": "NULL",
+      "address": "Test Location",
+      "status": "draft"
+    },
+    {
+      "id": "60205",
+      "name": "Update Assessment Test",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60235",
+      "name": "Updated Project Name",
+      "city": "NULL",
+      "address": "456 New Address",
+      "status": "draft"
+    },
+    {
+      "id": "60041",
+      "name": "User 1 Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60137",
+      "name": "User 1 Project",
+      "city": "NULL",
+      "address": "NULL",
+      "status": "draft"
+    },
+    {
+      "id": "60226",
+      "name": "Valid Project",
+      "city": "NULL",
+      "address": "200 Valid St",
+      "status": "completed"
+    },
+    {
+      "id": "60094",
+      "name": "Validation Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60190",
+      "name": "Validation Test Building",
+      "city": "NULL",
+      "address": "123 Test St",
+      "status": "draft"
+    },
+    {
+      "id": "60215",
+      "name": "Assessment Export Test",
+      "city": "Assessment City",
+      "address": "321 Assessment St",
+      "status": "draft"
+    },
+    {
+      "id": "14",
+      "name": "City of Edmonton - Municipal Building Portfolio",
+      "city": "Edmonton",
+      "address": "Edmonton, Alberta, Canada",
+      "status": "in_progress"
+    },
+    {
+      "id": "60214",
+      "name": "Export Test Project",
+      "city": "Export City",
+      "address": "789 Export Blvd",
+      "status": "draft"
+    },
+    {
+      "id": "60213",
+      "name": "Mobile Test Project",
+      "city": "Mobile City",
+      "address": "456 Mobile Ave",
+      "status": "draft"
+    },
+    {
+      "id": "60216",
+      "name": "PDF Test Project",
+      "city": "PDF City",
+      "address": "555 PDF Lane",
+      "status": "draft"
+    },
+    {
+      "id": "60212",
+      "name": "Annotation Test Project",
+      "city": "Test City",
+      "address": "123 Test St",
+      "status": "draft"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcity\taddress\tstatus\n60256\tAI Import Test Project\tNULL\t123 AI Import St\tdraft\n60261\tAI Integration Test Project\tNULL\tNULL\tdraft\n60049\tAssessment Export Test\tNULL\tNULL\tdraft\n60144\tAssessment Export Test\tNULL\tNULL\tdraft\n60264\tAssessment Status Test Project\tNULL\t123 Test St\tdraft\n60204\tAssessment Test Project\tNULL\tNULL\tdraft\n60242\tAudit Test Project\tNULL\t123 Audit St\tdraft\n60241\tBuilding Sections Test Project\tNULL\t123 Section St\tdraft\n60159\tBulk Export Project 1\tNULL\tNULL\tdraft\n60057\tBulk Export Project 1\tNULL\tNULL\tdraft\n60060\tBulk Export Project 2\tNULL\tNULL\tdraft\n60160\tBulk Export Project 2\tNULL\tNULL\tdraft\n60061\tBulk Export Project 3\tNULL\tNULL\tdraft\n60162\tBulk Export Project 3\tNULL\tNULL\tdraft\n60076\tBulk Project 1\tNULL\tNULL\tdraft\n60173\tBulk Project 1\tNULL\tNULL\tdraft\n60086\tBulk Project 10\tNULL\tNULL\tdraft\n60183\tBulk Project 10\tNULL\tNULL\tdraft\n60184\tBulk Project 11\tNULL\tNULL\tdraft\n60087\tBulk Project 11\tNULL\tNULL\tdraft\n60185\tBulk Project 12\tNULL\tNULL\tdraft\n60089\tBulk Project 12\tNULL\tNULL\tdraft\n60077\tBulk Project 2\tNULL\tNULL\tdraft\n60174\tBulk Project 2\tNULL\tNULL\tdraft\n60078\tBulk Project 3\tNULL\tNULL\tdraft\n60175\tBulk Project 3\tNULL\tNULL\tdraft\n60079\tBulk Project 4\tNULL\tNULL\tdraft\n60177\tBulk Project 4\tNULL\tNULL\tdraft\n60080\tBulk Project 5\tNULL\tNULL\tdraft\n60178\tBulk Project 5\tNULL\tNULL\tdraft\n60082\tBulk Project 6\tNULL\tNULL\tdraft\n60179\tBulk Project 6\tNULL\tNULL\tdraft\n60083\tBulk Project 7\tNULL\tNULL\tdraft\n60180\tBulk Project 7\tNULL\tNULL\tdraft\n60084\tBulk Project 8\tNULL\tNULL\tdraft\n60181\tBulk Project 8\tNULL\tNULL\tdraft\n60085\tBulk Project 9\tNULL\tNULL\tdraft\n60182\tBulk Project 9\tNULL\tNULL\tdraft\n60195\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60196\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60197\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60198\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60199\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60200\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60201\tCI/FCI Test Project\tNULL\t123 Test St\tdraft\n60165\tCSV Test Project\tNULL\tNULL\tdraft\n60069\tCSV Test Project\tNULL\tNULL\tdraft\n60225\tCompany 1 Project\tNULL\t100 Company St\tdraft\n60148\tComplete Workflow Test\tNULL\t789 Integration Blvd\tdraft\n60055\tComplete Workflow Test\tNULL\t789 Integration Blvd\tdraft\n60219\tComposite Score Fix Test Project\tNULL\t123 Test St\tdraft\n60218\tCondition Matrix Test\tNULL\t456 Test Ave\tdraft\n60118\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60100\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60115\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60013\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60014\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60015\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60016\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60114\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60012\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60011\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60010\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60009\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60113\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60112\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60111\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60110\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60109\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60108\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60107\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60004\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60106\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60105\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60104\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60103\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60005\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60102\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60101\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60023\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60022\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60021\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60020\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60019\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60018\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60116\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60017\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60119\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60006\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60007\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60117\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60003\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60099\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60008\tConsultant Upload Test Project\tNULL\tNULL\tdraft\n60147\tCost Export Test\tNULL\tNULL\tdraft\n60054\tCost Export Test\tNULL\tNULL\tdraft\n60234\tCritical FCI Project\tNULL\tNULL\tdraft\n60096\tCustom Components Test Project 1\tNULL\t123 Test St\tdraft\n60192\tCustom Components Test Project 1\tNULL\t123 Test St\tdraft\n60193\tCustom Components Test Project 2\tNULL\t456 Test Ave\tdraft\n60217\tDashboard Test Building\tNULL\t123 Test St\tdraft\n60067\tData-Rich Project\tNULL\tNULL\tdraft\n60164\tData-Rich Project\tNULL\tNULL\tdraft\n60169\tDeficiency CSV Test\tNULL\tNULL\tdraft\n60081\tDeficiency CSV Test\tNULL\tNULL\tdraft\n60206\tDeficiency Test Project\tNULL\tNULL\tdraft\n60255\tDelete Test Project\tNULL\t123 Delete St\tdraft\n60070\tEmpty Project\tNULL\tNULL\tdraft\n60172\tEmpty Project\tNULL\tNULL\tdraft\n60166\tEmpty Project\tNULL\tNULL\tdraft\n60088\tEmpty Project\tNULL\tNULL\tdraft\n60176\tExcel Test Project\tNULL\tNULL\tdraft\n60090\tExcel Test Project\tNULL\tNULL\tdraft\n60048\tExport Test Project\tNULL\tNULL\tdraft\n60143\tExport Test Project\tNULL\tNULL\tdraft\n60157\tExport Test Project\tNULL\t123 Test St\tdraft\n60065\tExport Test Project\tNULL\t123 Test St\tdraft\n60220\tFCI Integration Test\tNULL\t789 Test Blvd\tdraft\n60231\tFCI Test Project\tNULL\t456 FCI Avenue\tdraft\n60240\tFull Integration Test Building\tNULL\t789 Integration Blvd\tdraft\n60224\tGeolocation Test Building\tNULL\t123 Test St\tdraft\n60232\tGood FCI Project\tNULL\tNULL\tdraft\n60237\tHacked Name\tNULL\tNULL\tdraft\n60124\tHistory Test Project\tNULL\tNULL\tdraft\n60040\tHistory Test Project\tNULL\tNULL\tdraft\n60039\tHistory Test Project\tNULL\tNULL\tdraft\n60228\tHistory Test Project\tNULL\t400 History Ln\tin_progress\n60189\tHistory Test Project\tNULL\t321 History Lane\tdraft\n60133\tHistory Test Project\tNULL\tNULL\tdraft\n60134\tHistory Test Project\tNULL\tNULL\tdraft\n60135\tHistory Test Project\tNULL\tNULL\tdraft\n60136\tHistory Test Project\tNULL\tNULL\tdraft\n60034\tHistory Test Project\tNULL\tNULL\tdraft\n60127\tHistory Test Project\tNULL\tNULL\tdraft\n60038\tHistory Test Project\tNULL\tNULL\tdraft\n60126\tHistory Test Project\tNULL\tNULL\tdraft\n60035\tHistory Test Project\tNULL\tNULL\tdraft\n60036\tHistory Test Project\tNULL\tNULL\tdraft\n60123\tHistory Test Project\tNULL\tNULL\tdraft\n60037\tHistory Test Project\tNULL\tNULL\tdraft\n60056\tHistory Test Project\tNULL\t321 History Lane\tdraft\n60033\tHistory Test Project\tNULL\tNULL\tdraft\n60207\tList Deficiencies Test\tNULL\tNULL\tdraft\n60139\tML Prediction Test\tNULL\t456 Test Ave\tdraft\n60043\tML Prediction Test\tNULL\t456 Test Ave\tdraft\n60071\tMinimal Project\tNULL\tNULL\tdraft\n60163\tMinimal Project\tNULL\tNULL\tdraft\n60252\tMulti-Edit Test Project\tNULL\t456 Edit Ave\tdraft\n60188\tMulti-Sheet Project\tNULL\t789 Test St\tdraft\n60091\tMulti-Sheet Project\tNULL\t789 Test St\tdraft\n60092\tMulti-Sheet Test\tNULL\tNULL\tdraft\n60186\tMulti-Sheet Test\tNULL\tNULL\tdraft\n60093\tMy Project\tNULL\tNULL\tdraft\n60170\tMy Project\tNULL\tNULL\tdraft\n60074\tMy Project\tNULL\tNULL\tdraft\n60154\tMy Project\tNULL\tNULL\tdraft\n60187\tMy Project\tNULL\tNULL\tdraft\n60062\tMy Project\tNULL\tNULL\tdraft\n60227\tNew Project\tNULL\t300 New Ave\tdraft\n60238\tNo Value Project\tNULL\tNULL\tdraft\n60229\tOCR Test Building\tNULL\t456 OCR Ave\tdraft\n60002\tOptimization Test Building\tNULL\t123 Test St\tdraft\n60098\tOptimization Test Building\tNULL\t123 Test St\tdraft\n60001\tOptimization Test Building\tNULL\t123 Test St\tdraft\n60066\tOriginal Project\tNULL\t456 Original St\tdraft\n60068\tOriginal Project\tNULL\t456 Original St\tdraft\n60161\tOriginal Project\tNULL\t456 Original St\tdraft\n60158\tOriginal Project\tNULL\t456 Original St\tdraft\n60075\tOther User's Project\tNULL\tNULL\tdraft\n60171\tOther User's Project\tNULL\tNULL\tdraft\n60141\tPhoto List Test\tNULL\tNULL\tdraft\n60046\tPhoto List Test\tNULL\tNULL\tdraft\n60045\tPhoto Test Project\tNULL\t123 Test St\tdraft\n60140\tPhoto Test Project\tNULL\t123 Test St\tdraft\n60233\tPoor FCI Project\tNULL\tNULL\tdraft\n60146\tPortfolio Prediction Test\tNULL\t789 Test Blvd\tdraft\n60044\tPortfolio Prediction Test\tNULL\t789 Test Blvd\tdraft\n60138\tPrediction Test Project\tNULL\t123 Test St\tdraft\n60042\tPrediction Test Project\tNULL\t123 Test St\tdraft\n60142\tReport Test Project\tNULL\t456 Report Ave\tdraft\n60047\tReport Test Project\tNULL\t456 Report Ave\tdraft\n60203\tStats Test Project\tNULL\t456 Stats Ave\tdraft\n60167\tSummary Test 1\tNULL\t123 Main St\tdraft\n60072\tSummary Test 1\tNULL\t123 Main St\tdraft\n60073\tSummary Test 2\tNULL\t456 Oak Ave\tdraft\n60168\tSummary Test 2\tNULL\t456 Oak Ave\tdraft\n60131\tTest Allocation Project\tNULL\tTest Location\tdraft\n60028\tTest Allocation Project\tNULL\tTest Location\tdraft\n60031\tTest Allocation Project\tNULL\tTest Location\tdraft\n60032\tTest Allocation Project\tNULL\tTest Location\tdraft\n60030\tTest Allocation Project\tNULL\tTest Location\tdraft\n60128\tTest Allocation Project\tNULL\tTest Location\tdraft\n60132\tTest Allocation Project\tNULL\tTest Location\tdraft\n60129\tTest Allocation Project\tNULL\tTest Location\tdraft\n60029\tTest Allocation Project\tNULL\tTest Location\tdraft\n60130\tTest Allocation Project\tNULL\tTest Location\tdraft\n60202\tTest Building Assessment\tNULL\t123 Test Street\tdraft\n60265\tTest Building with Photos\tNULL\t123 Test St\tdraft\n60260\tTest Compliance Project\tNULL\t123 Test St\tdraft\n60251\tTest Edit Project\tNULL\t123 Test St\tdraft\n60230\tTest FCI Project\tNULL\t123 Test Street\tdraft\n60262\tTest Photo Link Project\tNULL\t123 Test St\tdraft\n60064\tTest Project\tNULL\tNULL\tdraft\n60223\tTest Project\tNULL\t789 Test Blvd\tin_progress\n60155\tTest Project\tNULL\tNULL\tarchived\n60156\tTest Project\tNULL\tNULL\tdraft\n60063\tTest Project\tNULL\tNULL\tarchived\n60221\tTest Project 1\tNULL\t123 Test St\tin_progress\n60222\tTest Project 2\tNULL\t456 Test Ave\tin_progress\n60210\tTest Project Without Config\tNULL\t789 Test Blvd\tdraft\n60246\tTest Project for Assessment Sync\tNULL\tNULL\tdraft\n60051\tTest Project for Asset\tNULL\tNULL\tdraft\n60150\tTest Project for Asset\tNULL\tNULL\tdraft\n60257\tTest Project for Component Fields\tNULL\t123 Test St\tdraft\n60209\tTest Project for Component Filtering\tNULL\t456 Test Ave\tdraft\n60211\tTest Project for Deletion\tNULL\t321 Test Ln\tdraft\n60208\tTest Project for Hierarchy\tNULL\t123 Test St\tdraft\n60243\tTest Project for Offline Sync\tNULL\tNULL\tdraft\n60245\tTest Project for Offline Sync\tNULL\tNULL\tdraft\n60244\tTest Project for Offline Sync\tNULL\tNULL\tdraft\n60259\tTest Project for Optional Fields\tNULL\t789 Optional Rd\tdraft\n60258\tTest Project for Update\tNULL\t456 Update Ave\tdraft\n60050\tTest Project with Auto ID\tNULL\tNULL\tdraft\n60149\tTest Project with Auto ID\tNULL\tNULL\tdraft\n60151\tTest Project with Custom ID\tNULL\tNULL\tdraft\n60053\tTest Project with Custom ID\tNULL\tNULL\tdraft\n60263\tTest Report Photos Project\tNULL\t456 Report Ave\tdraft\n60120\tTest Scoring Project\tNULL\tTest Location\tdraft\n60122\tTest Scoring Project\tNULL\tTest Location\tdraft\n60125\tTest Scoring Project\tNULL\tTest Location\tdraft\n60024\tTest Scoring Project\tNULL\tTest Location\tdraft\n60121\tTest Scoring Project\tNULL\tTest Location\tdraft\n60027\tTest Scoring Project\tNULL\tTest Location\tdraft\n60025\tTest Scoring Project\tNULL\tTest Location\tdraft\n60026\tTest Scoring Project\tNULL\tTest Location\tdraft\n60205\tUpdate Assessment Test\tNULL\tNULL\tdraft\n60235\tUpdated Project Name\tNULL\t456 New Address\tdraft\n60041\tUser 1 Project\tNULL\tNULL\tdraft\n60137\tUser 1 Project\tNULL\tNULL\tdraft\n60226\tValid Project\tNULL\t200 Valid St\tcompleted\n60094\tValidation Test Building\tNULL\t123 Test St\tdraft\n60190\tValidation Test Building\tNULL\t123 Test St\tdraft\n60215\tAssessment Export Test\tAssessment City\t321 Assessment St\tdraft\n14\tCity of Edmonton - Municipal Building Portfolio\tEdmonton\tEdmonton, Alberta, Canada\tin_progress\n60214\tExport Test Project\tExport City\t789 Export Blvd\tdraft\n60213\tMobile Test Project\tMobile City\t456 Mobile Ave\tdraft\n60216\tPDF Test Project\tPDF City\t555 PDF Lane\tdraft\n60212\tAnnotation Test Project\tTest City\t123 Test St\tdraft\n",
+  "stderr": "",
+  "execution_time_ms": 110
+}

@@ -1,0 +1,38 @@
+{
+  "query": "SELECT COALESCE(city, 'NULL') as city_name, COUNT(*) as count FROM projects WHERE deletedAt IS NULL GROUP BY city ORDER BY count DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2g8chP3aro94bni.root --database XnmtZZwX6e46H8JVZbq4Ta --execute SELECT COALESCE(city, 'NULL') as city_name, COUNT(*) as count FROM projects WHERE deletedAt IS NULL GROUP BY city ORDER BY count DESC",
+  "rows": [
+    {
+      "city_name": "NULL",
+      "count": "242"
+    },
+    {
+      "city_name": "Assessment City",
+      "count": "1"
+    },
+    {
+      "city_name": "PDF City",
+      "count": "1"
+    },
+    {
+      "city_name": "Mobile City",
+      "count": "1"
+    },
+    {
+      "city_name": "Export City",
+      "count": "1"
+    },
+    {
+      "city_name": "Test City",
+      "count": "1"
+    },
+    {
+      "city_name": "Edmonton",
+      "count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "city_name\tcount\nNULL\t242\nAssessment City\t1\nPDF City\t1\nMobile City\t1\nExport City\t1\nTest City\t1\nEdmonton\t1\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}
