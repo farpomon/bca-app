@@ -5785,3 +5785,9 @@ Deployment is allowed only when:
 
 ## Hide Reports Tab from Asset Dashboard
 - [x] Remove or hide the Reports tab from the individual asset dashboard navigation
+
+## Capital Budget Plans Editing
+- [x] Add edit capability for capital budget plan entries
+- [x] Allow inline editing of budget items (priority, year, amount, status, strategic alignment)
+- [x] Add save/cancel functionality with server mutations
+- [x] Add delete capability with confirmation for budget items

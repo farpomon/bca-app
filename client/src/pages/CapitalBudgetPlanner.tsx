@@ -16,7 +16,7 @@ import { YearRangeSummary } from "@/components/YearRangeSummary";
 import { ProjectFilterBar, ProjectFilters } from "@/components/ProjectFilterBar";
 import { CycleManagement } from "@/components/CycleManagement";
 import { AssessmentAnalytics } from "@/components/AssessmentAnalytics";
-import { Loader2, Plus, Calendar, DollarSign, TrendingUp, FileText, ArrowLeft, Info, HelpCircle } from "lucide-react";
+import { Loader2, Plus, Calendar, DollarSign, TrendingUp, FileText, ArrowLeft, Info, HelpCircle, Pencil, Trash2, Check, X } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -38,6 +38,15 @@ export default function CapitalBudgetPlanner() {
     conditionLevel: "all",
     fundingStatus: "all",
   });
+  const [editingAllocationId, setEditingAllocationId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<{
+    priority: number;
+    year: number;
+    allocatedAmount: number;
+    status: string;
+    strategicAlignment: string;
+  }>({ priority: 1, year: 2025, allocatedAmount: 0, status: "proposed", strategicAlignment: "" });
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const handleBack = () => {
     // Try browser history first
@@ -64,6 +73,61 @@ export default function CapitalBudgetPlanner() {
       toast.success("Budget cycle created");
     },
   });
+
+  const updateAllocationMutation = trpc.prioritization.updateAllocation.useMutation({
+    onSuccess: () => {
+      if (selectedCycleId) {
+        utils.prioritization.getBudgetCycle.invalidate({ cycleId: selectedCycleId });
+        utils.prioritization.getBudgetCycles.invalidate();
+      }
+      setEditingAllocationId(null);
+      toast.success("Allocation updated successfully");
+    },
+    onError: (err) => {
+      toast.error(`Failed to update: ${err.message}`);
+    },
+  });
+
+  const deleteAllocationMutation = trpc.prioritization.deleteAllocation.useMutation({
+    onSuccess: () => {
+      if (selectedCycleId) {
+        utils.prioritization.getBudgetCycle.invalidate({ cycleId: selectedCycleId });
+        utils.prioritization.getBudgetCycles.invalidate();
+      }
+      setDeleteConfirmId(null);
+      toast.success("Allocation deleted successfully");
+    },
+    onError: (err) => {
+      toast.error(`Failed to delete: ${err.message}`);
+    },
+  });
+
+  const startEditing = (allocation: any) => {
+    setEditingAllocationId(allocation.id);
+    setEditForm({
+      priority: allocation.priority,
+      year: allocation.year,
+      allocatedAmount: parseFloat(allocation.allocatedAmount),
+      status: allocation.status || "proposed",
+      strategicAlignment: allocation.strategicAlignment || "",
+    });
+  };
+
+  const saveEdit = () => {
+    if (!editingAllocationId) return;
+    updateAllocationMutation.mutate({
+      allocationId: editingAllocationId,
+      priority: editForm.priority,
+      year: editForm.year,
+      allocatedAmount: editForm.allocatedAmount,
+      status: editForm.status as "proposed" | "approved" | "funded" | "completed",
+      strategicAlignment: editForm.strategicAlignment,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingAllocationId(null);
+  };
 
   if (cyclesLoading) {
     return (
@@ -310,30 +374,91 @@ export default function CapitalBudgetPlanner() {
                                   </Tooltip>
                                 </div>
                               </TableHead>
+                              <TableHead className="text-center">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {cycleDetails.allocations.map((allocation: any) => (
+                            {filteredAllocations.map((allocation: any) => (
                               <TableRow key={allocation.id}>
                                 <TableCell>
-                                  <Badge variant="outline">#{allocation.priority}</Badge>
+                                  {editingAllocationId === allocation.id ? (
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      value={editForm.priority}
+                                      onChange={(e) => setEditForm({ ...editForm, priority: parseInt(e.target.value) || 1 })}
+                                      className="w-16 h-8 text-center"
+                                    />
+                                  ) : (
+                                    <Badge variant="outline">#{allocation.priority}</Badge>
+                                  )}
                                 </TableCell>
                                 <TableCell className="font-medium">{allocation.projectName}</TableCell>
-                                <TableCell className="text-center">{allocation.year}</TableCell>
+                                <TableCell className="text-center">
+                                  {editingAllocationId === allocation.id ? (
+                                    <Input
+                                      type="number"
+                                      min={2020}
+                                      max={2060}
+                                      value={editForm.year}
+                                      onChange={(e) => setEditForm({ ...editForm, year: parseInt(e.target.value) || 2025 })}
+                                      className="w-20 h-8 text-center"
+                                    />
+                                  ) : (
+                                    allocation.year
+                                  )}
+                                </TableCell>
                                 <TableCell className="text-right">
-                                  {new Intl.NumberFormat("en-US", {
-                                    style: "currency",
-                                    currency: "USD",
-                                    minimumFractionDigits: 0,
-                                  }).format(parseFloat(allocation.allocatedAmount))}
+                                  {editingAllocationId === allocation.id ? (
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      step={1000}
+                                      value={editForm.allocatedAmount}
+                                      onChange={(e) => setEditForm({ ...editForm, allocatedAmount: parseFloat(e.target.value) || 0 })}
+                                      className="w-32 h-8 text-right"
+                                    />
+                                  ) : (
+                                    new Intl.NumberFormat("en-US", {
+                                      style: "currency",
+                                      currency: "USD",
+                                      minimumFractionDigits: 0,
+                                    }).format(parseFloat(allocation.allocatedAmount))
+                                  )}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  <Badge>{allocation.status}</Badge>
+                                  {editingAllocationId === allocation.id ? (
+                                    <Select
+                                      value={editForm.status}
+                                      onValueChange={(val) => setEditForm({ ...editForm, status: val })}
+                                    >
+                                      <SelectTrigger className="w-28 h-8">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="proposed">Proposed</SelectItem>
+                                        <SelectItem value="approved">Approved</SelectItem>
+                                        <SelectItem value="funded">Funded</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Badge>{allocation.status}</Badge>
+                                  )}
                                 </TableCell>
                                 <TableCell className="max-w-md">
-                                  <p className="text-sm text-muted-foreground line-clamp-2">
-                                    {allocation.strategicAlignment || "—"}
-                                  </p>
+                                  {editingAllocationId === allocation.id ? (
+                                    <Input
+                                      value={editForm.strategicAlignment}
+                                      onChange={(e) => setEditForm({ ...editForm, strategicAlignment: e.target.value })}
+                                      placeholder="Strategic alignment..."
+                                      className="h-8"
+                                    />
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                      {allocation.strategicAlignment || "—"}
+                                    </p>
+                                  )}
                                 </TableCell>
                                 <TableCell className="text-center">
                                   <Tooltip>
@@ -351,9 +476,78 @@ export default function CapitalBudgetPlanner() {
                                           ? `Proposed for funding pending budget approval. Priority rank #${allocation.priority} indicates importance but requires additional authorization.`
                                           : `Deferred to future cycle due to budget constraints. Priority rank #${allocation.priority} will be re-evaluated in next planning cycle.`}
                                       </p>
-                                      {/* Future: Add condition, RUL, risk data when available */}
                                     </TooltipContent>
                                   </Tooltip>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {editingAllocationId === allocation.id ? (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                        onClick={saveEdit}
+                                        disabled={updateAllocationMutation.isPending}
+                                      >
+                                        {updateAllocationMutation.isPending ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Check className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                        onClick={cancelEdit}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ) : deleteConfirmId === allocation.id ? (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        onClick={() => deleteAllocationMutation.mutate({ allocationId: allocation.id })}
+                                        disabled={deleteAllocationMutation.isPending}
+                                      >
+                                        {deleteAllocationMutation.isPending ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Check className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                        onClick={() => setDeleteConfirmId(null)}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => startEditing(allocation)}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        onClick={() => setDeleteConfirmId(allocation.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}
