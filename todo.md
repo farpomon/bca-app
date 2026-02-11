@@ -5800,3 +5800,6 @@ Deployment is allowed only when:
 - [x] Identify and delete all users except Luis Rubio Faria (30 test users deleted)
 - [x] Clean up related user data (no orphaned references found)
 - [x] Verify only Luis Rubio Faria users remain (2 accounts: luisrubiof@gmail.com, lfaria@yahoo.com.br)
+
+## Account Requests Cleanup
+- [x] Identify and delete all account requests (126 rows: 125 data disposal requests, 1 MFA switch request)
