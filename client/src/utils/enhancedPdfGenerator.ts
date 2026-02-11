@@ -9,7 +9,7 @@
  * - Component Action Types, Priorities, Conditions reference tables
  * - FCI explanation with formula and rating scale
  * - Limitations and Disclosure statement
- * - Dashboard with visual charts
+ * - Dashboard with visual charts (single page)
  * - Component photos (deduplicated)
  * - B3NMA branding
  */
@@ -182,22 +182,25 @@ export interface EnhancedReportData {
 // ============================================
 
 const colors = {
-  primary: [26, 86, 219] as [number, number, number],
-  primaryDark: [15, 55, 150] as [number, number, number],
-  secondary: [100, 116, 139] as [number, number, number],
-  success: [34, 197, 94] as [number, number, number],
-  warning: [234, 179, 8] as [number, number, number],
-  danger: [239, 68, 68] as [number, number, number],
-  orange: [249, 115, 22] as [number, number, number],
-  text: [30, 41, 59] as [number, number, number],
-  lightGray: [241, 245, 249] as [number, number, number],
-  mediumGray: [226, 232, 240] as [number, number, number],
+  primary: [31, 78, 161] as [number, number, number],       // Deep professional blue
+  primaryDark: [20, 55, 120] as [number, number, number],
+  primaryLight: [66, 120, 200] as [number, number, number],
+  secondary: [90, 100, 115] as [number, number, number],     // Muted slate
+  success: [22, 163, 74] as [number, number, number],        // Confident green
+  warning: [217, 158, 0] as [number, number, number],        // Warm amber
+  danger: [200, 50, 50] as [number, number, number],         // Restrained red
+  orange: [210, 95, 20] as [number, number, number],         // Warm orange
+  text: [28, 35, 50] as [number, number, number],            // Near-black for body
+  textLight: [75, 85, 100] as [number, number, number],      // Secondary text
+  lightGray: [244, 246, 250] as [number, number, number],    // Subtle background
+  mediumGray: [215, 220, 228] as [number, number, number],   // Borders/dividers
   white: [255, 255, 255] as [number, number, number],
   black: [0, 0, 0] as [number, number, number],
-  lightBlue: [219, 234, 254] as [number, number, number],
-  lightGreen: [220, 252, 231] as [number, number, number],
-  lightOrange: [255, 237, 213] as [number, number, number],
-  lightRed: [254, 226, 226] as [number, number, number],
+  lightBlue: [225, 237, 255] as [number, number, number],
+  lightGreen: [228, 248, 235] as [number, number, number],
+  lightOrange: [255, 240, 220] as [number, number, number],
+  lightRed: [255, 232, 232] as [number, number, number],
+  tableStripe: [249, 250, 253] as [number, number, number],  // Very subtle stripe
 };
 
 const formatCurrency = (amount: number | null): string => {
@@ -260,7 +263,23 @@ const formatActionType = (actionType: string): string => {
     .replace(/\b\w/g, c => c.toUpperCase());
 };
 
+/** Check if a component belongs to valid UNIFORMAT categories (A-G) */
+const isValidUniformatComponent = (component: EnhancedComponentData): boolean => {
+  const firstChar = (component.uniformatCode || component.uniformatLevel1 || '').charAt(0).toUpperCase();
+  return 'ABCDEFG'.includes(firstChar);
+};
+
 const UNIFORMAT_GROUPS: Record<string, string> = {
+  'A': 'Substructure',
+  'B': 'Shell',
+  'C': 'Interiors',
+  'D': 'Services',
+  'E': 'Equipment & Furnishings',
+  'F': 'Special Construction',
+  'G': 'Building Sitework',
+};
+
+const UNIFORMAT_GROUPS_UPPER: Record<string, string> = {
   'A': 'SUBSTRUCTURE',
   'B': 'SHELL',
   'C': 'INTERIORS',
@@ -340,10 +359,13 @@ export async function generateEnhancedPDF(
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
+  const margin = 18;
   const contentWidth = pageWidth - (margin * 2);
   let yPos = margin;
   let currentPage = 1;
+  
+  // Filter out test/invalid components globally
+  const validComponents = data.components.filter(isValidUniformatComponent);
   
   // TOC tracking
   const tocEntries: Array<{ title: string; pageNumber: number; level: number }> = [];
@@ -355,7 +377,7 @@ export async function generateEnhancedPDF(
   let photoMap = new Map<number, string[]>();
   if (config.includePhotos && config.includeComponentAssessments) {
     onProgress?.('Loading photos...', 10);
-    photoMap = await preloadPhotos(data.components, (loaded, total) => {
+    photoMap = await preloadPhotos(validComponents, (loaded, total) => {
       onProgress?.(`Loading photos (${loaded}/${total})...`, 10 + (loaded / total) * 20);
     });
   }
@@ -364,6 +386,25 @@ export async function generateEnhancedPDF(
 
   const isSingleAsset = data.summary.totalAssets === 1;
   const assetLabel = isSingleAsset ? (data.assetMetrics[0]?.assetName || 'the asset') : `the portfolio of ${data.summary.totalAssets} assets`;
+
+  // ---- Shared table styles ----
+  const tableHeadStyle = {
+    fillColor: colors.primary as [number, number, number],
+    textColor: colors.white as [number, number, number],
+    fontStyle: 'bold' as const,
+    fontSize: 8.5,
+    cellPadding: { top: 2.5, bottom: 2.5, left: 3, right: 3 },
+  };
+
+  const tableBodyStyle = {
+    fontSize: 8,
+    cellPadding: { top: 2, bottom: 2, left: 3, right: 3 },
+    textColor: colors.text as [number, number, number],
+  };
+
+  const tableAlternateStyle = {
+    fillColor: colors.tableStripe as [number, number, number],
+  };
 
   // ---- Helpers ----
   const checkPageBreak = (requiredSpace: number): void => {
@@ -376,44 +417,51 @@ export async function generateEnhancedPDF(
   };
 
   const addHeader = (): void => {
+    // Thin accent line at very top
     doc.setFillColor(...colors.primary);
-    doc.rect(0, 0, pageWidth, 12, 'F');
+    doc.rect(0, 0, pageWidth, 10, 'F');
     doc.setTextColor(...colors.white);
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.text('BUILDING CONDITION ASSESSMENT REPORT', margin, 8);
+    doc.text('BUILDING CONDITION ASSESSMENT REPORT', margin, 7);
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
-    doc.text(config.projectName, pageWidth - margin, 8, { align: 'right' });
-    yPos = 18;
+    doc.text(config.projectName, pageWidth - margin, 7, { align: 'right' });
+    yPos = 16;
   };
 
   const addFooter = (): void => {
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFontSize(7);
+      // Thin line above footer
+      doc.setDrawColor(...colors.mediumGray);
+      doc.setLineWidth(0.3);
+      doc.line(margin, pageHeight - 11, pageWidth - margin, pageHeight - 11);
+      doc.setFontSize(6.5);
       doc.setTextColor(...colors.secondary);
-      doc.text('B3NMA - Building Condition Assessment System', margin, pageHeight - 6);
-      doc.text('Confidential', pageWidth / 2, pageHeight - 6, { align: 'center' });
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 6, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      doc.text('B3NMA - Building Condition Assessment', margin, pageHeight - 7);
+      doc.text('Confidential', pageWidth / 2, pageHeight - 7, { align: 'center' });
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 7, { align: 'right' });
     }
   };
 
   const addSectionTitle = (title: string, level: number = 1): void => {
-    checkPageBreak(15);
     if (level === 1) {
-      doc.setFontSize(14);
+      checkPageBreak(14);
+      doc.setFontSize(15);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...colors.primary);
       doc.text(title, margin, yPos);
-      yPos += 8;
-      // Underline
-      doc.setDrawColor(...colors.primary);
-      doc.setLineWidth(0.5);
-      doc.line(margin, yPos - 3, margin + contentWidth, yPos - 3);
       yPos += 2;
+      // Clean underline
+      doc.setDrawColor(...colors.primary);
+      doc.setLineWidth(0.6);
+      doc.line(margin, yPos, margin + contentWidth, yPos);
+      yPos += 6;
     } else {
+      checkPageBreak(10);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...colors.primaryDark);
@@ -422,59 +470,61 @@ export async function generateEnhancedPDF(
     }
   };
 
-  const addParagraph = (text: string): void => {
-    doc.setFontSize(9);
+  const addParagraph = (text: string, indent: number = 0): void => {
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...colors.text);
-    const lines = doc.splitTextToSize(text, contentWidth);
+    const lines = doc.splitTextToSize(text, contentWidth - indent);
     for (const line of lines) {
-      checkPageBreak(5);
-      doc.text(line, margin, yPos);
+      checkPageBreak(4.5);
+      doc.text(line, margin + indent, yPos);
       yPos += 4;
     }
     yPos += 2;
   };
 
   const addBoldLabel = (label: string, value: string): void => {
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...colors.text);
     doc.text(label, margin, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(value, margin + doc.getTextWidth(label), yPos);
+    doc.text(value, margin + doc.getTextWidth(label) + 1, yPos);
     yPos += 5;
   };
 
   // ============================================
   // 1. COVER PAGE
   // ============================================
+  // Full-width blue header band
   doc.setFillColor(...colors.primary);
-  doc.rect(0, 0, pageWidth, 85, 'F');
+  doc.rect(0, 0, pageWidth, 80, 'F');
   
   doc.setTextColor(...colors.white);
-  doc.setFontSize(28);
+  doc.setFontSize(30);
   doc.setFont('helvetica', 'bold');
-  doc.text('Building Condition', pageWidth / 2, 35, { align: 'center' });
-  doc.text('Assessment Report', pageWidth / 2, 50, { align: 'center' });
+  doc.text('Building Condition', pageWidth / 2, 32, { align: 'center' });
+  doc.text('Assessment Report', pageWidth / 2, 46, { align: 'center' });
   
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
-  doc.text(config.reportTitle || config.projectName, pageWidth / 2, 68, { align: 'center' });
+  const titleText = config.reportTitle || config.projectName;
+  doc.text(titleText.substring(0, 70), pageWidth / 2, 62, { align: 'center' });
 
-  // Report details box
-  yPos = 100;
-  doc.setFillColor(...colors.lightGray);
-  doc.roundedRect(margin, yPos, contentWidth, 70, 3, 3, 'F');
+  // Report Information box
+  yPos = 95;
   doc.setDrawColor(...colors.primary);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(margin, yPos, contentWidth, 70, 3, 3, 'S');
+  doc.setLineWidth(0.8);
+  doc.line(margin, yPos, margin, yPos + 60);  // Left accent line
+  doc.setFillColor(...colors.lightGray);
+  doc.rect(margin + 2, yPos, contentWidth - 2, 60, 'F');
   
   doc.setTextColor(...colors.primary);
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Report Information', margin + 5, yPos + 10);
+  doc.text('Report Information', margin + 8, yPos + 9);
   
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(...colors.text);
   const reportDate = config.reportDate
     ? new Date(config.reportDate).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -489,50 +539,55 @@ export async function generateEnhancedPDF(
     ['Standard:', 'ASTM E2018 - Property Condition Assessment'],
   ];
   
-  let detailY = yPos + 20;
+  let detailY = yPos + 18;
   for (const [label, value] of coverDetails) {
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...colors.textLight);
     doc.text(label, margin + 8, detailY);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.text);
     doc.text(value.substring(0, 55), margin + 48, detailY);
-    detailY += 8;
+    detailY += 7;
   }
 
-  // Key metrics boxes on cover
-  yPos = 185;
+  // Key Findings section
+  yPos = 170;
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...colors.primary);
   doc.text('Key Findings', margin, yPos);
   yPos += 8;
 
-  const metricBoxWidth = (contentWidth - 10) / 3;
-  const metricBoxHeight = 28;
+  const metricBoxWidth = (contentWidth - 8) / 3;
+  const metricBoxHeight = 26;
   const fciValue = data.summary.portfolioFCI;
   const coverMetrics = [
     { label: 'Facility Condition Index', value: formatPercentage(fciValue, 2), color: getFCIColor(fciValue) },
-    { label: 'Condition Rating', value: data.summary.portfolioFCIRating, color: undefined },
-    { label: 'Current Replacement Value', value: formatCurrency(data.summary.totalCurrentReplacementValue), color: undefined },
+    { label: 'Condition Rating', value: data.summary.portfolioFCIRating, color: getConditionColor(data.summary.portfolioFCIRating.toLowerCase()) },
+    { label: 'Current Replacement Value', value: formatCurrency(data.summary.totalCurrentReplacementValue), color: colors.primary },
     { label: 'Deferred Maintenance', value: formatCurrency(data.summary.totalDeferredMaintenanceCost), color: colors.danger },
-    { label: 'Components Assessed', value: data.summary.totalAssessments.toString(), color: undefined },
+    { label: 'Components Assessed', value: validComponents.length.toString(), color: colors.primaryDark },
     { label: 'Funding Gap', value: formatCurrency(data.summary.fundingGap), color: colors.orange },
   ];
 
   coverMetrics.forEach((metric, index) => {
     const row = Math.floor(index / 3);
     const col = index % 3;
-    const x = margin + (col * (metricBoxWidth + 5));
-    const y = yPos + (row * (metricBoxHeight + 5));
+    const x = margin + (col * (metricBoxWidth + 4));
+    const y = yPos + (row * (metricBoxHeight + 4));
+    // Card with left accent
     doc.setFillColor(...colors.lightGray);
-    doc.roundedRect(x, y, metricBoxWidth, metricBoxHeight, 2, 2, 'F');
+    doc.rect(x, y, metricBoxWidth, metricBoxHeight, 'F');
+    doc.setFillColor(...(metric.color || colors.primary));
+    doc.rect(x, y, 2, metricBoxHeight, 'F');  // Left color accent
     doc.setFontSize(7);
-    doc.setTextColor(...colors.secondary);
+    doc.setTextColor(...colors.textLight);
     doc.setFont('helvetica', 'normal');
-    doc.text(metric.label, x + 3, y + 8);
+    doc.text(metric.label, x + 6, y + 8);
     doc.setFontSize(14);
     doc.setTextColor(...(metric.color || colors.text));
     doc.setFont('helvetica', 'bold');
-    doc.text(metric.value, x + 3, y + 21);
+    doc.text(metric.value, x + 6, y + 20);
   });
 
   // ============================================
@@ -553,9 +608,9 @@ export async function generateEnhancedPDF(
   addTocEntry('Introduction');
 
   addBoldLabel('Work Scope: ', 'Building Condition Assessment (BCA)');
-  yPos += 2;
+  yPos += 1;
 
-  addParagraph(`B3NMA was retained to conduct a Building Condition Assessment (BCA) of ${assetLabel}, located at ${config.clientAddress || 'the subject property'}. The assessment was performed in accordance with ASTM E2018 - Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process.`);
+  addParagraph(`B3NMA was retained to conduct a Building Condition Assessment (BCA) of ${assetLabel}, located at ${config.clientAddress || 'the subject property'}. The assessment was performed in accordance with ASTM E2018 \u2013 Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process.`);
 
   addBoldLabel('Objective: ', '');
   addParagraph('The objective of this assessment is to provide a comprehensive evaluation of the physical condition of the building systems and components, identify deficiencies and deferred maintenance items, estimate remediation costs, and develop a prioritized capital renewal plan to support informed decision-making for facility management and capital planning.');
@@ -572,13 +627,13 @@ export async function generateEnhancedPDF(
     'Preparation of a multi-year capital renewal forecast',
   ];
   for (const item of scopeItems) {
-    checkPageBreak(8);
-    doc.setFontSize(9);
+    checkPageBreak(7);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...colors.text);
-    doc.text('\u2022', margin + 2, yPos);
-    const lines = doc.splitTextToSize(item, contentWidth - 10);
-    doc.text(lines, margin + 8, yPos);
+    doc.text('\u2022', margin + 3, yPos);
+    const lines = doc.splitTextToSize(item, contentWidth - 12);
+    doc.text(lines, margin + 9, yPos);
     yPos += lines.length * 4 + 1;
   }
   yPos += 4;
@@ -599,13 +654,13 @@ export async function generateEnhancedPDF(
       startY: yPos,
       body: buildingInfo,
       theme: 'plain',
-      bodyStyles: { fontSize: 9 },
+      bodyStyles: { fontSize: 8.5, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
       columnStyles: {
-        0: { cellWidth: 55, fontStyle: 'bold', textColor: colors.secondary },
-        1: { cellWidth: contentWidth - 55 }
+        0: { cellWidth: 50, fontStyle: 'bold', textColor: colors.textLight },
+        1: { cellWidth: contentWidth - 50, textColor: colors.text }
       },
       margin: { left: margin, right: margin },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
+      alternateRowStyles: tableAlternateStyle,
     });
     yPos = (doc as any).lastAutoTable?.finalY + 6 || yPos + 40;
   }
@@ -620,7 +675,7 @@ export async function generateEnhancedPDF(
   addTocEntry('ASTM E2018 Standard Guide');
 
   addSectionTitle('Purpose of ASTM E2018', 2);
-  addParagraph('ASTM E2018 - Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process provides a standardized framework for evaluating the physical condition of commercial real estate and institutional properties. The standard establishes consistent methodology for documenting building conditions, identifying deficiencies, and estimating costs for remediation.');
+  addParagraph('ASTM E2018 \u2013 Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process provides a standardized framework for evaluating the physical condition of commercial real estate and institutional properties. The standard establishes consistent methodology for documenting building conditions, identifying deficiencies, and estimating costs for remediation.');
 
   addSectionTitle('Assessment Levels', 2);
   const assessmentLevels = [
@@ -634,8 +689,9 @@ export async function generateEnhancedPDF(
     head: [['Level', 'Type', 'Description']],
     body: assessmentLevels,
     theme: 'striped',
-    headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    headStyles: tableHeadStyle,
+    bodyStyles: tableBodyStyle,
+    alternateRowStyles: tableAlternateStyle,
     columnStyles: {
       0: { cellWidth: 18, fontStyle: 'bold', halign: 'center' },
       1: { cellWidth: 35, fontStyle: 'bold' },
@@ -643,26 +699,27 @@ export async function generateEnhancedPDF(
     },
     margin: { left: margin, right: margin },
   });
-  yPos = (doc as any).lastAutoTable?.finalY + 6 || yPos + 60;
+  yPos = (doc as any).lastAutoTable?.finalY + 8 || yPos + 60;
 
   addSectionTitle('UNIFORMAT II Classification System', 2);
   addParagraph('Building components are organized using the UNIFORMAT II classification system (ASTM E1557), which provides a hierarchical structure for categorizing building elements:');
   const uniformatCategories = [
-    ['A', 'SUBSTRUCTURE', 'Foundations, basement construction, slab on grade'],
-    ['B', 'SHELL', 'Superstructure, exterior enclosure, roofing'],
-    ['C', 'INTERIORS', 'Interior construction, stairs, interior finishes'],
-    ['D', 'SERVICES', 'Conveying systems, plumbing, HVAC, fire protection, electrical'],
-    ['E', 'EQUIPMENT & FURNISHINGS', 'Equipment, furnishings, special construction'],
-    ['F', 'SPECIAL CONSTRUCTION', 'Special structures, building demolition'],
-    ['G', 'BUILDING SITEWORK', 'Site preparation, improvements, utilities'],
+    ['A', 'Substructure', 'Foundations, basement construction, slab on grade'],
+    ['B', 'Shell', 'Superstructure, exterior enclosure, roofing'],
+    ['C', 'Interiors', 'Interior construction, stairs, interior finishes'],
+    ['D', 'Services', 'Conveying systems, plumbing, HVAC, fire protection, electrical'],
+    ['E', 'Equipment & Furnishings', 'Equipment, furnishings, special construction'],
+    ['F', 'Special Construction', 'Special structures, building demolition'],
+    ['G', 'Building Sitework', 'Site preparation, improvements, utilities'],
   ];
   autoTable(doc, {
     startY: yPos,
     head: [['Code', 'Category', 'Includes']],
     body: uniformatCategories,
     theme: 'striped',
-    headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    headStyles: tableHeadStyle,
+    bodyStyles: tableBodyStyle,
+    alternateRowStyles: tableAlternateStyle,
     columnStyles: {
       0: { cellWidth: 15, fontStyle: 'bold', halign: 'center' },
       1: { cellWidth: 45, fontStyle: 'bold' },
@@ -700,11 +757,12 @@ export async function generateEnhancedPDF(
     head: [['Action Type', 'Description']],
     body: actionTypes,
     theme: 'striped',
-    headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    headStyles: tableHeadStyle,
+    bodyStyles: tableBodyStyle,
+    alternateRowStyles: tableAlternateStyle,
     columnStyles: {
-      0: { cellWidth: 35, fontStyle: 'bold' },
-      1: { cellWidth: contentWidth - 35 }
+      0: { cellWidth: 38, fontStyle: 'bold' },
+      1: { cellWidth: contentWidth - 38 }
     },
     margin: { left: margin, right: margin },
   });
@@ -725,9 +783,9 @@ export async function generateEnhancedPDF(
   addParagraph('Components requiring action are assigned a priority level to support capital planning and budget allocation:');
 
   const priorityLevels = [
-    ['Critical', '0-1 Year', 'Immediate action required. Includes life safety hazards, code violations, active water infiltration, structural concerns, or conditions that pose imminent risk of failure.', colors.danger],
-    ['Necessary', '1-5 Years', 'Action required in the near term. Components are deteriorating and will reach failure if not addressed. Deferral may result in increased repair costs.', colors.orange],
-    ['Recommended', '6-10 Years', 'Action recommended to maintain building condition. Components are functional but approaching the end of their expected service life.', colors.warning],
+    ['Critical', '0\u20131 Year', 'Immediate action required. Includes life safety hazards, code violations, active water infiltration, structural concerns, or conditions that pose imminent risk of failure.', colors.danger],
+    ['Necessary', '1\u20135 Years', 'Action required in the near term. Components are deteriorating and will reach failure if not addressed. Deferral may result in increased repair costs.', colors.orange],
+    ['Recommended', '6\u201310 Years', 'Action recommended to maintain building condition. Components are functional but approaching the end of their expected service life.', colors.warning],
     ['Routine', 'N/A', 'Component is in satisfactory condition. No corrective action is required. Routine maintenance should continue as scheduled.', colors.success],
   ];
   autoTable(doc, {
@@ -735,12 +793,13 @@ export async function generateEnhancedPDF(
     head: [['Priority', 'Timeframe', 'Description']],
     body: priorityLevels.map(([p, t, d]) => [p as string, t as string, d as string]),
     theme: 'striped',
-    headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    headStyles: tableHeadStyle,
+    bodyStyles: tableBodyStyle,
+    alternateRowStyles: tableAlternateStyle,
     columnStyles: {
-      0: { cellWidth: 25, fontStyle: 'bold' },
+      0: { cellWidth: 28, fontStyle: 'bold' },
       1: { cellWidth: 22, halign: 'center' },
-      2: { cellWidth: contentWidth - 47 }
+      2: { cellWidth: contentWidth - 50 }
     },
     margin: { left: margin, right: margin },
     didParseCell: (hookData: any) => {
@@ -769,22 +828,23 @@ export async function generateEnhancedPDF(
   addParagraph('Each building component is assigned a condition rating based on visual observation during the site assessment:');
 
   const conditionRatings = [
-    ['Good', '70 - 100%', 'The component is performing as intended with only minor wear. Routine maintenance is sufficient.', colors.success],
-    ['Fair', '40 - 69%', 'The component shows moderate deterioration. Repair or renewal should be planned within the medium term.', colors.warning],
-    ['Poor', '10 - 39%', 'The component exhibits significant deterioration. Near-term intervention is required.', colors.orange],
-    ['Failed / Critical', '0 - 9%', 'The component has reached or exceeded its useful life. Immediate replacement or major repair is required.', colors.danger],
+    ['Good', '70\u2013100%', 'The component is performing as intended with only minor wear. Routine maintenance is sufficient.', colors.success],
+    ['Fair', '40\u201369%', 'The component shows moderate deterioration. Repair or renewal should be planned within the medium term.', colors.warning],
+    ['Poor', '10\u201339%', 'The component exhibits significant deterioration. Near-term intervention is required.', colors.orange],
+    ['Failed / Critical', '0\u20139%', 'The component has reached or exceeded its useful life. Immediate replacement or major repair is required.', colors.danger],
   ];
   autoTable(doc, {
     startY: yPos,
     head: [['Condition', 'Score Range', 'Description']],
     body: conditionRatings.map(([c, r, d]) => [c as string, r as string, d as string]),
     theme: 'striped',
-    headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    headStyles: tableHeadStyle,
+    bodyStyles: tableBodyStyle,
+    alternateRowStyles: tableAlternateStyle,
     columnStyles: {
-      0: { cellWidth: 28, fontStyle: 'bold' },
+      0: { cellWidth: 30, fontStyle: 'bold' },
       1: { cellWidth: 22, halign: 'center' },
-      2: { cellWidth: contentWidth - 50 }
+      2: { cellWidth: contentWidth - 52 }
     },
     margin: { left: margin, right: margin },
     didParseCell: (hookData: any) => {
@@ -813,23 +873,22 @@ export async function generateEnhancedPDF(
   addParagraph('The Facility Condition Index (FCI) is a widely recognized industry metric used to quantify the overall condition of a building or portfolio. It provides a standardized, objective measure that enables comparison across assets and supports data-driven capital planning decisions.');
 
   addSectionTitle('FCI Formula', 2);
-  // Formula box
-  checkPageBreak(20);
+  checkPageBreak(18);
   doc.setFillColor(...colors.lightBlue);
-  doc.roundedRect(margin + 20, yPos, contentWidth - 40, 14, 2, 2, 'F');
-  doc.setFontSize(12);
+  doc.roundedRect(margin + 15, yPos, contentWidth - 30, 14, 2, 2, 'F');
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...colors.primary);
-  doc.text('FCI = Deferred Maintenance Cost (DMC) / Current Replacement Value (CRV)', pageWidth / 2, yPos + 9, { align: 'center' });
+  doc.text('FCI = Deferred Maintenance Cost (DMC) \u00F7 Current Replacement Value (CRV)', pageWidth / 2, yPos + 9, { align: 'center' });
   yPos += 20;
 
   addParagraph('Deferred Maintenance Cost (DMC) represents the total estimated cost of all identified deficiencies and required remediation work. Current Replacement Value (CRV) represents the estimated cost to replace the entire building with a new facility of equivalent size and function at current market prices.');
 
   addSectionTitle('FCI Rating Scale', 2);
   const fciScale = [
-    ['Good', '0% - 5%', 'The facility is in good overall condition with minimal deferred maintenance.', colors.success],
-    ['Fair', '5% - 10%', 'The facility shows moderate deferred maintenance requiring planned investment.', colors.warning],
-    ['Poor', '10% - 30%', 'The facility has significant deferred maintenance requiring substantial capital investment.', colors.orange],
+    ['Good', '0%\u20135%', 'The facility is in good overall condition with minimal deferred maintenance.', colors.success],
+    ['Fair', '5%\u201310%', 'The facility shows moderate deferred maintenance requiring planned investment.', colors.warning],
+    ['Poor', '10%\u201330%', 'The facility has significant deferred maintenance requiring substantial capital investment.', colors.orange],
     ['Critical', '> 30%', 'The facility has critical deferred maintenance. Major renovation or replacement should be considered.', colors.danger],
   ];
   autoTable(doc, {
@@ -837,12 +896,13 @@ export async function generateEnhancedPDF(
     head: [['Rating', 'FCI Range', 'Description']],
     body: fciScale.map(([r, range, d]) => [r as string, range as string, d as string]),
     theme: 'striped',
-    headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    headStyles: tableHeadStyle,
+    bodyStyles: tableBodyStyle,
+    alternateRowStyles: tableAlternateStyle,
     columnStyles: {
-      0: { cellWidth: 20, fontStyle: 'bold' },
+      0: { cellWidth: 22, fontStyle: 'bold' },
       1: { cellWidth: 22, halign: 'center' },
-      2: { cellWidth: contentWidth - 42 }
+      2: { cellWidth: contentWidth - 44 }
     },
     margin: { left: margin, right: margin },
     didParseCell: (hookData: any) => {
@@ -854,11 +914,15 @@ export async function generateEnhancedPDF(
       }
     },
   });
-  yPos = (doc as any).lastAutoTable?.finalY + 6 || yPos + 40;
+  yPos = (doc as any).lastAutoTable?.finalY + 6 || yPos + 60;
 
-  // Show this asset's FCI
-  checkPageBreak(15);
-  addParagraph(`For this ${isSingleAsset ? 'building' : 'portfolio'}, the calculated FCI is ${formatPercentage(fciValue, 2)}, corresponding to a "${data.summary.portfolioFCIRating}" rating. The total CRV is ${formatCurrency(data.summary.totalCurrentReplacementValue)} and the total DMC is ${formatCurrency(data.summary.totalDeferredMaintenanceCost)}.`);
+  // Building-specific FCI
+  if (isSingleAsset && data.assetMetrics.length === 1) {
+    const asset = data.assetMetrics[0];
+    checkPageBreak(20);
+    addSectionTitle('Building FCI Calculation', 2);
+    addParagraph(`For ${asset.assetName}, the FCI is calculated as ${formatCurrency(data.summary.totalDeferredMaintenanceCost)} (DMC) \u00F7 ${formatCurrency(data.summary.totalCurrentReplacementValue)} (CRV) = ${formatPercentage(fciValue, 2)}, which corresponds to a "${data.summary.portfolioFCIRating}" rating.`);
+  }
 
   // ============================================
   // 9. LIMITATIONS AND DISCLOSURE
@@ -867,37 +931,36 @@ export async function generateEnhancedPDF(
   currentPage++;
   addHeader();
   addSectionTitle('Limitations and Disclosure Statement', 1);
-  addTocEntry('Limitations and Disclosure');
+  addTocEntry('Limitations and Disclosure Statement');
 
   addSectionTitle('Limitations', 2);
   const limitations = [
-    'This assessment is based on a visual, non-invasive walk-through survey of accessible areas and conditions observable at the time of the site visit. Concealed conditions, latent defects, and areas not accessible during the inspection are excluded.',
-    'The assessment does not include environmental assessments, hazardous materials surveys (asbestos, lead paint, mold), seismic evaluations, or structural engineering analysis unless specifically noted.',
-    'Cost estimates are order-of-magnitude estimates intended for capital planning purposes only. They are not construction-ready estimates and do not include professional design fees, permits, escalation factors, contingencies, or applicable taxes unless otherwise stated.',
-    'Condition ratings and remaining useful life estimates are based on the assessor\'s professional judgment at the time of inspection and may be affected by factors not visible during the assessment.',
-    'This report does not constitute a warranty or guarantee regarding the condition of the property or the accuracy of cost estimates.',
-    'The assessment was limited to building systems and components. Site infrastructure, environmental conditions, and regulatory compliance are outside the scope.',
+    'This assessment is based on visual, non-invasive observation only. No destructive testing, laboratory analysis, or invasive investigation was performed.',
+    'The assessment is limited to readily accessible areas. Concealed conditions behind walls, above ceilings, below floors, or underground are not included.',
+    'Environmental assessments (asbestos, lead paint, mold, radon, soil contamination) are excluded from this scope of work.',
+    'Code compliance review is limited to visually observable conditions. A comprehensive code audit was not performed.',
+    'Cost estimates are order-of-magnitude projections based on current market conditions and industry databases. Actual costs may vary based on project-specific conditions, procurement methods, and market fluctuations.',
+    'This report represents conditions observed at the time of the site visit. Building conditions may change over time due to ongoing use, maintenance, or environmental factors.',
   ];
-  for (const limitation of limitations) {
-    checkPageBreak(15);
-    doc.setFontSize(9);
+  for (const item of limitations) {
+    checkPageBreak(10);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...colors.text);
-    doc.text('\u2022', margin + 2, yPos);
-    const lines = doc.splitTextToSize(limitation, contentWidth - 10);
-    doc.text(lines, margin + 8, yPos);
-    yPos += lines.length * 4 + 2;
+    doc.text('\u2022', margin + 3, yPos);
+    const lines = doc.splitTextToSize(item, contentWidth - 12);
+    doc.text(lines, margin + 9, yPos);
+    yPos += lines.length * 4 + 1.5;
   }
   yPos += 4;
 
   addSectionTitle('Disclosure', 2);
-  addParagraph('This report has been prepared by B3NMA for the exclusive use of the client identified on the cover page. The findings, opinions, and recommendations are based on the information available at the time of the assessment and the professional judgment of the assessor.');
-  addParagraph('This report is intended to provide a general overview of the physical condition of the subject property and should not be relied upon as a comprehensive evaluation of all building conditions.');
-  addParagraph('Reproduction, distribution, or use of this report by any party other than the intended recipient is not authorized without the prior written consent of B3NMA.');
+  addParagraph('This report has been prepared for the exclusive use of the client identified on the cover page. The findings, opinions, and recommendations contained herein are based on the assessor\'s professional judgment and the conditions observed at the time of the assessment.');
+  addParagraph('B3NMA makes no warranty, express or implied, regarding the completeness or accuracy of the information contained in this report beyond the scope of work described herein. This report is not intended to be used as a warranty or guarantee of building performance.');
 
   addSectionTitle('Assumptions', 2);
   const assumptions = [
-    'All building systems were operational at the time of the assessment unless otherwise noted.',
+    'All building systems were installed in accordance with applicable codes and standards at the time of construction.',
     'Building maintenance has been performed in accordance with standard industry practices.',
     'Cost estimates are based on current market conditions and do not account for future escalation.',
     'Remaining useful life estimates are based on industry-standard life expectancy tables and observed conditions.',
@@ -905,17 +968,17 @@ export async function generateEnhancedPDF(
   ];
   for (const assumption of assumptions) {
     checkPageBreak(8);
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...colors.text);
-    doc.text('\u2022', margin + 2, yPos);
-    const lines = doc.splitTextToSize(assumption, contentWidth - 10);
-    doc.text(lines, margin + 8, yPos);
+    doc.text('\u2022', margin + 3, yPos);
+    const lines = doc.splitTextToSize(assumption, contentWidth - 12);
+    doc.text(lines, margin + 9, yPos);
     yPos += lines.length * 4 + 1;
   }
 
   // ============================================
-  // 10. DASHBOARD
+  // 10. DASHBOARD (single page, consolidated)
   // ============================================
   doc.addPage();
   currentPage++;
@@ -925,52 +988,59 @@ export async function generateEnhancedPDF(
 
   onProgress?.('Generating dashboard charts...', 35);
 
-  // Dashboard metrics row
+  // KPI Cards Row - more prominent
   const dashMetrics = [
     { label: 'FCI', value: formatPercentage(fciValue, 1), sub: data.summary.portfolioFCIRating, color: getFCIColor(fciValue) },
-    { label: 'Avg Condition', value: `${data.summary.averageConditionScore}%`, sub: data.summary.averageConditionRating, color: getConditionColor(data.summary.averageConditionRating.toLowerCase()) },
+    { label: 'Avg Condition', value: `${data.summary.averageConditionScore.toFixed(1)}%`, sub: data.summary.averageConditionRating, color: getConditionColor(data.summary.averageConditionRating.toLowerCase()) },
     { label: 'Deferred Maint.', value: formatCurrency(data.summary.totalDeferredMaintenanceCost), sub: '', color: colors.danger },
     { label: 'CRV', value: formatCurrency(data.summary.totalCurrentReplacementValue), sub: '', color: colors.primary },
   ];
 
   const dashBoxW = (contentWidth - 9) / 4;
+  const dashBoxH = 20;
   dashMetrics.forEach((m, i) => {
     const x = margin + i * (dashBoxW + 3);
+    // Card background
     doc.setFillColor(...colors.lightGray);
-    doc.roundedRect(x, yPos, dashBoxW, 22, 2, 2, 'F');
-    doc.setFontSize(7);
-    doc.setTextColor(...colors.secondary);
+    doc.rect(x, yPos, dashBoxW, dashBoxH, 'F');
+    // Left accent
+    doc.setFillColor(...m.color);
+    doc.rect(x, yPos, 1.5, dashBoxH, 'F');
+    // Label
+    doc.setFontSize(6.5);
+    doc.setTextColor(...colors.textLight);
     doc.setFont('helvetica', 'normal');
-    doc.text(m.label, x + 3, yPos + 7);
-    doc.setFontSize(12);
+    doc.text(m.label, x + 5, yPos + 6);
+    // Value
+    doc.setFontSize(11);
     doc.setTextColor(...m.color);
     doc.setFont('helvetica', 'bold');
-    doc.text(m.value, x + 3, yPos + 16);
+    doc.text(m.value, x + 5, yPos + 14);
+    // Sub label
     if (m.sub) {
-      doc.setFontSize(7);
-      doc.setTextColor(...colors.secondary);
+      doc.setFontSize(6.5);
+      doc.setTextColor(...colors.textLight);
       doc.setFont('helvetica', 'normal');
-      doc.text(m.sub, x + dashBoxW - 3, yPos + 16, { align: 'right' });
+      doc.text(m.sub, x + dashBoxW - 3, yPos + 14, { align: 'right' });
     }
   });
-  yPos += 28;
+  yPos += dashBoxH + 6;
 
-  // Condition Distribution
-  checkPageBreak(60);
+  // ---- Condition Distribution (stacked bar) ----
   addSectionTitle('Condition Distribution', 2);
   
   const condCounts = { good: 0, fair: 0, poor: 0, failed: 0 };
-  for (const c of data.components) {
+  for (const c of validComponents) {
     const cond = c.condition?.toLowerCase();
     if (cond === 'good') condCounts.good++;
     else if (cond === 'fair') condCounts.fair++;
     else if (cond === 'poor') condCounts.poor++;
     else condCounts.failed++;
   }
-  const totalComps = data.components.length || 1;
+  const totalComps = validComponents.length || 1;
 
   const barY = yPos;
-  const barHeight = 14;
+  const barHeight = 12;
   const segments = [
     { label: 'Good', count: condCounts.good, color: colors.success },
     { label: 'Fair', count: condCounts.fair, color: colors.warning },
@@ -984,34 +1054,33 @@ export async function generateEnhancedPDF(
     if (segWidth > 0) {
       doc.setFillColor(...seg.color);
       doc.rect(barX, barY, segWidth, barHeight, 'F');
-      if (segWidth > 15) {
+      if (segWidth > 12) {
         doc.setTextColor(...colors.white);
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
         doc.text(`${seg.count}`, barX + segWidth / 2, barY + barHeight / 2 + 1, { align: 'center' });
       }
       barX += segWidth;
     }
   }
-  yPos = barY + barHeight + 4;
+  yPos = barY + barHeight + 3;
 
-  // Legend
+  // Legend row
   let legendX = margin;
   for (const seg of segments) {
     doc.setFillColor(...seg.color);
-    doc.rect(legendX, yPos, 4, 4, 'F');
-    doc.setFontSize(7);
+    doc.rect(legendX, yPos, 3, 3, 'F');
+    doc.setFontSize(6.5);
     doc.setTextColor(...colors.text);
     doc.setFont('helvetica', 'normal');
-    const pct = ((seg.count / totalComps) * 100).toFixed(1);
+    const pct = ((seg.count / totalComps) * 100).toFixed(0);
     const legendText = `${seg.label}: ${seg.count} (${pct}%)`;
-    doc.text(legendText, legendX + 6, yPos + 3.5);
-    legendX += doc.getTextWidth(legendText) + 12;
+    doc.text(legendText, legendX + 5, yPos + 2.5);
+    legendX += doc.getTextWidth(legendText) + 10;
   }
-  yPos += 10;
+  yPos += 8;
 
-  // Cost by UNIFORMAT Category
-  checkPageBreak(70);
+  // ---- Cost by UNIFORMAT Category (horizontal bars) ----
   addSectionTitle('Cost by Building System', 2);
 
   const sortedUniformatSummary = [...data.uniformatSummary]
@@ -1020,31 +1089,40 @@ export async function generateEnhancedPDF(
 
   if (sortedUniformatSummary.length > 0) {
     const maxCost = Math.max(...sortedUniformatSummary.map(g => g.totalRepairCost + g.totalReplacementCost));
-    const chartBarHeight = 10;
-    const labelWidth = 55;
-    const chartWidth = contentWidth - labelWidth - 25;
+    const chartBarH = 8;
+    const labelW = 48;
+    const chartW = contentWidth - labelW - 30;
+    const chartColors: [number, number, number][] = [
+      [31, 78, 161], [42, 100, 180], [55, 120, 195], [70, 140, 210],
+      [90, 155, 220], [110, 170, 225], [135, 185, 230],
+    ];
 
-    for (const group of sortedUniformatSummary) {
-      checkPageBreak(chartBarHeight + 4);
+    for (let idx = 0; idx < sortedUniformatSummary.length; idx++) {
+      const group = sortedUniformatSummary[idx];
       const totalCost = group.totalRepairCost + group.totalReplacementCost;
-      const barWidth2 = maxCost > 0 ? (totalCost / maxCost) * chartWidth : 0;
+      const barW = maxCost > 0 ? (totalCost / maxCost) * chartW : 0;
+      const barColor = chartColors[idx % chartColors.length];
+      
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...colors.text);
-      doc.text(`${group.groupCode} - ${group.groupName.substring(0, 20)}`, margin, yPos + chartBarHeight / 2 + 1);
-      doc.setFillColor(...colors.primary);
-      doc.rect(margin + labelWidth, yPos, barWidth2, chartBarHeight, 'F');
-      doc.setFontSize(7);
+      // Full category name
+      const fullLabel = `${group.groupCode} - ${UNIFORMAT_GROUPS[group.groupCode.charAt(0).toUpperCase()] || group.groupName}`;
+      doc.text(fullLabel.substring(0, 30), margin, yPos + chartBarH / 2 + 1);
+      
+      doc.setFillColor(...barColor);
+      doc.rect(margin + labelW, yPos, Math.max(barW, 1), chartBarH, 'F');
+      
+      doc.setFontSize(6.5);
       doc.setTextColor(...colors.text);
       doc.setFont('helvetica', 'bold');
-      doc.text(formatCurrency(totalCost), margin + labelWidth + barWidth2 + 2, yPos + chartBarHeight / 2 + 1);
-      yPos += chartBarHeight + 3;
+      doc.text(formatCurrency(totalCost), margin + labelW + barW + 2, yPos + chartBarH / 2 + 1);
+      yPos += chartBarH + 2;
     }
   }
-  yPos += 5;
+  yPos += 4;
 
-  // Priority Distribution (merged into BCA categories)
-  checkPageBreak(60);
+  // ---- Priority Distribution (horizontal bars) ----
   addSectionTitle('Priority Distribution', 2);
 
   if (data.priorityMatrix.length > 0) {
@@ -1063,32 +1141,31 @@ export async function generateEnhancedPDF(
       .map(label => ({ label, ...chartMerged.get(label)! }));
 
     const maxPriorityCount = Math.max(...mergedChartEntries.map(p => p.count));
-    const chartBarHeight2 = 10;
-    const labelWidth2 = 40;
-    const chartWidth2 = contentWidth - labelWidth2 - 30;
+    const chartBarH2 = 8;
+    const labelW2 = 30;
+    const chartW2 = contentWidth - labelW2 - 45;
 
-    const priorityLabelColors: Record<string, [number, number, number]> = {
+    const priorityBarColors: Record<string, [number, number, number]> = {
       'Critical': colors.danger,
       'Necessary': colors.orange,
       'Recommended': colors.warning,
-      'Routine': colors.secondary,
+      'Routine': colors.success,
     };
 
     for (const p of mergedChartEntries) {
-      checkPageBreak(chartBarHeight2 + 4);
-      const bw = maxPriorityCount > 0 ? (p.count / maxPriorityCount) * chartWidth2 : 0;
-      const barColor = priorityLabelColors[p.label] || colors.primary;
+      const bw = maxPriorityCount > 0 ? (p.count / maxPriorityCount) * chartW2 : 0;
+      const barColor = priorityBarColors[p.label] || colors.primary;
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...colors.text);
-      doc.text(p.label, margin, yPos + chartBarHeight2 / 2 + 1);
+      doc.text(p.label, margin, yPos + chartBarH2 / 2 + 1);
       doc.setFillColor(...barColor);
-      doc.rect(margin + labelWidth2, yPos, bw, chartBarHeight2, 'F');
-      doc.setFontSize(7);
+      doc.rect(margin + labelW2, yPos, Math.max(bw, 1), chartBarH2, 'F');
+      doc.setFontSize(6.5);
       doc.setTextColor(...colors.text);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${p.count} items (${formatCurrency(p.totalCost)})`, margin + labelWidth2 + bw + 2, yPos + chartBarHeight2 / 2 + 1);
-      yPos += chartBarHeight2 + 3;
+      doc.text(`${p.count} items (${formatCurrency(p.totalCost)})`, margin + labelW2 + bw + 2, yPos + chartBarH2 / 2 + 1);
+      yPos += chartBarH2 + 2;
     }
   }
 
@@ -1103,12 +1180,12 @@ export async function generateEnhancedPDF(
   addSectionTitle('Executive Summary', 1);
   addTocEntry('Executive Summary');
 
-  addParagraph(`This Building Condition Assessment (BCA) report presents the findings of a visual, non-invasive assessment of ${assetLabel}. The assessment evaluated ${data.summary.totalAssessments} building components organized according to the UNIFORMAT II classification system (ASTM E1557). The Facility Condition Index (FCI) for ${isSingleAsset ? 'this building' : 'the portfolio'} is ${formatPercentage(fciValue, 2)}, indicating a "${data.summary.portfolioFCIRating}" overall condition.`);
+  addParagraph(`This Building Condition Assessment (BCA) report presents the findings of a visual, non-invasive assessment of ${assetLabel}. The assessment evaluated ${validComponents.length} building components organized according to the UNIFORMAT II classification system (ASTM E1557). The Facility Condition Index (FCI) for ${isSingleAsset ? 'this building' : 'the portfolio'} is ${formatPercentage(fciValue, 2)}, indicating a \u201C${data.summary.portfolioFCIRating}\u201D overall condition.`);
 
   addParagraph(`The total Current Replacement Value (CRV) is ${formatCurrency(data.summary.totalCurrentReplacementValue)}, with a total Deferred Maintenance backlog of ${formatCurrency(data.summary.totalDeferredMaintenanceCost)}, representing a funding gap of ${formatCurrency(data.summary.fundingGap)}.`);
 
   // Top cost drivers
-  const sortedByRepairCost = [...data.components].sort((a, b) => (b.totalCost || 0) - (a.totalCost || 0));
+  const sortedByRepairCost = [...validComponents].sort((a, b) => (b.totalCost || 0) - (a.totalCost || 0));
   const topDrivers = sortedByRepairCost.slice(0, 5).filter(c => (c.totalCost || 0) > 0);
   if (topDrivers.length > 0) {
     checkPageBreak(30);
@@ -1121,11 +1198,12 @@ export async function generateEnhancedPDF(
       head: [['#', 'Code', 'Component', 'Condition', 'Estimated Cost']],
       body: driverRows,
       theme: 'striped',
-      headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
+      headStyles: tableHeadStyle,
+      bodyStyles: tableBodyStyle,
+      alternateRowStyles: tableAlternateStyle,
       columnStyles: {
-        0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 18 }, 2: { cellWidth: 65 },
-        3: { cellWidth: 20, halign: 'center' }, 4: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
+        0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 18 }, 2: { cellWidth: 60 },
+        3: { cellWidth: 22, halign: 'center' }, 4: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
       },
       margin: { left: margin, right: margin },
     });
@@ -1133,7 +1211,7 @@ export async function generateEnhancedPDF(
   }
 
   // Highest-risk items
-  const highPriorityComponents = data.components.filter(c => ['critical', 'high', 'immediate', 'necessary'].includes(c.priority?.toLowerCase()));
+  const highPriorityComponents = validComponents.filter(c => ['critical', 'high', 'immediate', 'necessary'].includes(c.priority?.toLowerCase()));
   if (highPriorityComponents.length > 0) {
     checkPageBreak(30);
     addSectionTitle('Highest-Risk Items', 2);
@@ -1143,7 +1221,7 @@ export async function generateEnhancedPDF(
 
   checkPageBreak(30);
   addSectionTitle('Key Planning Assumptions', 2);
-  addParagraph(`Cost estimates are based on current market conditions and do not include escalation factors, design fees, or contingencies unless otherwise noted. The capital renewal forecast distributes costs based on assigned priority levels: critical items are scheduled immediately, necessary items in years 1-5, and recommended items in years 6-10. All costs are expressed in current Canadian dollars.`);
+  addParagraph(`Cost estimates are based on current market conditions and do not include escalation factors, design fees, or contingencies unless otherwise noted. The capital renewal forecast distributes costs based on assigned priority levels: critical items are scheduled immediately, necessary items in years 1\u20135, and recommended items in years 6\u201310. All costs are expressed in current Canadian dollars.`);
 
   // ============================================
   // 12. OBSERVATIONS AND RECOMMENDATIONS
@@ -1156,26 +1234,29 @@ export async function generateEnhancedPDF(
 
   addParagraph('The following section provides a summary of key observations and recommendations identified during the building condition assessment.');
 
+  // Group ALL valid components by UNIFORMAT category for observations
   const observationGroups = new Map<string, EnhancedComponentData[]>();
-  for (const c of data.components) {
+  for (const c of validComponents) {
     const obs = stripHtmlTags(c.observations);
     const rec = stripHtmlTags(c.recommendations);
     if (obs || rec) {
-      const groupKey = c.uniformatCode.charAt(0);
+      const groupKey = c.uniformatCode.charAt(0).toUpperCase();
       if (!observationGroups.has(groupKey)) observationGroups.set(groupKey, []);
       observationGroups.get(groupKey)!.push(c);
     }
   }
 
-  const sortedObsGroups = Array.from(observationGroups.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  const sortedObsGroups = Array.from(observationGroups.entries())
+    .sort((a, b) => 'ABCDEFG'.indexOf(a[0]) - 'ABCDEFG'.indexOf(b[0]));
 
   for (const [groupKey, components] of sortedObsGroups) {
-    const groupName = UNIFORMAT_GROUPS[groupKey] || groupKey;
+    const groupName = UNIFORMAT_GROUPS_UPPER[groupKey] || groupKey;
     checkPageBreak(25);
     addSectionTitle(`${groupKey} - ${groupName}`, 2);
 
-    for (const c of components.slice(0, 8)) {
+    for (const c of components.slice(0, 10)) {
       checkPageBreak(20);
+      // Component name with condition badge
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...colors.text);
@@ -1183,31 +1264,33 @@ export async function generateEnhancedPDF(
       
       const condColor = getConditionColor(c.condition);
       const condText = capitalize(c.condition);
-      const condX = margin + contentWidth - 25;
+      const condX = margin + contentWidth - 22;
       doc.setFillColor(...condColor);
-      doc.roundedRect(condX, yPos - 3.5, 25, 5, 1, 1, 'F');
+      doc.roundedRect(condX, yPos - 3.5, 22, 5, 1, 1, 'F');
       doc.setTextColor(...colors.white);
-      doc.setFontSize(7);
+      doc.setFontSize(6.5);
       doc.setFont('helvetica', 'bold');
-      doc.text(condText, condX + 12.5, yPos, { align: 'center' });
+      doc.text(condText, condX + 11, yPos, { align: 'center' });
       yPos += 5;
 
       const obs = stripHtmlTags(c.observations);
       if (obs) {
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setFont('helvetica', 'italic');
         doc.setTextColor(...colors.secondary);
         doc.text('Observation:', margin + 4, yPos);
-        yPos += 4;
+        yPos += 3.5;
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...colors.text);
         const obsLines = doc.splitTextToSize(obs, contentWidth - 8);
-        for (let i = 0; i < Math.min(obsLines.length, 3); i++) {
+        for (let i = 0; i < Math.min(obsLines.length, 4); i++) {
+          checkPageBreak(4);
           doc.text(obsLines[i], margin + 4, yPos);
           yPos += 3.5;
         }
-        if (obsLines.length > 3) {
+        if (obsLines.length > 4) {
           doc.setTextColor(...colors.secondary);
+          doc.setFontSize(7);
           doc.text('(continued in component assessment)', margin + 4, yPos);
           yPos += 3.5;
         }
@@ -1215,20 +1298,22 @@ export async function generateEnhancedPDF(
 
       const rec = stripHtmlTags(c.recommendations);
       if (rec) {
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setFont('helvetica', 'italic');
-        doc.setTextColor(34, 139, 34);
+        doc.setTextColor(22, 120, 50);
         doc.text('Recommendation:', margin + 4, yPos);
-        yPos += 4;
+        yPos += 3.5;
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...colors.text);
         const recLines = doc.splitTextToSize(rec, contentWidth - 8);
-        for (let i = 0; i < Math.min(recLines.length, 3); i++) {
+        for (let i = 0; i < Math.min(recLines.length, 4); i++) {
+          checkPageBreak(4);
           doc.text(recLines[i], margin + 4, yPos);
           yPos += 3.5;
         }
-        if (recLines.length > 3) {
+        if (recLines.length > 4) {
           doc.setTextColor(...colors.secondary);
+          doc.setFontSize(7);
           doc.text('(continued in component assessment)', margin + 4, yPos);
           yPos += 3.5;
         }
@@ -1264,21 +1349,21 @@ export async function generateEnhancedPDF(
         ['Deficiencies Identified', asset.deficiencyCount > 0 ? asset.deficiencyCount.toString() : 'None identified'],
         ['Average Remaining Life', asset.averageRemainingLife > 0 ? `${asset.averageRemainingLife} years` : 'N/A'],
         ['Immediate Needs', formatCurrency(asset.immediateNeeds)],
-        ['Short-Term Needs (1-3 yr)', formatCurrency(asset.shortTermNeeds)],
-        ['Medium-Term Needs (3-7 yr)', formatCurrency(asset.mediumTermNeeds)],
+        ['Short-Term Needs (1\u20133 yr)', formatCurrency(asset.shortTermNeeds)],
+        ['Medium-Term Needs (3\u20137 yr)', formatCurrency(asset.mediumTermNeeds)],
         ['Long-Term Needs (7+ yr)', formatCurrency(asset.longTermNeeds)],
       ];
       autoTable(doc, {
         startY: yPos,
         body: detailPairs.map(([label, value]) => [label, value]),
         theme: 'plain',
-        bodyStyles: { fontSize: 9 },
+        bodyStyles: { fontSize: 8.5, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
         columnStyles: {
-          0: { cellWidth: 55, fontStyle: 'bold', textColor: colors.secondary },
-          1: { cellWidth: contentWidth - 55 }
+          0: { cellWidth: 52, fontStyle: 'bold', textColor: colors.textLight },
+          1: { cellWidth: contentWidth - 52, textColor: colors.text }
         },
         margin: { left: margin, right: margin },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
+        alternateRowStyles: tableAlternateStyle,
       });
     } else {
       const assetTableData = data.assetMetrics.map(asset => [
@@ -1294,8 +1379,9 @@ export async function generateEnhancedPDF(
         head: [['Asset Name', 'CRV', 'Deferred Maint.', 'FCI', 'Rating', 'Priority']],
         body: assetTableData,
         theme: 'striped',
-        headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-        bodyStyles: { fontSize: 8 },
+        headStyles: tableHeadStyle,
+        bodyStyles: tableBodyStyle,
+        alternateRowStyles: tableAlternateStyle,
         columnStyles: {
           0: { cellWidth: 50 }, 1: { halign: 'right' }, 2: { halign: 'right' },
           3: { halign: 'right' }, 4: { halign: 'center' }, 5: { halign: 'center' }
@@ -1311,7 +1397,7 @@ export async function generateEnhancedPDF(
   // ============================================
   onProgress?.('Generating component assessments...', 50);
 
-  if (config.includeComponentAssessments && data.components.length > 0) {
+  if (config.includeComponentAssessments && validComponents.length > 0) {
     doc.addPage();
     currentPage++;
     addHeader();
@@ -1319,7 +1405,7 @@ export async function generateEnhancedPDF(
     addTocEntry('Component Assessments');
 
     const groupedComponents = new Map<string, EnhancedComponentData[]>();
-    for (const component of data.components) {
+    for (const component of validComponents) {
       const groupKey = component.uniformatLevel1 || 'OTHER';
       const existing = groupedComponents.get(groupKey) || [];
       existing.push(component);
@@ -1337,132 +1423,102 @@ export async function generateEnhancedPDF(
 
     const usedPhotoUrls = new Set<string>();
     let componentIndex = 0;
-    const totalComponentsCount = data.components.length;
+    const totalComponentsCount = validComponents.length;
 
     for (const [groupKey, components] of sortedGroups) {
       const groupLetter = groupKey.charAt(0).toUpperCase();
-      const groupName = UNIFORMAT_GROUPS[groupLetter] || groupKey;
+      if (!'ABCDEFG'.includes(groupLetter)) continue; // Skip non-standard groups
+      const groupName = UNIFORMAT_GROUPS_UPPER[groupLetter] || groupKey;
       
       checkPageBreak(30);
+      // Group header bar
       doc.setFillColor(...colors.primary);
-      doc.rect(margin, yPos, contentWidth, 8, 'F');
+      doc.rect(margin, yPos, contentWidth, 7, 'F');
       doc.setTextColor(...colors.white);
-      doc.setFontSize(11);
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${groupLetter} - ${groupName}`, margin + 3, yPos + 6);
-      yPos += 12;
+      doc.text(`${groupLetter} - ${groupName}`, margin + 4, yPos + 5);
+      yPos += 11;
 
       for (const component of components) {
         componentIndex++;
         const progress = 50 + (componentIndex / totalComponentsCount) * 30;
         onProgress?.(`Processing component ${componentIndex}/${totalComponentsCount}...`, progress);
 
-        checkPageBreak(60);
+        checkPageBreak(55);
 
         // Component header with condition badge
         doc.setFillColor(...colors.lightGray);
         doc.rect(margin, yPos, contentWidth, 7, 'F');
         doc.setTextColor(...colors.text);
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${component.uniformatCode} - ${component.componentName}`, margin + 2, yPos + 5);
+        doc.text(`${component.uniformatCode} - ${component.componentName}`, margin + 3, yPos + 5);
         
         const condColor = getConditionColor(component.condition);
-        const condBadgeX = margin + contentWidth - 28;
+        const condBadgeX = margin + contentWidth - 25;
         doc.setFillColor(...condColor);
-        doc.roundedRect(condBadgeX, yPos + 1, 26, 5, 1, 1, 'F');
+        doc.roundedRect(condBadgeX, yPos + 1, 23, 5, 1, 1, 'F');
         doc.setTextColor(...colors.white);
         doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
-        doc.text(capitalize(component.condition), condBadgeX + 13, yPos + 4.5, { align: 'center' });
+        doc.text(capitalize(component.condition), condBadgeX + 11.5, yPos + 4.5, { align: 'center' });
         yPos += 10;
 
-        // Two-column details
+        // Two-column metadata layout
         const leftColX = margin;
         const rightColX = margin + contentWidth / 2;
         doc.setFontSize(8);
         doc.setTextColor(...colors.text);
 
         let leftY = yPos;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Location:', leftColX, leftY);
-        doc.setFont('helvetica', 'normal');
-        doc.text((component.componentLocation || 'N/A').substring(0, 35), leftColX + 22, leftY);
-        leftY += 5;
+        const addMetaField = (x: number, y: number, label: string, value: string, valueColor?: [number, number, number]): number => {
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...colors.textLight);
+          doc.text(label, x, y);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...(valueColor || colors.text));
+          doc.text(value.substring(0, 35), x + 30, y);
+          return y + 5;
+        };
 
-        doc.setFont('helvetica', 'bold');
-        doc.text('Condition:', leftColX, leftY);
-        doc.setTextColor(...condColor);
-        doc.setFont('helvetica', 'bold');
-        const condPct = component.conditionPercentage ? ` (${component.conditionPercentage}%)` : '';
-        doc.text(`${capitalize(component.condition)}${condPct}`, leftColX + 22, leftY);
-        doc.setTextColor(...colors.text);
-        doc.setFont('helvetica', 'normal');
-        leftY += 5;
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Remaining Life:', leftColX, leftY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(component.remainingUsefulLife !== null ? `${component.remainingUsefulLife} years` : 'N/A', leftColX + 30, leftY);
-        leftY += 5;
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Service Life:', leftColX, leftY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(component.estimatedServiceLife !== null ? `${component.estimatedServiceLife} years` : 'N/A', leftColX + 30, leftY);
-        leftY += 5;
+        leftY = addMetaField(leftColX, leftY, 'Location:', component.componentLocation || 'N/A');
+        leftY = addMetaField(leftColX, leftY, 'Condition:', 
+          `${capitalize(component.condition)}${component.conditionPercentage ? ` (${component.conditionPercentage}%)` : ''}`,
+          condColor);
+        leftY = addMetaField(leftColX, leftY, 'Remaining Life:', component.remainingUsefulLife !== null ? `${component.remainingUsefulLife} years` : 'N/A');
+        leftY = addMetaField(leftColX, leftY, 'Service Life:', component.estimatedServiceLife !== null ? `${component.estimatedServiceLife} years` : 'N/A');
 
         let rightY = yPos;
         if (config.showCostFields) {
-          doc.setFont('helvetica', 'bold');
-          doc.text('Repair Cost:', rightColX, rightY);
-          doc.setFont('helvetica', 'normal');
-          doc.text(formatCurrency(component.repairCost), rightColX + 30, rightY);
-          rightY += 5;
-
-          doc.setFont('helvetica', 'bold');
-          doc.text('Replacement Cost:', rightColX, rightY);
-          doc.setFont('helvetica', 'normal');
-          doc.text(formatCurrency(component.replacementCost), rightColX + 38, rightY);
-          rightY += 5;
+          rightY = addMetaField(rightColX, rightY, 'Repair Cost:', formatCurrency(component.repairCost));
+          rightY = addMetaField(rightColX, rightY, 'Replacement:', formatCurrency(component.replacementCost));
         }
+        rightY = addMetaField(rightColX, rightY, 'Action Type:', formatActionType(component.actionType));
+        rightY = addMetaField(rightColX, rightY, 'Action Year:', component.actionYear?.toString() || 'N/A');
+        rightY = addMetaField(rightColX, rightY, 'Priority:', getPriorityLabel(component.priority));
 
-        doc.setFont('helvetica', 'bold');
-        doc.text('Action Type:', rightColX, rightY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(formatActionType(component.actionType), rightColX + 28, rightY);
-        rightY += 5;
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Action Year:', rightColX, rightY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(component.actionYear?.toString() || 'N/A', rightColX + 28, rightY);
-        rightY += 5;
-
-        doc.setFont('helvetica', 'bold');
-        doc.text('Priority:', rightColX, rightY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(getPriorityLabel(component.priority), rightColX + 20, rightY);
-
-        yPos = Math.max(leftY, rightY) + 3;
+        yPos = Math.max(leftY, rightY) + 2;
 
         // Observations
         const cleanObservations = stripHtmlTags(component.observations);
         if (cleanObservations) {
-          checkPageBreak(20);
-          doc.setFillColor(245, 247, 250);
-          doc.rect(margin, yPos - 1, contentWidth, 4, 'F');
+          checkPageBreak(18);
+          doc.setFillColor(245, 247, 252);
+          doc.rect(margin, yPos - 1, contentWidth, 4.5, 'F');
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
+          doc.setFontSize(7.5);
           doc.setTextColor(...colors.primary);
-          doc.text('OBSERVATIONS:', margin + 2, yPos + 2);
+          doc.text('OBSERVATIONS:', margin + 3, yPos + 2);
           yPos += 5;
           doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
           doc.setTextColor(...colors.text);
-          const obsLines = doc.splitTextToSize(cleanObservations, contentWidth - 4);
+          const obsLines = doc.splitTextToSize(cleanObservations, contentWidth - 6);
           for (let i = 0; i < Math.min(obsLines.length, 6); i++) {
-            doc.text(obsLines[i], margin + 2, yPos);
-            yPos += 4;
+            checkPageBreak(4);
+            doc.text(obsLines[i], margin + 3, yPos);
+            yPos += 3.5;
           }
           yPos += 2;
         }
@@ -1470,20 +1526,22 @@ export async function generateEnhancedPDF(
         // Recommendations
         const cleanRecommendations = stripHtmlTags(component.recommendations);
         if (cleanRecommendations) {
-          checkPageBreak(20);
-          doc.setFillColor(240, 253, 244);
-          doc.rect(margin, yPos - 1, contentWidth, 4, 'F');
+          checkPageBreak(18);
+          doc.setFillColor(240, 250, 244);
+          doc.rect(margin, yPos - 1, contentWidth, 4.5, 'F');
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.setTextColor(34, 139, 34);
-          doc.text('RECOMMENDATIONS:', margin + 2, yPos + 2);
+          doc.setFontSize(7.5);
+          doc.setTextColor(22, 120, 50);
+          doc.text('RECOMMENDATIONS:', margin + 3, yPos + 2);
           yPos += 5;
           doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
           doc.setTextColor(...colors.text);
-          const recLines = doc.splitTextToSize(cleanRecommendations, contentWidth - 4);
+          const recLines = doc.splitTextToSize(cleanRecommendations, contentWidth - 6);
           for (let i = 0; i < Math.min(recLines.length, 6); i++) {
-            doc.text(recLines[i], margin + 2, yPos);
-            yPos += 4;
+            checkPageBreak(4);
+            doc.text(recLines[i], margin + 3, yPos);
+            yPos += 3.5;
           }
           yPos += 2;
         }
@@ -1501,9 +1559,9 @@ export async function generateEnhancedPDF(
           }
 
           if (dedupedPhotos.length > 0) {
-            checkPageBreak(45);
-            const photoWidth = 40;
-            const photoHeight = 30;
+            checkPageBreak(42);
+            const photoWidth = 38;
+            const photoHeight = 28;
             const photosPerRow = Math.min(dedupedPhotos.length, 4);
             const photoSpacing = (contentWidth - (photosPerRow * photoWidth)) / (photosPerRow + 1);
             
@@ -1516,9 +1574,9 @@ export async function generateEnhancedPDF(
                 doc.addImage(dedupedPhotos[i], 'JPEG', photoX, photoY2, photoWidth, photoHeight);
                 const photoData = component.photos[i];
                 if (photoData?.caption) {
-                  doc.setFontSize(6);
+                  doc.setFontSize(5.5);
                   doc.setTextColor(...colors.secondary);
-                  doc.text(photoData.caption.substring(0, 30), photoX + photoWidth / 2, photoY2 + photoHeight + 3, { align: 'center' });
+                  doc.text(photoData.caption.substring(0, 35), photoX + photoWidth / 2, photoY2 + photoHeight + 3, { align: 'center' });
                 }
               } catch (e) {
                 console.error('Failed to add image to PDF:', e);
@@ -1529,8 +1587,10 @@ export async function generateEnhancedPDF(
           }
         }
 
-        yPos += 5;
+        yPos += 4;
+        // Subtle separator between components
         doc.setDrawColor(...colors.mediumGray);
+        doc.setLineWidth(0.2);
         doc.line(margin, yPos, margin + contentWidth, yPos);
         yPos += 5;
       }
@@ -1549,15 +1609,21 @@ export async function generateEnhancedPDF(
     addSectionTitle('Action List Summary', 1);
     addTocEntry('Action List Summary');
 
+    // Filter out test/invalid action items
+    const validActions = data.actionList.filter(a => {
+      const firstChar = (a.uniformatCode || '').charAt(0).toUpperCase();
+      return 'ABCDEFG'.includes(firstChar);
+    });
+
     const getActionScope = (action: ActionListItem): string => {
       const cleanDesc = stripHtmlTags(action.description);
       if (cleanDesc && cleanDesc.length > 5) {
-        return cleanDesc.substring(0, 50) + (cleanDesc.length > 50 ? '...' : '');
+        return cleanDesc.substring(0, 45) + (cleanDesc.length > 45 ? '...' : '');
       }
       return action.actionName.substring(0, 40);
     };
 
-    const actionTableData = data.actionList.slice(0, 50).map(action => [
+    const actionTableData = validActions.slice(0, 50).map(action => [
       action.itemId,
       getActionScope(action),
       action.uniformatCode,
@@ -1572,21 +1638,22 @@ export async function generateEnhancedPDF(
       head: [['ID', 'Action / Scope', 'Code', 'Type', 'Year', 'Cost', 'Priority']],
       body: actionTableData,
       theme: 'striped',
-      headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 7 },
+      headStyles: tableHeadStyle,
+      bodyStyles: { fontSize: 7, cellPadding: { top: 1.5, bottom: 1.5, left: 2, right: 2 }, textColor: colors.text },
+      alternateRowStyles: tableAlternateStyle,
       columnStyles: {
-        0: { cellWidth: 15 }, 1: { cellWidth: 55 }, 2: { cellWidth: 15 },
-        3: { cellWidth: 18 }, 4: { cellWidth: 12, halign: 'center' },
-        5: { cellWidth: 25, halign: 'right' }, 6: { cellWidth: 18 }
+        0: { cellWidth: 15 }, 1: { cellWidth: 48 }, 2: { cellWidth: 14 },
+        3: { cellWidth: 25 }, 4: { cellWidth: 12, halign: 'center' },
+        5: { cellWidth: 25, halign: 'right' }, 6: { cellWidth: 25 }
       },
       margin: { left: margin, right: margin }
     });
 
-    if (data.actionList.length > 50) {
+    if (validActions.length > 50) {
       const finalY = (doc as any).lastAutoTable?.finalY || yPos + 100;
-      doc.setFontSize(8);
+      doc.setFontSize(7.5);
       doc.setTextColor(...colors.secondary);
-      doc.text(`Showing 50 of ${data.actionList.length} actions.`, margin, finalY + 5);
+      doc.text(`Showing 50 of ${validActions.length} actions.`, margin, finalY + 5);
     }
   }
 
@@ -1617,8 +1684,9 @@ export async function generateEnhancedPDF(
       head: [['Year', 'Immediate', 'Short Term', 'Medium Term', 'Long Term', 'Total', 'Cumulative']],
       body: forecastTableData,
       theme: 'striped',
-      headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 7 },
+      headStyles: tableHeadStyle,
+      bodyStyles: { fontSize: 7, cellPadding: { top: 1.5, bottom: 1.5, left: 2, right: 2 }, textColor: colors.text },
+      alternateRowStyles: tableAlternateStyle,
       columnStyles: {
         0: { halign: 'center', fontStyle: 'bold' },
         1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' },
@@ -1647,7 +1715,7 @@ export async function generateEnhancedPDF(
 
     const uniformatTableData = sortedUniformatForTable.map(group => [
       group.groupCode,
-      group.groupName.substring(0, 30),
+      UNIFORMAT_GROUPS[group.groupCode.charAt(0).toUpperCase()] || group.groupName.substring(0, 30),
       group.componentCount.toString(),
       formatCurrency(group.totalRepairCost),
       formatCurrency(group.totalReplacementCost),
@@ -1659,10 +1727,11 @@ export async function generateEnhancedPDF(
       head: [['Code', 'Category', 'Components', 'Repair Cost', 'Replacement', 'Avg Condition']],
       body: uniformatTableData,
       theme: 'striped',
-      headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 9 },
-      bodyStyles: { fontSize: 8 },
+      headStyles: tableHeadStyle,
+      bodyStyles: tableBodyStyle,
+      alternateRowStyles: tableAlternateStyle,
       columnStyles: {
-        0: { cellWidth: 15 }, 1: { cellWidth: 50 }, 2: { halign: 'center' },
+        0: { cellWidth: 15, halign: 'center' }, 1: { cellWidth: 50 }, 2: { halign: 'center' },
         3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }
       },
       margin: { left: margin, right: margin }
@@ -1709,10 +1778,11 @@ export async function generateEnhancedPDF(
       head: [['Priority Level', 'Component Count', 'Estimated Cost', '% of Total']],
       body: priorityTableData,
       theme: 'striped',
-      headStyles: { fillColor: colors.primary, textColor: colors.white, fontStyle: 'bold', fontSize: 10 },
-      bodyStyles: { fontSize: 9 },
+      headStyles: { ...tableHeadStyle, fontSize: 9.5 },
+      bodyStyles: { fontSize: 9, cellPadding: { top: 2.5, bottom: 2.5, left: 4, right: 4 }, textColor: colors.text },
+      alternateRowStyles: tableAlternateStyle,
       columnStyles: {
-        0: { cellWidth: 60 }, 1: { halign: 'center' },
+        0: { cellWidth: 55 }, 1: { halign: 'center' },
         2: { halign: 'right' }, 3: { halign: 'right' }
       },
       didParseCell: (hookData: any) => {
@@ -1725,7 +1795,7 @@ export async function generateEnhancedPDF(
     });
 
     const finalY = (doc as any).lastAutoTable?.finalY || yPos + 80;
-    yPos = finalY + 10;
+    yPos = finalY + 8;
     
     if (yPos < pageHeight - 40) {
       addParagraph(`This priority matrix summarizes ${totalCount} assessed components with a total estimated remediation cost of ${formatCurrency(totalCostSum)}. Items are categorized by urgency to support capital planning and budget allocation.`);
@@ -1736,32 +1806,36 @@ export async function generateEnhancedPDF(
   // FILL TABLE OF CONTENTS (go back to TOC page)
   // ============================================
   doc.setPage(tocPageNumber);
-  let tocY = 18;
+  let tocY = 16;
   
   // TOC Header
   doc.setFillColor(...colors.primary);
-  doc.rect(0, 0, pageWidth, 12, 'F');
+  doc.rect(0, 0, pageWidth, 10, 'F');
   doc.setTextColor(...colors.white);
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('BUILDING CONDITION ASSESSMENT REPORT', margin, 8);
+  doc.text('BUILDING CONDITION ASSESSMENT REPORT', margin, 7);
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text(config.projectName, pageWidth - margin, 8, { align: 'right' });
+  doc.text(config.projectName, pageWidth - margin, 7, { align: 'right' });
 
-  tocY = 25;
+  tocY = 24;
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...colors.primary);
-  doc.text('TABLE OF CONTENTS', margin, tocY);
-  tocY += 12;
+  doc.text('Table of Contents', margin, tocY);
+  tocY += 3;
+  doc.setDrawColor(...colors.primary);
+  doc.setLineWidth(0.6);
+  doc.line(margin, tocY, margin + contentWidth, tocY);
+  tocY += 8;
 
   for (const entry of tocEntries) {
     if (tocY > pageHeight - 20) break;
     
-    doc.setFontSize(entry.level === 1 ? 10 : 9);
+    doc.setFontSize(entry.level === 1 ? 9.5 : 8.5);
     doc.setFont('helvetica', entry.level === 1 ? 'bold' : 'normal');
-    doc.setTextColor(...(entry.level === 1 ? colors.text : colors.secondary));
+    doc.setTextColor(...(entry.level === 1 ? colors.text : colors.textLight));
     
     const indent = entry.level === 1 ? 0 : 8;
     const title = entry.title.substring(0, 65);
@@ -1770,13 +1844,13 @@ export async function generateEnhancedPDF(
     doc.setFont('helvetica', 'normal');
     doc.text(entry.pageNumber.toString(), pageWidth - margin, tocY, { align: 'right' });
     
-    // Dotted line
+    // Dotted leader
     const titleWidth = doc.getTextWidth(title);
     const pageNumWidth = doc.getTextWidth(entry.pageNumber.toString());
-    const dotsStart = margin + indent + titleWidth + 2;
-    const dotsEnd = pageWidth - margin - pageNumWidth - 2;
+    const dotsStart = margin + indent + titleWidth + 3;
+    const dotsEnd = pageWidth - margin - pageNumWidth - 3;
     if (dotsEnd > dotsStart + 5) {
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       doc.setTextColor(...colors.mediumGray);
       let dotX = dotsStart;
       while (dotX < dotsEnd) {
@@ -1785,7 +1859,7 @@ export async function generateEnhancedPDF(
       }
     }
     
-    tocY += entry.level === 1 ? 7 : 5;
+    tocY += entry.level === 1 ? 6.5 : 5;
   }
 
   // Add footers to all pages
@@ -1811,7 +1885,7 @@ export function estimatePageCount(config: EnhancedReportConfig, data: Partial<En
   pages += 1; // Action Types + Priority Levels
   pages += 1; // Condition Ratings + FCI
   pages += 2; // Limitations & Disclosure
-  pages += 1; // Dashboard
+  pages += 1; // Dashboard (single page)
   pages += 2; // Executive Summary
   pages += 1; // Observations & Recommendations
   

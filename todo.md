@@ -5756,3 +5756,21 @@ Deployment is allowed only when:
 - [x] Delete non-Edmonton assets and related data (assessments, deficiencies, photos, etc.)
 - [x] Delete non-Edmonton projects
 - [x] Verify only Edmonton records remain
+
+## PDF Report Visual Design Improvements
+- [x] Consolidate dashboard to single page (merge condition, cost, priority charts)
+- [x] Improve chart colors - use distinct, professional colors for charts
+- [x] Fix chart label truncation (show full category names)
+- [x] Remove empty/unknown bar from Cost by Building System chart
+- [x] Fix "Recommended" word truncation in Priority column (wider column)
+- [x] Reduce empty white space on pages (TOC, Limitations, Dashboard)
+- [x] Improve visual hierarchy with better typography and spacing
+- [x] Improve table design (row banding, alignment, header separation)
+- [x] Filter out O-OTHER and T-T test categories from report
+- [x] Filter blank/empty rows from UNIFORMAT breakdown
+- [x] Fix Observations section to show all categories (B through G)
+- [x] Fix D30 HVAC duplicate component display
+- [x] Fix "Work Scope:Building" missing space after colon
+- [x] Improve component assessment visual pattern (metadata/narrative blocks)
+- [x] Improve header/footer consistency and branding
+- [x] Make KPI cards more visually prominent on dashboard
