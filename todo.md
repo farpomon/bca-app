@@ -5791,3 +5791,7 @@ Deployment is allowed only when:
 - [x] Allow inline editing of budget items (priority, year, amount, status, strategic alignment)
 - [x] Add save/cancel functionality with server mutations
 - [x] Add delete capability with confirmation for budget items
+
+## Data Cleanup: Remove Non-Edmonton Records (Round 3)
+- [x] Identify and delete all non-Edmonton projects, assets, and related data (533 rows deleted)
+- [x] Verify only Edmonton records remain (1 project, 20 assets)
