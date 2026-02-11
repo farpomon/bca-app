@@ -610,7 +610,7 @@ export async function generateEnhancedPDF(
   addBoldLabel('Work Scope: ', 'Building Condition Assessment (BCA)');
   yPos += 1;
 
-  addParagraph(`B3NMA was retained to conduct a Building Condition Assessment (BCA) of ${assetLabel}, located at ${config.clientAddress || 'the subject property'}. The assessment was performed in accordance with ASTM E2018 \u2013 Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process.`);
+  addParagraph(`B3NMA was the platform used to conduct a Building Condition Assessment (BCA) of ${assetLabel}, located at ${config.clientAddress || 'the subject property'}. The assessment was performed in accordance with ASTM E2018 \u2013 Standard Guide for Property Condition Assessments: Baseline Property Condition Assessment Process.`);
 
   addBoldLabel('Objective: ', '');
   addParagraph('The objective of this assessment is to provide a comprehensive evaluation of the physical condition of the building systems and components, identify deficiencies and deferred maintenance items, estimate remediation costs, and develop a prioritized capital renewal plan to support informed decision-making for facility management and capital planning.');

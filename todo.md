@@ -5774,3 +5774,6 @@ Deployment is allowed only when:
 - [x] Improve component assessment visual pattern (metadata/narrative blocks)
 - [x] Improve header/footer consistency and branding
 - [x] Make KPI cards more visually prominent on dashboard
+
+## PDF Report Text Update
+- [x] Change "was retained to conduct" to "was the platform used to conduct" in introduction
