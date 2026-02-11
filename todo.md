@@ -5795,3 +5795,8 @@ Deployment is allowed only when:
 ## Data Cleanup: Remove Non-Edmonton Records (Round 3)
 - [x] Identify and delete all non-Edmonton projects, assets, and related data (533 rows deleted)
 - [x] Verify only Edmonton records remain (1 project, 20 assets)
+
+## User Cleanup: Keep Only Luis Rubio Faria
+- [x] Identify and delete all users except Luis Rubio Faria (30 test users deleted)
+- [x] Clean up related user data (no orphaned references found)
+- [x] Verify only Luis Rubio Faria users remain (2 accounts: luisrubiof@gmail.com, lfaria@yahoo.com.br)
