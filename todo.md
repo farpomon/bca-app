@@ -5816,3 +5816,11 @@ Deployment is allowed only when:
 - [x] Add timeout handling and proper error messages
 - [x] Update backup scheduler to use compressed backups (.json.gz files)
 - [x] Re-enable the daily backup schedule (next run: Thu Feb 12 2026 3:00 AM Eastern)
+
+## Landing Page Contact Form
+- [x] Create backend tRPC procedure to send contact form emails to lfaria@mabenconsulting.ca (already exists in contact.router.ts)
+- [x] Design and implement ContactFormDialog component with professional styling
+- [x] Add "Get in Contact" button to hero section (primary CTA)
+- [x] Add "Contact" link to header navigation
+- [x] Add form validation (name, email, message required with asterisks)
+- [x] Test email delivery and form submission (backend procedure verified, UI implemented)

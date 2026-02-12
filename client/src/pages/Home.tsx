@@ -5,6 +5,7 @@ import { APP_TITLE, APP_LOGO, APP_TAGLINE, getLoginUrl } from "@/const";
 import { Building2, ClipboardCheck, FileText, TrendingUp, CheckCircle2, Shield, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { DashboardPreview } from "@/components/DashboardPreview";
 
 export default function Home() {
@@ -57,6 +58,13 @@ export default function Home() {
               <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
                 <a href="#analytics">Analytics</a>
               </Button>
+              <ContactFormDialog
+                trigger={
+                  <Button variant="ghost" size="sm" className="hidden md:inline-flex">
+                    Contact
+                  </Button>
+                }
+              />
               <Button variant="default" size="sm" asChild>
                 <a href="/signup">Request Access</a>
               </Button>
@@ -102,13 +110,16 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8" 
-                asChild
-              >
-                <a href="/signup">Request Access</a>
-              </Button>
+              <ContactFormDialog
+                trigger={
+                  <Button 
+                    size="lg" 
+                    className="bg-white text-primary hover:bg-white/90 font-semibold text-base h-12 px-8"
+                  >
+                    Get in Contact
+                  </Button>
+                }
+              />
               <Button 
                 size="lg" 
                 variant="outline" 
