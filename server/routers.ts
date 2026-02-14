@@ -1461,13 +1461,54 @@ Be as accurate as possible. Extract ALL assessments found in the document. Retur
           throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
         }
         
-        // Get asset data for context
+        // Get comprehensive asset data for context
         const assessments = await db.getAssessmentsByProject(input.projectId);
         const assetAssessments = assessments?.filter((a: any) => a.assetId === input.assetId) || [];
-        // Use getAssetDeficiencies which properly handles the assessment->deficiency relationship
         const assetDeficiencies = await db.getAssetDeficiencies(input.assetId);
         
-        // Build context
+        // Build detailed component assessment data
+        const componentDetails = assetAssessments.map((assessment: any) => {
+          const deficiencies = assetDeficiencies.filter((d: any) => d.assessmentId === assessment.id);
+          return {
+            uniformatCode: assessment.uniformatCode,
+            componentName: assessment.componentName,
+            condition: assessment.condition,
+            conditionRating: assessment.conditionRating,
+            quantity: assessment.quantity,
+            unit: assessment.unit,
+            serviceLife: assessment.serviceLife,
+            remainingLife: assessment.remainingLife,
+            replacementCost: assessment.replacementCost,
+            repairCost: assessment.repairCost,
+            priority: assessment.priority,
+            actionType: assessment.actionType,
+            actionYear: assessment.actionYear,
+            observations: assessment.observations,
+            recommendations: assessment.recommendations,
+            deficiencies: deficiencies.map((d: any) => ({
+              description: d.description,
+              severity: d.severity,
+              priority: d.priority,
+              estimatedCost: d.estimatedCost
+            }))
+          };
+        });
+        
+        // Calculate cost breakdown by UNIFORMAT system
+        const costBySystem = assetAssessments.reduce((acc: any, a: any) => {
+          const system = a.uniformatCode?.charAt(0) || 'Unknown';
+          const cost = (a.replacementCost || 0) + (a.repairCost || 0);
+          acc[system] = (acc[system] || 0) + cost;
+          return acc;
+        }, {});
+        
+        // Priority distribution
+        const priorityDist = assetAssessments.reduce((acc: any, a: any) => {
+          acc[a.priority || 'unknown'] = (acc[a.priority || 'unknown'] || 0) + 1;
+          return acc;
+        }, {});
+        
+        // Build comprehensive context
         const systemMessage = {
           role: "system" as const,
           content: `You are an AI assistant helping with building condition assessment for asset "${asset.name}" in project "${project.name}". 
@@ -1486,7 +1527,25 @@ Asset Statistics:
 - Critical Deficiencies: ${assetDeficiencies.filter((d: any) => d.severity === 'critical').length}
 - High Priority Deficiencies: ${assetDeficiencies.filter((d: any) => d.priority === 'immediate').length}
 
-Provide helpful insights, recommendations, and analysis based on this asset data. Be specific and actionable.`
+Priority Distribution:
+${Object.entries(priorityDist).map(([p, count]) => `- ${p}: ${count}`).join('\n')}
+
+Cost Breakdown by UNIFORMAT System:
+${Object.entries(costBySystem).map(([sys, cost]) => `- System ${sys}: $${(cost as number).toLocaleString()}`).join('\n')}
+
+Detailed Component Assessments:
+${componentDetails.slice(0, 50).map((c: any, idx: number) => `
+${idx + 1}. ${c.componentName} (${c.uniformatCode})
+   - Condition: ${c.condition} (Rating: ${c.conditionRating}/10)
+   - Service Life: ${c.serviceLife || 'N/A'} years | Remaining: ${c.remainingLife || 'N/A'} years
+   - Replacement Cost: $${(c.replacementCost || 0).toLocaleString()} | Repair Cost: $${(c.repairCost || 0).toLocaleString()}
+   - Priority: ${c.priority} | Action: ${c.actionType} (Year: ${c.actionYear || 'TBD'})
+   - Observations: ${c.observations || 'None'}
+   - Recommendations: ${c.recommendations || 'None'}
+   - Deficiencies: ${c.deficiencies.length > 0 ? c.deficiencies.map((d: any) => `${d.description} (${d.severity}, ${d.priority}, $${(d.estimatedCost || 0).toLocaleString()})`).join('; ') : 'None'}`).join('\n')}
+${componentDetails.length > 50 ? `\n... and ${componentDetails.length - 50} more components` : ''}
+
+Provide helpful insights, recommendations, and analysis based on this comprehensive real-time assessment data. Be specific, actionable, and reference actual component names, conditions, and costs from the data above. When asked about specific systems or priorities, cite the exact components and their details.`
         };
         
         const messages = [

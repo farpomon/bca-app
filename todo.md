@@ -5824,3 +5824,10 @@ Deployment is allowed only when:
 - [x] Add "Contact" link to header navigation
 - [x] Add form validation (name, email, message required with asterisks)
 - [x] Test email delivery and form submission (backend procedure verified, UI implemented)
+
+## AI Insights Real-Time Data Integration
+- [x] Investigate current AI Insights implementation and data sources
+- [x] Create backend procedure to fetch comprehensive assessment data (components, deficiencies, conditions, costs)
+- [x] Update AI Insights system prompt to include real-time assessment context (up to 50 components with full details)
+- [x] Pass assessment data to AI chat for accurate analysis and recommendations
+- [x] Enhanced system prompt includes: component details, cost breakdown by UNIFORMAT, priority distribution, observations, recommendations, deficiencies
